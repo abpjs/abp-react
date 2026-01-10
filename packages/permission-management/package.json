@@ -1,0 +1,54 @@
+{
+  "name": "@abpjs/permission-management",
+  "version": "0.7.6",
+  "description": "ABP Framework permission-management components for React - translated from @abp/ng.permission-management",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --watch",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "abp",
+    "react",
+    "framework",
+    "permission",
+    "permission-management",
+    "authorization",
+    "access-control"
+  ],
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^2.8.0",
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@abpjs/core": "workspace:*",
+    "@abpjs/theme-shared": "workspace:*",
+    "framer-motion": "^10.16.0"
+  },
+  "devDependencies": {},
+  "author": "tekthar.com",
+  "license": "LGPL-3.0"
+}

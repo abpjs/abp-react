@@ -1,0 +1,6 @@
+export { TestCorePage } from './TestCorePage'
+export { TestThemeSharedPage } from './TestThemeSharedPage'
+export { TestThemeBasicPage } from './TestThemeBasicPage'
+export { TestAccountPage } from './TestAccountPage'
+export { TestPermissionManagementPage } from './TestPermissionManagementPage'
+export { TestTenantManagementPage } from './TestTenantManagementPage'

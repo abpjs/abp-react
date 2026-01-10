@@ -1,0 +1,53 @@
+{
+  "name": "@abpjs/abp-react",
+  "version": "0.7.6",
+  "description": "ABP Framework for React - Monorepo",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r run build",
+    "dev": "pnpm -r --parallel run dev",
+    "lint": "pnpm -r run lint",
+    "lint:fix": "pnpm -r run lint:fix",
+    "format": "pnpm -r run format",
+    "format:check": "pnpm -r run format:check",
+    "type-check": "pnpm -r run type-check",
+    "test": "pnpm -r run test",
+    "clean": "pnpm -r exec rm -rf dist && rm -rf node_modules"
+  },
+  "keywords": [
+    "abp",
+    "react",
+    "framework",
+    "monorepo"
+  ],
+  "author": "tekthar.com",
+  "license": "LGPL-3.0",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@10.28.0",
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-react": "^7.0.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "jsdom": "^24.0.0",
+    "prettier": "^3.7.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.52.0",
+    "vitest": "^1.0.0"
+  }
+}

@@ -1,0 +1,346 @@
+import React, { useEffect, useRef, useCallback } from 'react';
+import { useLocalization } from '@abpjs/core';
+import { Modal } from '@abpjs/theme-shared';
+import {
+  Box,
+  Button,
+  Checkbox,
+  Divider,
+  Flex,
+  Heading,
+  List,
+  ListItem,
+  Spinner,
+  Text,
+  VStack,
+  Alert,
+  AlertIcon,
+} from '@chakra-ui/react';
+import { usePermissionManagement } from '../../hooks';
+import type { PermissionManagement } from '../../models';
+
+/**
+ * Props for PermissionManagementModal component
+ */
+export interface PermissionManagementModalProps {
+  /**
+   * Provider name (e.g., 'R' for Role, 'U' for User)
+   */
+  providerName: string;
+
+  /**
+   * Provider key (e.g., role ID or user ID)
+   */
+  providerKey: string;
+
+  /**
+   * Whether the modal is visible
+   */
+  visible: boolean;
+
+  /**
+   * Callback when visibility changes
+   */
+  onVisibleChange?: (visible: boolean) => void;
+
+  /**
+   * Callback fired when permissions are saved successfully
+   */
+  onSave?: () => void;
+}
+
+/**
+ * PermissionManagementModal - Modal for managing entity permissions
+ *
+ * This is the React equivalent of Angular's PermissionManagementComponent.
+ * It displays a modal with permission groups and allows toggling permissions.
+ *
+ * @example
+ * ```tsx
+ * function RolePermissions({ roleId }) {
+ *   const [visible, setVisible] = useState(false);
+ *
+ *   return (
+ *     <>
+ *       <Button onClick={() => setVisible(true)}>Manage Permissions</Button>
+ *       <PermissionManagementModal
+ *         providerName="R"
+ *         providerKey={roleId}
+ *         visible={visible}
+ *         onVisibleChange={setVisible}
+ *         onSave={() => console.log('Saved!')}
+ *       />
+ *     </>
+ *   );
+ * }
+ * ```
+ */
+export function PermissionManagementModal({
+  providerName,
+  providerKey,
+  visible,
+  onVisibleChange,
+  onSave,
+}: PermissionManagementModalProps): React.ReactElement {
+  const { instant } = useLocalization();
+
+  const {
+    groups,
+    entityDisplayName,
+    selectedGroup,
+    isLoading,
+    error,
+    selectThisTab,
+    selectAllTab,
+    fetchPermissions,
+    savePermissions,
+    setSelectedGroup,
+    togglePermission,
+    toggleSelectThisTab,
+    toggleSelectAll,
+    getSelectedGroupPermissions,
+    isGranted,
+    reset,
+  } = usePermissionManagement();
+
+  // Refs for indeterminate checkbox state
+  const selectAllCheckboxRef = useRef<HTMLInputElement>(null);
+  const selectThisTabCheckboxRef = useRef<HTMLInputElement>(null);
+
+  /**
+   * Fetch permissions when modal opens
+   */
+  useEffect(() => {
+    if (visible && providerKey && providerName) {
+      fetchPermissions(providerKey, providerName);
+    }
+
+    // Reset when modal closes
+    if (!visible) {
+      reset();
+    }
+  }, [visible, providerKey, providerName, fetchPermissions, reset]);
+
+  /**
+   * Update indeterminate state for "select all" checkbox
+   */
+  useEffect(() => {
+    if (!selectAllCheckboxRef.current) return;
+
+    const allPermissions = groups.flatMap((g) => g.permissions);
+    const grantedCount = allPermissions.filter((p) => isGranted(p.name)).length;
+
+    if (grantedCount === 0) {
+      selectAllCheckboxRef.current.indeterminate = false;
+    } else if (grantedCount === allPermissions.length) {
+      selectAllCheckboxRef.current.indeterminate = false;
+    } else {
+      selectAllCheckboxRef.current.indeterminate = true;
+    }
+  }, [groups, isGranted]);
+
+  /**
+   * Update indeterminate state for "select this tab" checkbox
+   */
+  useEffect(() => {
+    if (!selectThisTabCheckboxRef.current || !selectedGroup) return;
+
+    const groupPermissions = groups.find((g) => g.name === selectedGroup.name)?.permissions ?? [];
+    const grantedCount = groupPermissions.filter((p) => isGranted(p.name)).length;
+
+    if (grantedCount === 0) {
+      selectThisTabCheckboxRef.current.indeterminate = false;
+    } else if (grantedCount === groupPermissions.length) {
+      selectThisTabCheckboxRef.current.indeterminate = false;
+    } else {
+      selectThisTabCheckboxRef.current.indeterminate = true;
+    }
+  }, [selectedGroup, groups, isGranted]);
+
+  /**
+   * Handle form submission
+   */
+  const handleSubmit = useCallback(async () => {
+    const result = await savePermissions(providerKey, providerName);
+
+    if (result.success) {
+      onSave?.();
+      onVisibleChange?.(false);
+    }
+  }, [savePermissions, providerKey, providerName, onSave, onVisibleChange]);
+
+  /**
+   * Handle modal close
+   */
+  const handleClose = useCallback(() => {
+    onVisibleChange?.(false);
+  }, [onVisibleChange]);
+
+  /**
+   * Handle permission checkbox click
+   */
+  const handlePermissionClick = useCallback(
+    (permission: PermissionManagement.Permission) => {
+      togglePermission(permission);
+    },
+    [togglePermission]
+  );
+
+  /**
+   * Handle group selection
+   */
+  const handleGroupClick = useCallback(
+    (group: PermissionManagement.Group) => {
+      setSelectedGroup(group);
+    },
+    [setSelectedGroup]
+  );
+
+  // Get permissions for selected group with margins
+  const selectedGroupPermissions = getSelectedGroupPermissions();
+
+  return (
+    <Modal
+      visible={visible}
+      onVisibleChange={onVisibleChange}
+      size="xl"
+      header={
+        <>
+          {instant('AbpPermissionManagement::Permissions')}
+          {entityDisplayName && ` - ${entityDisplayName}`}
+        </>
+      }
+      footer={
+        <>
+          <Button variant="outline" onClick={handleClose} isDisabled={isLoading}>
+            {instant('AbpIdentity::Cancel')}
+          </Button>
+          <Button
+            colorScheme="blue"
+            onClick={handleSubmit}
+            isLoading={isLoading}
+            leftIcon={isLoading ? undefined : <CheckIcon />}
+          >
+            {instant('AbpIdentity::Save')}
+          </Button>
+        </>
+      }
+    >
+      {/* Loading State */}
+      {isLoading && groups.length === 0 && (
+        <Flex justify="center" align="center" py={8}>
+          <Spinner size="lg" />
+        </Flex>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <Alert status="error" mb={4} borderRadius="md">
+          <AlertIcon />
+          {error}
+        </Alert>
+      )}
+
+      {/* Content */}
+      {groups.length > 0 && (
+        <Box>
+          {/* Select All Checkbox */}
+          <Checkbox
+            ref={selectAllCheckboxRef}
+            id="select-all-in-all-tabs"
+            isChecked={selectAllTab}
+            onChange={toggleSelectAll}
+            mb={2}
+          >
+            {instant('AbpPermissionManagement::SelectAllInAllTabs')}
+          </Checkbox>
+
+          <Divider my={2} />
+
+          <Flex gap={4}>
+            {/* Left Panel - Group List */}
+            <Box w="35%" maxH="70vh" overflowY="auto">
+              <List spacing={0}>
+                {groups.map((group) => (
+                  <ListItem
+                    key={group.name}
+                    px={3}
+                    py={2}
+                    cursor="pointer"
+                    bg={selectedGroup?.name === group.name ? 'blue.500' : 'transparent'}
+                    color={selectedGroup?.name === group.name ? 'white' : 'inherit'}
+                    borderRadius="md"
+                    _hover={{
+                      bg: selectedGroup?.name === group.name ? 'blue.600' : 'gray.100',
+                    }}
+                    onClick={() => handleGroupClick(group)}
+                  >
+                    {group.displayName}
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+
+            {/* Right Panel - Permissions */}
+            <Box w="65%">
+              {selectedGroup && (
+                <>
+                  <Heading as="h4" size="md" mb={2}>
+                    {selectedGroup.displayName}
+                  </Heading>
+
+                  <Divider my={2} />
+
+                  <Box pl={1} pt={1}>
+                    {/* Select All in This Tab */}
+                    <Checkbox
+                      ref={selectThisTabCheckboxRef}
+                      id="select-all-in-this-tabs"
+                      isChecked={selectThisTab}
+                      onChange={toggleSelectThisTab}
+                      mb={2}
+                    >
+                      {instant('AbpPermissionManagement::SelectAllInThisTab')}
+                    </Checkbox>
+
+                    <Divider my={3} />
+
+                    {/* Permission List */}
+                    <Box maxH="60vh" overflowY="auto">
+                      <VStack align="stretch" spacing={2}>
+                        {selectedGroupPermissions.map((permission) => (
+                          <Box key={permission.name} ml={`${permission.margin}px`}>
+                            <Checkbox
+                              id={permission.name}
+                              isChecked={isGranted(permission.name)}
+                              onChange={() => handlePermissionClick(permission)}
+                            >
+                              {permission.displayName}
+                            </Checkbox>
+                          </Box>
+                        ))}
+                      </VStack>
+                    </Box>
+                  </Box>
+                </>
+              )}
+            </Box>
+          </Flex>
+        </Box>
+      )}
+    </Modal>
+  );
+}
+
+/**
+ * Simple check icon component
+ */
+function CheckIcon(): React.ReactElement {
+  return (
+    <Text as="span" fontSize="sm">
+      &#10003;
+    </Text>
+  );
+}
+
+export default PermissionManagementModal;

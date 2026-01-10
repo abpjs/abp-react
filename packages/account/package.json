@@ -1,0 +1,59 @@
+{
+  "name": "@abpjs/account",
+  "version": "0.7.6",
+  "description": "ABP Framework Account module for React - Translation of @abp/ng.account",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --clean && tsc -p tsconfig.build.json",
+    "dev": "tsup src/index.ts --format cjs,esm --watch",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "abp",
+    "react",
+    "framework",
+    "account",
+    "login",
+    "register",
+    "authentication",
+    "oauth"
+  ],
+  "author": "tekthar.com",
+  "license": "LGPL-3.0",
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": ">=6.0.0"
+  },
+  "dependencies": {
+    "@chakra-ui/react": "^2.8.0",
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@hookform/resolvers": "^3.3.0",
+    "@abpjs/core": "workspace:*",
+    "@abpjs/theme-shared": "workspace:*",
+    "framer-motion": "^10.16.0",
+    "react-hook-form": "^7.48.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {}
+}

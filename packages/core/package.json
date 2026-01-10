@@ -1,0 +1,53 @@
+{
+  "name": "@abpjs/core",
+  "version": "0.7.6",
+  "description": "ABP Framework Core for React - Translation of @abp/ng.core",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --clean && tsc -p tsconfig.build.json",
+    "dev": "tsup src/index.ts --format cjs,esm --watch",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "abp",
+    "react",
+    "framework",
+    "core",
+    "redux",
+    "oidc"
+  ],
+  "author": "tekthar.com",
+  "license": "LGPL-3.0",
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0",
+    "react-router-dom": ">=6.0.0"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.0.0",
+    "axios": "^1.6.0",
+    "immer": "^10.0.0",
+    "oidc-client-ts": "^3.0.0",
+    "react-redux": "^9.0.0"
+  },
+  "devDependencies": {}
+}
