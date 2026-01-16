@@ -18,6 +18,7 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --clean && tsc -p tsconfig.build.json",
+    "dev": "tsup src/index.ts --format cjs,esm --watch",
     "lint": "eslint src",
     "lint:fix": "eslint src --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
@@ -39,6 +40,7 @@
     "@abpjs/theme-shared": "workspace:*"
   },
   "devDependencies": {
+    "@abp/ng.tenant-management": "0.7.6",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0"

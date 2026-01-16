@@ -149,6 +149,8 @@ export function AbpProvider({
 
   // Track if configuration has been fetched to prevent duplicate calls
   const configFetchedRef = useRef(false);
+  // Track previous user state to detect when user becomes authenticated
+  const previousUserRef = useRef<User | null>(null);
 
   // Fetch application configuration after user check completes
   // This ensures the token is available (if user is logged in) before fetching config
@@ -156,17 +158,35 @@ export function AbpProvider({
     // Wait for user check to complete first
     if (!userChecked) return;
 
+    const isUserAuthenticated = user && !user.expired;
+    const wasUserAuthenticated = previousUserRef.current && !previousUserRef.current.expired;
+    
+    // If user just became authenticated (was null/unauthenticated, now authenticated),
+    // we need to refetch config with the token
+    const userJustAuthenticated = !wasUserAuthenticated && isUserAuthenticated;
+
+    // Update previous user ref
+    previousUserRef.current = user;
+
+    // If config was already fetched and user hasn't just authenticated, skip
+    if (configFetchedRef.current && !userJustAuthenticated) {
+      // Check if configuration is already loaded in store
+      const state = store.getState();
+      if (
+        state.config.localization.values &&
+        Object.keys(state.config.localization.values).length > 0
+      ) {
+        return; // Configuration already loaded
+      }
+    }
+
+    // If user just became authenticated, reset the flag to allow refetch
+    if (userJustAuthenticated) {
+      configFetchedRef.current = false;
+    }
+
     // Prevent duplicate fetches (e.g., in React StrictMode or re-renders)
     if (configFetchedRef.current) return;
-
-    // Check if configuration is already loaded in store
-    const state = store.getState();
-    if (
-      state.config.localization.values &&
-      Object.keys(state.config.localization.values).length > 0
-    ) {
-      return; // Configuration already loaded
-    }
 
     configFetchedRef.current = true;
 
@@ -190,7 +210,7 @@ export function AbpProvider({
     };
 
     fetchConfig();
-  }, [userChecked, services.applicationConfigurationService, store]);
+  }, [userChecked, user, services.applicationConfigurationService, store]);
 
   const contextValue: AbpContextValue = {
     store,

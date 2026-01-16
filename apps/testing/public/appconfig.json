@@ -2,14 +2,14 @@
   "_comment": "Example configuration for testing. Replace with your actual ABP Framework backend URLs and client ID.",
   "oAuthConfig": {
     "issuer": "http://localhost:44305/",
-    "redirectUri": "http://localhost:4200",
-    "clientId": "React",
+    "redirectUri": "http://localhost:4201",
+    "clientId": "abp018_App",
     "responseType": "code",
     "scope": "offline_access abp018",
     "requireHttps": false
   },
   "application": {
-    "baseUrl": "http://localhost:4200",
+    "baseUrl": "http://localhost:4201",
     "name": "ReactTest"
   },
   "apis": {

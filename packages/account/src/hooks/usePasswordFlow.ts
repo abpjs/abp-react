@@ -37,7 +37,7 @@ export interface PasswordFlowOptions {
  * in many enterprise scenarios where the client is trusted.
  */
 export function usePasswordFlow() {
-  const { store, axiosInstance, applicationConfigurationService } = useAbp();
+  const { store, axiosInstance, applicationConfigurationService, userManager } = useAbp();
   const config = useConfig();
   const options = useAccountOptions();
   const navigate = useNavigate();
@@ -53,8 +53,10 @@ export function usePasswordFlow() {
 
     // Try metadata_uri first (authority + .well-known/openid-configuration)
     if (oAuthConfig?.authority) {
+      // Normalize authority URL by removing trailing slash to avoid double slashes
+      const authority = oAuthConfig.authority.replace(/\/+$/, '');
       // Standard token endpoint path
-      return `${oAuthConfig.authority}/connect/token`;
+      return `${authority}/connect/token`;
     }
 
     throw new Error('OAuth authority not configured');
@@ -126,7 +128,19 @@ export function usePasswordFlow() {
         const oidcKey = `oidc.user:${oAuthConfig.authority}:${oAuthConfig.client_id}`;
         storage.setItem(oidcKey, JSON.stringify(userData));
 
+        // Reload user from storage so the interceptor has access to the token
+        // This is critical to ensure the token is available when fetching config
+        if (userManager) {
+          const loadedUser = await userManager.getUser();
+          if (loadedUser) {
+            // User loaded successfully - trigger userLoaded event so AbpProvider updates state
+            // This ensures userRef.current is updated before we fetch config
+            userManager.events.load(loadedUser);
+          }
+        }
+
         // Refresh application configuration to get updated user info
+        // The token should now be available in the interceptor
         const appConfig =
           await applicationConfigurationService.getConfiguration();
         store.dispatch(configActions.setApplicationConfiguration(appConfig));
@@ -162,6 +176,7 @@ export function usePasswordFlow() {
       store,
       options.redirectUrl,
       navigate,
+      userManager,
     ]
   );
 
