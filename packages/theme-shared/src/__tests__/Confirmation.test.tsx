@@ -2,9 +2,11 @@ import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { ChakraProvider } from '@chakra-ui/react';
 import { ConfirmationProvider, useConfirmation } from '../contexts/confirmation.context';
 import { ConfirmationDialog } from '../components/confirmation/Confirmation';
 import { Toaster } from '../models';
+import { abpSystem } from '../theme';
 
 // Mock @abpjs/core
 vi.mock('@abpjs/core', () => ({
@@ -70,24 +72,28 @@ describe('ConfirmationDialog', () => {
     onResult?: (status: Toaster.Status) => void
   ) => {
     return render(
-      <ConfirmationProvider>
-        <ConfirmationTrigger
-          severity={severity}
-          message={message}
-          title={title}
-          options={options}
-          onResult={onResult}
-        />
-        <ConfirmationDialog />
-      </ConfirmationProvider>
+      <ChakraProvider value={abpSystem}>
+        <ConfirmationProvider>
+          <ConfirmationTrigger
+            severity={severity}
+            message={message}
+            title={title}
+            options={options}
+            onResult={onResult}
+          />
+          <ConfirmationDialog />
+        </ConfirmationProvider>
+      </ChakraProvider>
     );
   };
 
   it('should render without crashing when no confirmation', () => {
     render(
-      <ConfirmationProvider>
-        <ConfirmationDialog />
-      </ConfirmationProvider>
+      <ChakraProvider value={abpSystem}>
+        <ConfirmationProvider>
+          <ConfirmationDialog />
+        </ConfirmationProvider>
+      </ChakraProvider>
     );
   });
 
@@ -256,9 +262,11 @@ describe('ConfirmationDialog', () => {
 
   it('should accept custom className', () => {
     render(
-      <ConfirmationProvider>
-        <ConfirmationDialog className="custom-class" />
-      </ConfirmationProvider>
+      <ChakraProvider value={abpSystem}>
+        <ConfirmationProvider>
+          <ConfirmationDialog className="custom-class" />
+        </ConfirmationProvider>
+      </ChakraProvider>
     );
     // Should render without errors
   });

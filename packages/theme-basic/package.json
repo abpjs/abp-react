@@ -33,13 +33,11 @@
     "react-router-dom": ">=6.0.0"
   },
   "dependencies": {
-    "@chakra-ui/icons": "^2.2.4",
-    "@chakra-ui/react": "^2.8.0",
+    "@chakra-ui/react": "^3.2.0",
     "@emotion/react": "^11.11.0",
-    "@emotion/styled": "^11.11.0",
     "@abpjs/core": "workspace:*",
     "@abpjs/theme-shared": "workspace:*",
-    "framer-motion": "^10.16.0",
+    "lucide-react": "^0.400.0",
     "react-hook-form": "^7.48.0"
   },
   "devDependencies": {

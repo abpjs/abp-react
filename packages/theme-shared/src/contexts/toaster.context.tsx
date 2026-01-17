@@ -47,10 +47,16 @@ export interface ToasterContextValue {
 const ToasterContext = createContext<ToasterContextValue | null>(null);
 
 /**
+ * Counter for generating unique toast IDs.
+ */
+let toastCounter = 0;
+
+/**
  * Generate a unique ID for toasts.
  */
 function generateId(): string {
-  return `toast-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  toastCounter += 1;
+  return `toast-${Date.now()}-${toastCounter}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
 /**

@@ -3,6 +3,7 @@
 > Shared UI components and services for ABP Framework in React
 
 [![npm version](https://img.shields.io/npm/v/@abpjs/theme-shared.svg)](https://www.npmjs.com/package/@abpjs/theme-shared)
+[![documentation](https://img.shields.io/badge/docs-abpjs.io-blue.svg)](https://docs.abpjs.io/docs/packages/theme-shared/overview)
 [![License: LGPL-3.0](https://img.shields.io/badge/License-LGPL--3.0-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 
 ## Overview
@@ -17,7 +18,8 @@ This package is a React translation of the original `@abp/ng.theme.shared` Angul
 - **Confirmation Dialogs** - Promise-based confirmation modals
 - **Modal Management** - Centralized modal service
 - **Error Handling** - Global error handler with user-friendly messages
-- **Theme Configuration** - Chakra UI theme customization
+- **Theme Configuration** - Chakra UI v3 theme customization with `createSystem`
+- **Color Mode** - Built-in light/dark theme support (opt-in)
 - **Utility Functions** - Common UI utilities and helpers
 - **TypeScript** - Full type safety with comprehensive definitions
 
@@ -39,8 +41,10 @@ pnpm add @abpjs/theme-shared
 This package requires the following peer dependencies:
 
 ```bash
-npm install @abpjs/core @chakra-ui/react @emotion/react @emotion/styled framer-motion
+npm install @abpjs/core @chakra-ui/react @emotion/react lucide-react
 ```
+
+> **Note:** Chakra UI v3 no longer requires `@emotion/styled` or `framer-motion` as peer dependencies.
 
 ## Quick Start
 
@@ -51,20 +55,19 @@ Wrap your application with the ThemeSharedProvider:
 ```tsx
 import { ThemeSharedProvider } from '@abpjs/theme-shared';
 import { CoreProvider } from '@abpjs/core';
-import { ChakraProvider } from '@chakra-ui/react';
 
 function App() {
   return (
-    <ChakraProvider>
-      <CoreProvider environment={environment}>
-        <ThemeSharedProvider>
-          <YourApp />
-        </ThemeSharedProvider>
-      </CoreProvider>
-    </ChakraProvider>
+    <CoreProvider environment={environment}>
+      <ThemeSharedProvider>
+        <YourApp />
+      </ThemeSharedProvider>
+    </CoreProvider>
   );
 }
 ```
+
+> **Note:** `ThemeSharedProvider` includes Chakra's provider internally, so you don't need to wrap with `ChakraProvider` separately.
 
 ### 2. Show Toast Notifications
 
@@ -75,19 +78,19 @@ function MyComponent() {
   const toaster = useToaster();
 
   const handleSuccess = () => {
-    toaster.success('Operation completed successfully!');
+    toaster.success('Operation completed successfully!', 'Success');
   };
 
   const handleError = () => {
-    toaster.error('Something went wrong!');
+    toaster.error('Something went wrong!', 'Error');
   };
 
   const handleWarning = () => {
-    toaster.warn('Please review your input.');
+    toaster.warn('Please review your input.', 'Warning');
   };
 
   const handleInfo = () => {
-    toaster.info('Did you know? You can customize this.');
+    toaster.info('Did you know? You can customize this.', 'Info');
   };
 
   return (
@@ -104,21 +107,22 @@ function MyComponent() {
 ### 3. Show Confirmation Dialogs
 
 ```tsx
-import { useConfirmation } from '@abpjs/theme-shared';
+import { useConfirmation, Toaster } from '@abpjs/theme-shared';
 
 function DeleteButton({ onDelete }) {
   const confirmation = useConfirmation();
 
   const handleClick = async () => {
-    const confirmed = await confirmation.confirm({
-      title: 'Delete Item',
-      message: 'Are you sure you want to delete this item? This action cannot be undone.',
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      severity: 'error',
-    });
+    const status = await confirmation.warn(
+      'Are you sure you want to delete this item? This action cannot be undone.',
+      'Delete Item',
+      {
+        yesCopy: 'Delete',
+        cancelCopy: 'Cancel',
+      }
+    );
 
-    if (confirmed) {
+    if (status === Toaster.Status.confirm) {
       onDelete();
     }
   };
@@ -129,45 +133,38 @@ function DeleteButton({ onDelete }) {
 
 ## Components
 
-### Toast / Toaster
+### Toast / ToastContainer
 
 Toast notification component and container.
 
 ```tsx
-import { Toaster, Toast } from '@abpjs/theme-shared';
+import { ToastContainer } from '@abpjs/theme-shared';
 
-// The Toaster component is usually placed at the root level
+// The ToastContainer is usually placed at the root level
+// ThemeSharedProvider includes it by default when renderToasts={true}
 function App() {
   return (
-    <ThemeSharedProvider>
+    <ThemeSharedProvider renderToasts={true}>
       <YourApp />
-      <Toaster />  {/* Toast container */}
     </ThemeSharedProvider>
   );
 }
 ```
 
-### Confirmation
+### ConfirmationDialog
 
 Confirmation dialog component.
 
 ```tsx
-import { Confirmation } from '@abpjs/theme-shared';
+import { ConfirmationDialog } from '@abpjs/theme-shared';
 
 // Usually managed by the provider, but can be used directly
-<Confirmation
-  isOpen={isOpen}
-  onClose={handleClose}
-  onConfirm={handleConfirm}
-  title="Confirm Action"
-  message="Are you sure?"
-  severity="warning"
-/>
+// ThemeSharedProvider includes it by default when renderConfirmation={true}
 ```
 
 ### Modal
 
-Generic modal component for custom dialogs.
+Generic modal component for custom dialogs. Uses Chakra UI v3 Dialog internally.
 
 ```tsx
 import { Modal } from '@abpjs/theme-shared';
@@ -175,10 +172,16 @@ import { Modal } from '@abpjs/theme-shared';
 function CustomModal({ isOpen, onClose }) {
   return (
     <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Custom Modal"
+      visible={isOpen}
+      onVisibleChange={(open) => !open && onClose()}
+      header="Custom Modal"
       size="md"
+      footer={
+        <>
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button colorPalette="blue">Save</Button>
+        </>
+      }
     >
       <p>Your modal content here</p>
     </Modal>
@@ -190,10 +193,16 @@ function CustomModal({ isOpen, onClose }) {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `isOpen` | `boolean` | - | Controls modal visibility |
-| `onClose` | `() => void` | - | Callback when modal closes |
-| `title` | `string` | - | Modal header title |
-| `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Modal size |
+| `visible` | `boolean` | - | Controls modal visibility |
+| `onVisibleChange` | `(visible: boolean) => void` | - | Callback when visibility changes |
+| `header` | `ReactNode` | - | Modal header content |
+| `footer` | `ReactNode` | - | Modal footer content |
+| `size` | `'sm' \| 'md' \| 'lg' \| 'xl' \| 'full'` | `'md'` | Modal size |
+| `centered` | `boolean` | `true` | Center modal vertically |
+| `closeOnOverlayClick` | `boolean` | `true` | Close when clicking outside |
+| `closeOnEscape` | `boolean` | `true` | Close on Escape key |
+| `showCloseButton` | `boolean` | `true` | Show close button in header |
+| `scrollBehavior` | `'inside' \| 'outside'` | `'inside'` | Scroll behavior for content |
 | `children` | `ReactNode` | - | Modal content |
 
 ## Hooks
@@ -209,24 +218,22 @@ function MyComponent() {
   const toaster = useToaster();
 
   // Success toast
-  toaster.success('Saved successfully!');
+  toaster.success('Saved successfully!', 'Success');
 
   // Error toast
-  toaster.error('Failed to save.');
+  toaster.error('Failed to save.', 'Error');
 
   // Warning toast
-  toaster.warn('Please check your input.');
+  toaster.warn('Please check your input.', 'Warning');
 
   // Info toast
-  toaster.info('New updates available.');
+  toaster.info('New updates available.', 'Info');
 
-  // Custom toast with options
-  toaster.show({
-    title: 'Custom Title',
-    message: 'Custom message here',
-    severity: 'success',
-    duration: 5000,
-    isClosable: true,
+  // With options
+  toaster.success('Custom message', 'Title', {
+    life: 5000,      // Duration in ms
+    sticky: false,   // If true, won't auto-dismiss
+    closable: true,  // Show close button
   });
 }
 ```
@@ -235,46 +242,43 @@ function MyComponent() {
 
 | Method | Description |
 |--------|-------------|
-| `success(message, options?)` | Show success notification |
-| `error(message, options?)` | Show error notification |
-| `warn(message, options?)` | Show warning notification |
-| `info(message, options?)` | Show info notification |
-| `show(options)` | Show custom notification |
+| `success(message, title?, options?)` | Show success notification |
+| `error(message, title?, options?)` | Show error notification |
+| `warn(message, title?, options?)` | Show warning notification |
+| `info(message, title?, options?)` | Show info notification |
 | `clear()` | Clear all notifications |
+| `remove(id)` | Remove specific notification |
 
 ### useConfirmation
 
 Hook for showing confirmation dialogs.
 
 ```tsx
-import { useConfirmation } from '@abpjs/theme-shared';
+import { useConfirmation, Toaster } from '@abpjs/theme-shared';
 
 function MyComponent() {
   const confirmation = useConfirmation();
 
   const handleDelete = async () => {
-    const result = await confirmation.confirm({
-      title: 'Delete',
-      message: 'Are you sure?',
-      confirmText: 'Yes, Delete',
-      cancelText: 'No, Keep',
-      severity: 'error',
-    });
+    const status = await confirmation.warn(
+      'Are you sure?',
+      'Delete',
+      {
+        yesCopy: 'Yes, Delete',
+        cancelCopy: 'No, Keep',
+      }
+    );
 
-    if (result) {
+    if (status === Toaster.Status.confirm) {
       // User confirmed
       performDelete();
     }
   };
 
-  // Shorthand methods
-  const handleWarn = async () => {
-    await confirmation.warn('Warning!', 'This may cause issues.');
-  };
-
-  const handleError = async () => {
-    await confirmation.error('Error!', 'An error occurred.');
-  };
+  // Different severity methods
+  const showInfo = () => confirmation.info('Info message', 'Info');
+  const showSuccess = () => confirmation.success('Success!', 'Success');
+  const showError = () => confirmation.error('Error occurred', 'Error');
 }
 ```
 
@@ -282,156 +286,127 @@ function MyComponent() {
 
 ```typescript
 interface ConfirmationOptions {
-  title: string;
-  message: string;
-  confirmText?: string;    // Default: 'Confirm'
-  cancelText?: string;     // Default: 'Cancel'
-  severity?: 'info' | 'warning' | 'error';  // Default: 'info'
-  hideCancelButton?: boolean;
+  yesCopy?: string;       // Default: 'Yes' (localized)
+  cancelCopy?: string;    // Default: 'Cancel' (localized)
+  hideYesBtn?: boolean;   // Hide confirm button
+  hideCancelBtn?: boolean; // Hide cancel button
 }
 ```
-
-### useModal
-
-Hook for programmatic modal management.
-
-```tsx
-import { useModal } from '@abpjs/theme-shared';
-
-function MyComponent() {
-  const modal = useModal();
-
-  const openCustomModal = () => {
-    modal.open({
-      title: 'My Modal',
-      content: <CustomContent />,
-      size: 'lg',
-      onClose: () => console.log('Modal closed'),
-    });
-  };
-
-  return <button onClick={openCustomModal}>Open Modal</button>;
-}
-```
-
-## Services
-
-### ErrorHandler
-
-Global error handling service.
-
-```tsx
-import { ErrorHandler, useErrorHandler } from '@abpjs/theme-shared';
-
-// Using the hook
-function MyComponent() {
-  const errorHandler = useErrorHandler();
-
-  const handleApiCall = async () => {
-    try {
-      await apiCall();
-    } catch (error) {
-      errorHandler.handle(error);
-    }
-  };
-}
-
-// The error handler automatically:
-// - Shows user-friendly error messages
-// - Handles ABP error responses
-// - Logs errors for debugging
-// - Supports custom error handling
-```
-
-**Error Types Handled:**
-
-- ABP API errors (validation, business logic)
-- HTTP errors (401, 403, 404, 500, etc.)
-- Network errors
-- Unknown errors
 
 ## Theme Configuration
 
-### Custom Theme
+### Custom Theme with Chakra v3
 
-Extend the default theme:
+Customize the theme using `defineConfig`:
 
 ```tsx
-import { extendTheme, ChakraProvider } from '@chakra-ui/react';
-import { abpTheme } from '@abpjs/theme-shared';
+import { ThemeSharedProvider, defineConfig } from '@abpjs/theme-shared';
 
-const customTheme = extendTheme({
-  ...abpTheme,
-  colors: {
-    ...abpTheme.colors,
-    brand: {
-      50: '#e3f2fd',
-      500: '#2196f3',
-      600: '#1e88e5',
+const customTheme = defineConfig({
+  theme: {
+    tokens: {
+      colors: {
+        brand: {
+          50: { value: '#e3f2fd' },
+          100: { value: '#bbdefb' },
+          500: { value: '#2196f3' },
+          600: { value: '#1e88e5' },
+          // ... more shades
+        },
+      },
+    },
+    semanticTokens: {
+      colors: {
+        brand: {
+          solid: { value: '{colors.brand.500}' },
+          contrast: { value: 'white' },
+          fg: { value: '{colors.brand.700}' },
+        },
+      },
     },
   },
 });
 
 function App() {
   return (
-    <ChakraProvider theme={customTheme}>
-      <ThemeSharedProvider>
-        <YourApp />
-      </ThemeSharedProvider>
-    </ChakraProvider>
+    <ThemeSharedProvider themeOverrides={customTheme}>
+      <YourApp />
+    </ThemeSharedProvider>
   );
 }
 ```
 
-### Toast Styling
+### Color Mode (Dark/Light Theme)
 
-Customize toast appearance:
+Enable color mode support:
 
 ```tsx
-import { useToaster } from '@abpjs/theme-shared';
+import { ThemeSharedProvider } from '@abpjs/theme-shared';
 
-function MyComponent() {
-  const toaster = useToaster();
-
-  toaster.show({
-    title: 'Custom Toast',
-    message: 'With custom styling',
-    severity: 'success',
-    position: 'top-right',
-    duration: 3000,
-    isClosable: true,
-    variant: 'solid',  // 'solid' | 'subtle' | 'left-accent' | 'top-accent'
-  });
+function App() {
+  return (
+    <ThemeSharedProvider
+      enableColorMode={true}
+      defaultColorMode="light" // 'light' | 'dark' | 'system'
+    >
+      <YourApp />
+    </ThemeSharedProvider>
+  );
 }
 ```
+
+Use color mode in components:
+
+```tsx
+import { useColorMode, ColorModeButton } from '@abpjs/theme-shared';
+
+function Header() {
+  const { colorMode, toggleColorMode } = useColorMode();
+
+  return (
+    <header>
+      <span>Current mode: {colorMode}</span>
+      <ColorModeButton /> {/* Pre-built toggle button */}
+    </header>
+  );
+}
+```
+
+## ThemeSharedProvider Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | - | Child components |
+| `renderToasts` | `boolean` | `true` | Render ToastContainer |
+| `renderConfirmation` | `boolean` | `true` | Render ConfirmationDialog |
+| `themeOverrides` | `ThemeOverride` | - | Custom theme configuration |
+| `toastPosition` | `string` | `'bottom-right'` | Toast position |
+| `enableColorMode` | `boolean` | `false` | Enable dark/light mode |
+| `defaultColorMode` | `'light' \| 'dark' \| 'system'` | `'light'` | Default color mode |
 
 ## Data Models
 
 ### Toaster Types
 
 ```typescript
-interface ToasterOptions {
-  title?: string;
-  message: string;
-  severity: 'success' | 'error' | 'warning' | 'info';
-  duration?: number;
-  isClosable?: boolean;
-  position?: 'top' | 'top-right' | 'top-left' | 'bottom' | 'bottom-right' | 'bottom-left';
-  variant?: 'solid' | 'subtle' | 'left-accent' | 'top-accent';
-}
-```
+namespace Toaster {
+  interface Toast {
+    id: string;
+    message: string;
+    title?: string;
+    severity: 'info' | 'success' | 'warn' | 'error';
+    life?: number;
+    sticky?: boolean;
+    closable?: boolean;
+    messageLocalizationParams?: string[];
+    titleLocalizationParams?: string[];
+  }
 
-### Confirmation Types
-
-```typescript
-interface ConfirmationOptions {
-  title: string;
-  message: string;
-  confirmText?: string;
-  cancelText?: string;
-  severity?: 'info' | 'warning' | 'error';
-  hideCancelButton?: boolean;
-  icon?: React.ReactNode;
+  enum Status {
+    confirm = 'confirm',
+    reject = 'reject',
+    dismiss = 'dismiss',
+  }
 }
 ```
 
@@ -441,31 +416,45 @@ Full integration example:
 
 ```tsx
 import { BrowserRouter } from 'react-router-dom';
-import { ChakraProvider } from '@chakra-ui/react';
 import { CoreProvider } from '@abpjs/core';
 import {
   ThemeSharedProvider,
   useToaster,
   useConfirmation,
-  useErrorHandler,
+  Toaster,
+  defineConfig,
 } from '@abpjs/theme-shared';
 
 const environment = {
   // Your ABP configuration
 };
 
+// Optional: Custom theme
+const customTheme = defineConfig({
+  theme: {
+    tokens: {
+      colors: {
+        brand: {
+          500: { value: '#6366f1' }, // Custom primary color
+        },
+      },
+    },
+  },
+});
+
 // Main App
 function App() {
   return (
-    <ChakraProvider>
-      <CoreProvider environment={environment}>
-        <ThemeSharedProvider>
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-        </ThemeSharedProvider>
-      </CoreProvider>
-    </ChakraProvider>
+    <CoreProvider environment={environment}>
+      <ThemeSharedProvider
+        themeOverrides={customTheme}
+        enableColorMode={true}
+      >
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </ThemeSharedProvider>
+    </CoreProvider>
   );
 }
 
@@ -473,31 +462,29 @@ function App() {
 function UserActions({ user }) {
   const toaster = useToaster();
   const confirmation = useConfirmation();
-  const errorHandler = useErrorHandler();
 
   const handleSave = async () => {
     try {
       await saveUser(user);
-      toaster.success('User saved successfully!');
+      toaster.success('User saved successfully!', 'Success');
     } catch (error) {
-      errorHandler.handle(error);
+      toaster.error(error.message, 'Error');
     }
   };
 
   const handleDelete = async () => {
-    const confirmed = await confirmation.confirm({
-      title: 'Delete User',
-      message: `Are you sure you want to delete ${user.name}?`,
-      severity: 'error',
-      confirmText: 'Delete',
-    });
+    const status = await confirmation.warn(
+      `Are you sure you want to delete ${user.name}?`,
+      'Delete User',
+      { yesCopy: 'Delete' }
+    );
 
-    if (confirmed) {
+    if (status === Toaster.Status.confirm) {
       try {
         await deleteUser(user.id);
-        toaster.success('User deleted!');
+        toaster.success('User deleted!', 'Success');
       } catch (error) {
-        errorHandler.handle(error);
+        toaster.error(error.message, 'Error');
       }
     }
   };
@@ -513,30 +500,52 @@ function UserActions({ user }) {
 export default App;
 ```
 
-## Utilities
+## Migration from Chakra UI v2
 
-### Style Utilities
+If you're upgrading from a previous version that used Chakra UI v2:
+
+### Key Changes
+
+1. **No separate ChakraProvider** - `ThemeSharedProvider` now includes it
+2. **Theme configuration** - Use `defineConfig()` instead of `extendTheme()`
+3. **Modal API** - Use `visible`/`onVisibleChange` instead of `isOpen`/`onClose`
+4. **Color tokens** - Use `{ value: '#color' }` format in theme tokens
+5. **Boolean props** - `isDisabled` → `disabled`, `isLoading` → `loading`
+6. **Color scheme** - `colorScheme` → `colorPalette`
+7. **Icons** - Use `lucide-react` instead of `@chakra-ui/icons`
+
+### Example Migration
 
 ```tsx
-import { styleUtils } from '@abpjs/theme-shared';
+// Before (Chakra v2)
+<Modal isOpen={isOpen} onClose={onClose} isCentered>
+  <ModalOverlay />
+  <ModalContent>
+    <ModalHeader>Title</ModalHeader>
+    <ModalBody>Content</ModalBody>
+  </ModalContent>
+</Modal>
 
-// Common style helpers
-const cardStyle = styleUtils.card();
-const shadowStyle = styleUtils.shadow('md');
-const responsiveWidth = styleUtils.responsive({ base: '100%', md: '50%' });
+// After (Chakra v3 via @abpjs/theme-shared)
+<Modal
+  visible={isOpen}
+  onVisibleChange={(open) => !open && onClose()}
+  header="Title"
+  centered
+>
+  Content
+</Modal>
 ```
 
-### Common Helpers
+## Documentation
 
-```tsx
-import { helpers } from '@abpjs/theme-shared';
+For comprehensive documentation, visit [docs.abpjs.io](https://docs.abpjs.io):
 
-// Format error messages
-const message = helpers.formatError(error);
-
-// Check if error is ABP error
-const isAbpError = helpers.isAbpError(error);
-```
+- **[Package Documentation](https://docs.abpjs.io/docs/packages/theme-shared/overview)** - Full API reference and examples
+- **[Toaster](https://docs.abpjs.io/docs/packages/theme-shared/toaster)** - Toast notifications guide
+- **[Confirmation](https://docs.abpjs.io/docs/packages/theme-shared/confirmation)** - Confirmation dialogs guide
+- **[Getting Started](https://docs.abpjs.io/docs/getting-started/installation)** - Installation and setup guide
+- **[All Packages](https://docs.abpjs.io/docs/)** - Browse all ABP React packages
 
 ## Related Packages
 
@@ -548,12 +557,12 @@ const isAbpError = helpers.isAbpError(error);
 
 ## Contributing
 
-This package is part of the [ABP React](https://github.com/anthropics/abp-react) monorepo. Contributions are welcome!
+This package is part of the [ABP React](https://github.com/abpjs/abp-react) monorepo. Contributions are welcome!
 
 ## License
 
-LGPL-3.0 - See [LICENSE](https://github.com/anthropics/abp-react/blob/main/LICENSE) for details.
+LGPL-3.0 - See [LICENSE](https://github.com/abpjs/abp-react/blob/main/LICENSE) for details.
 
 ---
 
-**[View Full Documentation](https://github.com/anthropics/abp-react)** | **[Report Issues](https://github.com/anthropics/abp-react/issues)**
+**[View Full Documentation](https://docs.abpjs.io/docs/packages/theme-shared/overview)** | **[Report Issues](https://github.com/abpjs/abp-react/issues)**

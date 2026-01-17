@@ -1,10 +1,11 @@
 import React, { type ReactNode } from 'react';
-import { ChakraProvider, type ThemeOverride } from '@chakra-ui/react';
+import { ChakraProvider } from '@chakra-ui/react';
 import { ToasterProvider } from '../contexts/toaster.context';
 import { ConfirmationProvider } from '../contexts/confirmation.context';
 import { ToastContainer } from '../components/toast/Toast';
 import { ConfirmationDialog } from '../components/confirmation/Confirmation';
-import { createAbpTheme, abpTheme } from '../theme';
+import { createAbpSystem, abpSystem, type ThemeOverride } from '../theme';
+import { ColorModeProvider } from '../components/ui/color-mode';
 
 export interface ThemeSharedProviderProps {
   children: ReactNode;
@@ -24,17 +25,25 @@ export interface ThemeSharedProviderProps {
    * Custom theme overrides to merge with the default ABP theme.
    * Use this to customize colors, fonts, component styles, etc.
    *
+   * In Chakra v3, use defineConfig() to create overrides:
+   *
    * @example
    * ```tsx
-   * <ThemeSharedProvider
-   *   themeOverrides={{
-   *     colors: {
-   *       brand: {
-   *         500: '#ff0000',
+   * import { defineConfig } from '@abpjs/theme-shared';
+   *
+   * const customConfig = defineConfig({
+   *   theme: {
+   *     tokens: {
+   *       colors: {
+   *         brand: {
+   *           500: { value: '#ff0000' },
+   *         },
    *       },
    *     },
-   *   }}
-   * >
+   *   },
+   * });
+   *
+   * <ThemeSharedProvider themeOverrides={customConfig}>
    *   <App />
    * </ThemeSharedProvider>
    * ```
@@ -45,6 +54,17 @@ export interface ThemeSharedProviderProps {
    * @default 'bottom-right'
    */
   toastPosition?: 'top' | 'top-right' | 'top-left' | 'bottom' | 'bottom-right' | 'bottom-left';
+  /**
+   * Whether to enable color mode (light/dark theme switching).
+   * When enabled, the ColorModeProvider from next-themes is included.
+   * @default false
+   */
+  enableColorMode?: boolean;
+  /**
+   * Default color mode when enableColorMode is true.
+   * @default 'light'
+   */
+  defaultColorMode?: 'light' | 'dark' | 'system';
 }
 
 /**
@@ -56,31 +76,40 @@ export interface ThemeSharedProviderProps {
  *
  * This provider should be nested inside AbpProvider from @abpjs/core.
  *
- * ## Theme Customization
+ * ## Theme Customization (Chakra v3)
  *
  * You can customize the Chakra UI theme by passing `themeOverrides`:
  *
  * ```tsx
- * const customTheme = {
- *   colors: {
- *     brand: {
- *       500: '#your-brand-color',
- *     },
- *   },
- *   fonts: {
- *     heading: 'Your Font, sans-serif',
- *     body: 'Your Font, sans-serif',
- *   },
- *   components: {
- *     Button: {
- *       defaultProps: {
- *         colorScheme: 'brand',
+ * import { defineConfig } from '@abpjs/theme-shared';
+ *
+ * const customConfig = defineConfig({
+ *   theme: {
+ *     tokens: {
+ *       colors: {
+ *         brand: {
+ *           500: { value: '#your-brand-color' },
+ *         },
+ *       },
+ *       fonts: {
+ *         heading: { value: 'Your Font, sans-serif' },
+ *         body: { value: 'Your Font, sans-serif' },
  *       },
  *     },
  *   },
- * };
+ * });
  *
- * <ThemeSharedProvider themeOverrides={customTheme}>
+ * <ThemeSharedProvider themeOverrides={customConfig}>
+ *   <App />
+ * </ThemeSharedProvider>
+ * ```
+ *
+ * ## Color Mode (Optional, v3 feature)
+ *
+ * Enable dark mode support by setting `enableColorMode`:
+ *
+ * ```tsx
+ * <ThemeSharedProvider enableColorMode defaultColorMode="system">
  *   <App />
  * </ThemeSharedProvider>
  * ```
@@ -107,19 +136,32 @@ export function ThemeSharedProvider({
   renderConfirmation = true,
   themeOverrides,
   toastPosition = 'bottom-right',
+  enableColorMode = false,
+  defaultColorMode = 'light',
 }: ThemeSharedProviderProps): React.ReactElement {
-  // Create theme with overrides if provided
-  const theme = themeOverrides ? createAbpTheme(themeOverrides) : abpTheme;
+  // Create system with overrides if provided
+  const system = themeOverrides ? createAbpSystem(themeOverrides) : abpSystem;
+
+  // Core content with toast and confirmation providers
+  const content = (
+    <ToasterProvider>
+      <ConfirmationProvider>
+        {children}
+        {renderToasts && <ToastContainer position={toastPosition} />}
+        {renderConfirmation && <ConfirmationDialog />}
+      </ConfirmationProvider>
+    </ToasterProvider>
+  );
 
   return (
-    <ChakraProvider theme={theme}>
-      <ToasterProvider>
-        <ConfirmationProvider>
-          {children}
-          {renderToasts && <ToastContainer position={toastPosition} />}
-          {renderConfirmation && <ConfirmationDialog />}
-        </ConfirmationProvider>
-      </ToasterProvider>
+    <ChakraProvider value={system}>
+      {enableColorMode ? (
+        <ColorModeProvider defaultTheme={defaultColorMode} forcedTheme={enableColorMode ? undefined : 'light'}>
+          {content}
+        </ColorModeProvider>
+      ) : (
+        content
+      )}
     </ChakraProvider>
   );
 }

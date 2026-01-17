@@ -1,17 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocalization } from '@abpjs/core';
-import { Modal } from '@abpjs/theme-shared';
-import {
-  Box,
-  Text,
-  Link,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  VStack,
-} from '@chakra-ui/react';
+import { Modal, Button, FormField } from '@abpjs/theme-shared';
+import { Box, Text, Link, Input, VStack } from '@chakra-ui/react';
 import type { TenantInfo } from '../../models';
 
 /**
@@ -63,13 +54,10 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
   /**
    * Save the selected tenant
    */
-  const onSave = useCallback(
-    (data: TenantInfo) => {
-      setSelected(data.name ? data : null);
-      setModalVisible(false);
-    },
-    []
-  );
+  const onSave = useCallback((data: TenantInfo) => {
+    setSelected(data.name ? data : null);
+    setModalVisible(false);
+  }, []);
 
   /**
    * Close the modal without saving
@@ -120,35 +108,21 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
         header={t('AbpUiMultiTenancy::SwitchTenant') || 'Switch Tenant'}
         footer={
           <>
-            <Button
-              variant="ghost"
-              colorScheme="gray"
-              onClick={onClose}
-            >
+            <Button variant="ghost" colorPalette="gray" onClick={onClose}>
               {t('AbpTenantManagement::Cancel')}
             </Button>
-            <Button
-              colorScheme="blue"
-              onClick={handleSubmit(onSave)}
-              leftIcon={<CheckIcon />}
-            >
+            <Button colorPalette="blue" onClick={handleSubmit(onSave)}>
+              <CheckIcon />
               {t('AbpTenantManagement::Save')}
             </Button>
           </>
         }
       >
         <form onSubmit={handleSubmit(onSave)}>
-          <VStack spacing={4} align="stretch">
-            <FormControl>
-              <FormLabel htmlFor="tenant-name">
-                {t('AbpUiMultiTenancy::Name')}
-              </FormLabel>
-              <Input
-                id="tenant-name"
-                type="text"
-                {...register('name')}
-              />
-            </FormControl>
+          <VStack gap={4} align="stretch">
+            <FormField label={t('AbpUiMultiTenancy::Name')} htmlFor="tenant-name">
+              <Input id="tenant-name" type="text" {...register('name')} />
+            </FormField>
             <Text fontSize="sm" color="gray.600">
               {t('AbpUiMultiTenancy::SwitchTenantHint')}
             </Text>

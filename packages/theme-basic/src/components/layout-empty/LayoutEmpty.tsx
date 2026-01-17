@@ -21,9 +21,6 @@ export interface LayoutEmptyProps {
  * ```
  */
 export function LayoutEmpty({ children }: LayoutEmptyProps): React.ReactElement {
-  // Static type for layout system
-  LayoutEmpty.type = eLayoutType.empty;
-
   return (
     <Box minH="100vh">
       {children || <Outlet />}

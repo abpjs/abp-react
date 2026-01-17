@@ -3,21 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink } from 'react-router-dom';
 import { useLocalization } from '@abpjs/core';
-import {
-  Box,
-  Button,
-  Checkbox,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Heading,
-  Input,
-  Link,
-  VStack,
-  HStack,
-  Alert,
-  AlertIcon,
-} from '@chakra-ui/react';
+import { Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
+import { Box, Heading, Input, Link, VStack, HStack } from '@chakra-ui/react';
 import { TenantBox } from '../TenantBox';
 import { usePasswordFlow } from '../../hooks';
 import type { LoginFormData } from '../../models';
@@ -144,70 +131,62 @@ export function LoginForm({
 
         {/* Error Alert */}
         {error && (
-          <Alert status="error" mb={4} borderRadius="md">
-            <AlertIcon />
+          <Alert status="error" mb={4}>
             {error}
           </Alert>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <VStack spacing={4} align="stretch">
+          <VStack gap={4} align="stretch">
             {/* Username Field */}
-            <FormControl isInvalid={!!errors.username}>
-              <FormLabel htmlFor="login-input-user-name-or-email-address">
-                {t('AbpAccount::UserNameOrEmailAddress')}
-              </FormLabel>
+            <FormField
+              label={t('AbpAccount::UserNameOrEmailAddress')}
+              htmlFor="login-input-user-name-or-email-address"
+              invalid={!!errors.username}
+              errorText={errors.username?.message}
+            >
               <Input
                 id="login-input-user-name-or-email-address"
                 type="text"
                 autoComplete="username"
                 {...register('username')}
               />
-              <FormErrorMessage>
-                {errors.username?.message}
-              </FormErrorMessage>
-            </FormControl>
+            </FormField>
 
             {/* Password Field */}
-            <FormControl isInvalid={!!errors.password}>
-              <FormLabel htmlFor="login-input-password">
-                {t('AbpAccount::Password')}
-              </FormLabel>
+            <FormField
+              label={t('AbpAccount::Password')}
+              htmlFor="login-input-password"
+              invalid={!!errors.password}
+              errorText={errors.password?.message}
+            >
               <Input
                 id="login-input-password"
                 type="password"
                 autoComplete="current-password"
                 {...register('password')}
               />
-              <FormErrorMessage>
-                {errors.password?.message}
-              </FormErrorMessage>
-            </FormControl>
+            </FormField>
 
             {/* Remember Me Checkbox */}
-            <FormControl>
-              <Checkbox
-                id="login-input-remember-me"
-                {...register('remember')}
-              >
-                {t('AbpAccount::RememberMe')}
-              </Checkbox>
-            </FormControl>
+            <Checkbox id="login-input-remember-me" {...register('remember')}>
+              {t('AbpAccount::RememberMe')}
+            </Checkbox>
 
             {/* Action Buttons */}
-            <HStack spacing={2} pt={2}>
+            <HStack gap={2} pt={2}>
               <Button
                 type="button"
                 variant="outline"
-                colorScheme="gray"
-                isDisabled={isFormLoading}
+                colorPalette="gray"
+                disabled={isFormLoading}
               >
                 {t('AbpAccount::Cancel')}
               </Button>
               <Button
                 type="submit"
-                colorScheme="blue"
-                isLoading={isFormLoading}
+                colorPalette="blue"
+                loading={isFormLoading}
                 loadingText={t('AbpAccount::Login')}
               >
                 {t('AbpAccount::Login')}
@@ -219,8 +198,8 @@ export function LoginForm({
         {/* Register Link */}
         {showRegisterLink && (
           <Box pt={5}>
-            <Link as={RouterLink} to={registerUrl} color="blue.500">
-              {t('AbpAccount::Register')}
+            <Link asChild color="blue.500">
+              <RouterLink to={registerUrl}>{t('AbpAccount::Register')}</RouterLink>
             </Link>
           </Box>
         )}

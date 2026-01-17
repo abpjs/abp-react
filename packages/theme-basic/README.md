@@ -3,6 +3,7 @@
 > Basic layout components for ABP Framework in React
 
 [![npm version](https://img.shields.io/npm/v/@abpjs/theme-basic.svg)](https://www.npmjs.com/package/@abpjs/theme-basic)
+[![documentation](https://img.shields.io/badge/docs-abpjs.io-blue.svg)](https://docs.abpjs.io/docs/packages/theme-basic/overview)
 [![License: LGPL-3.0](https://img.shields.io/badge/License-LGPL--3.0-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 
 ## Overview
@@ -18,7 +19,8 @@ This package is a React translation of the original `@abp/ng.theme.basic` Angula
 - **Navigation Management** - Configurable navigation elements
 - **User Profile** - Built-in profile and password change components
 - **Responsive Design** - Mobile-friendly layouts out of the box
-- **Chakra UI** - Beautiful, accessible components
+- **Chakra UI v3** - Beautiful, accessible components with modern patterns
+- **Color Mode** - Built-in light/dark theme support (opt-in)
 - **TypeScript** - Full type safety with comprehensive definitions
 
 ## Installation
@@ -39,34 +41,35 @@ pnpm add @abpjs/theme-basic
 This package requires the following peer dependencies:
 
 ```bash
-npm install @abpjs/core @abpjs/theme-shared @chakra-ui/react @chakra-ui/icons @emotion/react @emotion/styled framer-motion react-router-dom react-hook-form
+npm install @abpjs/core @abpjs/theme-shared @chakra-ui/react @emotion/react lucide-react react-router-dom react-hook-form
 ```
+
+> **Note:** Chakra UI v3 no longer requires `@chakra-ui/icons`, `@emotion/styled`, or `framer-motion` as peer dependencies.
 
 ## Quick Start
 
-### 1. Setup the Layout Provider
+### 1. Setup the Theme Provider
 
-Wrap your application with the LayoutProvider:
+Wrap your application with the ThemeBasicProvider:
 
 ```tsx
-import { LayoutProvider } from '@abpjs/theme-basic';
+import { ThemeBasicProvider } from '@abpjs/theme-basic';
 import { CoreProvider } from '@abpjs/core';
-import { ChakraProvider } from '@chakra-ui/react';
 
 function App() {
   return (
-    <ChakraProvider>
-      <CoreProvider environment={environment}>
-        <LayoutProvider>
-          <Router>
-            <AppRoutes />
-          </Router>
-        </LayoutProvider>
-      </CoreProvider>
-    </ChakraProvider>
+    <CoreProvider environment={environment}>
+      <ThemeBasicProvider>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </ThemeBasicProvider>
+    </CoreProvider>
   );
 }
 ```
+
+> **Note:** `ThemeBasicProvider` includes Chakra's provider internally (via `ThemeSharedProvider`), so you don't need to wrap with `ChakraProvider` separately.
 
 ### 2. Use Layouts in Routes
 
@@ -202,34 +205,40 @@ function PrintablePage() {
 
 ### Profile
 
-User profile management component.
+User profile management component (modal-based).
 
 ```tsx
 import { Profile } from '@abpjs/theme-basic';
+import { useState } from 'react';
 
-function ProfilePage() {
+function ProfileButton() {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div>
-      <h1>My Profile</h1>
-      <Profile />
-    </div>
+    <>
+      <button onClick={() => setIsOpen(true)}>My Profile</button>
+      <Profile visible={isOpen} onVisibleChange={setIsOpen} />
+    </>
   );
 }
 ```
 
 ### ChangePassword
 
-Password change form component.
+Password change form component (modal-based).
 
 ```tsx
 import { ChangePassword } from '@abpjs/theme-basic';
+import { useState } from 'react';
 
-function SecurityPage() {
+function SecurityButton() {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
-    <div>
-      <h1>Security Settings</h1>
-      <ChangePassword onSuccess={() => alert('Password changed!')} />
-    </div>
+    <>
+      <button onClick={() => setIsOpen(true)}>Change Password</button>
+      <ChangePassword visible={isOpen} onVisibleChange={setIsOpen} />
+    </>
   );
 }
 ```
@@ -280,12 +289,12 @@ Access and manage navigation items.
 import { useNavigationElements } from '@abpjs/theme-basic';
 
 function NavigationMenu() {
-  const { elements, addElement, removeElement } = useNavigationElements();
+  const elements = useNavigationElements();
 
   return (
     <nav>
       {elements.map(item => (
-        <NavLink key={item.id} to={item.path}>
+        <NavLink key={item.name} to={item.path}>
           {item.name}
         </NavLink>
       ))}
@@ -299,40 +308,22 @@ function NavigationMenu() {
 ### Adding Navigation Items
 
 ```tsx
-import { useNavigationElements } from '@abpjs/theme-basic';
+import { useLayoutService } from '@abpjs/theme-basic';
 
 function ConfigureNavigation() {
-  const { addElement } = useNavigationElements();
+  const layoutService = useLayoutService();
 
   useEffect(() => {
-    addElement({
-      id: 'dashboard',
+    layoutService.addNavigationElement({
       name: 'Dashboard',
-      path: '/dashboard',
-      icon: 'HomeIcon',
+      element: <DashboardLink />,
       order: 1,
-      requiredPermission: 'MyApp.Dashboard',
     });
 
-    addElement({
-      id: 'users',
-      name: 'User Management',
-      path: '/users',
-      icon: 'UsersIcon',
+    layoutService.addNavigationElement({
+      name: 'Users',
+      element: <UsersLink />,
       order: 2,
-      requiredPermission: 'AbpIdentity.Users',
-      children: [
-        {
-          id: 'users-list',
-          name: 'Users',
-          path: '/users',
-        },
-        {
-          id: 'roles-list',
-          name: 'Roles',
-          path: '/roles',
-        },
-      ],
     });
   }, []);
 
@@ -344,14 +335,9 @@ function ConfigureNavigation() {
 
 ```typescript
 interface NavigationElement {
-  id: string;
   name: string;
-  path: string;
-  icon?: string;
+  element: ReactNode;
   order?: number;
-  requiredPermission?: string;
-  visible?: boolean;
-  children?: NavigationElement[];
 }
 ```
 
@@ -376,35 +362,61 @@ function getLayoutByKey(key: string) {
 
 ## Customization
 
-### Theme Customization
+### Theme Customization with Chakra v3
 
-Customize layouts using Chakra UI theming:
+Customize layouts using `defineConfig`:
 
 ```tsx
-import { extendTheme, ChakraProvider } from '@chakra-ui/react';
+import { ThemeBasicProvider, defineConfig } from '@abpjs/theme-basic';
 
-const theme = extendTheme({
-  colors: {
-    brand: {
-      50: '#e3f2fd',
-      100: '#bbdefb',
-      // ... more shades
-      500: '#2196f3',
-      600: '#1e88e5',
+const customTheme = defineConfig({
+  theme: {
+    tokens: {
+      colors: {
+        brand: {
+          50: { value: '#e3f2fd' },
+          100: { value: '#bbdefb' },
+          500: { value: '#2196f3' },
+          600: { value: '#1e88e5' },
+          // ... more shades
+        },
+      },
     },
-  },
-  components: {
-    // Customize layout components
+    semanticTokens: {
+      colors: {
+        brand: {
+          solid: { value: '{colors.brand.500}' },
+          contrast: { value: 'white' },
+        },
+      },
+    },
   },
 });
 
 function App() {
   return (
-    <ChakraProvider theme={theme}>
-      <LayoutProvider>
-        {/* Your app */}
-      </LayoutProvider>
-    </ChakraProvider>
+    <ThemeBasicProvider themeOverrides={customTheme}>
+      {/* Your app */}
+    </ThemeBasicProvider>
+  );
+}
+```
+
+### Color Mode (Dark/Light Theme)
+
+Enable color mode support:
+
+```tsx
+import { ThemeBasicProvider } from '@abpjs/theme-basic';
+
+function App() {
+  return (
+    <ThemeBasicProvider
+      enableColorMode={true}
+      defaultColorMode="light" // 'light' | 'dark' | 'system'
+    >
+      {/* Your app */}
+    </ThemeBasicProvider>
   );
 }
 ```
@@ -414,12 +426,12 @@ function App() {
 Create your own layouts extending the base:
 
 ```tsx
-import { Layout } from '@abpjs/theme-basic';
+import { LayoutBase } from '@abpjs/theme-basic';
 import { Box, Flex } from '@chakra-ui/react';
 
 function CustomLayout({ children }) {
   return (
-    <Layout>
+    <LayoutBase>
       <Flex direction="column" minH="100vh">
         <CustomHeader />
         <Box flex="1" p={4}>
@@ -427,10 +439,22 @@ function CustomLayout({ children }) {
         </Box>
         <CustomFooter />
       </Flex>
-    </Layout>
+    </LayoutBase>
   );
 }
 ```
+
+## ThemeBasicProvider Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | - | Child components |
+| `renderToasts` | `boolean` | `true` | Render ToastContainer |
+| `renderConfirmation` | `boolean` | `true` | Render ConfirmationDialog |
+| `themeOverrides` | `ThemeOverride` | - | Custom theme configuration |
+| `toastPosition` | `string` | `'bottom-right'` | Toast position |
+| `enableColorMode` | `boolean` | `false` | Enable dark/light mode |
+| `defaultColorMode` | `'light' \| 'dark' \| 'system'` | `'light'` | Default color mode |
 
 ## Complete Example
 
@@ -438,14 +462,14 @@ Full application setup:
 
 ```tsx
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
-import { ChakraProvider } from '@chakra-ui/react';
 import { CoreProvider } from '@abpjs/core';
 import {
-  LayoutProvider,
+  ThemeBasicProvider,
   LayoutApplication,
   LayoutAccount,
   Profile,
   ChangePassword,
+  defineConfig,
 } from '@abpjs/theme-basic';
 import { LoginPage, RegisterPage } from '@abpjs/account';
 
@@ -453,36 +477,106 @@ const environment = {
   // Your ABP configuration
 };
 
+// Optional: Custom theme
+const customTheme = defineConfig({
+  theme: {
+    tokens: {
+      colors: {
+        brand: {
+          500: { value: '#6366f1' },
+        },
+      },
+    },
+  },
+});
+
 function App() {
   return (
-    <ChakraProvider>
-      <CoreProvider environment={environment}>
-        <LayoutProvider>
-          <BrowserRouter>
-            <Routes>
-              {/* Main application routes */}
-              <Route element={<LayoutApplication><Outlet /></LayoutApplication>}>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/change-password" element={<ChangePassword />} />
-              </Route>
+    <CoreProvider environment={environment}>
+      <ThemeBasicProvider
+        themeOverrides={customTheme}
+        enableColorMode={true}
+      >
+        <BrowserRouter>
+          <Routes>
+            {/* Main application routes */}
+            <Route element={<LayoutApplication><Outlet /></LayoutApplication>}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
+            </Route>
 
-              {/* Auth routes */}
-              <Route element={<LayoutAccount><Outlet /></LayoutAccount>}>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </LayoutProvider>
-      </CoreProvider>
-    </ChakraProvider>
+            {/* Auth routes */}
+            <Route element={<LayoutAccount><Outlet /></LayoutAccount>}>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </ThemeBasicProvider>
+    </CoreProvider>
   );
 }
 
 export default App;
 ```
+
+## Migration from Chakra UI v2
+
+If you're upgrading from a previous version that used Chakra UI v2:
+
+### Key Changes
+
+1. **No separate ChakraProvider** - `ThemeBasicProvider` now includes it
+2. **Theme configuration** - Use `defineConfig()` instead of `extendTheme()`
+3. **Dependencies** - Remove `@chakra-ui/icons`, `@emotion/styled`, `framer-motion`; add `lucide-react`
+4. **Color tokens** - Use `{ value: '#color' }` format in theme tokens
+5. **Boolean props** - `isDisabled` → `disabled`, `isLoading` → `loading`
+6. **Color scheme** - `colorScheme` → `colorPalette`
+7. **Icons** - Use `lucide-react` instead of `@chakra-ui/icons`
+
+### Example Migration
+
+```tsx
+// Before (Chakra v2)
+import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import { ThemeBasicProvider } from '@abpjs/theme-basic';
+
+const theme = extendTheme({
+  colors: { brand: { 500: '#2196f3' } },
+});
+
+<ChakraProvider theme={theme}>
+  <ThemeBasicProvider>
+    <App />
+  </ThemeBasicProvider>
+</ChakraProvider>
+
+// After (Chakra v3)
+import { ThemeBasicProvider, defineConfig } from '@abpjs/theme-basic';
+
+const customTheme = defineConfig({
+  theme: {
+    tokens: {
+      colors: { brand: { 500: { value: '#2196f3' } } },
+    },
+  },
+});
+
+<ThemeBasicProvider themeOverrides={customTheme}>
+  <App />
+</ThemeBasicProvider>
+```
+
+## Documentation
+
+For comprehensive documentation, visit [docs.abpjs.io](https://docs.abpjs.io):
+
+- **[Package Documentation](https://docs.abpjs.io/docs/packages/theme-basic/overview)** - Full API reference and examples
+- **[Layouts](https://docs.abpjs.io/docs/packages/theme-basic/layouts)** - Layout components guide
+- **[Navigation](https://docs.abpjs.io/docs/packages/theme-basic/navigation)** - Navigation configuration
+- **[Profile](https://docs.abpjs.io/docs/packages/theme-basic/profile)** - Profile and password components
+- **[Getting Started](https://docs.abpjs.io/docs/getting-started/installation)** - Installation and setup guide
+- **[All Packages](https://docs.abpjs.io/docs/)** - Browse all ABP React packages
 
 ## Related Packages
 
@@ -494,12 +588,12 @@ export default App;
 
 ## Contributing
 
-This package is part of the [ABP React](https://github.com/anthropics/abp-react) monorepo. Contributions are welcome!
+This package is part of the [ABP React](https://github.com/abpjs/abp-react) monorepo. Contributions are welcome!
 
 ## License
 
-LGPL-3.0 - See [LICENSE](https://github.com/anthropics/abp-react/blob/main/LICENSE) for details.
+LGPL-3.0 - See [LICENSE](https://github.com/abpjs/abp-react/blob/main/LICENSE) for details.
 
 ---
 
-**[View Full Documentation](https://github.com/anthropics/abp-react)** | **[Report Issues](https://github.com/anthropics/abp-react/issues)**
+**[View Full Documentation](https://docs.abpjs.io/docs/packages/theme-basic/overview)** | **[Report Issues](https://github.com/abpjs/abp-react/issues)**

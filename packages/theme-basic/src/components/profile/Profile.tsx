@@ -1,23 +1,15 @@
 import React, { useEffect } from 'react';
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
   Button,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Input,
   VStack,
   HStack,
-  useToast,
+  Input,
+  Field,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { useLocalization, useProfile } from '@abpjs/core';
+import { Modal, useToaster } from '@abpjs/theme-shared';
+import { Check } from 'lucide-react';
 
 export interface ProfileProps {
   /** Whether the modal is visible */
@@ -59,7 +51,7 @@ export function Profile({
 }: ProfileProps): React.ReactElement {
   const { t } = useLocalization();
   const { profile, fetchProfile, updateProfile, loading } = useProfile();
-  const toast = useToast();
+  const toaster = useToaster();
 
   const {
     register,
@@ -102,22 +94,17 @@ export function Profile({
     try {
       await updateProfile(data);
 
-      toast({
-        title: t('AbpIdentity::ProfileUpdatedMessage') || 'Profile updated successfully',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
+      toaster.success(
+        t('AbpIdentity::ProfileUpdatedMessage') || 'Profile updated successfully',
+        t('AbpUi::Success') || 'Success'
+      );
 
       onVisibleChange(false);
     } catch (error) {
-      toast({
-        title: t('AbpIdentity::ProfileUpdateFailed') || 'Failed to update profile',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      toaster.error(
+        error instanceof Error ? error.message : 'An error occurred',
+        t('AbpIdentity::ProfileUpdateFailed') || 'Failed to update profile'
+      );
     }
   };
 
@@ -125,133 +112,133 @@ export function Profile({
     onVisibleChange(false);
   };
 
+  const modalFooter = (
+    <>
+      <Button variant="ghost" mr={3} onClick={handleClose}>
+        {t('AbpIdentity::Cancel') || 'Cancel'}
+      </Button>
+      <Button
+        colorPalette="blue"
+        type="submit"
+        loading={isSubmitting || loading}
+        form="profile-form"
+      >
+        <Check size={16} />
+        {t('AbpIdentity::Save') || 'Save'}
+      </Button>
+    </>
+  );
+
   return (
-    <Modal isOpen={visible} onClose={handleClose} isCentered size="lg">
-      <ModalOverlay />
-      <ModalContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <ModalHeader>
-            {t('AbpIdentity::PersonalInfo') || 'Personal Info'}
-          </ModalHeader>
-          <ModalCloseButton />
+    <Modal
+      visible={visible}
+      onVisibleChange={onVisibleChange}
+      header={t('AbpIdentity::PersonalInfo') || 'Personal Info'}
+      footer={modalFooter}
+      size="lg"
+      centered
+    >
+      <form id="profile-form" onSubmit={handleSubmit(onSubmit)}>
+        <VStack gap={4}>
+          {/* Username */}
+          <Field.Root invalid={!!errors.userName}>
+            <Field.Label>
+              {t('AbpIdentity::DisplayName:UserName') || 'Username'}
+              <Field.RequiredIndicator />
+            </Field.Label>
+            <Input
+              type="text"
+              {...register('userName', {
+                required:
+                  t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
+                maxLength: {
+                  value: 256,
+                  message: 'Maximum 256 characters',
+                },
+              })}
+            />
+            <Field.ErrorText>{errors.userName?.message}</Field.ErrorText>
+          </Field.Root>
 
-          <ModalBody>
-            <VStack spacing={4}>
-              {/* Username */}
-              <FormControl isInvalid={!!errors.userName}>
-                <FormLabel>
-                  {t('AbpIdentity::DisplayName:UserName') || 'Username'}
-                  <span style={{ color: 'red' }}> *</span>
-                </FormLabel>
-                <Input
-                  type="text"
-                  {...register('userName', {
-                    required:
-                      t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
-                    maxLength: {
-                      value: 256,
-                      message: 'Maximum 256 characters',
-                    },
-                  })}
-                />
-                <FormErrorMessage>{errors.userName?.message}</FormErrorMessage>
-              </FormControl>
+          {/* Name and Surname in a row */}
+          <HStack gap={4} w="full">
+            {/* Name */}
+            <Field.Root invalid={!!errors.name} flex={1}>
+              <Field.Label>
+                {t('AbpIdentity::DisplayName:Name') || 'Name'}
+              </Field.Label>
+              <Input
+                type="text"
+                {...register('name', {
+                  maxLength: {
+                    value: 64,
+                    message: 'Maximum 64 characters',
+                  },
+                })}
+              />
+              <Field.ErrorText>{errors.name?.message}</Field.ErrorText>
+            </Field.Root>
 
-              {/* Name and Surname in a row */}
-              <HStack spacing={4} w="full">
-                {/* Name */}
-                <FormControl isInvalid={!!errors.name} flex={1}>
-                  <FormLabel>
-                    {t('AbpIdentity::DisplayName:Name') || 'Name'}
-                  </FormLabel>
-                  <Input
-                    type="text"
-                    {...register('name', {
-                      maxLength: {
-                        value: 64,
-                        message: 'Maximum 64 characters',
-                      },
-                    })}
-                  />
-                  <FormErrorMessage>{errors.name?.message}</FormErrorMessage>
-                </FormControl>
+            {/* Surname */}
+            <Field.Root invalid={!!errors.surname} flex={1}>
+              <Field.Label>
+                {t('AbpIdentity::DisplayName:Surname') || 'Surname'}
+              </Field.Label>
+              <Input
+                type="text"
+                {...register('surname', {
+                  maxLength: {
+                    value: 64,
+                    message: 'Maximum 64 characters',
+                  },
+                })}
+              />
+              <Field.ErrorText>{errors.surname?.message}</Field.ErrorText>
+            </Field.Root>
+          </HStack>
 
-                {/* Surname */}
-                <FormControl isInvalid={!!errors.surname} flex={1}>
-                  <FormLabel>
-                    {t('AbpIdentity::DisplayName:Surname') || 'Surname'}
-                  </FormLabel>
-                  <Input
-                    type="text"
-                    {...register('surname', {
-                      maxLength: {
-                        value: 64,
-                        message: 'Maximum 64 characters',
-                      },
-                    })}
-                  />
-                  <FormErrorMessage>{errors.surname?.message}</FormErrorMessage>
-                </FormControl>
-              </HStack>
+          {/* Email */}
+          <Field.Root invalid={!!errors.email}>
+            <Field.Label>
+              {t('AbpIdentity::DisplayName:EmailAddress') || 'Email Address'}
+              <Field.RequiredIndicator />
+            </Field.Label>
+            <Input
+              type="email"
+              {...register('email', {
+                required:
+                  t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
+                pattern: {
+                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                  message: t('AbpIdentity::InvalidEmail') || 'Invalid email address',
+                },
+                maxLength: {
+                  value: 256,
+                  message: 'Maximum 256 characters',
+                },
+              })}
+            />
+            <Field.ErrorText>{errors.email?.message}</Field.ErrorText>
+          </Field.Root>
 
-              {/* Email */}
-              <FormControl isInvalid={!!errors.email}>
-                <FormLabel>
-                  {t('AbpIdentity::DisplayName:EmailAddress') || 'Email Address'}
-                  <span style={{ color: 'red' }}> *</span>
-                </FormLabel>
-                <Input
-                  type="email"
-                  {...register('email', {
-                    required:
-                      t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: t('AbpIdentity::InvalidEmail') || 'Invalid email address',
-                    },
-                    maxLength: {
-                      value: 256,
-                      message: 'Maximum 256 characters',
-                    },
-                  })}
-                />
-                <FormErrorMessage>{errors.email?.message}</FormErrorMessage>
-              </FormControl>
-
-              {/* Phone Number */}
-              <FormControl isInvalid={!!errors.phoneNumber}>
-                <FormLabel>
-                  {t('AbpIdentity::DisplayName:PhoneNumber') || 'Phone Number'}
-                </FormLabel>
-                <Input
-                  type="tel"
-                  {...register('phoneNumber', {
-                    maxLength: {
-                      value: 16,
-                      message: 'Maximum 16 characters',
-                    },
-                  })}
-                />
-                <FormErrorMessage>{errors.phoneNumber?.message}</FormErrorMessage>
-              </FormControl>
-            </VStack>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={handleClose}>
-              {t('AbpIdentity::Cancel') || 'Cancel'}
-            </Button>
-            <Button
-              colorScheme="blue"
-              type="submit"
-              isLoading={isSubmitting || loading}
-              leftIcon={<span>&#10003;</span>}
-            >
-              {t('AbpIdentity::Save') || 'Save'}
-            </Button>
-          </ModalFooter>
-        </form>
-      </ModalContent>
+          {/* Phone Number */}
+          <Field.Root invalid={!!errors.phoneNumber}>
+            <Field.Label>
+              {t('AbpIdentity::DisplayName:PhoneNumber') || 'Phone Number'}
+            </Field.Label>
+            <Input
+              type="tel"
+              {...register('phoneNumber', {
+                maxLength: {
+                  value: 16,
+                  message: 'Maximum 16 characters',
+                },
+              })}
+            />
+            <Field.ErrorText>{errors.phoneNumber?.message}</Field.ErrorText>
+          </Field.Root>
+        </VStack>
+      </form>
     </Modal>
   );
 }

@@ -1,18 +1,11 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { useLocalization } from '@abpjs/core';
-import { Modal } from '@abpjs/theme-shared';
+import { Modal, Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
 import {
   Box,
-  Button,
-  Checkbox,
   Flex,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
   Input,
   Spinner,
-  Alert,
-  AlertIcon,
   VStack,
 } from '@chakra-ui/react';
 import { useTenantManagement } from '../../hooks';
@@ -272,15 +265,15 @@ export function TenantManagementModal({
   /**
    * Handle use shared database toggle
    */
-  const handleUseSharedDatabaseChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setLocalUseSharedDatabase(e.target.checked);
-      if (e.target.checked) {
+  const handleUseSharedDatabaseChange = useCallback(() => {
+    setLocalUseSharedDatabase((prev) => {
+      const newValue = !prev;
+      if (newValue) {
         setLocalConnectionString('');
       }
-    },
-    []
-  );
+      return newValue;
+    });
+  }, []);
 
   /**
    * Handle connection string change
@@ -293,11 +286,14 @@ export function TenantManagementModal({
    * Render tenant form content
    */
   const renderTenantForm = () => (
-    <VStack spacing={4} align="stretch">
-      <FormControl isInvalid={!!tenantNameError} isRequired>
-        <FormLabel htmlFor="tenant-name">
-          {t('AbpTenantManagement::TenantName')}
-        </FormLabel>
+    <VStack gap={4} align="stretch">
+      <FormField
+        label={t('AbpTenantManagement::TenantName')}
+        htmlFor="tenant-name"
+        invalid={!!tenantNameError}
+        errorText={tenantNameError || undefined}
+        required
+      >
         <Input
           id="tenant-name"
           value={tenantName}
@@ -305,8 +301,7 @@ export function TenantManagementModal({
           placeholder={t('AbpTenantManagement::TenantName')}
           maxLength={256}
         />
-        {tenantNameError && <FormErrorMessage>{tenantNameError}</FormErrorMessage>}
-      </FormControl>
+      </FormField>
     </VStack>
   );
 
@@ -314,29 +309,29 @@ export function TenantManagementModal({
    * Render connection string form content
    */
   const renderConnectionStringForm = () => (
-    <VStack spacing={4} align="stretch">
-      <FormControl>
+    <VStack gap={4} align="stretch">
+      <Box>
         <Checkbox
           id="use-shared-database"
-          isChecked={localUseSharedDatabase}
+          checked={localUseSharedDatabase}
           onChange={handleUseSharedDatabaseChange}
         >
           {t('AbpTenantManagement::DisplayName:UseSharedDatabase')}
         </Checkbox>
-      </FormControl>
+      </Box>
 
       {!localUseSharedDatabase && (
-        <FormControl>
-          <FormLabel htmlFor="connection-string">
-            {t('AbpTenantManagement::DisplayName:DefaultConnectionString')}
-          </FormLabel>
+        <FormField
+          label={t('AbpTenantManagement::DisplayName:DefaultConnectionString')}
+          htmlFor="connection-string"
+        >
           <Input
             id="connection-string"
             value={localConnectionString}
             onChange={handleConnectionStringChange}
             placeholder={t('AbpTenantManagement::DisplayName:DefaultConnectionString')}
           />
-        </FormControl>
+        </FormField>
       )}
     </VStack>
   );
@@ -349,18 +344,17 @@ export function TenantManagementModal({
       header={getModalTitle()}
       footer={
         <>
-          <Button variant="outline" onClick={handleClose} isDisabled={isLoading}>
+          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
             {t('AbpTenantManagement::Cancel')}
           </Button>
           <Button
-            colorScheme="blue"
+            colorPalette="blue"
             onClick={
               currentView === 'connectionString'
                 ? handleConnectionStringSubmit
                 : handleTenantSubmit
             }
-            isLoading={isLoading}
-            leftIcon={isLoading ? undefined : <CheckIcon />}
+            loading={isLoading}
           >
             {t('AbpTenantManagement::Save')}
           </Button>
@@ -376,8 +370,7 @@ export function TenantManagementModal({
 
       {/* Error State */}
       {error && (
-        <Alert status="error" mb={4} borderRadius="md">
-          <AlertIcon />
+        <Alert status="error" mb={4}>
           {error}
         </Alert>
       )}
@@ -388,17 +381,6 @@ export function TenantManagementModal({
         {currentView === 'connectionString' && renderConnectionStringForm()}
       </Box>
     </Modal>
-  );
-}
-
-/**
- * Simple check icon component
- */
-function CheckIcon(): React.ReactElement {
-  return (
-    <Box as="span" fontSize="sm">
-      &#10003;
-    </Box>
   );
 }
 

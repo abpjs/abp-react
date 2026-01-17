@@ -1,21 +1,17 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import {
   Box,
   Flex,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   Button,
   Link,
   HStack,
   VStack,
   IconButton,
-  Collapse,
+  Collapsible,
   Container,
-  useDisclosure,
+  Menu,
 } from '@chakra-ui/react';
-import { ChevronDownIcon, HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
+import { ChevronDown, Menu as MenuIcon, X } from 'lucide-react';
 import { Link as RouterLink, Outlet } from 'react-router-dom';
 import { eLayoutType } from '@abpjs/core';
 
@@ -59,10 +55,9 @@ export function LayoutAccount({
   onLanguageChange,
   children,
 }: LayoutAccountProps): React.ReactElement {
-  // Static type for layout system
-  LayoutAccount.type = eLayoutType.account;
+  const [isOpen, setIsOpen] = useState(false);
 
-  const { isOpen, onToggle } = useDisclosure();
+  const onToggle = () => setIsOpen(!isOpen);
 
   // Get current language display name
   const currentLanguageDisplay =
@@ -94,44 +89,47 @@ export function LayoutAccount({
         <Flex maxW="container.xl" mx="auto" align="center" wrap="wrap">
           {/* Brand */}
           <Box
-            as={RouterLink}
-            to={brandLink}
+            asChild
             fontWeight="bold"
             fontSize="lg"
             color="white"
             _hover={{ textDecoration: 'none' }}
           >
-            {brandName}
+            <RouterLink to={brandLink}>
+              {brandName}
+            </RouterLink>
           </Box>
 
           {/* Mobile Toggle */}
           <IconButton
             display={{ base: 'flex', md: 'none' }}
             onClick={onToggle}
-            icon={isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />}
             variant="ghost"
             color="white"
             aria-label="Toggle Navigation"
             ml="auto"
             _hover={{ bg: 'gray.700' }}
-          />
+          >
+            {isOpen ? <X size={12} /> : <MenuIcon size={20} />}
+          </IconButton>
 
           {/* Desktop Navigation */}
           <HStack
             as="ul"
             listStyleType="none"
-            spacing={4}
+            gap={4}
             ml={8}
             display={{ base: 'none', md: 'flex' }}
           >
             <Box as="li">
               <Link
-                as={RouterLink}
-                to="/"
+                asChild
                 color="white"
                 _hover={{ textDecoration: 'none', color: 'gray.300' }}
               >
-                Home
+                <RouterLink to="/">
+                  Home
+                </RouterLink>
               </Link>
             </Box>
           </HStack>
@@ -141,84 +139,95 @@ export function LayoutAccount({
           {/* Language Selector (Desktop) */}
           {languages.length > 0 && (
             <Box id="main-navbar-tools" display={{ base: 'none', md: 'block' }}>
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  rightIcon={<ChevronDownIcon />}
-                  variant="ghost"
-                  color="white"
-                  fontWeight="normal"
-                  _hover={{ bg: 'gray.700' }}
-                >
-                  {currentLanguageDisplay}
-                </MenuButton>
-                <MenuList bg="gray.700" borderColor="gray.600">
-                  {dropdownLanguages.map((lang) => (
-                    <MenuItem
-                      key={lang.cultureName}
-                      onClick={() => onLanguageChange?.(lang.cultureName)}
-                      bg="gray.700"
-                      _hover={{ bg: 'gray.600' }}
-                    >
-                      {lang.displayName}
-                    </MenuItem>
-                  ))}
-                </MenuList>
-              </Menu>
+              <Menu.Root>
+                <Menu.Trigger asChild>
+                  <Button
+                    variant="ghost"
+                    color="white"
+                    fontWeight="normal"
+                    _hover={{ bg: 'gray.700' }}
+                  >
+                    {currentLanguageDisplay}
+                    <ChevronDown size={16} />
+                  </Button>
+                </Menu.Trigger>
+                <Menu.Positioner>
+                  <Menu.Content bg="gray.700" borderColor="gray.600">
+                    {dropdownLanguages.map((lang) => (
+                      <Menu.Item
+                        key={lang.cultureName}
+                        value={lang.cultureName}
+                        onClick={() => onLanguageChange?.(lang.cultureName)}
+                        bg="gray.700"
+                        _hover={{ bg: 'gray.600' }}
+                      >
+                        {lang.displayName}
+                      </Menu.Item>
+                    ))}
+                  </Menu.Content>
+                </Menu.Positioner>
+              </Menu.Root>
             </Box>
           )}
 
           {/* Mobile Menu */}
-          <Collapse in={isOpen} animateOpacity style={{ width: '100%' }}>
-            <VStack
-              display={{ base: 'flex', md: 'none' }}
-              pt={4}
-              pb={4}
-              spacing={4}
-              align="stretch"
-            >
-              <Link
-                as={RouterLink}
-                to="/"
-                color="white"
-                _hover={{ textDecoration: 'none', color: 'gray.300' }}
-                py={2}
+          <Collapsible.Root open={isOpen} style={{ width: '100%' }}>
+            <Collapsible.Content>
+              <VStack
+                display={{ base: 'flex', md: 'none' }}
+                pt={4}
+                pb={4}
+                gap={4}
+                align="stretch"
               >
-                Home
-              </Link>
+                <Link
+                  asChild
+                  color="white"
+                  _hover={{ textDecoration: 'none', color: 'gray.300' }}
+                  py={2}
+                >
+                  <RouterLink to="/">
+                    Home
+                  </RouterLink>
+                </Link>
 
-              {languages.length > 0 && (
-                <Box borderTop="1px" borderColor="gray.600" pt={4}>
-                  <Menu>
-                    <MenuButton
-                      as={Button}
-                      rightIcon={<ChevronDownIcon />}
-                      variant="ghost"
-                      color="white"
-                      fontWeight="normal"
-                      _hover={{ bg: 'gray.700' }}
-                      w="full"
-                      justifyContent="space-between"
-                    >
-                      {currentLanguageDisplay}
-                    </MenuButton>
-                    <MenuList bg="gray.700" borderColor="gray.600">
-                      {dropdownLanguages.map((lang) => (
-                        <MenuItem
-                          key={lang.cultureName}
-                          onClick={() => onLanguageChange?.(lang.cultureName)}
-                          bg="gray.700"
-                          _hover={{ bg: 'gray.600' }}
+                {languages.length > 0 && (
+                  <Box borderTop="1px" borderColor="gray.600" pt={4}>
+                    <Menu.Root>
+                      <Menu.Trigger asChild>
+                        <Button
+                          variant="ghost"
+                          color="white"
+                          fontWeight="normal"
+                          _hover={{ bg: 'gray.700' }}
+                          w="full"
+                          justifyContent="space-between"
                         >
-                          {lang.displayName}
-                        </MenuItem>
-                      ))}
-                    </MenuList>
-                  </Menu>
-                </Box>
-              )}
-            </VStack>
-          </Collapse>
+                          {currentLanguageDisplay}
+                          <ChevronDown size={16} />
+                        </Button>
+                      </Menu.Trigger>
+                      <Menu.Positioner>
+                        <Menu.Content bg="gray.700" borderColor="gray.600">
+                          {dropdownLanguages.map((lang) => (
+                            <Menu.Item
+                              key={lang.cultureName}
+                              value={lang.cultureName}
+                              onClick={() => onLanguageChange?.(lang.cultureName)}
+                              bg="gray.700"
+                              _hover={{ bg: 'gray.600' }}
+                            >
+                              {lang.displayName}
+                            </Menu.Item>
+                          ))}
+                        </Menu.Content>
+                      </Menu.Positioner>
+                    </Menu.Root>
+                  </Box>
+                )}
+              </VStack>
+            </Collapsible.Content>
+          </Collapsible.Root>
         </Flex>
       </Box>
 

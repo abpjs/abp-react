@@ -2,21 +2,16 @@ import React, { useEffect, useCallback, useState, useMemo, ReactNode } from 'rea
 import {
   Box,
   Flex,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   Button,
-  Spacer,
   Link,
   HStack,
   VStack,
-  useDisclosure,
   IconButton,
-  Collapse,
   Container,
+  Collapsible,
+  Menu,
 } from '@chakra-ui/react';
-import { ChevronDownIcon, HamburgerIcon, CloseIcon } from '@chakra-ui/icons';
+import { ChevronDown, Menu as MenuIcon, X } from 'lucide-react';
 import { Link as RouterLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   useConfig,
@@ -66,11 +61,8 @@ export function LayoutApplication({
   showCurrentUser = true,
   children,
 }: LayoutApplicationProps): React.ReactElement {
-  // Static type for layout system
-  LayoutApplication.type = eLayoutType.application;
-
   const navigate = useNavigate();
-  const { isOpen, onToggle } = useDisclosure();
+  const [isOpen, setIsOpen] = useState(false);
   useLocalization(); // For localization context
 
   // State from core
@@ -111,6 +103,11 @@ export function LayoutApplication({
   const rightPartElements = useMemo(() => {
     return navigationElements.map((nav) => nav.element);
   }, [navigationElements]);
+
+  const handleLogout = useCallback(() => {
+    logout();
+    navigate('/account/login');
+  }, [logout, navigate]);
 
   // Add default navigation elements on mount
   useEffect(() => {
@@ -196,12 +193,7 @@ export function LayoutApplication({
     }
   }, [currentUser, isAuthenticated]);
 
-  const handleLogout = useCallback(() => {
-    logout();
-    navigate('/account/login');
-  }, [logout, navigate]);
-
-  // handleLanguageChange is used in navigation elements via setLanguage directly
+  const onToggle = () => setIsOpen(!isOpen);
 
   return (
     <>
@@ -222,33 +214,35 @@ export function LayoutApplication({
         <Flex maxW="container.xl" mx="auto" align="center" wrap="wrap">
           {/* Brand */}
           <Box
-            as={RouterLink}
-            to={brandLink}
+            asChild
             fontWeight="bold"
             fontSize="lg"
             color="white"
             _hover={{ textDecoration: 'none' }}
           >
-            {brandName}
+            <RouterLink to={brandLink}>
+              {brandName}
+            </RouterLink>
           </Box>
 
           {/* Mobile Toggle */}
           <IconButton
             display={{ base: 'flex', md: 'none' }}
             onClick={onToggle}
-            icon={isOpen ? <CloseIcon w={3} h={3} /> : <HamburgerIcon w={5} h={5} />}
             variant="ghost"
             color="white"
             aria-label="Toggle Navigation"
             ml="auto"
             _hover={{ bg: 'gray.700' }}
-          />
+          >
+            {isOpen ? <X size={12} /> : <MenuIcon size={20} />}
+          </IconButton>
 
           {/* Desktop Navigation */}
           <HStack
             as="ul"
             listStyleType="none"
-            spacing={4}
+            gap={4}
             ml={8}
             display={{ base: 'none', md: 'flex' }}
           >
@@ -257,13 +251,13 @@ export function LayoutApplication({
             ))}
           </HStack>
 
-          <Spacer display={{ base: 'none', md: 'block' }} />
+          <Box flex={1} display={{ base: 'none', md: 'block' }} />
 
           {/* Right Part Elements (Desktop) */}
           <HStack
             as="ul"
             listStyleType="none"
-            spacing={4}
+            gap={4}
             display={{ base: 'none', md: 'flex' }}
           >
             {rightPartElements.map((element, index) => (
@@ -274,26 +268,28 @@ export function LayoutApplication({
           </HStack>
 
           {/* Mobile Menu */}
-          <Collapse in={isOpen} animateOpacity style={{ width: '100%' }}>
-            <VStack
-              display={{ base: 'flex', md: 'none' }}
-              pt={4}
-              pb={4}
-              spacing={4}
-              align="stretch"
-            >
-              {visibleRoutes.map((route) => (
-                <NavItem key={route.name} route={route} isMobile />
-              ))}
-              <Box borderTop="1px" borderColor="gray.600" pt={4}>
-                {rightPartElements.map((element, index) => (
-                  <Box key={index} py={1}>
-                    {element}
-                  </Box>
+          <Collapsible.Root open={isOpen} style={{ width: '100%' }}>
+            <Collapsible.Content>
+              <VStack
+                display={{ base: 'flex', md: 'none' }}
+                pt={4}
+                pb={4}
+                gap={4}
+                align="stretch"
+              >
+                {visibleRoutes.map((route) => (
+                  <NavItem key={route.name} route={route} isMobile />
                 ))}
-              </Box>
-            </VStack>
-          </Collapse>
+                <Box borderTop="1px" borderColor="gray.600" pt={4}>
+                  {rightPartElements.map((element, index) => (
+                    <Box key={index} py={1}>
+                      {element}
+                    </Box>
+                  ))}
+                </Box>
+              </VStack>
+            </Collapsible.Content>
+          </Collapsible.Root>
         </Flex>
       </Box>
 
@@ -328,50 +324,56 @@ function NavItem({ route, isMobile = false }: NavItemProps): React.ReactElement 
 
   if (hasChildren) {
     return (
-      <Menu>
-        <MenuButton
-          as={Button}
-          rightIcon={<ChevronDownIcon />}
-          variant="ghost"
-          color="white"
-          fontWeight="normal"
-          _hover={{ bg: 'gray.700' }}
-          w={isMobile ? 'full' : 'auto'}
-          justifyContent={isMobile ? 'space-between' : 'center'}
-        >
-          {route.name}
-        </MenuButton>
-        <MenuList bg="gray.700" borderColor="gray.600">
-          {route.children?.map((child) => {
-            const childRoute = child as ABP.FullRoute;
-            return (
-              <MenuItem
-                key={child.name}
-                as={RouterLink}
-                to={childRoute.url || child.path || ''}
-                bg="gray.700"
-                _hover={{ bg: 'gray.600' }}
-              >
-                {child.name}
-              </MenuItem>
-            );
-          })}
-        </MenuList>
-      </Menu>
+      <Menu.Root>
+        <Menu.Trigger asChild>
+          <Button
+            variant="ghost"
+            color="white"
+            fontWeight="normal"
+            _hover={{ bg: 'gray.700' }}
+            w={isMobile ? 'full' : 'auto'}
+            justifyContent={isMobile ? 'space-between' : 'center'}
+          >
+            {route.name}
+            <ChevronDown size={16} />
+          </Button>
+        </Menu.Trigger>
+        <Menu.Positioner>
+          <Menu.Content bg="gray.700" borderColor="gray.600">
+            {route.children?.map((child) => {
+              const childRoute = child as ABP.FullRoute;
+              return (
+                <Menu.Item
+                  key={child.name}
+                  value={child.name || ''}
+                  asChild
+                  bg="gray.700"
+                  _hover={{ bg: 'gray.600' }}
+                >
+                  <RouterLink to={childRoute.url || child.path || ''}>
+                    {child.name}
+                  </RouterLink>
+                </Menu.Item>
+              );
+            })}
+          </Menu.Content>
+        </Menu.Positioner>
+      </Menu.Root>
     );
   }
 
   return (
     <Box as="li">
       <Link
-        as={RouterLink}
-        to={route.url || route.path || ''}
+        asChild
         color="white"
         _hover={{ textDecoration: 'none', color: 'gray.300' }}
         display="block"
         py={isMobile ? 2 : 0}
       >
-        {route.name}
+        <RouterLink to={route.url || route.path || ''}>
+          {route.name}
+        </RouterLink>
       </Link>
     </Box>
   );
@@ -396,30 +398,34 @@ function LanguageSelector({
   }
 
   return (
-    <Menu>
-      <MenuButton
-        as={Button}
-        rightIcon={<ChevronDownIcon />}
-        variant="ghost"
-        color="white"
-        fontWeight="normal"
-        _hover={{ bg: 'gray.700' }}
-      >
-        {currentLanguage}
-      </MenuButton>
-      <MenuList bg="gray.700" borderColor="gray.600">
-        {languages.map((lang) => (
-          <MenuItem
-            key={lang.cultureName}
-            onClick={() => onLanguageChange(lang.cultureName)}
-            bg="gray.700"
-            _hover={{ bg: 'gray.600' }}
-          >
-            {lang.displayName}
-          </MenuItem>
-        ))}
-      </MenuList>
-    </Menu>
+    <Menu.Root>
+      <Menu.Trigger asChild>
+        <Button
+          variant="ghost"
+          color="white"
+          fontWeight="normal"
+          _hover={{ bg: 'gray.700' }}
+        >
+          {currentLanguage}
+          <ChevronDown size={16} />
+        </Button>
+      </Menu.Trigger>
+      <Menu.Positioner>
+        <Menu.Content bg="gray.700" borderColor="gray.600">
+          {languages.map((lang) => (
+            <Menu.Item
+              key={lang.cultureName}
+              value={lang.cultureName}
+              onClick={() => onLanguageChange(lang.cultureName)}
+              bg="gray.700"
+              _hover={{ bg: 'gray.600' }}
+            >
+              {lang.displayName}
+            </Menu.Item>
+          ))}
+        </Menu.Content>
+      </Menu.Positioner>
+    </Menu.Root>
   );
 }
 
@@ -446,41 +452,47 @@ function CurrentUserMenu({
   }
 
   return (
-    <Menu>
-      <MenuButton
-        as={Button}
-        rightIcon={<ChevronDownIcon />}
-        variant="ghost"
-        color="white"
-        fontWeight="normal"
-        _hover={{ bg: 'gray.700' }}
-      >
-        {currentUser.userName}
-      </MenuButton>
-      <MenuList bg="gray.700" borderColor="gray.600">
-        <MenuItem
-          onClick={onChangePassword}
-          bg="gray.700"
-          _hover={{ bg: 'gray.600' }}
+    <Menu.Root>
+      <Menu.Trigger asChild>
+        <Button
+          variant="ghost"
+          color="white"
+          fontWeight="normal"
+          _hover={{ bg: 'gray.700' }}
         >
-          Change Password
-        </MenuItem>
-        <MenuItem
-          onClick={onProfile}
-          bg="gray.700"
-          _hover={{ bg: 'gray.600' }}
-        >
-          My Profile
-        </MenuItem>
-        <MenuItem
-          onClick={onLogout}
-          bg="gray.700"
-          _hover={{ bg: 'gray.600' }}
-        >
-          Logout
-        </MenuItem>
-      </MenuList>
-    </Menu>
+          {currentUser.userName}
+          <ChevronDown size={16} />
+        </Button>
+      </Menu.Trigger>
+      <Menu.Positioner>
+        <Menu.Content bg="gray.700" borderColor="gray.600">
+          <Menu.Item
+            value="change-password"
+            onClick={onChangePassword}
+            bg="gray.700"
+            _hover={{ bg: 'gray.600' }}
+          >
+            Change Password
+          </Menu.Item>
+          <Menu.Item
+            value="profile"
+            onClick={onProfile}
+            bg="gray.700"
+            _hover={{ bg: 'gray.600' }}
+          >
+            My Profile
+          </Menu.Item>
+          <Menu.Item
+            value="logout"
+            onClick={onLogout}
+            bg="gray.700"
+            _hover={{ bg: 'gray.600' }}
+          >
+            Logout
+          </Menu.Item>
+        </Menu.Content>
+      </Menu.Positioner>
+    </Menu.Root>
   );
 }
 

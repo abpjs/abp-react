@@ -1,20 +1,12 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { useLocalization } from '@abpjs/core';
-import { Modal } from '@abpjs/theme-shared';
+import { Modal, Alert, Button, Checkbox } from '@abpjs/theme-shared';
 import {
   Box,
-  Button,
-  Checkbox,
-  Divider,
   Flex,
   Heading,
-  List,
-  ListItem,
   Spinner,
-  Text,
   VStack,
-  Alert,
-  AlertIcon,
 } from '@chakra-ui/react';
 import { usePermissionManagement } from '../../hooks';
 import type { PermissionManagement } from '../../models';
@@ -212,14 +204,13 @@ export function PermissionManagementModal({
       }
       footer={
         <>
-          <Button variant="outline" onClick={handleClose} isDisabled={isLoading}>
+          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
             {t('AbpIdentity::Cancel')}
           </Button>
           <Button
-            colorScheme="blue"
+            colorPalette="blue"
             onClick={handleSubmit}
-            isLoading={isLoading}
-            leftIcon={isLoading ? undefined : <CheckIcon />}
+            loading={isLoading}
           >
             {t('AbpIdentity::Save')}
           </Button>
@@ -235,8 +226,7 @@ export function PermissionManagementModal({
 
       {/* Error State */}
       {error && (
-        <Alert status="error" mb={4} borderRadius="md">
-          <AlertIcon />
+        <Alert status="error" mb={4}>
           {error}
         </Alert>
       )}
@@ -248,21 +238,20 @@ export function PermissionManagementModal({
           <Checkbox
             ref={selectAllCheckboxRef}
             id="select-all-in-all-tabs"
-            isChecked={selectAllTab}
+            checked={selectAllTab}
             onChange={toggleSelectAll}
-            mb={2}
           >
             {t('AbpPermissionManagement::SelectAllInAllTabs')}
           </Checkbox>
 
-          <Divider my={2} />
+          <Box borderBottomWidth="1px" borderColor="gray.200" my={2} />
 
           <Flex gap={4}>
             {/* Left Panel - Group List */}
             <Box w="35%" maxH="70vh" overflowY="auto">
-              <List spacing={0}>
+              <VStack gap={0} align="stretch">
                 {groups.map((group) => (
-                  <ListItem
+                  <Box
                     key={group.name}
                     px={3}
                     py={2}
@@ -276,9 +265,9 @@ export function PermissionManagementModal({
                     onClick={() => handleGroupClick(group)}
                   >
                     {group.displayName}
-                  </ListItem>
+                  </Box>
                 ))}
-              </List>
+              </VStack>
             </Box>
 
             {/* Right Panel - Permissions */}
@@ -289,30 +278,29 @@ export function PermissionManagementModal({
                     {selectedGroup.displayName}
                   </Heading>
 
-                  <Divider my={2} />
+                  <Box borderBottomWidth="1px" borderColor="gray.200" my={2} />
 
                   <Box pl={1} pt={1}>
                     {/* Select All in This Tab */}
                     <Checkbox
                       ref={selectThisTabCheckboxRef}
                       id="select-all-in-this-tabs"
-                      isChecked={selectThisTab}
+                      checked={selectThisTab}
                       onChange={toggleSelectThisTab}
-                      mb={2}
                     >
                       {t('AbpPermissionManagement::SelectAllInThisTab')}
                     </Checkbox>
 
-                    <Divider my={3} />
+                    <Box borderBottomWidth="1px" borderColor="gray.200" my={3} />
 
                     {/* Permission List */}
                     <Box maxH="60vh" overflowY="auto">
-                      <VStack align="stretch" spacing={2}>
+                      <VStack align="stretch" gap={2}>
                         {selectedGroupPermissions.map((permission) => (
                           <Box key={permission.name} ml={`${permission.margin}px`}>
                             <Checkbox
                               id={permission.name}
-                              isChecked={isGranted(permission.name)}
+                              checked={isGranted(permission.name)}
                               onChange={() => handlePermissionClick(permission)}
                             >
                               {permission.displayName}
@@ -329,17 +317,6 @@ export function PermissionManagementModal({
         </Box>
       )}
     </Modal>
-  );
-}
-
-/**
- * Simple check icon component
- */
-function CheckIcon(): React.ReactElement {
-  return (
-    <Text as="span" fontSize="sm">
-      &#10003;
-    </Text>
   );
 }
 

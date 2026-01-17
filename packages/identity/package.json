@@ -34,13 +34,11 @@
     "identity"
   ],
   "dependencies": {
-    "@chakra-ui/react": "^2.8.0",
+    "@chakra-ui/react": "^3.2.0",
     "@emotion/react": "^11.11.0",
-    "@emotion/styled": "^11.11.0",
     "@abpjs/core": "workspace:*",
     "@abpjs/theme-shared": "workspace:*",
-    "@abpjs/permission-management": "workspace:*",
-    "framer-motion": "^10.16.0"
+    "@abpjs/permission-management": "workspace:*"
   },
   "devDependencies": {
     "@abp/ng.identity": "0.7.6",

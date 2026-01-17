@@ -1,22 +1,14 @@
 import React, { useEffect } from 'react';
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
   Button,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Input,
   VStack,
-  useToast,
+  Input,
+  Field,
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { useLocalization, useProfile } from '@abpjs/core';
+import { Modal, useToaster } from '@abpjs/theme-shared';
+import { Check } from 'lucide-react';
 
 export interface ChangePasswordProps {
   /** Whether the modal is visible */
@@ -54,7 +46,7 @@ export function ChangePassword({
 }: ChangePasswordProps): React.ReactElement {
   const { t } = useLocalization();
   const { changePassword } = useProfile();
-  const toast = useToast();
+  const toaster = useToaster();
 
   const {
     register,
@@ -87,22 +79,17 @@ export function ChangePassword({
         newPassword: data.newPassword,
       });
 
-      toast({
-        title: t('AbpIdentity::PasswordChangedMessage') || 'Password changed successfully',
-        status: 'success',
-        duration: 3000,
-        isClosable: true,
-      });
+      toaster.success(
+        t('AbpIdentity::PasswordChangedMessage') || 'Password changed successfully',
+        t('AbpUi::Success') || 'Success'
+      );
 
       onVisibleChange(false);
     } catch (error) {
-      toast({
-        title: t('AbpIdentity::PasswordChangeFailed') || 'Failed to change password',
-        description: error instanceof Error ? error.message : 'An error occurred',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+      toaster.error(
+        error instanceof Error ? error.message : 'An error occurred',
+        t('AbpIdentity::PasswordChangeFailed') || 'Failed to change password'
+      );
     }
   };
 
@@ -137,85 +124,84 @@ export function ChangePassword({
     },
   };
 
+  const modalFooter = (
+    <>
+      <Button variant="ghost" mr={3} onClick={handleClose}>
+        {t('AbpIdentity::Cancel') || 'Cancel'}
+      </Button>
+      <Button
+        colorPalette="blue"
+        type="submit"
+        loading={isSubmitting}
+        form="change-password-form"
+      >
+        <Check size={16} />
+        {t('AbpIdentity::Save') || 'Save'}
+      </Button>
+    </>
+  );
+
   return (
-    <Modal isOpen={visible} onClose={handleClose} isCentered>
-      <ModalOverlay />
-      <ModalContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <ModalHeader>
-            {t('AbpIdentity::ChangePassword') || 'Change Password'}
-          </ModalHeader>
-          <ModalCloseButton />
+    <Modal
+      visible={visible}
+      onVisibleChange={onVisibleChange}
+      header={t('AbpIdentity::ChangePassword') || 'Change Password'}
+      footer={modalFooter}
+      centered
+    >
+      <form id="change-password-form" onSubmit={handleSubmit(onSubmit)}>
+        <VStack gap={4}>
+          {/* Current Password */}
+          <Field.Root invalid={!!errors.password}>
+            <Field.Label>
+              {t('AbpIdentity::DisplayName:CurrentPassword') || 'Current Password'}
+              <Field.RequiredIndicator />
+            </Field.Label>
+            <Input
+              type="password"
+              {...register('password', {
+                required:
+                  t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
+              })}
+            />
+            <Field.ErrorText>{errors.password?.message}</Field.ErrorText>
+          </Field.Root>
 
-          <ModalBody>
-            <VStack spacing={4}>
-              {/* Current Password */}
-              <FormControl isInvalid={!!errors.password}>
-                <FormLabel>
-                  {t('AbpIdentity::DisplayName:CurrentPassword') || 'Current Password'}
-                  <span style={{ color: 'red' }}> *</span>
-                </FormLabel>
-                <Input
-                  type="password"
-                  {...register('password', {
-                    required:
-                      t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
-                  })}
-                />
-                <FormErrorMessage>{errors.password?.message}</FormErrorMessage>
-              </FormControl>
+          {/* New Password */}
+          <Field.Root invalid={!!errors.newPassword}>
+            <Field.Label>
+              {t('AbpIdentity::DisplayName:NewPassword') || 'New Password'}
+              <Field.RequiredIndicator />
+            </Field.Label>
+            <Input
+              type="password"
+              {...register('newPassword', passwordValidation)}
+            />
+            <Field.ErrorText>{errors.newPassword?.message}</Field.ErrorText>
+          </Field.Root>
 
-              {/* New Password */}
-              <FormControl isInvalid={!!errors.newPassword}>
-                <FormLabel>
-                  {t('AbpIdentity::DisplayName:NewPassword') || 'New Password'}
-                  <span style={{ color: 'red' }}> *</span>
-                </FormLabel>
-                <Input
-                  type="password"
-                  {...register('newPassword', passwordValidation)}
-                />
-                <FormErrorMessage>{errors.newPassword?.message}</FormErrorMessage>
-              </FormControl>
-
-              {/* Confirm New Password */}
-              <FormControl isInvalid={!!errors.repeatNewPassword}>
-                <FormLabel>
-                  {t('AbpIdentity::DisplayName:NewPasswordConfirm') ||
-                    'Confirm New Password'}
-                  <span style={{ color: 'red' }}> *</span>
-                </FormLabel>
-                <Input
-                  type="password"
-                  {...register('repeatNewPassword', {
-                    required:
-                      t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
-                    validate: (value) =>
-                      value === newPassword ||
-                      t('AbpIdentity::Identity.PasswordConfirmationFailed') ||
-                      'Passwords do not match',
-                  })}
-                />
-                <FormErrorMessage>{errors.repeatNewPassword?.message}</FormErrorMessage>
-              </FormControl>
-            </VStack>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={handleClose}>
-              {t('AbpIdentity::Cancel') || 'Cancel'}
-            </Button>
-            <Button
-              colorScheme="blue"
-              type="submit"
-              isLoading={isSubmitting}
-              leftIcon={<span>&#10003;</span>}
-            >
-              {t('AbpIdentity::Save') || 'Save'}
-            </Button>
-          </ModalFooter>
-        </form>
-      </ModalContent>
+          {/* Confirm New Password */}
+          <Field.Root invalid={!!errors.repeatNewPassword}>
+            <Field.Label>
+              {t('AbpIdentity::DisplayName:NewPasswordConfirm') ||
+                'Confirm New Password'}
+              <Field.RequiredIndicator />
+            </Field.Label>
+            <Input
+              type="password"
+              {...register('repeatNewPassword', {
+                required:
+                  t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
+                validate: (value) =>
+                  value === newPassword ||
+                  t('AbpIdentity::Identity.PasswordConfirmationFailed') ||
+                  'Passwords do not match',
+              })}
+            />
+            <Field.ErrorText>{errors.repeatNewPassword?.message}</Field.ErrorText>
+          </Field.Root>
+        </VStack>
+      </form>
     </Modal>
   );
 }

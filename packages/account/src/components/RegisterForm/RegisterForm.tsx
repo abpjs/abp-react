@@ -3,18 +3,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink } from 'react-router-dom';
 import { useLocalization } from '@abpjs/core';
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  FormErrorMessage,
-  Heading,
-  Input,
-  Link,
-  VStack,
-  Text,
-} from '@chakra-ui/react';
+import { Button, FormField } from '@abpjs/theme-shared';
+import { Box, Heading, Input, Link, VStack, Text } from '@chakra-ui/react';
 import { TenantBox } from '../TenantBox';
 import type { RegisterFormData } from '../../models';
 
@@ -165,13 +155,15 @@ export function RegisterForm({
         </Heading>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <VStack spacing={4} align="stretch">
+          <VStack gap={4} align="stretch">
             {/* Username Field */}
-            <FormControl isInvalid={!!errors.username}>
-              <FormLabel htmlFor="input-user-name">
-                {t('AbpAccount::UserName') || 'User name'}
-                <Text as="span" color="red.500" ml={1}>*</Text>
-              </FormLabel>
+            <FormField
+              label={t('AbpAccount::UserName') || 'User name'}
+              htmlFor="input-user-name"
+              invalid={!!errors.username}
+              errorText={errors.username?.message}
+              required
+            >
               <Input
                 id="input-user-name"
                 type="text"
@@ -179,52 +171,46 @@ export function RegisterForm({
                 autoComplete="username"
                 {...register('username')}
               />
-              <FormErrorMessage>
-                {errors.username?.message}
-              </FormErrorMessage>
-            </FormControl>
+            </FormField>
 
             {/* Email Field */}
-            <FormControl isInvalid={!!errors.email}>
-              <FormLabel htmlFor="input-email-address">
-                {t('AbpAccount::EmailAddress') || 'Email address'}
-                <Text as="span" color="red.500" ml={1}>*</Text>
-              </FormLabel>
+            <FormField
+              label={t('AbpAccount::EmailAddress') || 'Email address'}
+              htmlFor="input-email-address"
+              invalid={!!errors.email}
+              errorText={errors.email?.message}
+              required
+            >
               <Input
                 id="input-email-address"
                 type="email"
                 autoComplete="email"
                 {...register('email')}
               />
-              <FormErrorMessage>
-                {errors.email?.message}
-              </FormErrorMessage>
-            </FormControl>
+            </FormField>
 
             {/* Password Field */}
-            <FormControl isInvalid={!!errors.password}>
-              <FormLabel htmlFor="input-password">
-                {t('AbpAccount::Password') || 'Password'}
-                <Text as="span" color="red.500" ml={1}>*</Text>
-              </FormLabel>
+            <FormField
+              label={t('AbpAccount::Password') || 'Password'}
+              htmlFor="input-password"
+              invalid={!!errors.password}
+              errorText={errors.password?.message}
+              required
+            >
               <Input
                 id="input-password"
                 type="password"
                 autoComplete="new-password"
                 {...register('password')}
               />
-              <FormErrorMessage>
-                {errors.password?.message}
-              </FormErrorMessage>
-            </FormControl>
+            </FormField>
 
             {/* Submit Button */}
             <Button
               type="submit"
-              colorScheme="blue"
-              isLoading={isSubmitting}
+              colorPalette="blue"
+              loading={isSubmitting}
               loadingText={t('AbpAccount::Register') || 'Register'}
-              mt={2}
             >
               {t('AbpAccount::Register') || 'Register'}
             </Button>
@@ -236,8 +222,8 @@ export function RegisterForm({
           <Box pt={5}>
             <Text fontSize="sm">
               {t('AbpAccount::AlreadyRegistered') || 'Already have an account?'}{' '}
-              <Link as={RouterLink} to={loginUrl} color="blue.500">
-                {t('AbpAccount::Login')}
+              <Link asChild color="blue.500">
+                <RouterLink to={loginUrl}>{t('AbpAccount::Login')}</RouterLink>
               </Link>
             </Text>
           </Box>

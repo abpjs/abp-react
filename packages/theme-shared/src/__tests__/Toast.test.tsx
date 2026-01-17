@@ -1,10 +1,11 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ChakraProvider } from '@chakra-ui/react';
 import { ToasterProvider, useToaster } from '../contexts/toaster.context';
 import { ToastContainer } from '../components/toast/Toast';
+import { abpSystem } from '../theme';
 
 // Mock @abpjs/core
 vi.mock('@abpjs/core', () => ({
@@ -63,7 +64,7 @@ describe('ToastContainer', () => {
     options?: Record<string, unknown>
   ) => {
     return render(
-      <ChakraProvider>
+      <ChakraProvider value={abpSystem}>
         <ToasterProvider>
           <ToastTrigger severity={severity} message={message} title={title} options={options} />
           <ToastContainer />
@@ -74,7 +75,7 @@ describe('ToastContainer', () => {
 
   it('should render without crashing', () => {
     render(
-      <ChakraProvider>
+      <ChakraProvider value={abpSystem}>
         <ToasterProvider>
           <ToastContainer />
         </ToasterProvider>
@@ -142,7 +143,7 @@ describe('ToastContainer', () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
     render(
-      <ChakraProvider>
+      <ChakraProvider value={abpSystem}>
         <ToasterProvider>
           <ToastTrigger severity="info" message="No title message" title="" />
           <ToastContainer />
@@ -177,7 +178,7 @@ describe('ToastContainer', () => {
     }
 
     render(
-      <ChakraProvider>
+      <ChakraProvider value={abpSystem}>
         <ToasterProvider>
           <MultiToastTrigger />
           <ToastContainer />
@@ -196,7 +197,7 @@ describe('ToastContainer', () => {
 
   it('should configure toast with custom life duration', async () => {
     // Note: Testing auto-dismiss timing is difficult with jsdom because
-    // Chakra uses framer-motion animations that don't complete properly.
+    // Chakra uses CSS animations that don't complete properly.
     // This test verifies the toast is created with the life option.
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
 
@@ -222,9 +223,9 @@ describe('ToastContainer', () => {
       expect(screen.getByText('Closable toast')).toBeInTheDocument();
     });
 
-    // Chakra CloseButton has aria-label="Close"
+    // Chakra v3 Toast close button has aria-label="Dismiss notification"
     await waitFor(() => {
-      expect(screen.getByLabelText('Close')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /dismiss/i })).toBeInTheDocument();
     });
   });
 
@@ -238,12 +239,13 @@ describe('ToastContainer', () => {
       expect(screen.getByText('Non-closable toast')).toBeInTheDocument();
     });
 
-    expect(screen.queryByLabelText('Close')).not.toBeInTheDocument();
+    // Chakra v3 Toast close button has aria-label="Dismiss notification"
+    expect(screen.queryByRole('button', { name: /dismiss/i })).not.toBeInTheDocument();
   });
 
   it('should accept position prop', () => {
     render(
-      <ChakraProvider>
+      <ChakraProvider value={abpSystem}>
         <ToasterProvider>
           <ToastContainer position="top-right" />
         </ToasterProvider>
