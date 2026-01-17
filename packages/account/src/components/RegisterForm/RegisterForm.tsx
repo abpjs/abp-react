@@ -126,7 +126,7 @@ export function RegisterForm({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onRegisterError: _onRegisterError,
 }: RegisterFormProps) {
-  const { instant } = useLocalization();
+  const { t } = useLocalization();
 
   const {
     register,
@@ -161,7 +161,7 @@ export function RegisterForm({
       {/* Register Container */}
       <Box className="abp-account-container" p={6} bg="white" borderRadius="md" shadow="sm">
         <Heading as="h2" size="lg" mb={6}>
-          {instant('AbpAccount::Register') || 'Register'}
+          {t('AbpAccount::Register') || 'Register'}
         </Heading>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -169,7 +169,7 @@ export function RegisterForm({
             {/* Username Field */}
             <FormControl isInvalid={!!errors.username}>
               <FormLabel htmlFor="input-user-name">
-                {instant('AbpAccount::UserName') || 'User name'}
+                {t('AbpAccount::UserName') || 'User name'}
                 <Text as="span" color="red.500" ml={1}>*</Text>
               </FormLabel>
               <Input
@@ -187,7 +187,7 @@ export function RegisterForm({
             {/* Email Field */}
             <FormControl isInvalid={!!errors.email}>
               <FormLabel htmlFor="input-email-address">
-                {instant('AbpAccount::EmailAddress') || 'Email address'}
+                {t('AbpAccount::EmailAddress') || 'Email address'}
                 <Text as="span" color="red.500" ml={1}>*</Text>
               </FormLabel>
               <Input
@@ -204,7 +204,7 @@ export function RegisterForm({
             {/* Password Field */}
             <FormControl isInvalid={!!errors.password}>
               <FormLabel htmlFor="input-password">
-                {instant('AbpAccount::Password') || 'Password'}
+                {t('AbpAccount::Password') || 'Password'}
                 <Text as="span" color="red.500" ml={1}>*</Text>
               </FormLabel>
               <Input
@@ -223,10 +223,10 @@ export function RegisterForm({
               type="submit"
               colorScheme="blue"
               isLoading={isSubmitting}
-              loadingText={instant('AbpAccount::Register') || 'Register'}
+              loadingText={t('AbpAccount::Register') || 'Register'}
               mt={2}
             >
-              {instant('AbpAccount::Register') || 'Register'}
+              {t('AbpAccount::Register') || 'Register'}
             </Button>
           </VStack>
         </form>
@@ -235,9 +235,9 @@ export function RegisterForm({
         {showLoginLink && (
           <Box pt={5}>
             <Text fontSize="sm">
-              {instant('AbpAccount::AlreadyRegistered') || 'Already have an account?'}{' '}
+              {t('AbpAccount::AlreadyRegistered') || 'Already have an account?'}{' '}
               <Link as={RouterLink} to={loginUrl} color="blue.500">
-                {instant('AbpAccount::Login')}
+                {t('AbpAccount::Login')}
               </Link>
             </Text>
           </Box>

@@ -87,7 +87,7 @@ export function TenantManagementModal({
   initialView = 'tenant',
   onSave,
 }: TenantManagementModalProps): React.ReactElement {
-  const { instant } = useLocalization();
+  const { t } = useLocalization();
 
   const {
     selectedTenant,
@@ -121,11 +121,11 @@ export function TenantManagementModal({
    */
   const getModalTitle = (): string => {
     if (currentView === 'connectionString') {
-      return instant('AbpTenantManagement::ConnectionStrings');
+      return t('AbpTenantManagement::ConnectionStrings');
     }
     return isEditing
-      ? instant('AbpTenantManagement::Edit')
-      : instant('AbpTenantManagement::NewTenant');
+      ? t('AbpTenantManagement::Edit')
+      : t('AbpTenantManagement::NewTenant');
   };
 
   /**
@@ -176,19 +176,19 @@ export function TenantManagementModal({
   const validateTenantName = useCallback(
     (name: string): boolean => {
       if (!name || name.trim().length === 0) {
-        setTenantNameError(instant('AbpValidation::ThisFieldIsRequired'));
+        setTenantNameError(t('AbpValidation::ThisFieldIsRequired'));
         return false;
       }
       if (name.length > 256) {
         setTenantNameError(
-          instant('AbpValidation::ThisFieldMustBeBetween{0}And{1}Characters', '1', '256')
+          t('AbpValidation::ThisFieldMustBeBetween{0}And{1}Characters', '1', '256')
         );
         return false;
       }
       setTenantNameError(null);
       return true;
     },
-    [instant]
+    [t]
   );
 
   /**
@@ -296,13 +296,13 @@ export function TenantManagementModal({
     <VStack spacing={4} align="stretch">
       <FormControl isInvalid={!!tenantNameError} isRequired>
         <FormLabel htmlFor="tenant-name">
-          {instant('AbpTenantManagement::TenantName')}
+          {t('AbpTenantManagement::TenantName')}
         </FormLabel>
         <Input
           id="tenant-name"
           value={tenantName}
           onChange={handleTenantNameChange}
-          placeholder={instant('AbpTenantManagement::TenantName')}
+          placeholder={t('AbpTenantManagement::TenantName')}
           maxLength={256}
         />
         {tenantNameError && <FormErrorMessage>{tenantNameError}</FormErrorMessage>}
@@ -321,20 +321,20 @@ export function TenantManagementModal({
           isChecked={localUseSharedDatabase}
           onChange={handleUseSharedDatabaseChange}
         >
-          {instant('AbpTenantManagement::DisplayName:UseSharedDatabase')}
+          {t('AbpTenantManagement::DisplayName:UseSharedDatabase')}
         </Checkbox>
       </FormControl>
 
       {!localUseSharedDatabase && (
         <FormControl>
           <FormLabel htmlFor="connection-string">
-            {instant('AbpTenantManagement::DisplayName:DefaultConnectionString')}
+            {t('AbpTenantManagement::DisplayName:DefaultConnectionString')}
           </FormLabel>
           <Input
             id="connection-string"
             value={localConnectionString}
             onChange={handleConnectionStringChange}
-            placeholder={instant('AbpTenantManagement::DisplayName:DefaultConnectionString')}
+            placeholder={t('AbpTenantManagement::DisplayName:DefaultConnectionString')}
           />
         </FormControl>
       )}
@@ -350,7 +350,7 @@ export function TenantManagementModal({
       footer={
         <>
           <Button variant="outline" onClick={handleClose} isDisabled={isLoading}>
-            {instant('AbpTenantManagement::Cancel')}
+            {t('AbpTenantManagement::Cancel')}
           </Button>
           <Button
             colorScheme="blue"
@@ -362,7 +362,7 @@ export function TenantManagementModal({
             isLoading={isLoading}
             leftIcon={isLoading ? undefined : <CheckIcon />}
           >
-            {instant('AbpTenantManagement::Save')}
+            {t('AbpTenantManagement::Save')}
           </Button>
         </>
       }

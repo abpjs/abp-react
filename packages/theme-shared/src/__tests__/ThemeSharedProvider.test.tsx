@@ -9,7 +9,7 @@ import { useConfirmation } from '../contexts/confirmation.context';
 // Mock @abpjs/core
 vi.mock('@abpjs/core', () => ({
   useLocalization: () => ({
-    instant: (key: string) => key,
+    t: (key: string) => key,
   }),
 }));
 

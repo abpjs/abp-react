@@ -96,7 +96,7 @@ export function LoginForm({
   onLoginSuccess,
   onLoginError,
 }: LoginFormProps) {
-  const { instant } = useLocalization();
+  const { t } = useLocalization();
   const { login, isLoading, error, clearError } = usePasswordFlow();
 
   const {
@@ -139,7 +139,7 @@ export function LoginForm({
       {/* Login Container */}
       <Box className="abp-account-container" p={6} bg="white" borderRadius="md" shadow="sm">
         <Heading as="h2" size="lg" mb={6}>
-          {instant('AbpAccount::Login')}
+          {t('AbpAccount::Login')}
         </Heading>
 
         {/* Error Alert */}
@@ -155,7 +155,7 @@ export function LoginForm({
             {/* Username Field */}
             <FormControl isInvalid={!!errors.username}>
               <FormLabel htmlFor="login-input-user-name-or-email-address">
-                {instant('AbpAccount::UserNameOrEmailAddress')}
+                {t('AbpAccount::UserNameOrEmailAddress')}
               </FormLabel>
               <Input
                 id="login-input-user-name-or-email-address"
@@ -171,7 +171,7 @@ export function LoginForm({
             {/* Password Field */}
             <FormControl isInvalid={!!errors.password}>
               <FormLabel htmlFor="login-input-password">
-                {instant('AbpAccount::Password')}
+                {t('AbpAccount::Password')}
               </FormLabel>
               <Input
                 id="login-input-password"
@@ -190,7 +190,7 @@ export function LoginForm({
                 id="login-input-remember-me"
                 {...register('remember')}
               >
-                {instant('AbpAccount::RememberMe')}
+                {t('AbpAccount::RememberMe')}
               </Checkbox>
             </FormControl>
 
@@ -202,15 +202,15 @@ export function LoginForm({
                 colorScheme="gray"
                 isDisabled={isFormLoading}
               >
-                {instant('AbpAccount::Cancel')}
+                {t('AbpAccount::Cancel')}
               </Button>
               <Button
                 type="submit"
                 colorScheme="blue"
                 isLoading={isFormLoading}
-                loadingText={instant('AbpAccount::Login')}
+                loadingText={t('AbpAccount::Login')}
               >
-                {instant('AbpAccount::Login')}
+                {t('AbpAccount::Login')}
               </Button>
             </HStack>
           </VStack>
@@ -220,7 +220,7 @@ export function LoginForm({
         {showRegisterLink && (
           <Box pt={5}>
             <Link as={RouterLink} to={registerUrl} color="blue.500">
-              {instant('AbpAccount::Register')}
+              {t('AbpAccount::Register')}
             </Link>
           </Box>
         )}

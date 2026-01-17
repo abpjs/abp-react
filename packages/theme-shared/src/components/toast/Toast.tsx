@@ -147,7 +147,7 @@ export interface ToastContainerProps {
  */
 export function ToastContainer({ position = 'bottom-right' }: ToastContainerProps): React.ReactElement | null {
   const { toasts, service } = useToasterContext();
-  const { instant } = useLocalization();
+  const { t } = useLocalization();
   const chakraToast = useChakraToast();
 
   // Sync our toast state with Chakra's toast system
@@ -158,12 +158,12 @@ export function ToastContainer({ position = 'bottom-right' }: ToastContainerProp
         return;
       }
 
-      const localizedMessage = instant(
+      const localizedMessage = t(
         toast.message,
         ...(toast.messageLocalizationParams || [])
       );
       const localizedTitle = toast.title
-        ? instant(toast.title, ...(toast.titleLocalizationParams || []))
+        ? t(toast.title, ...(toast.titleLocalizationParams || []))
         : undefined;
 
       chakraToast({
@@ -212,7 +212,7 @@ export function ToastContainer({ position = 'bottom-right' }: ToastContainerProp
         },
       });
     });
-  }, [toasts, chakraToast, instant, position, service]);
+  }, [toasts, chakraToast, t, position, service]);
 
   // This component doesn't render anything - Chakra handles the portal
   return null;

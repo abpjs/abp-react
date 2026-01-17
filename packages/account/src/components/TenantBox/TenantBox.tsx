@@ -34,7 +34,7 @@ export interface TenantBoxProps {
  * and does not integrate with the backend tenant resolution API.
  */
 export function TenantBox({ containerStyle }: TenantBoxProps) {
-  const { instant } = useLocalization();
+  const { t } = useLocalization();
   const [selected, setSelected] = useState<TenantInfo | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -92,11 +92,11 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
         style={containerStyle}
       >
         <Text as="span" color="gray.600">
-          {instant('AbpUiMultiTenancy::Tenant')}:{' '}
+          {t('AbpUiMultiTenancy::Tenant')}:{' '}
         </Text>
         <Text as="strong">
           <Text as="i">
-            {selected?.name || instant('AbpUiMultiTenancy::NotSelected')}
+            {selected?.name || t('AbpUiMultiTenancy::NotSelected')}
           </Text>
         </Text>
         {' ('}
@@ -107,7 +107,7 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
           onClick={onSwitch}
           _hover={{ textDecoration: 'underline' }}
         >
-          {instant('AbpUiMultiTenancy::Switch')}
+          {t('AbpUiMultiTenancy::Switch')}
         </Link>
         {')'}
       </Box>
@@ -117,7 +117,7 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
         visible={modalVisible}
         onVisibleChange={setModalVisible}
         size="md"
-        header={instant('AbpUiMultiTenancy::SwitchTenant') || 'Switch Tenant'}
+        header={t('AbpUiMultiTenancy::SwitchTenant') || 'Switch Tenant'}
         footer={
           <>
             <Button
@@ -125,14 +125,14 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
               colorScheme="gray"
               onClick={onClose}
             >
-              {instant('AbpTenantManagement::Cancel')}
+              {t('AbpTenantManagement::Cancel')}
             </Button>
             <Button
               colorScheme="blue"
               onClick={handleSubmit(onSave)}
               leftIcon={<CheckIcon />}
             >
-              {instant('AbpTenantManagement::Save')}
+              {t('AbpTenantManagement::Save')}
             </Button>
           </>
         }
@@ -141,7 +141,7 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
           <VStack spacing={4} align="stretch">
             <FormControl>
               <FormLabel htmlFor="tenant-name">
-                {instant('AbpUiMultiTenancy::Name')}
+                {t('AbpUiMultiTenancy::Name')}
               </FormLabel>
               <Input
                 id="tenant-name"
@@ -150,7 +150,7 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
               />
             </FormControl>
             <Text fontSize="sm" color="gray.600">
-              {instant('AbpUiMultiTenancy::SwitchTenantHint')}
+              {t('AbpUiMultiTenancy::SwitchTenantHint')}
             </Text>
           </VStack>
         </form>

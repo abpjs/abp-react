@@ -102,8 +102,8 @@ function TestLocalization() {
       <div className="test-card">
         <h3>useLocalization() Hook</h3>
         <p>Languages from config: {localization.languages?.length ?? 0}</p>
-        <p>instant() available: {typeof localization.instant === 'function' ? 'Yes' : 'No'}</p>
-        <p>t() alias available: {typeof localization.t === 'function' ? 'Yes' : 'No'}</p>
+        <p>t() available: {typeof localization.t === 'function' ? 'Yes' : 'No'}</p>
+        <p>instant() alias available: {typeof localization.instant === 'function' ? 'Yes' : 'No'}</p>
         {localization.languages && localization.languages.length > 0 && (
           <details>
             <summary>Available Languages</summary>

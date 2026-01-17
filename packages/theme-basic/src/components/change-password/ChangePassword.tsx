@@ -52,7 +52,7 @@ export function ChangePassword({
   visible,
   onVisibleChange,
 }: ChangePasswordProps): React.ReactElement {
-  const { instant } = useLocalization();
+  const { t } = useLocalization();
   const { changePassword } = useProfile();
   const toast = useToast();
 
@@ -88,7 +88,7 @@ export function ChangePassword({
       });
 
       toast({
-        title: instant('AbpIdentity::PasswordChangedMessage') || 'Password changed successfully',
+        title: t('AbpIdentity::PasswordChangedMessage') || 'Password changed successfully',
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -97,7 +97,7 @@ export function ChangePassword({
       onVisibleChange(false);
     } catch (error) {
       toast({
-        title: instant('AbpIdentity::PasswordChangeFailed') || 'Failed to change password',
+        title: t('AbpIdentity::PasswordChangeFailed') || 'Failed to change password',
         description: error instanceof Error ? error.message : 'An error occurred',
         status: 'error',
         duration: 5000,
@@ -112,27 +112,27 @@ export function ChangePassword({
 
   // Password validation rules
   const passwordValidation = {
-    required: instant('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
+    required: t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
     minLength: {
       value: 6,
-      message: instant('AbpIdentity::PasswordTooShort') || 'Password must be at least 6 characters',
+      message: t('AbpIdentity::PasswordTooShort') || 'Password must be at least 6 characters',
     },
     validate: {
       hasLowercase: (value: string) =>
         /[a-z]/.test(value) ||
-        instant('AbpIdentity::PasswordRequiresLower') ||
+        t('AbpIdentity::PasswordRequiresLower') ||
         'Password must contain a lowercase letter',
       hasUppercase: (value: string) =>
         /[A-Z]/.test(value) ||
-        instant('AbpIdentity::PasswordRequiresUpper') ||
+        t('AbpIdentity::PasswordRequiresUpper') ||
         'Password must contain an uppercase letter',
       hasNumber: (value: string) =>
         /[0-9]/.test(value) ||
-        instant('AbpIdentity::PasswordRequiresDigit') ||
+        t('AbpIdentity::PasswordRequiresDigit') ||
         'Password must contain a number',
       hasSpecial: (value: string) =>
         /[!@#$%^&*(),.?":{}|<>]/.test(value) ||
-        instant('AbpIdentity::PasswordRequiresNonAlphanumeric') ||
+        t('AbpIdentity::PasswordRequiresNonAlphanumeric') ||
         'Password must contain a special character',
     },
   };
@@ -143,7 +143,7 @@ export function ChangePassword({
       <ModalContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <ModalHeader>
-            {instant('AbpIdentity::ChangePassword') || 'Change Password'}
+            {t('AbpIdentity::ChangePassword') || 'Change Password'}
           </ModalHeader>
           <ModalCloseButton />
 
@@ -152,14 +152,14 @@ export function ChangePassword({
               {/* Current Password */}
               <FormControl isInvalid={!!errors.password}>
                 <FormLabel>
-                  {instant('AbpIdentity::DisplayName:CurrentPassword') || 'Current Password'}
+                  {t('AbpIdentity::DisplayName:CurrentPassword') || 'Current Password'}
                   <span style={{ color: 'red' }}> *</span>
                 </FormLabel>
                 <Input
                   type="password"
                   {...register('password', {
                     required:
-                      instant('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
+                      t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
                   })}
                 />
                 <FormErrorMessage>{errors.password?.message}</FormErrorMessage>
@@ -168,7 +168,7 @@ export function ChangePassword({
               {/* New Password */}
               <FormControl isInvalid={!!errors.newPassword}>
                 <FormLabel>
-                  {instant('AbpIdentity::DisplayName:NewPassword') || 'New Password'}
+                  {t('AbpIdentity::DisplayName:NewPassword') || 'New Password'}
                   <span style={{ color: 'red' }}> *</span>
                 </FormLabel>
                 <Input
@@ -181,7 +181,7 @@ export function ChangePassword({
               {/* Confirm New Password */}
               <FormControl isInvalid={!!errors.repeatNewPassword}>
                 <FormLabel>
-                  {instant('AbpIdentity::DisplayName:NewPasswordConfirm') ||
+                  {t('AbpIdentity::DisplayName:NewPasswordConfirm') ||
                     'Confirm New Password'}
                   <span style={{ color: 'red' }}> *</span>
                 </FormLabel>
@@ -189,10 +189,10 @@ export function ChangePassword({
                   type="password"
                   {...register('repeatNewPassword', {
                     required:
-                      instant('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
+                      t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
                     validate: (value) =>
                       value === newPassword ||
-                      instant('AbpIdentity::Identity.PasswordConfirmationFailed') ||
+                      t('AbpIdentity::Identity.PasswordConfirmationFailed') ||
                       'Passwords do not match',
                   })}
                 />
@@ -203,7 +203,7 @@ export function ChangePassword({
 
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={handleClose}>
-              {instant('AbpIdentity::Cancel') || 'Cancel'}
+              {t('AbpIdentity::Cancel') || 'Cancel'}
             </Button>
             <Button
               colorScheme="blue"
@@ -211,7 +211,7 @@ export function ChangePassword({
               isLoading={isSubmitting}
               leftIcon={<span>&#10003;</span>}
             >
-              {instant('AbpIdentity::Save') || 'Save'}
+              {t('AbpIdentity::Save') || 'Save'}
             </Button>
           </ModalFooter>
         </form>

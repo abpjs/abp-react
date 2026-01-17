@@ -297,12 +297,12 @@ function TestApiEndpoints() {
           <tbody>
             <tr>
               <td style={{ padding: '8px' }}><code>GET</code></td>
-              <td style={{ padding: '8px' }}><code>/api/abp/permissions</code></td>
+              <td style={{ padding: '8px' }}><code>/api/permission-management/permissions</code></td>
               <td>Fetch permissions</td>
             </tr>
             <tr>
               <td style={{ padding: '8px' }}><code>PUT</code></td>
-              <td style={{ padding: '8px' }}><code>/api/abp/permissions</code></td>
+              <td style={{ padding: '8px' }}><code>/api/permission-management/permissions</code></td>
               <td>Update permissions</td>
             </tr>
           </tbody>

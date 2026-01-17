@@ -82,7 +82,7 @@ export function PermissionManagementModal({
   onVisibleChange,
   onSave,
 }: PermissionManagementModalProps): React.ReactElement {
-  const { instant } = useLocalization();
+  const { t } = useLocalization();
 
   const {
     groups,
@@ -206,14 +206,14 @@ export function PermissionManagementModal({
       size="xl"
       header={
         <>
-          {instant('AbpPermissionManagement::Permissions')}
+          {t('AbpPermissionManagement::Permissions')}
           {entityDisplayName && ` - ${entityDisplayName}`}
         </>
       }
       footer={
         <>
           <Button variant="outline" onClick={handleClose} isDisabled={isLoading}>
-            {instant('AbpIdentity::Cancel')}
+            {t('AbpIdentity::Cancel')}
           </Button>
           <Button
             colorScheme="blue"
@@ -221,7 +221,7 @@ export function PermissionManagementModal({
             isLoading={isLoading}
             leftIcon={isLoading ? undefined : <CheckIcon />}
           >
-            {instant('AbpIdentity::Save')}
+            {t('AbpIdentity::Save')}
           </Button>
         </>
       }
@@ -252,7 +252,7 @@ export function PermissionManagementModal({
             onChange={toggleSelectAll}
             mb={2}
           >
-            {instant('AbpPermissionManagement::SelectAllInAllTabs')}
+            {t('AbpPermissionManagement::SelectAllInAllTabs')}
           </Checkbox>
 
           <Divider my={2} />
@@ -300,7 +300,7 @@ export function PermissionManagementModal({
                       onChange={toggleSelectThisTab}
                       mb={2}
                     >
-                      {instant('AbpPermissionManagement::SelectAllInThisTab')}
+                      {t('AbpPermissionManagement::SelectAllInThisTab')}
                     </Checkbox>
 
                     <Divider my={3} />

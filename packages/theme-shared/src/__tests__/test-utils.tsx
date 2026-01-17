@@ -9,7 +9,7 @@ import { ConfirmationProvider } from '../contexts/confirmation.context';
  * Mock for @abpjs/core's useLocalization hook.
  */
 export const mockUseLocalization = vi.fn(() => ({
-  instant: (key: string, ...params: string[]) => {
+  t: (key: string, ...params: string[]) => {
     // Simple mock that returns the key or interpolates params
     if (params.length > 0) {
       let result = key;
@@ -20,7 +20,7 @@ export const mockUseLocalization = vi.fn(() => ({
     }
     return key;
   },
-  t: (key: string, ..._params: string[]) => key,
+  instant: (key: string, ..._params: string[]) => key, // Alias for backward compatibility
   languages: [{ cultureName: 'en', displayName: 'English' }],
   localization: {},
 }));

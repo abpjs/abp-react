@@ -8,7 +8,7 @@ export class LocalizationService {
    * @param key The localization key in format "ResourceName::Key" or "::Key" for default resource
    * @param interpolateParams Parameters to interpolate into the string
    */
-  instant(key: string, ...interpolateParams: string[]): string {
+  t(key: string, ...interpolateParams: string[]): string {
     const state = this.getState().config;
     const keys = key.split('::') as [string, string];
 
@@ -40,6 +40,15 @@ export class LocalizationService {
     }
 
     return copy || key;
+  }
+
+  /**
+   * Alias for t - for developers familiar with ABP Angular
+   * @param key The localization key in format "ResourceName::Key" or "::Key" for default resource
+   * @param interpolateParams Parameters to interpolate into the string
+   */
+  instant(key: string, ...interpolateParams: string[]): string {
+    return this.t(key, ...interpolateParams);
   }
 
   /**

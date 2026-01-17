@@ -119,7 +119,7 @@ export interface ConfirmationDialogProps {
  */
 export function ConfirmationDialog({ className }: ConfirmationDialogProps): React.ReactElement | null {
   const { confirmation, respond } = useConfirmationState();
-  const { instant } = useLocalization();
+  const { t } = useLocalization();
   const cancelRef = useRef<HTMLButtonElement>(null);
 
   if (!confirmation) {
@@ -129,21 +129,21 @@ export function ConfirmationDialog({ className }: ConfirmationDialogProps): Reac
   const { message, title, severity, options } = confirmation;
 
   // Localize message and title
-  const localizedMessage = instant(
+  const localizedMessage = t(
     message,
     ...(options.messageLocalizationParams || [])
   );
   const localizedTitle = title
-    ? instant(title, ...(options.titleLocalizationParams || []))
+    ? t(title, ...(options.titleLocalizationParams || []))
     : undefined;
 
   // Localize button text
   const yesCopy = options.yesCopy
-    ? instant(options.yesCopy)
-    : instant('AbpUi::Yes');
+    ? t(options.yesCopy)
+    : t('AbpUi::Yes');
   const cancelCopy = options.cancelCopy
-    ? instant(options.cancelCopy)
-    : instant('AbpUi::Cancel');
+    ? t(options.cancelCopy)
+    : t('AbpUi::Cancel');
 
   const handleConfirm = () => {
     respond(Toaster.Status.confirm);

@@ -22,7 +22,7 @@ export class PermissionManagementService {
   ): Promise<PermissionManagement.Response> {
     return this.rest.request<void, PermissionManagement.Response>({
       method: 'GET',
-      url: '/api/abp/permissions',
+      url: '/api/permission-management/permissions',
       params,
     });
   }
@@ -37,7 +37,7 @@ export class PermissionManagementService {
 
     return this.rest.request<{ permissions: PermissionManagement.MinimumPermission[] }, void>({
       method: 'PUT',
-      url: '/api/abp/permissions',
+      url: '/api/permission-management/permissions',
       body: { permissions },
       params: { providerKey, providerName },
     });

@@ -14,6 +14,7 @@ import {
   TestAccountPage,
   TestPermissionManagementPage,
   TestTenantManagementPage,
+  TestIdentityPage,
 } from './pages'
 import './App.css'
 
@@ -111,6 +112,18 @@ function Home() {
             <p>Permission modal, role/user permissions</p>
             <Link to="/test/permission-management" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
           </div>
+
+          <div className="test-card">
+            <h3>@abpjs/tenant-management</h3>
+            <p>Tenant management, connection strings</p>
+            <Link to="/test/tenant-management" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
+
+          <div className="test-card">
+            <h3>@abpjs/identity</h3>
+            <p>User and role management, identity hooks</p>
+            <Link to="/test/identity" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
         </div>
       </div>
 
@@ -184,6 +197,7 @@ function App() {
         <Route path="/test/account" element={<TestAccountPage />} />
         <Route path="/test/permission-management" element={<TestPermissionManagementPage />} />
         <Route path="/test/tenant-management" element={<TestTenantManagementPage />} />
+        <Route path="/test/identity" element={<TestIdentityPage />} />
       </Route>
 
       {/* Auth pages with LayoutAccount - using @abpjs/account */}

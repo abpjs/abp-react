@@ -15,7 +15,7 @@ export function useLocalization() {
    * @param key The localization key in format "ResourceName::Key" or "::Key" for default resource
    * @param interpolateParams Parameters to interpolate into the string
    */
-  const instant = useCallback(
+  const t = useCallback(
     (key: string, ...interpolateParams: string[]): string => {
       const keys = key.split('::') as [string, string];
 
@@ -47,9 +47,9 @@ export function useLocalization() {
   );
 
   /**
-   * Alias for instant - commonly used name
+   * Alias for t - for developers familiar with ABP Angular
    */
-  const t = instant;
+  const instant = t;
 
   /**
    * Get all available languages
@@ -70,6 +70,6 @@ export function useLocalization() {
  * @param interpolateParams Parameters to interpolate
  */
 export function useTranslation(key: string, ...interpolateParams: string[]): string {
-  const { instant } = useLocalization();
-  return instant(key, ...interpolateParams);
+  const { t } = useLocalization();
+  return t(key, ...interpolateParams);
 }

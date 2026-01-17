@@ -57,7 +57,7 @@ export function Profile({
   visible,
   onVisibleChange,
 }: ProfileProps): React.ReactElement {
-  const { instant } = useLocalization();
+  const { t } = useLocalization();
   const { profile, fetchProfile, updateProfile, loading } = useProfile();
   const toast = useToast();
 
@@ -103,7 +103,7 @@ export function Profile({
       await updateProfile(data);
 
       toast({
-        title: instant('AbpIdentity::ProfileUpdatedMessage') || 'Profile updated successfully',
+        title: t('AbpIdentity::ProfileUpdatedMessage') || 'Profile updated successfully',
         status: 'success',
         duration: 3000,
         isClosable: true,
@@ -112,7 +112,7 @@ export function Profile({
       onVisibleChange(false);
     } catch (error) {
       toast({
-        title: instant('AbpIdentity::ProfileUpdateFailed') || 'Failed to update profile',
+        title: t('AbpIdentity::ProfileUpdateFailed') || 'Failed to update profile',
         description: error instanceof Error ? error.message : 'An error occurred',
         status: 'error',
         duration: 5000,
@@ -131,7 +131,7 @@ export function Profile({
       <ModalContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <ModalHeader>
-            {instant('AbpIdentity::PersonalInfo') || 'Personal Info'}
+            {t('AbpIdentity::PersonalInfo') || 'Personal Info'}
           </ModalHeader>
           <ModalCloseButton />
 
@@ -140,14 +140,14 @@ export function Profile({
               {/* Username */}
               <FormControl isInvalid={!!errors.userName}>
                 <FormLabel>
-                  {instant('AbpIdentity::DisplayName:UserName') || 'Username'}
+                  {t('AbpIdentity::DisplayName:UserName') || 'Username'}
                   <span style={{ color: 'red' }}> *</span>
                 </FormLabel>
                 <Input
                   type="text"
                   {...register('userName', {
                     required:
-                      instant('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
+                      t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
                     maxLength: {
                       value: 256,
                       message: 'Maximum 256 characters',
@@ -162,7 +162,7 @@ export function Profile({
                 {/* Name */}
                 <FormControl isInvalid={!!errors.name} flex={1}>
                   <FormLabel>
-                    {instant('AbpIdentity::DisplayName:Name') || 'Name'}
+                    {t('AbpIdentity::DisplayName:Name') || 'Name'}
                   </FormLabel>
                   <Input
                     type="text"
@@ -179,7 +179,7 @@ export function Profile({
                 {/* Surname */}
                 <FormControl isInvalid={!!errors.surname} flex={1}>
                   <FormLabel>
-                    {instant('AbpIdentity::DisplayName:Surname') || 'Surname'}
+                    {t('AbpIdentity::DisplayName:Surname') || 'Surname'}
                   </FormLabel>
                   <Input
                     type="text"
@@ -197,17 +197,17 @@ export function Profile({
               {/* Email */}
               <FormControl isInvalid={!!errors.email}>
                 <FormLabel>
-                  {instant('AbpIdentity::DisplayName:EmailAddress') || 'Email Address'}
+                  {t('AbpIdentity::DisplayName:EmailAddress') || 'Email Address'}
                   <span style={{ color: 'red' }}> *</span>
                 </FormLabel>
                 <Input
                   type="email"
                   {...register('email', {
                     required:
-                      instant('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
+                      t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: instant('AbpIdentity::InvalidEmail') || 'Invalid email address',
+                      message: t('AbpIdentity::InvalidEmail') || 'Invalid email address',
                     },
                     maxLength: {
                       value: 256,
@@ -221,7 +221,7 @@ export function Profile({
               {/* Phone Number */}
               <FormControl isInvalid={!!errors.phoneNumber}>
                 <FormLabel>
-                  {instant('AbpIdentity::DisplayName:PhoneNumber') || 'Phone Number'}
+                  {t('AbpIdentity::DisplayName:PhoneNumber') || 'Phone Number'}
                 </FormLabel>
                 <Input
                   type="tel"
@@ -239,7 +239,7 @@ export function Profile({
 
           <ModalFooter>
             <Button variant="ghost" mr={3} onClick={handleClose}>
-              {instant('AbpIdentity::Cancel') || 'Cancel'}
+              {t('AbpIdentity::Cancel') || 'Cancel'}
             </Button>
             <Button
               colorScheme="blue"
@@ -247,7 +247,7 @@ export function Profile({
               isLoading={isSubmitting || loading}
               leftIcon={<span>&#10003;</span>}
             >
-              {instant('AbpIdentity::Save') || 'Save'}
+              {t('AbpIdentity::Save') || 'Save'}
             </Button>
           </ModalFooter>
         </form>

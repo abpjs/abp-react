@@ -52,6 +52,7 @@ const appRoutes: ABP.FullRoute[] = [
       { name: 'Account', path: 'account', order: 4, layout: eLayoutType.application },
       { name: 'Permission Management', path: 'permission-management', order: 5, layout: eLayoutType.application },
       { name: 'Tenant Management', path: 'tenant-management', order: 6, layout: eLayoutType.application },
+      { name: 'Identity', path: 'identity', order: 7, layout: eLayoutType.application },
     ]
   },
 ]

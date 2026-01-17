@@ -9,7 +9,7 @@ import { Toaster } from '../models';
 // Mock @abpjs/core
 vi.mock('@abpjs/core', () => ({
   useLocalization: () => ({
-    instant: (key: string, ...params: string[]) => {
+    t: (key: string, ...params: string[]) => {
       // Map common localization keys
       const translations: Record<string, string> = {
         'AbpUi::Yes': 'Yes',

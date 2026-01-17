@@ -9,7 +9,7 @@ import { ToastContainer } from '../components/toast/Toast';
 // Mock @abpjs/core
 vi.mock('@abpjs/core', () => ({
   useLocalization: () => ({
-    instant: (key: string, ...params: string[]) => {
+    t: (key: string, ...params: string[]) => {
       if (params.length > 0) {
         let result = key;
         params.forEach((param, index) => {
