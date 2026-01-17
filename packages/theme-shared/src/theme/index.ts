@@ -60,46 +60,154 @@ const colors = {
 };
 
 /**
- * Semantic tokens for ABP theming.
- * These provide automatic dark mode support.
+ * Semantic tokens for ABP theming with light/dark mode support.
+ * These provide automatic dark mode support via _light and _dark conditions.
  */
 const semanticTokens = {
   colors: {
+    // Background colors
+    bg: {
+      DEFAULT: {
+        value: { _light: '{colors.white}', _dark: '#121212' },
+      },
+      subtle: {
+        value: { _light: '{colors.gray.50}', _dark: '#1a1a1a' },
+      },
+      muted: {
+        value: { _light: '{colors.gray.100}', _dark: '#2d2d2d' },
+      },
+      emphasized: {
+        value: { _light: '{colors.gray.200}', _dark: '#3d3d3d' },
+      },
+      inverted: {
+        value: { _light: '{colors.gray.900}', _dark: '{colors.white}' },
+      },
+    },
+    // Foreground (text) colors
+    fg: {
+      DEFAULT: {
+        value: { _light: '{colors.gray.900}', _dark: '#e5e5e5' },
+      },
+      muted: {
+        value: { _light: '{colors.gray.600}', _dark: '#a1a1a1' },
+      },
+      subtle: {
+        value: { _light: '{colors.gray.500}', _dark: '#737373' },
+      },
+      inverted: {
+        value: { _light: '{colors.white}', _dark: '{colors.gray.900}' },
+      },
+    },
+    // Border colors
+    border: {
+      DEFAULT: {
+        value: { _light: '{colors.gray.200}', _dark: '#3d3d3d' },
+      },
+      muted: {
+        value: { _light: '{colors.gray.100}', _dark: '#2d2d2d' },
+      },
+      subtle: {
+        value: { _light: '{colors.gray.50}', _dark: '#1a1a1a' },
+      },
+      emphasized: {
+        value: { _light: '{colors.gray.300}', _dark: '#525252' },
+      },
+    },
+    // Brand colors with light/dark support
     brand: {
-      solid: { value: '{colors.brand.500}' },
-      contrast: { value: 'white' },
-      fg: { value: '{colors.brand.700}' },
-      muted: { value: '{colors.brand.100}' },
-      subtle: { value: '{colors.brand.50}' },
-      emphasized: { value: '{colors.brand.300}' },
-      focusRing: { value: '{colors.brand.500}' },
+      solid: {
+        value: { _light: '{colors.brand.500}', _dark: '{colors.brand.400}' },
+      },
+      contrast: {
+        value: { _light: '{colors.white}', _dark: '{colors.white}' },
+      },
+      fg: {
+        value: { _light: '{colors.brand.700}', _dark: '{colors.brand.300}' },
+      },
+      muted: {
+        value: { _light: '{colors.brand.100}', _dark: '{colors.brand.900}' },
+      },
+      subtle: {
+        value: { _light: '{colors.brand.50}', _dark: '{colors.brand.950}' },
+      },
+      emphasized: {
+        value: { _light: '{colors.brand.300}', _dark: '{colors.brand.600}' },
+      },
+      focusRing: {
+        value: { _light: '{colors.brand.500}', _dark: '{colors.brand.400}' },
+      },
     },
+    // Success colors with light/dark support
     success: {
-      solid: { value: '{colors.success.500}' },
-      contrast: { value: 'white' },
-      fg: { value: '{colors.success.700}' },
-      muted: { value: '{colors.success.100}' },
-      subtle: { value: '{colors.success.50}' },
-      emphasized: { value: '{colors.success.300}' },
-      focusRing: { value: '{colors.success.500}' },
+      solid: {
+        value: { _light: '{colors.success.500}', _dark: '{colors.success.400}' },
+      },
+      contrast: {
+        value: { _light: '{colors.white}', _dark: '{colors.white}' },
+      },
+      fg: {
+        value: { _light: '{colors.success.700}', _dark: '{colors.success.300}' },
+      },
+      muted: {
+        value: { _light: '{colors.success.100}', _dark: '{colors.success.900}' },
+      },
+      subtle: {
+        value: { _light: '{colors.success.50}', _dark: '{colors.success.950}' },
+      },
+      emphasized: {
+        value: { _light: '{colors.success.300}', _dark: '{colors.success.600}' },
+      },
+      focusRing: {
+        value: { _light: '{colors.success.500}', _dark: '{colors.success.400}' },
+      },
     },
+    // Warning colors with light/dark support
     warning: {
-      solid: { value: '{colors.warning.500}' },
-      contrast: { value: 'black' },
-      fg: { value: '{colors.warning.700}' },
-      muted: { value: '{colors.warning.100}' },
-      subtle: { value: '{colors.warning.50}' },
-      emphasized: { value: '{colors.warning.300}' },
-      focusRing: { value: '{colors.warning.500}' },
+      solid: {
+        value: { _light: '{colors.warning.500}', _dark: '{colors.warning.400}' },
+      },
+      contrast: {
+        value: { _light: '{colors.black}', _dark: '{colors.black}' },
+      },
+      fg: {
+        value: { _light: '{colors.warning.700}', _dark: '{colors.warning.300}' },
+      },
+      muted: {
+        value: { _light: '{colors.warning.100}', _dark: '{colors.warning.900}' },
+      },
+      subtle: {
+        value: { _light: '{colors.warning.50}', _dark: '{colors.warning.950}' },
+      },
+      emphasized: {
+        value: { _light: '{colors.warning.300}', _dark: '{colors.warning.600}' },
+      },
+      focusRing: {
+        value: { _light: '{colors.warning.500}', _dark: '{colors.warning.400}' },
+      },
     },
+    // Error colors with light/dark support
     error: {
-      solid: { value: '{colors.error.500}' },
-      contrast: { value: 'white' },
-      fg: { value: '{colors.error.700}' },
-      muted: { value: '{colors.error.100}' },
-      subtle: { value: '{colors.error.50}' },
-      emphasized: { value: '{colors.error.300}' },
-      focusRing: { value: '{colors.error.500}' },
+      solid: {
+        value: { _light: '{colors.error.500}', _dark: '{colors.error.400}' },
+      },
+      contrast: {
+        value: { _light: '{colors.white}', _dark: '{colors.white}' },
+      },
+      fg: {
+        value: { _light: '{colors.error.700}', _dark: '{colors.error.300}' },
+      },
+      muted: {
+        value: { _light: '{colors.error.100}', _dark: '{colors.error.900}' },
+      },
+      subtle: {
+        value: { _light: '{colors.error.50}', _dark: '{colors.error.950}' },
+      },
+      emphasized: {
+        value: { _light: '{colors.error.300}', _dark: '{colors.error.600}' },
+      },
+      focusRing: {
+        value: { _light: '{colors.error.500}', _dark: '{colors.error.400}' },
+      },
     },
   },
 };
@@ -122,6 +230,8 @@ export const defaultAbpConfig = defineConfig({
   globalCss: {
     'html, body': {
       colorPalette: 'brand',
+      bg: 'bg',
+      color: 'fg',
     },
   },
 });

@@ -24,7 +24,7 @@ export interface ThemeBasicProviderProps {
 
 /**
  * Default theme configuration for theme-basic
- * Uses Chakra v3's defineConfig format
+ * Uses Chakra v3's defineConfig format with proper light/dark mode support
  */
 export const defaultThemeBasicConfig = defineConfig({
   theme: {
@@ -47,14 +47,29 @@ export const defaultThemeBasicConfig = defineConfig({
     },
     semanticTokens: {
       colors: {
+        // Brand colors with light/dark support
         brand: {
-          solid: { value: '{colors.brand.500}' },
-          contrast: { value: 'white' },
-          fg: { value: '{colors.brand.700}' },
-          muted: { value: '{colors.brand.100}' },
-          subtle: { value: '{colors.brand.50}' },
-          emphasized: { value: '{colors.brand.300}' },
-          focusRing: { value: '{colors.brand.500}' },
+          solid: {
+            value: { _light: '{colors.brand.500}', _dark: '{colors.brand.400}' },
+          },
+          contrast: {
+            value: { _light: '{colors.white}', _dark: '{colors.white}' },
+          },
+          fg: {
+            value: { _light: '{colors.brand.700}', _dark: '{colors.brand.300}' },
+          },
+          muted: {
+            value: { _light: '{colors.brand.100}', _dark: '{colors.brand.900}' },
+          },
+          subtle: {
+            value: { _light: '{colors.brand.50}', _dark: '{colors.brand.950}' },
+          },
+          emphasized: {
+            value: { _light: '{colors.brand.300}', _dark: '{colors.brand.600}' },
+          },
+          focusRing: {
+            value: { _light: '{colors.brand.500}', _dark: '{colors.brand.400}' },
+          },
         },
       },
     },

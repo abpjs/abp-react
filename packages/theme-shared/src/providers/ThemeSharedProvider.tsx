@@ -5,7 +5,7 @@ import { ConfirmationProvider } from '../contexts/confirmation.context';
 import { ToastContainer } from '../components/toast/Toast';
 import { ConfirmationDialog } from '../components/confirmation/Confirmation';
 import { createAbpSystem, abpSystem, type ThemeOverride } from '../theme';
-import { ColorModeProvider } from '../components/ui/color-mode';
+import { ColorModeProvider, type ColorModeProviderProps } from '../components/ui/color-mode';
 
 export interface ThemeSharedProviderProps {
   children: ReactNode;
@@ -153,15 +153,16 @@ export function ThemeSharedProvider({
     </ToasterProvider>
   );
 
+  // Color mode provider props
+  const colorModeProps: Partial<ColorModeProviderProps> = enableColorMode
+    ? { defaultTheme: defaultColorMode }
+    : { forcedTheme: 'light' };
+
   return (
     <ChakraProvider value={system}>
-      {enableColorMode ? (
-        <ColorModeProvider defaultTheme={defaultColorMode} forcedTheme={enableColorMode ? undefined : 'light'}>
-          {content}
-        </ColorModeProvider>
-      ) : (
-        content
-      )}
+      <ColorModeProvider {...colorModeProps}>
+        {content}
+      </ColorModeProvider>
     </ChakraProvider>
   );
 }
