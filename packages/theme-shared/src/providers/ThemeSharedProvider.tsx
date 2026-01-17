@@ -6,6 +6,7 @@ import { ToastContainer } from '../components/toast/Toast';
 import { ConfirmationDialog } from '../components/confirmation/Confirmation';
 import { createAbpSystem, abpSystem, type ThemeOverride } from '../theme';
 import { ColorModeProvider, type ColorModeProviderProps } from '../components/ui/color-mode';
+import { useDirection } from '@abpjs/core';
 
 export interface ThemeSharedProviderProps {
   children: ReactNode;
@@ -151,7 +152,9 @@ export function ThemeSharedProvider({
 }: ThemeSharedProviderProps): React.ReactElement {
   // Create system with overrides if provided
   const system = themeOverrides ? createAbpSystem(themeOverrides) : abpSystem;
-
+  const {endSide} = useDirection();
+  toastPosition = `bottom-${endSide}`
+  
   // Core content with toast and confirmation providers
   const content = (
     <ToasterProvider>

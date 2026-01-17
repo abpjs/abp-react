@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import {
   Toaster as ChakraToaster,
   Portal,
@@ -106,17 +106,53 @@ export interface ToastContainerProps {
   position?: 'top' | 'top-right' | 'top-left' | 'bottom' | 'bottom-right' | 'bottom-left';
 }
 
-// Create a global toaster instance for ABP toast management
-const abpToaster = createToaster({
-  placement: 'bottom-end',
-  pauseOnPageIdle: true,
-});
+/**
+ * Map position prop to Chakra placement, accounting for RTL.
+ * Uses logical values (start/end) which automatically handle RTL.
+ */
+function getPlacement(position: ToastContainerProps['position']): 'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' {
+  switch (position) {
+    case 'top':
+      return 'top';
+    case 'top-left':
+      return 'top-start'; // Logical: start = left in LTR, right in RTL
+    case 'top-right':
+      return 'top-end'; // Logical: end = right in LTR, left in RTL
+    case 'bottom':
+      return 'bottom';
+    case 'bottom-left':
+      return 'bottom-start';
+    case 'bottom-right':
+    default:
+      return 'bottom-end';
+  }
+}
+
+// Cache for toaster instances by placement
+const toasterCache = new Map<string, ReturnType<typeof createToaster>>();
+
+/**
+ * Get or create a toaster instance for the given placement.
+ */
+function getToaster(placement: ReturnType<typeof getPlacement>) {
+  if (!toasterCache.has(placement)) {
+    toasterCache.set(placement, createToaster({
+      placement,
+      pauseOnPageIdle: true,
+    }));
+  }
+  return toasterCache.get(placement)!;
+}
 
 /**
  * ToastContainer - Syncs toaster state with Chakra v3's toast system.
  *
  * This is the React equivalent of Angular's ToastComponent.
  * Place this component once in your app to display toasts.
+ *
+ * The toast position uses logical values (start/end) which automatically
+ * handle RTL languages - toasts will appear on the correct side based on
+ * the current text direction.
  *
  * @example
  * ```tsx
@@ -131,9 +167,16 @@ const abpToaster = createToaster({
  * ```
  */
 export function ToastContainer({ position = 'bottom-right' }: ToastContainerProps): React.ReactElement {
+
   const { toasts, service } = useToasterContext();
   const { t } = useLocalization();
   const displayedToastsRef = useRef<Set<string>>(new Set());
+
+  // Get the placement based on position prop
+  const placement = useMemo(() => getPlacement(position), [position]);
+
+  // Get or create toaster for this placement
+  const toaster = useMemo(() => getToaster(placement), [placement]);
 
   // Sync our toast state with Chakra's toast system
   useEffect(() => {
@@ -155,7 +198,7 @@ export function ToastContainer({ position = 'bottom-right' }: ToastContainerProp
       // Use requestAnimationFrame to ensure each toast is created in a separate frame
       // This helps Chakra's toaster properly handle multiple toasts
       requestAnimationFrame(() => {
-        abpToaster.create({
+        toaster.create({
           id: toast.id,
           title: localizedTitle,
           description: localizedMessage,
@@ -174,17 +217,11 @@ export function ToastContainer({ position = 'bottom-right' }: ToastContainerProp
         });
       });
     });
-  }, [toasts, t, service]);
-
-  // Update toaster placement when position changes
-  useEffect(() => {
-    // Note: Chakra v3 toaster placement is set at creation time
-    // For dynamic positioning, we would need to recreate the toaster
-  }, [position]);
+  }, [toasts, t, service, toaster]);
 
   return (
     <Portal>
-      <ChakraToaster toaster={abpToaster} insetInline={{ mdDown: '4' }}>
+      <ChakraToaster toaster={toaster} insetInline={{ mdDown: '4' }}>
         {(toast) => {
           const severity = (toast.meta?.severity as Toaster.Severity) || 'info';
           const closable = toast.meta?.closable !== false;
@@ -204,7 +241,7 @@ export function ToastContainer({ position = 'bottom-right' }: ToastContainerProp
                 </Box>
                 <Stack gap={1} flex={1}>
                   {toast.title && (
-                    <Toast.Title fontWeight="bold" fontSize="sm">
+                    <Toast.Title fontWeight="bold" fontSize="sm" color='fg'>
                       {toast.title}
                     </Toast.Title>
                   )}
