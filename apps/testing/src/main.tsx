@@ -4,6 +4,19 @@ import { BrowserRouter } from 'react-router-dom'
 import { AbpProvider, type ABP, type Config, eLayoutType } from '@abpjs/core'
 import { ThemeBasicProvider, LAYOUTS } from '@abpjs/theme-basic'
 import { AccountProvider, ACCOUNT_ROUTES } from '@abpjs/account'
+import {
+  TbHome,
+  TbInfoCircle,
+  TbDashboard,
+  TbTestPipe,
+  TbBox,
+  TbPalette,
+  TbLayout,
+  TbUser,
+  TbShield,
+  TbBuilding,
+  TbId,
+} from 'react-icons/tb'
 import './index.css'
 import App from './App.tsx'
 
@@ -30,14 +43,15 @@ interface AppConfig {
 
 // Define app-specific routes
 const appRoutes: ABP.FullRoute[] = [
-  { name: 'Home', path: '', order: 1, layout: eLayoutType.application },
-  { name: 'About', path: 'about', order: 2, layout: eLayoutType.application },
+  { name: 'Home', path: '', order: 1, layout: eLayoutType.application, icon: <TbHome /> },
+  { name: 'About', path: 'about', order: 2, layout: eLayoutType.application, icon: <TbInfoCircle /> },
   {
     name: 'Dashboard',
     path: 'dashboard',
     order: 3,
     requiredPolicy: 'AdministrationService.RoleManagements',
-    layout: eLayoutType.application
+    layout: eLayoutType.application,
+    icon: <TbDashboard />
   },
   // Test pages for each package (grouped under Tests)
   {
@@ -45,14 +59,15 @@ const appRoutes: ABP.FullRoute[] = [
     path: 'test',
     order: 10,
     layout: eLayoutType.application,
+    icon: <TbTestPipe />,
     children: [
-      { name: 'Core', path: 'core', order: 1, layout: eLayoutType.application },
-      { name: 'Theme Shared', path: 'theme-shared', order: 2, layout: eLayoutType.application },
-      { name: 'Theme Basic', path: 'theme-basic', order: 3, layout: eLayoutType.application },
-      { name: 'Account', path: 'account', order: 4, layout: eLayoutType.application },
-      { name: 'Permission Management', path: 'permission-management', order: 5, layout: eLayoutType.application },
-      { name: 'Tenant Management', path: 'tenant-management', order: 6, layout: eLayoutType.application },
-      { name: 'Identity', path: 'identity', order: 7, layout: eLayoutType.application },
+      { name: 'Core', path: 'core', order: 1, layout: eLayoutType.application, icon: <TbBox /> },
+      { name: 'Theme Shared', path: 'theme-shared', order: 2, layout: eLayoutType.application, icon: <TbPalette /> },
+      { name: 'Theme Basic', path: 'theme-basic', order: 3, layout: eLayoutType.application, icon: <TbLayout /> },
+      { name: 'Account', path: 'account', order: 4, layout: eLayoutType.application, icon: <TbUser /> },
+      { name: 'Permission Management', path: 'permission-management', order: 5, layout: eLayoutType.application, icon: <TbShield /> },
+      { name: 'Tenant Management', path: 'tenant-management', order: 6, layout: eLayoutType.application, icon: <TbBuilding /> },
+      { name: 'Identity', path: 'identity', order: 7, layout: eLayoutType.application, icon: <TbId /> },
     ]
   },
 ]
@@ -93,7 +108,9 @@ async function bootstrap() {
     <StrictMode>
       <BrowserRouter>
         <AbpProvider environment={environment} routes={routes} requirements={requirements}>
-          <ThemeBasicProvider>
+          <ThemeBasicProvider
+              appName='Testing app'
+            >
             <AccountProvider options={{ redirectUrl: '/' }}>
               <App />
             </AccountProvider>

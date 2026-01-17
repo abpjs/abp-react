@@ -1,5 +1,5 @@
 import React, { type ReactNode } from 'react';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, LocaleProvider } from '@chakra-ui/react';
 import { ToasterProvider } from '../contexts/toaster.context';
 import { ConfirmationProvider } from '../contexts/confirmation.context';
 import { ToastContainer } from '../components/toast/Toast';
@@ -65,6 +65,15 @@ export interface ThemeSharedProviderProps {
    * @default 'light'
    */
   defaultColorMode?: 'light' | 'dark' | 'system';
+  /**
+   * Locale for RTL support and accessibility.
+   * This is passed to Chakra's LocaleProvider for proper direction handling
+   * in Portal-based components (menus, modals, popovers, etc.).
+   *
+   * Examples: 'en-US', 'ar-SA', 'he-IL', 'fa-IR'
+   * @default 'en-US'
+   */
+  locale?: string;
 }
 
 /**
@@ -138,6 +147,7 @@ export function ThemeSharedProvider({
   toastPosition = 'bottom-right',
   enableColorMode = false,
   defaultColorMode = 'light',
+  locale = 'en-US',
 }: ThemeSharedProviderProps): React.ReactElement {
   // Create system with overrides if provided
   const system = themeOverrides ? createAbpSystem(themeOverrides) : abpSystem;
@@ -160,9 +170,11 @@ export function ThemeSharedProvider({
 
   return (
     <ChakraProvider value={system}>
-      <ColorModeProvider {...colorModeProps}>
-        {content}
-      </ColorModeProvider>
+      <LocaleProvider locale={locale}>
+        <ColorModeProvider {...colorModeProps}>
+          {content}
+        </ColorModeProvider>
+      </LocaleProvider>
     </ChakraProvider>
   );
 }
