@@ -162,10 +162,35 @@ function UsersList() {
 |------|-------------|
 | `useAuth()` | Authentication state and methods (login, logout, user info) |
 | `useConfig()` | Access application configuration |
+| `useDirection()` | RTL/LTR direction based on current language |
 | `useLocalization()` | Localization and translation functions |
 | `usePermission()` | Permission checking utilities |
 | `useProfile()` | Current user profile management |
 | `useSession()` | Session state management |
+
+### RTL Support
+
+The `useDirection()` hook provides RTL (Right-to-Left) support for Arabic, Hebrew, Persian, Urdu, and other RTL languages:
+
+```tsx
+import { useDirection } from '@abpjs/core';
+
+function MyComponent() {
+  const { direction, isRtl, startSide, endSide } = useDirection();
+
+  return (
+    <div dir={direction}>
+      {/* direction: 'rtl' or 'ltr' */}
+      {/* isRtl: boolean */}
+      {/* startSide: 'left' (LTR) or 'right' (RTL) */}
+      {/* endSide: 'right' (LTR) or 'left' (RTL) */}
+      <Menu.Root positioning={{ placement: `${endSide}-start` }}>
+        {/* Menu opens on opposite side of content */}
+      </Menu.Root>
+    </div>
+  );
+}
+```
 
 ### Services
 

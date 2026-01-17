@@ -16,9 +16,12 @@ This package is a React translation of the original `@abp/ng.theme.basic` Angula
 
 - **Multiple Layouts** - Application, Account, and Empty layouts
 - **Dynamic Layout System** - Switch layouts based on routes
-- **Navigation Management** - Configurable navigation elements
+- **Navigation Management** - Configurable navigation elements with icons and badges
 - **User Profile** - Built-in profile and password change components
-- **Responsive Design** - Mobile-friendly layouts out of the box
+- **Responsive Design** - Mobile-friendly layouts with sidebar and drawer navigation
+- **RTL Support** - Full right-to-left support for Arabic, Hebrew, Persian, and other RTL languages
+- **Search** - Built-in navigation search to filter menu items
+- **Logo Customization** - Customize logo via props without modifying source code
 - **Chakra UI v3** - Beautiful, accessible components with modern patterns
 - **Color Mode** - Built-in light/dark theme support (opt-in)
 - **TypeScript** - Full type safety with comprehensive definitions
@@ -455,6 +458,84 @@ function CustomLayout({ children }) {
 | `toastPosition` | `string` | `'bottom-right'` | Toast position |
 | `enableColorMode` | `boolean` | `false` | Enable dark/light mode |
 | `defaultColorMode` | `'light' \| 'dark' \| 'system'` | `'light'` | Default color mode |
+| `logo` | `ReactNode` | - | Custom logo component |
+| `logoIcon` | `ReactNode` | - | Custom logo icon (for collapsed states) |
+| `appName` | `string` | - | Application name for logo text |
+| `logoLink` | `string` | `'/'` | Link destination when clicking logo |
+
+## Logo Customization
+
+Customize the application logo via ThemeBasicProvider props:
+
+```tsx
+import { ThemeBasicProvider } from '@abpjs/theme-basic';
+
+function App() {
+  return (
+    <ThemeBasicProvider
+      logo={<img src="/my-logo.svg" alt="My App" />}
+      logoIcon={<img src="/my-icon.svg" alt="Icon" />}
+      appName="My Application"
+      logoLink="/"
+    >
+      {/* Your app */}
+    </ThemeBasicProvider>
+  );
+}
+```
+
+## Route Icons and Badges
+
+Define icons and badges directly on your routes:
+
+```tsx
+import { LuHome, LuUsers, LuSettings, LuListTodo } from 'react-icons/lu';
+
+const routes = [
+  {
+    name: 'Home',
+    path: '/',
+    icon: <LuHome />,
+  },
+  {
+    name: 'Tasks',
+    path: '/tasks',
+    icon: <LuListTodo />,
+    badge: 5,                    // Shows "5" badge
+    badgeColorPalette: 'red',   // Badge color (default: 'gray')
+  },
+  {
+    name: 'Messages',
+    path: '/messages',
+    badge: '50+',               // Can be string or number
+    badgeColorPalette: 'blue',
+  },
+  {
+    name: 'Admin',
+    path: '/admin',
+    icon: <LuSettings />,
+    children: [
+      {
+        name: 'Users',
+        path: '/admin/users',
+        icon: <LuUsers />,
+        badge: 'New',
+      },
+    ],
+  },
+];
+```
+
+## RTL (Right-to-Left) Support
+
+The layout automatically supports RTL languages. When a user switches to Arabic, Hebrew, Persian, or other RTL languages:
+
+- Sidebar moves to the right side
+- Text alignment flips
+- Icons and navigation elements reposition correctly
+- Menus open in the appropriate direction
+
+No additional configuration needed - RTL is detected automatically from the selected language.
 
 ## Complete Example
 
