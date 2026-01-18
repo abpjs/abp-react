@@ -1,7 +1,7 @@
 import { Button, HStack, Menu, Portal, Text } from '@chakra-ui/react'
 import { LuChevronDown, LuGlobe } from 'react-icons/lu'
 import { useConfig, useSession } from '@abpjs/core'
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { SIDEBAR_Z_INDEX } from '../../../../components/layout-application/LayoutApplication'
 
 export interface LanguageSelectorProps {
@@ -15,6 +15,12 @@ export interface LanguageSelectorProps {
 export const LanguageSelector = ({ compact = false }: LanguageSelectorProps) => {
   const { localization } = useConfig()
   const { language, setLanguage } = useSession()
+
+  const handleLanguageChange = useCallback((cultureName: string) => {
+    setLanguage(cultureName)
+    // Refresh the page to ensure all language strings are updated
+    window.location.reload()
+  }, [setLanguage])
 
   const languages = useMemo(() => {
     return localization?.languages || []
@@ -64,7 +70,7 @@ export const LanguageSelector = ({ compact = false }: LanguageSelectorProps) => 
               <Menu.Item
                 key={lang.cultureName}
                 value={lang.cultureName}
-                onClick={() => setLanguage(lang.cultureName)}
+                onClick={() => handleLanguageChange(lang.cultureName)}
               >
                 {lang.displayName || lang.cultureName}
               </Menu.Item>

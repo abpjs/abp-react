@@ -1,22 +1,32 @@
-import { Avatar, Box, HStack, Menu, Portal, Text } from '@chakra-ui/react'
-import { LuEllipsisVertical, LuKey, LuLogOut, LuUser } from 'react-icons/lu'
+import { Avatar, Box, HStack, Menu, Portal, Text, Button } from '@chakra-ui/react'
+import { LuEllipsisVertical, LuKey, LuLogOut, LuUser, LuLogIn } from 'react-icons/lu'
 import { useConfig, useAuth, useDirection, useLocalization } from '@abpjs/core'
+import { Link as RouterLink } from 'react-router-dom'
 import { SIDEBAR_Z_INDEX } from '../../../../components/layout-application/LayoutApplication'
 
 export interface UserProfileProps {
   onChangePassword?: () => void
   onProfile?: () => void
   onLogout?: () => void
+  /** URL to redirect to for login (default: /account/login) */
+  loginUrl?: string
 }
 
-export const UserProfile = ({ onChangePassword, onProfile, onLogout }: UserProfileProps) => {
+export const UserProfile = ({ onChangePassword, onProfile, onLogout, loginUrl = '/account/login' }: UserProfileProps) => {
   const { currentUser } = useConfig()
   const { isAuthenticated } = useAuth()
   const { endSide } = useDirection()
   const { t } = useLocalization()
 
   if (!isAuthenticated || !currentUser) {
-    return null
+    return (
+      <Button asChild variant="outline" width="full">
+        <RouterLink to={loginUrl}>
+          <LuLogIn />
+          {t('AbpAccount::Login')}
+        </RouterLink>
+      </Button>
+    )
   }
 
   // Get initials for avatar fallback from userName

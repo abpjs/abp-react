@@ -3,12 +3,24 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink } from 'react-router-dom';
 import { useLocalization } from '@abpjs/core';
-import { Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
-import { Box, Heading, Input, Link, VStack, HStack } from '@chakra-ui/react';
+import { Alert, Button, Checkbox } from '@abpjs/theme-shared';
+import { Box, Heading, Input, Link, HStack, Show } from '@chakra-ui/react';
 import { TenantBox } from '../TenantBox';
 import { usePasswordFlow } from '../../hooks';
 import type { LoginFormData } from '../../models';
+import {
+  Avatar,
+  Card,
+  Container,
+  Field,
+  Flex,
+  InputGroup,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
+import { ImagePlaceholder } from "./image-placeholder"
 
+import { LuLock, LuMail } from 'react-icons/lu'
 /**
  * Zod schema for login form validation
  * Matches Angular validators: required, maxLength(255) for username, maxLength(32) for password
@@ -119,92 +131,106 @@ export function LoginForm({
   const isFormLoading = isLoading || isSubmitting;
 
   return (
-    <Box maxW="md" mx="auto">
-      {/* Tenant Box */}
-      {showTenantBox && <TenantBox />}
+    <Flex height="full" flex="1">
+      <Box flex="1.5" py={{ base: '24', md: '32' }}>
+        <Container maxW="md">
+          <Stack gap="8">
 
-      {/* Login Container */}
-      <Box className="abp-account-container" p={6} bg="white" borderRadius="md" shadow="sm">
-        <Heading as="h2" size="lg" mb={6}>
-          {t('AbpAccount::Login')}
-        </Heading>
+            {/* Tenant Box */}
+            <Show when={showTenantBox}>
+              <TenantBox />
+            </Show>
 
-        {/* Error Alert */}
-        {error && (
-          <Alert status="error" mb={4}>
-            {error}
-          </Alert>
-        )}
+            <Stack gap={{ base: '2', md: '3' }} textAlign="center">
+              <Heading size={{ base: '2xl', md: '3xl' }}>{t('AbpAccount::Login')}</Heading>
+              {/* <Text color="fg.muted">{t('AbpAccount::Login')}</Text> */}
+            </Stack>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <VStack gap={4} align="stretch">
-            {/* Username Field */}
-            <FormField
-              label={t('AbpAccount::UserNameOrEmailAddress')}
-              htmlFor="login-input-user-name-or-email-address"
-              invalid={!!errors.username}
-              errorText={errors.username?.message}
-            >
-              <Input
-                id="login-input-user-name-or-email-address"
-                type="text"
-                autoComplete="username"
-                {...register('username')}
-              />
-            </FormField>
+            {/* Error Alert */}
+            {error && (
+              <Alert status="error">
+                {error}
+              </Alert>
+            )}
 
-            {/* Password Field */}
-            <FormField
-              label={t('AbpAccount::Password')}
-              htmlFor="login-input-password"
-              invalid={!!errors.password}
-              errorText={errors.password?.message}
-            >
-              <Input
-                id="login-input-password"
-                type="password"
-                autoComplete="current-password"
-                {...register('password')}
-              />
-            </FormField>
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
+              <Stack gap="6">
+                <Stack gap="5">
+                  {/* Username Field */}
+                  <Field.Root invalid={!!errors.username}>
+                    <Field.Label>{t('AbpAccount::UserNameOrEmailAddress')}</Field.Label>
+                    <InputGroup startElement={<LuMail />} width="full">
+                      <Input
+                        id="login-input-user-name-or-email-address"
+                        type="text"
+                        autoComplete="username"
+                        placeholder="me@example.com"
+                        {...register('username')}
+                      />
+                    </InputGroup>
+                    {errors.username && (
+                      <Field.ErrorText>{errors.username.message}</Field.ErrorText>
+                    )}
+                  </Field.Root>
 
-            {/* Remember Me Checkbox */}
-            <Checkbox id="login-input-remember-me" {...register('remember')}>
-              {t('AbpAccount::RememberMe')}
-            </Checkbox>
+                  {/* Password Field */}
+                  <Field.Root invalid={!!errors.password}>
+                    <Field.Label>{t('AbpAccount::Password')}</Field.Label>
+                    <InputGroup startElement={<LuLock />} width="full">
+                      <Input
+                        id="login-input-password"
+                        type="password"
+                        autoComplete="current-password"
+                        placeholder="••••••••"
+                        {...register('password')}
+                      />
+                    </InputGroup>
+                    {errors.password && (
+                      <Field.ErrorText>{errors.password.message}</Field.ErrorText>
+                    )}
+                  </Field.Root>
 
-            {/* Action Buttons */}
-            <HStack gap={2} pt={2}>
-              <Button
-                type="button"
-                variant="outline"
-                colorPalette="gray"
-                disabled={isFormLoading}
-              >
-                {t('AbpAccount::Cancel')}
-              </Button>
-              <Button
-                type="submit"
-                colorPalette="blue"
-                loading={isFormLoading}
-                loadingText={t('AbpAccount::Login')}
-              >
-                {t('AbpAccount::Login')}
-              </Button>
-            </HStack>
-          </VStack>
-        </form>
+                  {/* Remember Me Checkbox */}
+                  <Checkbox id="login-input-remember-me" {...register('remember')}>
+                    {t('AbpAccount::RememberMe')}
+                  </Checkbox>
 
-        {/* Register Link */}
-        {showRegisterLink && (
-          <Box pt={5}>
-            <Link asChild color="blue.500">
-              <RouterLink to={registerUrl}>{t('AbpAccount::Register')}</RouterLink>
-            </Link>
-          </Box>
-        )}
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    colorPalette="blue"
+                    loading={isFormLoading}
+                    loadingText={t('AbpAccount::Login')}
+                  >
+                    {t('AbpAccount::Login')}
+                  </Button>
+
+                  <Link variant="plain">{t('AbpAccount::ForgotPassword')}</Link>
+                </Stack>
+
+                {/* Register Link */}
+                <Show when={showRegisterLink}>
+                  <Card.Root size="sm" mt="10">
+                    <Card.Body>
+                      <HStack textStyle="sm">
+                        <Text>{t('AbpAccount::AreYouANewUser')}</Text>
+                        <Link asChild variant="underline" fontWeight="semibold">
+                          <RouterLink to={registerUrl}>{t('AbpAccount::Register')}</RouterLink>
+                        </Link>
+                      </HStack>
+                    </Card.Body>
+                  </Card.Root>
+                </Show>
+
+              </Stack>
+            </form>
+          </Stack>
+        </Container>
       </Box>
-    </Box>
+      {/* <Box flex="1" hideBelow="lg">
+        <ImagePlaceholder />
+      </Box> */}
+    </Flex>
   );
 }
 

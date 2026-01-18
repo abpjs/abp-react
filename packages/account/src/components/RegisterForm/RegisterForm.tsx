@@ -3,10 +3,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link as RouterLink } from 'react-router-dom';
 import { useLocalization } from '@abpjs/core';
-import { Button, FormField } from '@abpjs/theme-shared';
-import { Box, Heading, Input, Link, VStack, Text } from '@chakra-ui/react';
+import { Button } from '@abpjs/theme-shared';
+import { Box, Heading, Input, Link, HStack, Show } from '@chakra-ui/react';
 import { TenantBox } from '../TenantBox';
 import type { RegisterFormData } from '../../models';
+import {
+  Card,
+  Container,
+  Field,
+  Flex,
+  InputGroup,
+  Stack,
+  Text,
+} from '@chakra-ui/react';
+import { LuLock, LuMail, LuUser } from 'react-icons/lu';
 
 /**
  * Password validation regex patterns
@@ -144,92 +154,107 @@ export function RegisterForm({
   };
 
   return (
-    <Box maxW="md" mx="auto">
-      {/* Tenant Box */}
-      {showTenantBox && <TenantBox />}
+    <Flex height="full" flex="1">
+      <Box flex="1.5" py={{ base: '24', md: '32' }}>
+        <Container maxW="md">
+          <Stack gap="8">
 
-      {/* Register Container */}
-      <Box className="abp-account-container" p={6} bg="white" borderRadius="md" shadow="sm">
-        <Heading as="h2" size="lg" mb={6}>
-          {t('AbpAccount::Register') || 'Register'}
-        </Heading>
+            {/* Tenant Box */}
+            <Show when={showTenantBox}>
+              <TenantBox />
+            </Show>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <VStack gap={4} align="stretch">
-            {/* Username Field */}
-            <FormField
-              label={t('AbpAccount::UserName') || 'User name'}
-              htmlFor="input-user-name"
-              invalid={!!errors.username}
-              errorText={errors.username?.message}
-              required
-            >
-              <Input
-                id="input-user-name"
-                type="text"
-                autoFocus
-                autoComplete="username"
-                {...register('username')}
-              />
-            </FormField>
+            <Stack gap={{ base: '2', md: '3' }} textAlign="center">
+              <Heading size={{ base: '2xl', md: '3xl' }}>{t('AbpAccount::Register')}</Heading>
+              {/* <Text color="fg.muted">{t('AbpAccount::CreateYourAccount')}</Text> */}
+            </Stack>
 
-            {/* Email Field */}
-            <FormField
-              label={t('AbpAccount::EmailAddress') || 'Email address'}
-              htmlFor="input-email-address"
-              invalid={!!errors.email}
-              errorText={errors.email?.message}
-              required
-            >
-              <Input
-                id="input-email-address"
-                type="email"
-                autoComplete="email"
-                {...register('email')}
-              />
-            </FormField>
+            <form onSubmit={handleSubmit(onSubmit)} noValidate>
+              <Stack gap="6">
+                <Stack gap="5">
+                  {/* Username Field */}
+                  <Field.Root invalid={!!errors.username}>
+                    <Field.Label>{t('AbpAccount::UserName')}</Field.Label>
+                    <InputGroup startElement={<LuUser />} width="full">
+                      <Input
+                        id="input-user-name"
+                        type="text"
+                        autoFocus
+                        autoComplete="username"
+                        placeholder="johndoe"
+                        {...register('username')}
+                      />
+                    </InputGroup>
+                    {errors.username && (
+                      <Field.ErrorText>{errors.username.message}</Field.ErrorText>
+                    )}
+                  </Field.Root>
 
-            {/* Password Field */}
-            <FormField
-              label={t('AbpAccount::Password') || 'Password'}
-              htmlFor="input-password"
-              invalid={!!errors.password}
-              errorText={errors.password?.message}
-              required
-            >
-              <Input
-                id="input-password"
-                type="password"
-                autoComplete="new-password"
-                {...register('password')}
-              />
-            </FormField>
+                  {/* Email Field */}
+                  <Field.Root invalid={!!errors.email}>
+                    <Field.Label>{t('AbpAccount::EmailAddress')}</Field.Label>
+                    <InputGroup startElement={<LuMail />} width="full">
+                      <Input
+                        id="input-email-address"
+                        type="email"
+                        autoComplete="email"
+                        placeholder="me@example.com"
+                        {...register('email')}
+                      />
+                    </InputGroup>
+                    {errors.email && (
+                      <Field.ErrorText>{errors.email.message}</Field.ErrorText>
+                    )}
+                  </Field.Root>
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              colorPalette="blue"
-              loading={isSubmitting}
-              loadingText={t('AbpAccount::Register') || 'Register'}
-            >
-              {t('AbpAccount::Register') || 'Register'}
-            </Button>
-          </VStack>
-        </form>
+                  {/* Password Field */}
+                  <Field.Root invalid={!!errors.password}>
+                    <Field.Label>{t('AbpAccount::Password')}</Field.Label>
+                    <InputGroup startElement={<LuLock />} width="full">
+                      <Input
+                        id="input-password"
+                        type="password"
+                        autoComplete="new-password"
+                        placeholder="••••••••"
+                        {...register('password')}
+                      />
+                    </InputGroup>
+                    {errors.password && (
+                      <Field.ErrorText>{errors.password.message}</Field.ErrorText>
+                    )}
+                  </Field.Root>
 
-        {/* Login Link */}
-        {showLoginLink && (
-          <Box pt={5}>
-            <Text fontSize="sm">
-              {t('AbpAccount::AlreadyRegistered') || 'Already have an account?'}{' '}
-              <Link asChild color="blue.500">
-                <RouterLink to={loginUrl}>{t('AbpAccount::Login')}</RouterLink>
-              </Link>
-            </Text>
-          </Box>
-        )}
+                  {/* Submit Button */}
+                  <Button
+                    type="submit"
+                    colorPalette="blue"
+                    loading={isSubmitting}
+                    loadingText={t('AbpAccount::Register')}
+                  >
+                    {t('AbpAccount::Register')}
+                  </Button>
+                </Stack>
+
+                {/* Login Link */}
+                <Show when={showLoginLink}>
+                  <Card.Root size="sm" mt="10">
+                    <Card.Body>
+                      <HStack textStyle="sm">
+                        <Text>{t('AbpAccount::AlreadyRegistered')}</Text>
+                        <Link asChild variant="underline" fontWeight="semibold">
+                          <RouterLink to={loginUrl}>{t('AbpAccount::Login')}</RouterLink>
+                        </Link>
+                      </HStack>
+                    </Card.Body>
+                  </Card.Root>
+                </Show>
+
+              </Stack>
+            </form>
+          </Stack>
+        </Container>
       </Box>
-    </Box>
+    </Flex>
   );
 }
 

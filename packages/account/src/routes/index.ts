@@ -16,7 +16,7 @@ export const ACCOUNT_ROUTES: ABP.FullRoute[] = [
     name: 'Account',
     path: 'account',
     invisible: true,
-    layout: eLayoutType.account,
+    layout: eLayoutType.application,
     children: [
       {
         path: 'login',

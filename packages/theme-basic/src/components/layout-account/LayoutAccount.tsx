@@ -1,241 +1,121 @@
-import React, { ReactNode, useState } from 'react';
-import {
-  Box,
-  Flex,
-  Button,
-  Link,
-  HStack,
-  VStack,
-  IconButton,
-  Collapsible,
-  Container,
-  Menu,
-} from '@chakra-ui/react';
-import { ChevronDown, Menu as MenuIcon, X } from 'lucide-react';
-import { Link as RouterLink, Outlet } from 'react-router-dom';
-import { eLayoutType } from '@abpjs/core';
+import React, { ReactNode } from 'react';
+import { Box, Flex } from '@chakra-ui/react';
+import { Outlet } from 'react-router-dom';
+import { eLayoutType, useDirection } from '@abpjs/core';
+import { Sidebar, Navbar, SidebarProps } from '../blocks/sidebars/sidebar-with-collapsible';
+
+/** Z-index for sidebar/navbar - exported so menus can layer above it */
+export const SIDEBAR_Z_INDEX = 1100;
 
 export interface LayoutAccountProps {
-  /** Brand name to display */
-  brandName?: string;
-  /** Link destination for brand */
-  brandLink?: string;
-  /** Available languages for the language selector */
-  languages?: Array<{ cultureName: string; displayName: string }>;
-  /** Currently selected language culture name */
-  currentLanguage?: string;
-  /** Callback when language is changed */
-  onLanguageChange?: (cultureName: string) => void;
-  /** Custom children to render */
+  /** Whether to show the language selector */
+  showLanguageSelector?: boolean;
+  /** Whether to show search field in sidebar */
+  showSearch?: boolean;
+  /** Whether to show help center link */
+  showHelpCenter?: boolean;
+  /** Help center URL */
+  helpCenterUrl?: string;
+  /** Whether to show settings link */
+  showSettings?: boolean;
+  /** Settings URL */
+  settingsUrl?: string;
+  /** Default icon for routes without specific icons */
+  defaultIcon?: ReactNode;
+  /** Additional content to render at the top of the sidebar (after logo) */
+  headerContent?: ReactNode;
+  /** Additional content to render before the user profile */
+  footerContent?: ReactNode;
+  /** Custom children to render in content area (overrides Outlet) */
   children?: ReactNode;
 }
 
 /**
  * Account layout component for authentication pages (login, register, etc.).
- * Translated from Angular LayoutAccountComponent.
+ * Uses a sidebar-based layout similar to LayoutApplication but without
+ * user-specific features (no profile, no change password, no logout).
  *
- * Provides a simpler layout than LayoutApplication, suitable for
- * unauthenticated pages.
+ * Features:
+ * - Responsive sidebar (drawer on mobile, fixed on desktop)
+ * - Navigation menu from routes
+ * - Language switcher
+ * - RTL support for Arabic, Hebrew, Persian, and other RTL languages
  *
  * @example
  * ```tsx
- * <LayoutAccount
- *   brandName="MyApp"
- *   languages={[{ cultureName: 'en', displayName: 'English' }]}
- *   currentLanguage="en"
- *   onLanguageChange={(lang) => setLanguage(lang)}
- * />
+ * <LayoutAccount showLanguageSelector={true} />
  * ```
  */
 export function LayoutAccount({
-  brandName = 'MyProjectName',
-  brandLink = '/',
-  languages = [],
-  currentLanguage = 'English',
-  onLanguageChange,
+  showLanguageSelector = true,
+  showSearch = false,
+  showHelpCenter = false,
+  helpCenterUrl,
+  showSettings = false,
+  settingsUrl,
+  defaultIcon,
+  headerContent,
+  footerContent,
   children,
 }: LayoutAccountProps): React.ReactElement {
-  const [isOpen, setIsOpen] = useState(false);
+  const { direction, isRtl } = useDirection();
 
-  const onToggle = () => setIsOpen(!isOpen);
-
-  // Get current language display name
-  const currentLanguageDisplay =
-    languages.find((l) => l.cultureName === currentLanguage)?.displayName ||
-    currentLanguage ||
-    'English';
-
-  // Get dropdown languages (excluding current)
-  const dropdownLanguages = languages.filter(
-    (l) => l.cultureName !== currentLanguage
-  );
+  // Common sidebar props - no user profile for account layout
+  const sidebarProps: Omit<SidebarProps, 'hideBelow' | 'hideFrom'> = {
+    showSearch,
+    showLanguageSelector,
+    showHelpCenter,
+    helpCenterUrl,
+    showSettings,
+    settingsUrl,
+    defaultIcon,
+    headerContent,
+    footerContent,
+    userProfileProps: undefined, // No user profile on account pages
+  };
 
   return (
-    <>
-      {/* Main Navbar */}
+    <Flex minH="100vh" dir={direction}>
+      {/* Mobile Navbar (shown below md breakpoint) */}
       <Box
-        as="nav"
-        id="main-navbar"
         position="fixed"
         top={0}
-        left={0}
-        right={0}
-        zIndex="sticky"
-        bg="gray.800"
-        color="white"
-        px={4}
-        py={2}
+        left={isRtl ? undefined : 0}
+        right={isRtl ? 0 : undefined}
+        insetInline={0}
+        zIndex={SIDEBAR_Z_INDEX}
+        hideFrom="md"
       >
-        <Flex maxW="container.xl" mx="auto" align="center" wrap="wrap">
-          {/* Brand */}
-          <Box
-            asChild
-            fontWeight="bold"
-            fontSize="lg"
-            color="white"
-            _hover={{ textDecoration: 'none' }}
-          >
-            <RouterLink to={brandLink}>
-              {brandName}
-            </RouterLink>
-          </Box>
-
-          {/* Mobile Toggle */}
-          <IconButton
-            display={{ base: 'flex', md: 'none' }}
-            onClick={onToggle}
-            variant="ghost"
-            color="white"
-            aria-label="Toggle Navigation"
-            ml="auto"
-            _hover={{ bg: 'gray.700' }}
-          >
-            {isOpen ? <X size={12} /> : <MenuIcon size={20} />}
-          </IconButton>
-
-          {/* Desktop Navigation */}
-          <HStack
-            as="ul"
-            listStyleType="none"
-            gap={4}
-            ml={8}
-            display={{ base: 'none', md: 'flex' }}
-          >
-            <Box as="li">
-              <Link
-                asChild
-                color="white"
-                _hover={{ textDecoration: 'none', color: 'gray.300' }}
-              >
-                <RouterLink to="/">
-                  Home
-                </RouterLink>
-              </Link>
-            </Box>
-          </HStack>
-
-          <Box flex={1} display={{ base: 'none', md: 'block' }} />
-
-          {/* Language Selector (Desktop) */}
-          {languages.length > 0 && (
-            <Box id="main-navbar-tools" display={{ base: 'none', md: 'block' }}>
-              <Menu.Root>
-                <Menu.Trigger asChild>
-                  <Button
-                    variant="ghost"
-                    color="white"
-                    fontWeight="normal"
-                    _hover={{ bg: 'gray.700' }}
-                  >
-                    {currentLanguageDisplay}
-                    <ChevronDown size={16} />
-                  </Button>
-                </Menu.Trigger>
-                <Menu.Positioner>
-                  <Menu.Content bg="gray.700" borderColor="gray.600">
-                    {dropdownLanguages.map((lang) => (
-                      <Menu.Item
-                        key={lang.cultureName}
-                        value={lang.cultureName}
-                        onClick={() => onLanguageChange?.(lang.cultureName)}
-                        bg="gray.700"
-                        _hover={{ bg: 'gray.600' }}
-                      >
-                        {lang.displayName}
-                      </Menu.Item>
-                    ))}
-                  </Menu.Content>
-                </Menu.Positioner>
-              </Menu.Root>
-            </Box>
-          )}
-
-          {/* Mobile Menu */}
-          <Collapsible.Root open={isOpen} style={{ width: '100%' }}>
-            <Collapsible.Content>
-              <VStack
-                display={{ base: 'flex', md: 'none' }}
-                pt={4}
-                pb={4}
-                gap={4}
-                align="stretch"
-              >
-                <Link
-                  asChild
-                  color="white"
-                  _hover={{ textDecoration: 'none', color: 'gray.300' }}
-                  py={2}
-                >
-                  <RouterLink to="/">
-                    Home
-                  </RouterLink>
-                </Link>
-
-                {languages.length > 0 && (
-                  <Box borderTop="1px" borderColor="gray.600" pt={4}>
-                    <Menu.Root>
-                      <Menu.Trigger asChild>
-                        <Button
-                          variant="ghost"
-                          color="white"
-                          fontWeight="normal"
-                          _hover={{ bg: 'gray.700' }}
-                          w="full"
-                          justifyContent="space-between"
-                        >
-                          {currentLanguageDisplay}
-                          <ChevronDown size={16} />
-                        </Button>
-                      </Menu.Trigger>
-                      <Menu.Positioner>
-                        <Menu.Content bg="gray.700" borderColor="gray.600">
-                          {dropdownLanguages.map((lang) => (
-                            <Menu.Item
-                              key={lang.cultureName}
-                              value={lang.cultureName}
-                              onClick={() => onLanguageChange?.(lang.cultureName)}
-                              bg="gray.700"
-                              _hover={{ bg: 'gray.600' }}
-                            >
-                              {lang.displayName}
-                            </Menu.Item>
-                          ))}
-                        </Menu.Content>
-                      </Menu.Positioner>
-                    </Menu.Root>
-                  </Box>
-                )}
-              </VStack>
-            </Collapsible.Content>
-          </Collapsible.Root>
-        </Flex>
+        <Navbar sidebarProps={sidebarProps} />
       </Box>
 
-      {/* Main Content */}
-      <Container maxW="container.xl" pt="5rem" pb={4}>
+      {/* Desktop Sidebar (shown at md breakpoint and above) */}
+      <Box
+        as="aside"
+        position="fixed"
+        top={0}
+        left={isRtl ? undefined : 0}
+        right={isRtl ? 0 : undefined}
+        bottom={0}
+        hideBelow="md"
+        zIndex={SIDEBAR_Z_INDEX}
+      >
+        <Sidebar h="100vh" {...sidebarProps} />
+      </Box>
+
+      {/* Main Content - margin matches sidebar maxW="xs" (320px) */}
+      <Box
+        as="main"
+        flex="1"
+        ml={{ base: 0, md: isRtl ? 0 : '320px' }}
+        mr={{ base: 0, md: isRtl ? '320px' : 0 }}
+        mt={{ base: '60px', md: 0 }}
+        p={{ base: 4, md: 6 }}
+        minH="100vh"
+      >
         {children || <Outlet />}
-      </Container>
-    </>
+      </Box>
+    </Flex>
   );
 }
 
