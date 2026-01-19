@@ -3,9 +3,7 @@ import { Box, Flex } from '@chakra-ui/react';
 import { Outlet } from 'react-router-dom';
 import { eLayoutType, useDirection } from '@abpjs/core';
 import { Sidebar, Navbar, SidebarProps } from '../blocks/sidebars/sidebar-with-collapsible';
-
-/** Z-index for sidebar/navbar - exported so menus can layer above it */
-export const SIDEBAR_Z_INDEX = 1100;
+import { SIDEBAR_Z_INDEX } from '../layout-application/LayoutApplication';
 
 export interface LayoutAccountProps {
   /** Whether to show the language selector */
