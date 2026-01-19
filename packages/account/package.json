@@ -16,6 +16,17 @@
     "dist",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abpjs/abp-react"
+  },
+  "homepage": "https://docs.abpjs.io/docs/packages/account/overview",
+  "bugs": {
+    "url": "https://github.com/abpjs/abp-react/issues"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --clean && tsc -p tsconfig.build.json",
     "dev": "tsup src/index.ts --format cjs,esm --watch",

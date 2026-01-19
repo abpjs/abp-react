@@ -44,5 +44,16 @@
     "tailwindcss": "^3.4.0"
   },
   "author": "tekthar.com",
-  "license": "LGPL-3.0"
+  "license": "LGPL-3.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abpjs/abp-react"
+  },
+  "homepage": "https://docs.abpjs.io/docs/packages/tenant-management/overview",
+  "bugs": {
+    "url": "https://github.com/abpjs/abp-react/issues"
+  }
 }

@@ -565,4 +565,4 @@ LGPL-3.0 - See [LICENSE](https://github.com/abpjs/abp-react/blob/main/LICENSE) f
 
 ---
 
-**[View Full Documentation](https://docs.abpjs.io/docs/packages/theme-shared/overview)** | **[Report Issues](https://github.com/abpjs/abp-react/issues)**
+**[View Full Documentation](https://docs.abpjs.io/docs/packages/theme-shared/overview)** | **[Report Issues](https://github.com/abpjs/abp-react/issues)** | **[View Source](https://github.com/abpjs/abp-react/tree/main/packages/theme-shared)**
