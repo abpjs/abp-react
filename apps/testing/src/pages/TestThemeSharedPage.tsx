@@ -8,9 +8,6 @@ import {
   useConfirmation,
   useErrorHandler,
   Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Toaster,
 } from '@abpjs/theme-shared'
 
@@ -205,9 +202,9 @@ function TestModal() {
           visible={modalVisible}
           onVisibleChange={setModalVisible}
           size={modalSize}
-          header={<ModalHeader>Test Modal ({modalSize.toUpperCase()})</ModalHeader>}
+          header={`Test Modal (${modalSize.toUpperCase()})`}
           footer={
-            <ModalFooter>
+            <>
               <button
                 onClick={() => setModalVisible(false)}
                 style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: '1px solid #666', background: 'transparent', color: '#aaa', cursor: 'pointer' }}
@@ -223,21 +220,19 @@ function TestModal() {
               >
                 Confirm
               </button>
-            </ModalFooter>
+            </>
           }
         >
-          <ModalBody>
-            <p>This is a modal dialog using Chakra UI.</p>
-            <p>Current size: <strong>{modalSize}</strong></p>
-            <p>It supports:</p>
-            <ul style={{ marginLeft: '1.5rem' }}>
-              <li>Custom header, body, and footer</li>
-              <li>Different sizes (sm, md, lg, xl)</li>
-              <li>Close on overlay click (configurable)</li>
-              <li>Close on Escape key (configurable)</li>
-              <li>Animations</li>
-            </ul>
-          </ModalBody>
+          <p>This is a modal dialog using Chakra UI v3.</p>
+          <p>Current size: <strong>{modalSize}</strong></p>
+          <p>It supports:</p>
+          <ul style={{ marginLeft: '1.5rem' }}>
+            <li>Custom header, body, and footer</li>
+            <li>Different sizes (sm, md, lg, xl)</li>
+            <li>Close on overlay click (configurable)</li>
+            <li>Close on Escape key (configurable)</li>
+            <li>Animations</li>
+          </ul>
         </Modal>
       </div>
     </div>

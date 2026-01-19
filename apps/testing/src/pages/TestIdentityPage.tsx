@@ -356,7 +356,7 @@ function TestUsersHook() {
     getUserById,
     getUserRoles,
     createUser,
-    updateUser,
+    // updateUser, // Unused for now
     deleteUser,
     setSelectedUser,
     setPageQuery,
@@ -506,6 +506,11 @@ function TestUsersHook() {
                   email: testEmail,
                   password: testPassword,
                   roleNames: [],
+                  name: '',
+                  surname: '',
+                  phoneNumber: '',
+                  twoFactorEnabled: false,
+                  lockoutEnabled: true,
                 })
                 if (result.success) {
                   setTestUserName('')
@@ -583,7 +588,7 @@ function TestUsersHook() {
                   <tr key={user.id} style={{ borderBottom: '1px solid #222' }}>
                     <td style={{ padding: '8px' }}>{user.userName}</td>
                     <td style={{ padding: '8px' }}>{user.email}</td>
-                    <td style={{ padding: '8px' }}>{user.isActive ? 'Yes' : 'No'}</td>
+                    <td style={{ padding: '8px' }}>{!user.isLockedOut ? 'Yes' : 'No'}</td>
                     <td style={{ padding: '8px' }}>
                       <button
                         onClick={() => setSelectedUser(user)}

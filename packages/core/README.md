@@ -162,10 +162,35 @@ function UsersList() {
 |------|-------------|
 | `useAuth()` | Authentication state and methods (login, logout, user info) |
 | `useConfig()` | Access application configuration |
+| `useDirection()` | RTL/LTR direction based on current language |
 | `useLocalization()` | Localization and translation functions |
 | `usePermission()` | Permission checking utilities |
 | `useProfile()` | Current user profile management |
 | `useSession()` | Session state management |
+
+### RTL Support
+
+The `useDirection()` hook provides RTL (Right-to-Left) support for Arabic, Hebrew, Persian, Urdu, and other RTL languages:
+
+```tsx
+import { useDirection } from '@abpjs/core';
+
+function MyComponent() {
+  const { direction, isRtl, startSide, endSide } = useDirection();
+
+  return (
+    <div dir={direction}>
+      {/* direction: 'rtl' or 'ltr' */}
+      {/* isRtl: boolean */}
+      {/* startSide: 'left' (LTR) or 'right' (RTL) */}
+      {/* endSide: 'right' (LTR) or 'left' (RTL) */}
+      <Menu.Root positioning={{ placement: `${endSide}-start` }}>
+        {/* Menu opens on opposite side of content */}
+      </Menu.Root>
+    </div>
+  );
+}
+```
 
 ### Services
 
@@ -260,12 +285,12 @@ interface Environment {
 
 ## Contributing
 
-This package is part of the [ABP React](https://github.com/anthropics/abp-react) monorepo. Contributions are welcome!
+This package is part of the [ABP React](https://github.com/abpjs/abp-react) monorepo. Contributions are welcome!
 
 ## License
 
-LGPL-3.0 - See [LICENSE](https://github.com/anthropics/abp-react/blob/main/LICENSE) for details.
+LGPL-3.0 - See [LICENSE](https://github.com/abpjs/abp-react/blob/main/LICENSE) for details.
 
 ---
 
-**[View Full Documentation](https://github.com/anthropics/abp-react)** | **[Report Issues](https://github.com/anthropics/abp-react/issues)**
+**[View Full Documentation](https://docs.abpjs.io/docs/packages/core/overview)** | **[Report Issues](https://github.com/abpjs/abp-react/issues)** | **[View Source](https://github.com/abpjs/abp-react/tree/main/packages/core)**

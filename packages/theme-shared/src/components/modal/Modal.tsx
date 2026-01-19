@@ -1,15 +1,12 @@
 import React, { type ReactNode } from 'react';
 import {
-  Modal as ChakraModal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  Divider,
+  Dialog,
+  Portal,
+  Box,
   Flex,
   Text,
+  Separator,
+  CloseButton,
 } from '@chakra-ui/react';
 
 /**
@@ -44,13 +41,50 @@ export interface ModalProps {
   closeOnEscape?: boolean;
   /** Whether to scroll the modal body if content overflows */
   scrollBehavior?: 'inside' | 'outside';
+  // New Chakra v3 optional features (disabled by default to match ABP behavior)
+  /**
+   * Motion preset for modal animation.
+   * @default 'scale'
+   */
+  motionPreset?: 'scale' | 'slide-in-bottom' | 'slide-in-right' | 'none';
+  /**
+   * Whether to trap focus within the modal.
+   * @default true
+   */
+  trapFocus?: boolean;
+  /**
+   * Whether to prevent scrolling on the body when modal is open.
+   * @default true
+   */
+  preventScroll?: boolean;
+}
+
+/**
+ * Map size to Chakra v3 dialog width tokens.
+ */
+function getSizeWidth(size: ModalSize): string {
+  switch (size) {
+    case 'sm':
+      return 'sm';
+    case 'md':
+      return 'md';
+    case 'lg':
+      return 'lg';
+    case 'xl':
+      return 'xl';
+    case 'full':
+      return 'full';
+    default:
+      return 'md';
+  }
 }
 
 /**
  * Modal component - Generic modal/dialog container.
  *
  * This is the React equivalent of Angular's ModalComponent.
- * It uses Chakra UI Modal for accessibility and styling.
+ * It uses Chakra UI Dialog (v3) for accessibility and styling,
+ * while maintaining the ABP-compatible API.
  *
  * @example
  * ```tsx
@@ -89,70 +123,89 @@ export function Modal({
   closeOnOverlayClick = true,
   closeOnEscape = true,
   scrollBehavior = 'inside',
+  motionPreset = 'scale',
+  trapFocus = true,
+  preventScroll = true,
 }: ModalProps): React.ReactElement {
-  const handleClose = () => {
-    onVisibleChange?.(false);
+  const handleOpenChange = (details: { open: boolean }) => {
+    onVisibleChange?.(details.open);
   };
 
   return (
-    <ChakraModal
-      isOpen={visible}
-      onClose={handleClose}
-      size={size}
-      isCentered={centered}
-      closeOnOverlayClick={closeOnOverlayClick}
-      closeOnEsc={closeOnEscape}
+    <Dialog.Root
+      open={visible}
+      onOpenChange={handleOpenChange}
+      placement={centered ? 'center' : 'top'}
+      closeOnInteractOutside={closeOnOverlayClick}
+      closeOnEscape={closeOnEscape}
       scrollBehavior={scrollBehavior}
+      motionPreset={motionPreset}
+      trapFocus={trapFocus}
+      preventScroll={preventScroll}
     >
-      <ModalOverlay />
-      <ModalContent className={modalClass}>
-        {/* Header */}
-        {(header || showCloseButton) && (
-          <>
-            <ModalHeader>
-              <Flex justify="space-between" align="center">
-                {header && (
-                  <Text fontWeight="bold" fontSize="lg">
-                    {header}
-                  </Text>
-                )}
-              </Flex>
-            </ModalHeader>
-            {showCloseButton && <ModalCloseButton />}
-            <Divider />
-          </>
-        )}
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content
+            className={modalClass}
+            width={getSizeWidth(size)}
+            maxWidth={size === 'full' ? '100vw' : undefined}
+            maxHeight={size === 'full' ? '100vh' : undefined}
+          >
+            {/* Header */}
+            {(header || showCloseButton) && (
+              <>
+                <Dialog.Header>
+                  <Flex justify="space-between" align="center" width="100%">
+                    {header && (
+                      <Dialog.Title>
+                        <Text fontWeight="bold" fontSize="lg">
+                          {header}
+                        </Text>
+                      </Dialog.Title>
+                    )}
+                    {showCloseButton && (
+                      <Dialog.CloseTrigger asChild>
+                        <CloseButton size="sm" />
+                      </Dialog.CloseTrigger>
+                    )}
+                  </Flex>
+                </Dialog.Header>
+                <Separator />
+              </>
+            )}
 
-        {/* Body */}
-        {children && <ModalBody py={4}>{children}</ModalBody>}
+            {/* Body */}
+            {children && (
+              <Dialog.Body py={4}>
+                {children}
+              </Dialog.Body>
+            )}
 
-        {/* Footer */}
-        {footer && (
-          <>
-            <Divider />
-            <ModalFooter>
-              <Flex gap={3} justify="flex-end" w="100%">
-                {footer}
-              </Flex>
-            </ModalFooter>
-          </>
-        )}
-      </ModalContent>
-    </ChakraModal>
+            {/* Footer */}
+            {footer && (
+              <>
+                <Separator />
+                <Dialog.Footer>
+                  <Flex gap={3} justify="flex-end" w="100%">
+                    {footer}
+                  </Flex>
+                </Dialog.Footer>
+              </>
+            )}
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }
 
 /**
- * Re-export Chakra modal parts for convenience.
+ * Re-export Chakra v3 dialog parts for convenience.
  * Users can use these for more custom modal layouts.
  */
 export {
-  ModalOverlay,
-  ModalContent,
-  ModalHeader as ChakraModalHeader,
-  ModalFooter as ChakraModalFooter,
-  ModalBody as ChakraModalBody,
-  ModalCloseButton,
+  Dialog as ChakraDialog,
 };
 
 /**
@@ -181,9 +234,9 @@ export interface ModalBodyProps {
 
 export function AbpModalBody({ children, className }: ModalBodyProps): React.ReactElement {
   return (
-    <Text as="div" color="gray.600" className={className}>
+    <Box color="gray.600" className={className}>
       {children}
-    </Text>
+    </Box>
   );
 }
 

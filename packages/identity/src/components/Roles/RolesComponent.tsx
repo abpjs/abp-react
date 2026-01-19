@@ -1,29 +1,15 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocalization } from '@abpjs/core';
-import { Modal, useConfirmation, Toaster } from '@abpjs/theme-shared';
+import { Modal, useConfirmation, Toaster, Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
 import { PermissionManagementModal } from '@abpjs/permission-management';
 import {
   Box,
-  Button,
-  Checkbox,
   Flex,
-  FormControl,
-  FormLabel,
   Input,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Spinner,
-  Alert,
-  AlertIcon,
   VStack,
   Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   Text,
 } from '@chakra-ui/react';
 import { useRoles } from '../../hooks';
@@ -246,7 +232,7 @@ export function RolesComponent({
         <Text fontSize="xl" fontWeight="bold">
           {t('AbpIdentity::Roles')}
         </Text>
-        <Button colorScheme="blue" onClick={handleAdd}>
+        <Button colorPalette="blue" onClick={handleAdd}>
           {t('AbpIdentity::NewRole')}
         </Button>
       </Flex>
@@ -263,8 +249,7 @@ export function RolesComponent({
 
       {/* Error */}
       {error && (
-        <Alert status="error" mb={4} borderRadius="md">
-          <AlertIcon />
+        <Alert status="error" mb={4}>
           {error}
         </Alert>
       )}
@@ -278,44 +263,49 @@ export function RolesComponent({
 
       {/* Table */}
       {roles.length > 0 && (
-        <Table variant="simple">
-          <Thead>
-            <Tr>
-              <Th>{t('AbpIdentity::Actions')}</Th>
-              <Th>{t('AbpIdentity::RoleName')}</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
+        <Table.Root variant="outline">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader>{t('AbpIdentity::Actions')}</Table.ColumnHeader>
+              <Table.ColumnHeader>{t('AbpIdentity::RoleName')}</Table.ColumnHeader>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
             {filteredRoles.map((role) => (
-              <Tr key={role.id}>
-                <Td>
-                  <Menu>
-                    <MenuButton as={Button} size="sm" colorScheme="blue">
-                      {t('AbpIdentity::Actions')}
-                    </MenuButton>
-                    <MenuList>
-                      <MenuItem onClick={() => handleEdit(role.id)}>
-                        {t('AbpIdentity::Edit')}
-                      </MenuItem>
-                      <MenuItem onClick={() => handleOpenPermissions(role.name)}>
-                        {t('AbpIdentity::Permissions')}
-                      </MenuItem>
-                      {!role.isStatic && (
-                        <MenuItem
-                          color="red.500"
-                          onClick={() => handleDelete(role.id, role.name)}
-                        >
-                          {t('AbpIdentity::Delete')}
-                        </MenuItem>
-                      )}
-                    </MenuList>
-                  </Menu>
-                </Td>
-                <Td>{role.name}</Td>
-              </Tr>
+              <Table.Row key={role.id}>
+                <Table.Cell>
+                  <Menu.Root>
+                    <Menu.Trigger asChild>
+                      <Button size="sm" colorPalette="blue">
+                        {t('AbpIdentity::Actions')}
+                      </Button>
+                    </Menu.Trigger>
+                    <Menu.Positioner>
+                      <Menu.Content>
+                        <Menu.Item value="edit" onClick={() => handleEdit(role.id)}>
+                          {t('AbpIdentity::Edit')}
+                        </Menu.Item>
+                        <Menu.Item value="permissions" onClick={() => handleOpenPermissions(role.name)}>
+                          {t('AbpIdentity::Permissions')}
+                        </Menu.Item>
+                        {!role.isStatic && (
+                          <Menu.Item
+                            value="delete"
+                            color="red.500"
+                            onClick={() => handleDelete(role.id, role.name)}
+                          >
+                            {t('AbpIdentity::Delete')}
+                          </Menu.Item>
+                        )}
+                      </Menu.Content>
+                    </Menu.Positioner>
+                  </Menu.Root>
+                </Table.Cell>
+                <Table.Cell>{role.name}</Table.Cell>
+              </Table.Row>
             ))}
-          </Tbody>
-        </Table>
+          </Table.Body>
+        </Table.Root>
       )}
 
       {/* Empty state */}
@@ -332,40 +322,39 @@ export function RolesComponent({
         header={selectedRole?.id ? t('AbpIdentity::Edit') : t('AbpIdentity::NewRole')}
         footer={
           <>
-            <Button variant="outline" onClick={handleModalClose} isDisabled={isSubmitting}>
+            <Button variant="outline" onClick={handleModalClose} disabled={isSubmitting}>
               {t('AbpIdentity::Cancel')}
             </Button>
             <Button
-              colorScheme="blue"
+              colorPalette="blue"
               onClick={handleSubmit}
-              isLoading={isSubmitting}
-              isDisabled={!formState.name.trim()}
+              loading={isSubmitting}
+              disabled={!formState.name.trim()}
             >
               {t('AbpIdentity::Save')}
             </Button>
           </>
         }
       >
-        <VStack spacing={4} align="stretch">
-          <FormControl isRequired>
-            <FormLabel>{t('AbpIdentity::RoleName')}</FormLabel>
+        <VStack gap={4} align="stretch">
+          <FormField label={t('AbpIdentity::RoleName')} required>
             <Input
               value={formState.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
               maxLength={256}
               placeholder={t('AbpIdentity::RoleName')}
             />
-          </FormControl>
+          </FormField>
 
           <Checkbox
-            isChecked={formState.isDefault}
+            checked={formState.isDefault}
             onChange={(e) => handleInputChange('isDefault', e.target.checked)}
           >
             {t('AbpIdentity::DisplayName:IsDefault')}
           </Checkbox>
 
           <Checkbox
-            isChecked={formState.isPublic}
+            checked={formState.isPublic}
             onChange={(e) => handleInputChange('isPublic', e.target.checked)}
           >
             {t('AbpIdentity::DisplayName:IsPublic')}

@@ -361,12 +361,12 @@ function CustomPermissionList({ providerName, providerKey }) {
 
 ## Contributing
 
-This package is part of the [ABP React](https://github.com/anthropics/abp-react) monorepo. Contributions are welcome!
+This package is part of the [ABP React](https://github.com/abpjs/abp-react) monorepo. Contributions are welcome!
 
 ## License
 
-LGPL-3.0 - See [LICENSE](https://github.com/anthropics/abp-react/blob/main/LICENSE) for details.
+LGPL-3.0 - See [LICENSE](https://github.com/abpjs/abp-react/blob/main/LICENSE) for details.
 
 ---
 
-**[View Full Documentation](https://github.com/anthropics/abp-react)** | **[Report Issues](https://github.com/anthropics/abp-react/issues)**
+**[View Full Documentation](https://docs.abpjs.io/docs/packages/permission-management/overview)** | **[Report Issues](https://github.com/abpjs/abp-react/issues)** | **[View Source](https://github.com/abpjs/abp-react/tree/main/packages/permission-management)**

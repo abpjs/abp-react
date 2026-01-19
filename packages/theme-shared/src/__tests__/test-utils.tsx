@@ -2,8 +2,10 @@ import React, { type ReactElement, type ReactNode } from 'react';
 import { render, type RenderOptions } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { vi } from 'vitest';
+import { ChakraProvider } from '@chakra-ui/react';
 import { ToasterProvider } from '../contexts/toaster.context';
 import { ConfirmationProvider } from '../contexts/confirmation.context';
+import { abpSystem } from '../theme';
 
 /**
  * Mock for @abpjs/core's useLocalization hook.
@@ -31,6 +33,13 @@ vi.mock('@abpjs/core', () => ({
 }));
 
 /**
+ * Chakra wrapper for testing with v3.
+ */
+function ChakraWrapper({ children }: { children: ReactNode }): ReactElement {
+  return <ChakraProvider value={abpSystem}>{children}</ChakraProvider>;
+}
+
+/**
  * All providers wrapper for testing.
  */
 interface AllProvidersProps {
@@ -40,9 +49,11 @@ interface AllProvidersProps {
 function AllProviders({ children }: AllProvidersProps): ReactElement {
   return (
     <MemoryRouter>
-      <ToasterProvider>
-        <ConfirmationProvider>{children}</ConfirmationProvider>
-      </ToasterProvider>
+      <ChakraProvider value={abpSystem}>
+        <ToasterProvider>
+          <ConfirmationProvider>{children}</ConfirmationProvider>
+        </ToasterProvider>
+      </ChakraProvider>
     </MemoryRouter>
   );
 }
@@ -58,19 +69,25 @@ function customRender(
 }
 
 /**
- * Wrapper for just ToasterProvider.
+ * Wrapper for just ToasterProvider with Chakra.
  */
 function ToasterWrapper({ children }: { children: ReactNode }): ReactElement {
-  return <ToasterProvider>{children}</ToasterProvider>;
+  return (
+    <ChakraProvider value={abpSystem}>
+      <ToasterProvider>{children}</ToasterProvider>
+    </ChakraProvider>
+  );
 }
 
 /**
- * Wrapper for just ConfirmationProvider.
+ * Wrapper for just ConfirmationProvider with Chakra.
  */
 function ConfirmationWrapper({ children }: { children: ReactNode }): ReactElement {
   return (
     <MemoryRouter>
-      <ConfirmationProvider>{children}</ConfirmationProvider>
+      <ChakraProvider value={abpSystem}>
+        <ConfirmationProvider>{children}</ConfirmationProvider>
+      </ChakraProvider>
     </MemoryRouter>
   );
 }
@@ -89,4 +106,4 @@ export * from '@testing-library/react';
 export { customRender as render };
 
 // Export individual wrappers
-export { AllProviders, ToasterWrapper, ConfirmationWrapper, RouterWrapper };
+export { AllProviders, ToasterWrapper, ConfirmationWrapper, RouterWrapper, ChakraWrapper };

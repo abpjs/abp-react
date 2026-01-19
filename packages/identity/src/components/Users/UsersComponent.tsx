@@ -1,35 +1,17 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useLocalization, ABP } from '@abpjs/core';
-import { Modal, useConfirmation, Toaster } from '@abpjs/theme-shared';
+import { Modal, useConfirmation, Toaster, Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
 import { PermissionManagementModal } from '@abpjs/permission-management';
 import {
   Box,
-  Button,
-  Checkbox,
   Flex,
-  FormControl,
-  FormLabel,
   Input,
   Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   Spinner,
-  Alert,
-  AlertIcon,
   VStack,
   Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
   Text,
   Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
   SimpleGrid,
 } from '@chakra-ui/react';
 import { useUsers, useRoles } from '../../hooks';
@@ -333,7 +315,7 @@ export function UsersComponent({
         <Text fontSize="xl" fontWeight="bold">
           {t('AbpIdentity::Users')}
         </Text>
-        <Button colorScheme="blue" onClick={handleAdd}>
+        <Button colorPalette="blue" onClick={handleAdd}>
           {t('AbpIdentity::NewUser')}
         </Button>
       </Flex>
@@ -350,8 +332,7 @@ export function UsersComponent({
 
       {/* Error */}
       {error && (
-        <Alert status="error" mb={4} borderRadius="md">
-          <AlertIcon />
+        <Alert status="error" mb={4}>
           {error}
         </Alert>
       )}
@@ -366,46 +347,51 @@ export function UsersComponent({
       {/* Table */}
       {users.length > 0 && (
         <>
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>{t('AbpIdentity::Actions')}</Th>
-                <Th>{t('AbpIdentity::UserName')}</Th>
-                <Th>{t('AbpIdentity::EmailAddress')}</Th>
-                <Th>{t('AbpIdentity::PhoneNumber')}</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
+          <Table.Root variant="outline">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader>{t('AbpIdentity::Actions')}</Table.ColumnHeader>
+                <Table.ColumnHeader>{t('AbpIdentity::UserName')}</Table.ColumnHeader>
+                <Table.ColumnHeader>{t('AbpIdentity::EmailAddress')}</Table.ColumnHeader>
+                <Table.ColumnHeader>{t('AbpIdentity::PhoneNumber')}</Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {users.map((user) => (
-                <Tr key={user.id}>
-                  <Td>
-                    <Menu>
-                      <MenuButton as={Button} size="sm" colorScheme="blue">
-                        {t('AbpIdentity::Actions')}
-                      </MenuButton>
-                      <MenuList>
-                        <MenuItem onClick={() => handleEdit(user.id)}>
-                          {t('AbpIdentity::Edit')}
-                        </MenuItem>
-                        <MenuItem onClick={() => handleOpenPermissions(user.id)}>
-                          {t('AbpIdentity::Permissions')}
-                        </MenuItem>
-                        <MenuItem
-                          color="red.500"
-                          onClick={() => handleDelete(user.id, user.userName)}
-                        >
-                          {t('AbpIdentity::Delete')}
-                        </MenuItem>
-                      </MenuList>
-                    </Menu>
-                  </Td>
-                  <Td>{user.userName}</Td>
-                  <Td>{user.email}</Td>
-                  <Td>{user.phoneNumber}</Td>
-                </Tr>
+                <Table.Row key={user.id}>
+                  <Table.Cell>
+                    <Menu.Root>
+                      <Menu.Trigger asChild>
+                        <Button size="sm" colorPalette="blue">
+                          {t('AbpIdentity::Actions')}
+                        </Button>
+                      </Menu.Trigger>
+                      <Menu.Positioner>
+                        <Menu.Content>
+                          <Menu.Item value="edit" onClick={() => handleEdit(user.id)}>
+                            {t('AbpIdentity::Edit')}
+                          </Menu.Item>
+                          <Menu.Item value="permissions" onClick={() => handleOpenPermissions(user.id)}>
+                            {t('AbpIdentity::Permissions')}
+                          </Menu.Item>
+                          <Menu.Item
+                            value="delete"
+                            color="red.500"
+                            onClick={() => handleDelete(user.id, user.userName)}
+                          >
+                            {t('AbpIdentity::Delete')}
+                          </Menu.Item>
+                        </Menu.Content>
+                      </Menu.Positioner>
+                    </Menu.Root>
+                  </Table.Cell>
+                  <Table.Cell>{user.userName}</Table.Cell>
+                  <Table.Cell>{user.email}</Table.Cell>
+                  <Table.Cell>{user.phoneNumber}</Table.Cell>
+                </Table.Row>
               ))}
-            </Tbody>
-          </Table>
+            </Table.Body>
+          </Table.Root>
 
           {/* Pagination info */}
           <Flex justify="space-between" align="center" mt={4}>
@@ -415,7 +401,7 @@ export function UsersComponent({
             <Flex gap={2}>
               <Button
                 size="sm"
-                isDisabled={(pageQuery.skipCount || 0) === 0}
+                disabled={(pageQuery.skipCount || 0) === 0}
                 onClick={() =>
                   handlePageChange(
                     Math.max(0, (pageQuery.skipCount || 0) - (pageQuery.maxResultCount || 10))
@@ -426,7 +412,7 @@ export function UsersComponent({
               </Button>
               <Button
                 size="sm"
-                isDisabled={
+                disabled={
                   (pageQuery.skipCount || 0) + (pageQuery.maxResultCount || 10) >= totalCount
                 }
                 onClick={() =>
@@ -455,125 +441,115 @@ export function UsersComponent({
         header={selectedUser?.id ? t('AbpIdentity::Edit') : t('AbpIdentity::NewUser')}
         footer={
           <>
-            <Button variant="outline" onClick={handleModalClose} isDisabled={isSubmitting}>
+            <Button variant="outline" onClick={handleModalClose} disabled={isSubmitting}>
               {t('AbpIdentity::Cancel')}
             </Button>
             <Button
-              colorScheme="blue"
+              colorPalette="blue"
               onClick={handleSubmit}
-              isLoading={isSubmitting}
-              isDisabled={!formState.userName.trim() || !formState.email.trim() || (!selectedUser?.id && !formState.password)}
+              loading={isSubmitting}
+              disabled={!formState.userName.trim() || !formState.email.trim() || (!selectedUser?.id && !formState.password)}
             >
               {t('AbpIdentity::Save')}
             </Button>
           </>
         }
       >
-        <Tabs>
-          <TabList>
-            <Tab>{t('AbpIdentity::UserInformations')}</Tab>
-            <Tab>{t('AbpIdentity::Roles')}</Tab>
-          </TabList>
+        <Tabs.Root defaultValue="info">
+          <Tabs.List>
+            <Tabs.Trigger value="info">{t('AbpIdentity::UserInformations')}</Tabs.Trigger>
+            <Tabs.Trigger value="roles">{t('AbpIdentity::Roles')}</Tabs.Trigger>
+          </Tabs.List>
 
-          <TabPanels>
-            {/* User Information Tab */}
-            <TabPanel>
-              <VStack spacing={4} align="stretch">
-                <FormControl isRequired>
-                  <FormLabel>{t('AbpIdentity::UserName')}</FormLabel>
+          <Tabs.Content value="info">
+            <VStack gap={4} align="stretch" pt={4}>
+              <FormField label={t('AbpIdentity::UserName')} required>
+                <Input
+                  value={formState.userName}
+                  onChange={(e) => handleInputChange('userName', e.target.value)}
+                  maxLength={256}
+                />
+              </FormField>
+
+              <SimpleGrid columns={2} gap={4}>
+                <FormField label={t('AbpIdentity::Name')}>
                   <Input
-                    value={formState.userName}
-                    onChange={(e) => handleInputChange('userName', e.target.value)}
-                    maxLength={256}
+                    value={formState.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    maxLength={64}
                   />
-                </FormControl>
+                </FormField>
 
-                <SimpleGrid columns={2} spacing={4}>
-                  <FormControl>
-                    <FormLabel>{t('AbpIdentity::Name')}</FormLabel>
-                    <Input
-                      value={formState.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      maxLength={64}
-                    />
-                  </FormControl>
-
-                  <FormControl>
-                    <FormLabel>{t('AbpIdentity::DisplayName:Surname')}</FormLabel>
-                    <Input
-                      value={formState.surname}
-                      onChange={(e) => handleInputChange('surname', e.target.value)}
-                      maxLength={64}
-                    />
-                  </FormControl>
-                </SimpleGrid>
-
-                <FormControl isRequired={!selectedUser?.id}>
-                  <FormLabel>{t('AbpIdentity::Password')}</FormLabel>
+                <FormField label={t('AbpIdentity::DisplayName:Surname')}>
                   <Input
-                    type="password"
-                    value={formState.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    autoComplete="new-password"
-                    maxLength={32}
-                    placeholder={selectedUser?.id ? t('AbpIdentity::LeaveBlankToKeepCurrent') : ''}
+                    value={formState.surname}
+                    onChange={(e) => handleInputChange('surname', e.target.value)}
+                    maxLength={64}
                   />
-                </FormControl>
+                </FormField>
+              </SimpleGrid>
 
-                <FormControl isRequired>
-                  <FormLabel>{t('AbpIdentity::EmailAddress')}</FormLabel>
-                  <Input
-                    type="email"
-                    value={formState.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    maxLength={256}
-                  />
-                </FormControl>
+              <FormField label={t('AbpIdentity::Password')} required={!selectedUser?.id}>
+                <Input
+                  type="password"
+                  value={formState.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  autoComplete="new-password"
+                  maxLength={32}
+                  placeholder={selectedUser?.id ? t('AbpIdentity::LeaveBlankToKeepCurrent') : ''}
+                />
+              </FormField>
 
-                <FormControl>
-                  <FormLabel>{t('AbpIdentity::PhoneNumber')}</FormLabel>
-                  <Input
-                    value={formState.phoneNumber}
-                    onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
-                    maxLength={16}
-                  />
-                </FormControl>
+              <FormField label={t('AbpIdentity::EmailAddress')} required>
+                <Input
+                  type="email"
+                  value={formState.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  maxLength={256}
+                />
+              </FormField>
 
+              <FormField label={t('AbpIdentity::PhoneNumber')}>
+                <Input
+                  value={formState.phoneNumber}
+                  onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                  maxLength={16}
+                />
+              </FormField>
+
+              <Checkbox
+                checked={formState.lockoutEnabled}
+                onChange={(e) => handleInputChange('lockoutEnabled', e.target.checked)}
+              >
+                {t('AbpIdentity::DisplayName:LockoutEnabled')}
+              </Checkbox>
+
+              <Checkbox
+                checked={formState.twoFactorEnabled}
+                onChange={(e) => handleInputChange('twoFactorEnabled', e.target.checked)}
+              >
+                {t('AbpIdentity::DisplayName:TwoFactorEnabled')}
+              </Checkbox>
+            </VStack>
+          </Tabs.Content>
+
+          <Tabs.Content value="roles">
+            <VStack gap={2} align="stretch" pt={4}>
+              {roles.map((role) => (
                 <Checkbox
-                  isChecked={formState.lockoutEnabled}
-                  onChange={(e) => handleInputChange('lockoutEnabled', e.target.checked)}
+                  key={role.id}
+                  checked={formState.roleNames.includes(role.name)}
+                  onChange={(e) => handleRoleChange(role.name, e.target.checked)}
                 >
-                  {t('AbpIdentity::DisplayName:LockoutEnabled')}
+                  {role.name}
                 </Checkbox>
-
-                <Checkbox
-                  isChecked={formState.twoFactorEnabled}
-                  onChange={(e) => handleInputChange('twoFactorEnabled', e.target.checked)}
-                >
-                  {t('AbpIdentity::DisplayName:TwoFactorEnabled')}
-                </Checkbox>
-              </VStack>
-            </TabPanel>
-
-            {/* Roles Tab */}
-            <TabPanel>
-              <VStack spacing={2} align="stretch">
-                {roles.map((role) => (
-                  <Checkbox
-                    key={role.id}
-                    isChecked={formState.roleNames.includes(role.name)}
-                    onChange={(e) => handleRoleChange(role.name, e.target.checked)}
-                  >
-                    {role.name}
-                  </Checkbox>
-                ))}
-                {roles.length === 0 && (
-                  <Text color="gray.500">{t('AbpIdentity::NoRolesFound')}</Text>
-                )}
-              </VStack>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+              ))}
+              {roles.length === 0 && (
+                <Text color="gray.500">{t('AbpIdentity::NoRolesFound')}</Text>
+              )}
+            </VStack>
+          </Tabs.Content>
+        </Tabs.Root>
       </Modal>
 
       {/* Permission Management Modal */}

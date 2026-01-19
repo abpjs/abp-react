@@ -4,10 +4,11 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ChakraProvider } from '@chakra-ui/react';
 import { Modal, AbpModalHeader, AbpModalBody, AbpModalFooter } from '../components/modal/Modal';
+import { abpSystem } from '../theme';
 
-// Wrapper component for tests
+// Wrapper component for tests using Chakra v3
 function TestWrapper({ children }: { children: React.ReactNode }) {
-  return <ChakraProvider>{children}</ChakraProvider>;
+  return <ChakraProvider value={abpSystem}>{children}</ChakraProvider>;
 }
 
 describe('Modal', () => {
@@ -73,6 +74,7 @@ describe('Modal', () => {
       </TestWrapper>
     );
 
+    // Chakra v3 Dialog uses CloseButton which has aria-label="Close dialog"
     expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
   });
 
@@ -185,7 +187,7 @@ describe('Modal', () => {
       </TestWrapper>
     );
 
-    // Chakra Modal uses overlay for backdrop clicks
+    // Chakra v3 Dialog uses overlay for backdrop clicks
     // We can't easily test overlay click prevention without complex setup
     // Just verify the prop is accepted
     expect(screen.getByText('Content')).toBeInTheDocument();

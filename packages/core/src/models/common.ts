@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { Config } from './config';
 import { eLayoutType } from '../enums';
 
@@ -24,6 +25,8 @@ export namespace ABP {
 
   export interface Route {
     children?: Route[];
+    /** Icon to display in navigation (React component or element) */
+    icon?: ReactNode;
     invisible?: boolean;
     layout?: eLayoutType;
     name: string;
@@ -31,6 +34,10 @@ export namespace ABP {
     parentName?: string;
     path: string;
     requiredPolicy?: string;
+    /** Badge content (number or text) to display at end of link in sidebar */
+    badge?: ReactNode;
+    /** Badge color palette (default: 'gray') */
+    badgeColorPalette?: string;
   }
 
   export interface FullRoute extends Route {

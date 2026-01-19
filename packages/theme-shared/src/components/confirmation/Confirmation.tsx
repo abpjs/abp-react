@@ -1,87 +1,43 @@
 import React, { useRef } from 'react';
 import {
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
+  Dialog,
+  Portal,
   Button,
   Flex,
-  Icon,
   Text,
 } from '@chakra-ui/react';
 import { useLocalization } from '@abpjs/core';
 import { useConfirmationState } from '../../contexts/confirmation.context';
 import { Toaster } from '../../models';
-
-/**
- * Icon components for different severity levels.
- */
-function SuccessIcon() {
-  return (
-    <Icon viewBox="0 0 24 24" color="green.500" boxSize={6}>
-      <path
-        fill="currentColor"
-        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-      />
-    </Icon>
-  );
-}
-
-function InfoIcon() {
-  return (
-    <Icon viewBox="0 0 24 24" color="blue.500" boxSize={6}>
-      <path
-        fill="currentColor"
-        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
-      />
-    </Icon>
-  );
-}
-
-function WarningIcon() {
-  return (
-    <Icon viewBox="0 0 24 24" color="yellow.500" boxSize={6}>
-      <path
-        fill="currentColor"
-        d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"
-      />
-    </Icon>
-  );
-}
-
-function ErrorIcon() {
-  return (
-    <Icon viewBox="0 0 24 24" color="red.500" boxSize={6}>
-      <path
-        fill="currentColor"
-        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-      />
-    </Icon>
-  );
-}
+import {
+  CheckCircle,
+  Info,
+  AlertTriangle,
+  XCircle,
+} from 'lucide-react';
 
 /**
  * Get the icon component for a severity level.
  */
-function getIcon(severity: Toaster.Severity): React.ReactElement {
+function SeverityIcon({ severity }: { severity: Toaster.Severity }): React.ReactElement {
+  const iconProps = { size: 24 };
+
   switch (severity) {
     case 'success':
-      return <SuccessIcon />;
+      return <CheckCircle {...iconProps} color="var(--chakra-colors-green-500)" />;
     case 'info':
-      return <InfoIcon />;
+      return <Info {...iconProps} color="var(--chakra-colors-blue-500)" />;
     case 'warn':
-      return <WarningIcon />;
+      return <AlertTriangle {...iconProps} color="var(--chakra-colors-yellow-500)" />;
     case 'error':
-      return <ErrorIcon />;
+      return <XCircle {...iconProps} color="var(--chakra-colors-red-500)" />;
   }
 }
 
 /**
- * Get Chakra color scheme for severity.
+ * Get Chakra color palette for severity.
  */
-function getSeverityColorScheme(severity: Toaster.Severity): string {
+function getSeverityColorPalette(severity: Toaster.Severity): string {
   switch (severity) {
     case 'success':
       return 'green';
@@ -104,6 +60,8 @@ export interface ConfirmationDialogProps {
  *
  * This is the React equivalent of Angular's ConfirmationComponent.
  * Place this component once in your app to display confirmations.
+ *
+ * In Chakra v3, we use Dialog with role="alertdialog" instead of AlertDialog.
  *
  * @example
  * ```tsx
@@ -157,50 +115,66 @@ export function ConfirmationDialog({ className }: ConfirmationDialogProps): Reac
     respond(Toaster.Status.dismiss);
   };
 
+  const handleOpenChange = (details: { open: boolean }) => {
+    if (!details.open) {
+      handleDismiss();
+    }
+  };
+
   return (
-    <AlertDialog
-      isOpen={true}
-      leastDestructiveRef={cancelRef}
-      onClose={handleDismiss}
-      isCentered
+    <Dialog.Root
+      open={true}
+      onOpenChange={handleOpenChange}
+      role="alertdialog"
+      placement="center"
+      initialFocusEl={() => cancelRef.current}
     >
-      <AlertDialogOverlay>
-        <AlertDialogContent className={className} maxW="md">
-          <AlertDialogHeader>
-            <Flex align="center" gap={3}>
-              {getIcon(severity)}
-              {localizedTitle && (
-                <Text fontWeight="bold" fontSize="lg">
-                  {localizedTitle}
-                </Text>
-              )}
-            </Flex>
-          </AlertDialogHeader>
+      <Portal>
+        <Dialog.Backdrop />
+        <Dialog.Positioner>
+          <Dialog.Content className={className} maxWidth="md">
+            <Dialog.Header>
+              <Flex align="center" gap={3}>
+                <SeverityIcon severity={severity} />
+                {localizedTitle && (
+                  <Dialog.Title>
+                    <Text fontWeight="bold" fontSize="lg">
+                      {localizedTitle}
+                    </Text>
+                  </Dialog.Title>
+                )}
+              </Flex>
+            </Dialog.Header>
 
-          <AlertDialogBody>
-            <Text color="gray.600">{localizedMessage}</Text>
-          </AlertDialogBody>
+            <Dialog.Body>
+              <Text color="gray.600">{localizedMessage}</Text>
+            </Dialog.Body>
 
-          <AlertDialogFooter>
-            <Flex gap={3}>
-              {!options.hideCancelBtn && (
-                <Button ref={cancelRef} variant="ghost" onClick={handleCancel}>
-                  {cancelCopy}
-                </Button>
-              )}
-              {!options.hideYesBtn && (
-                <Button
-                  colorScheme={getSeverityColorScheme(severity)}
-                  onClick={handleConfirm}
-                >
-                  {yesCopy}
-                </Button>
-              )}
-            </Flex>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialogOverlay>
-    </AlertDialog>
+            <Dialog.Footer>
+              <Flex gap={3}>
+                {!options.hideCancelBtn && (
+                  <Button
+                    ref={cancelRef}
+                    variant="ghost"
+                    onClick={handleCancel}
+                  >
+                    {cancelCopy}
+                  </Button>
+                )}
+                {!options.hideYesBtn && (
+                  <Button
+                    colorPalette={getSeverityColorPalette(severity)}
+                    onClick={handleConfirm}
+                  >
+                    {yesCopy}
+                  </Button>
+                )}
+              </Flex>
+            </Dialog.Footer>
+          </Dialog.Content>
+        </Dialog.Positioner>
+      </Portal>
+    </Dialog.Root>
   );
 }
 

@@ -41,16 +41,25 @@
     "react-dom": "^18.2.0"
   },
   "dependencies": {
-    "@chakra-ui/react": "^2.8.0",
+    "@chakra-ui/react": "^3.2.0",
     "@emotion/react": "^11.11.0",
-    "@emotion/styled": "^11.11.0",
     "@abpjs/core": "workspace:*",
-    "@abpjs/theme-shared": "workspace:*",
-    "framer-motion": "^10.16.0"
+    "@abpjs/theme-shared": "workspace:*"
   },
   "devDependencies": {
     "@abp/ng.permission-management": "0.7.6"
   },
   "author": "tekthar.com",
-  "license": "LGPL-3.0"
+  "license": "LGPL-3.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abpjs/abp-react"
+  },
+  "homepage": "https://docs.abpjs.io/docs/packages/permission-management/overview",
+  "bugs": {
+    "url": "https://github.com/abpjs/abp-react/issues"
+  }
 }

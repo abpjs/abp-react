@@ -16,8 +16,18 @@ export {
   useLayoutContext,
   useLayoutService,
   useNavigationElements,
+  BrandingProvider,
+  useBranding,
+  useLogo,
 } from './contexts';
-export type { LayoutService, LayoutContextValue, LayoutProviderProps } from './contexts';
+export type {
+  LayoutService,
+  LayoutContextValue,
+  LayoutProviderProps,
+  BrandingConfig,
+  BrandingContextValue,
+  BrandingProviderProps,
+} from './contexts';
 
 // Hooks
 export * from './hooks';

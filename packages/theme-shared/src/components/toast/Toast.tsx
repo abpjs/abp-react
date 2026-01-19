@@ -1,83 +1,46 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import {
-  useToast as useChakraToast,
+  Toaster as ChakraToaster,
+  Portal,
+  Stack,
+  Toast,
+  createToaster,
   Box,
   Flex,
-  Text,
   CloseButton,
-  Icon,
 } from '@chakra-ui/react';
 import { useLocalization } from '@abpjs/core';
 import { useToasterContext } from '../../contexts/toaster.context';
 import { Toaster } from '../../models';
-
-/**
- * Icon components for different severity levels.
- */
-function SuccessIcon() {
-  return (
-    <Icon viewBox="0 0 24 24" color="green.500" boxSize={5}>
-      <path
-        fill="currentColor"
-        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-      />
-    </Icon>
-  );
-}
-
-function InfoIcon() {
-  return (
-    <Icon viewBox="0 0 24 24" color="blue.500" boxSize={5}>
-      <path
-        fill="currentColor"
-        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
-      />
-    </Icon>
-  );
-}
-
-function WarningIcon() {
-  return (
-    <Icon viewBox="0 0 24 24" color="yellow.500" boxSize={5}>
-      <path
-        fill="currentColor"
-        d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"
-      />
-    </Icon>
-  );
-}
-
-function ErrorIcon() {
-  return (
-    <Icon viewBox="0 0 24 24" color="red.500" boxSize={5}>
-      <path
-        fill="currentColor"
-        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-      />
-    </Icon>
-  );
-}
+import {
+  CheckCircle,
+  Info,
+  AlertTriangle,
+  XCircle,
+} from 'lucide-react';
 
 /**
  * Get the icon component for a severity level.
  */
-function getIcon(severity: Toaster.Severity): React.ReactElement {
+function SeverityIcon({ severity }: { severity: Toaster.Severity }): React.ReactElement {
+  const iconProps = { size: 20 };
+
   switch (severity) {
     case 'success':
-      return <SuccessIcon />;
+      return <CheckCircle {...iconProps} color="var(--chakra-colors-green-500)" />;
     case 'info':
-      return <InfoIcon />;
+      return <Info {...iconProps} color="var(--chakra-colors-blue-500)" />;
     case 'warn':
-      return <WarningIcon />;
+      return <AlertTriangle {...iconProps} color="var(--chakra-colors-yellow-500)" />;
     case 'error':
-      return <ErrorIcon />;
+      return <XCircle {...iconProps} color="var(--chakra-colors-red-500)" />;
   }
 }
 
 /**
- * Get Chakra color scheme for severity.
+ * Get Chakra color palette for severity.
  */
-function getSeverityColorScheme(severity: Toaster.Severity): string {
+function getSeverityColorPalette(severity: Toaster.Severity): string {
   switch (severity) {
     case 'success':
       return 'green';
@@ -122,16 +85,74 @@ function getSeverityBorderColor(severity: Toaster.Severity): string {
   }
 }
 
+/**
+ * Map severity to Chakra toast type.
+ */
+function mapSeverityToType(severity: Toaster.Severity): 'success' | 'info' | 'warning' | 'error' {
+  switch (severity) {
+    case 'success':
+      return 'success';
+    case 'info':
+      return 'info';
+    case 'warn':
+      return 'warning';
+    case 'error':
+      return 'error';
+  }
+}
+
 export interface ToastContainerProps {
   /** Position of toasts */
   position?: 'top' | 'top-right' | 'top-left' | 'bottom' | 'bottom-right' | 'bottom-left';
 }
 
 /**
- * ToastContainer - Syncs toaster state with Chakra's toast system.
+ * Map position prop to Chakra placement, accounting for RTL.
+ * Uses logical values (start/end) which automatically handle RTL.
+ */
+function getPlacement(position: ToastContainerProps['position']): 'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' {
+  switch (position) {
+    case 'top':
+      return 'top';
+    case 'top-left':
+      return 'top-start'; // Logical: start = left in LTR, right in RTL
+    case 'top-right':
+      return 'top-end'; // Logical: end = right in LTR, left in RTL
+    case 'bottom':
+      return 'bottom';
+    case 'bottom-left':
+      return 'bottom-start';
+    case 'bottom-right':
+    default:
+      return 'bottom-end';
+  }
+}
+
+// Cache for toaster instances by placement
+const toasterCache = new Map<string, ReturnType<typeof createToaster>>();
+
+/**
+ * Get or create a toaster instance for the given placement.
+ */
+function getToaster(placement: ReturnType<typeof getPlacement>) {
+  if (!toasterCache.has(placement)) {
+    toasterCache.set(placement, createToaster({
+      placement,
+      pauseOnPageIdle: true,
+    }));
+  }
+  return toasterCache.get(placement)!;
+}
+
+/**
+ * ToastContainer - Syncs toaster state with Chakra v3's toast system.
  *
  * This is the React equivalent of Angular's ToastComponent.
  * Place this component once in your app to display toasts.
+ *
+ * The toast position uses logical values (start/end) which automatically
+ * handle RTL languages - toasts will appear on the correct side based on
+ * the current text direction.
  *
  * @example
  * ```tsx
@@ -145,18 +166,26 @@ export interface ToastContainerProps {
  * }
  * ```
  */
-export function ToastContainer({ position = 'bottom-right' }: ToastContainerProps): React.ReactElement | null {
+export function ToastContainer({ position = 'bottom-right' }: ToastContainerProps): React.ReactElement {
+
   const { toasts, service } = useToasterContext();
   const { t } = useLocalization();
-  const chakraToast = useChakraToast();
+  const displayedToastsRef = useRef<Set<string>>(new Set());
+
+  // Get the placement based on position prop
+  const placement = useMemo(() => getPlacement(position), [position]);
+
+  // Get or create toaster for this placement
+  const toaster = useMemo(() => getToaster(placement), [placement]);
 
   // Sync our toast state with Chakra's toast system
   useEffect(() => {
-    toasts.forEach((toast) => {
-      // Check if this toast is already displayed
-      if (chakraToast.isActive(toast.id)) {
-        return;
-      }
+    // Process new toasts that haven't been displayed yet
+    const newToasts = toasts.filter((toast) => !displayedToastsRef.current.has(toast.id));
+
+    newToasts.forEach((toast) => {
+      // Mark as displayed immediately to prevent duplicate processing
+      displayedToastsRef.current.add(toast.id);
 
       const localizedMessage = t(
         toast.message,
@@ -166,57 +195,75 @@ export function ToastContainer({ position = 'bottom-right' }: ToastContainerProp
         ? t(toast.title, ...(toast.titleLocalizationParams || []))
         : undefined;
 
-      chakraToast({
-        id: toast.id,
-        position,
-        duration: toast.sticky ? null : (toast.life || 5000),
-        isClosable: toast.closable !== false,
-        render: ({ onClose }) => (
-          <Box
-            bg={getSeverityBg(toast.severity)}
-            borderWidth="1px"
-            borderColor={getSeverityBorderColor(toast.severity)}
-            borderRadius="lg"
-            p={4}
-            boxShadow="lg"
-            maxW="sm"
-          >
-            <Flex align="flex-start" gap={3}>
-              <Box flexShrink={0} pt="2px">
-                {getIcon(toast.severity)}
-              </Box>
-              <Box flex={1}>
-                {localizedTitle && (
-                  <Text fontWeight="bold" fontSize="sm" mb={1}>
-                    {localizedTitle}
-                  </Text>
-                )}
-                <Text fontSize="sm" color="gray.700">
-                  {localizedMessage}
-                </Text>
-              </Box>
-              {toast.closable !== false && (
-                <CloseButton
-                  size="sm"
-                  onClick={() => {
-                    onClose();
-                    service.remove(toast.id);
-                  }}
-                />
-              )}
-            </Flex>
-          </Box>
-        ),
-        onCloseComplete: () => {
-          service.remove(toast.id);
-        },
+      // Use requestAnimationFrame to ensure each toast is created in a separate frame
+      // This helps Chakra's toaster properly handle multiple toasts
+      requestAnimationFrame(() => {
+        toaster.create({
+          id: toast.id,
+          title: localizedTitle,
+          description: localizedMessage,
+          type: mapSeverityToType(toast.severity),
+          duration: toast.sticky ? undefined : (toast.life || 5000),
+          meta: {
+            closable: toast.closable !== false,
+            severity: toast.severity,
+          },
+          onStatusChange: (details) => {
+            if (details.status === 'unmounted') {
+              displayedToastsRef.current.delete(toast.id);
+              service.remove(toast.id);
+            }
+          },
+        });
       });
     });
-  }, [toasts, chakraToast, t, position, service]);
+  }, [toasts, t, service, toaster]);
 
-  // This component doesn't render anything - Chakra handles the portal
-  return null;
+  return (
+    <Portal>
+      <ChakraToaster toaster={toaster} insetInline={{ mdDown: '4' }}>
+        {(toast) => {
+          const severity = (toast.meta?.severity as Toaster.Severity) || 'info';
+          const closable = toast.meta?.closable !== false;
+
+          return (
+            <Toast.Root
+              bg={getSeverityBg(severity)}
+              borderWidth="1px"
+              borderColor={getSeverityBorderColor(severity)}
+              borderRadius="lg"
+              boxShadow="lg"
+              width={{ md: 'sm' }}
+            >
+              <Flex align="flex-start" gap={3} p={4}>
+                <Box flexShrink={0} pt="2px">
+                  <SeverityIcon severity={severity} />
+                </Box>
+                <Stack gap={1} flex={1}>
+                  {toast.title && (
+                    <Toast.Title fontWeight="bold" fontSize="sm" color='fg'>
+                      {toast.title}
+                    </Toast.Title>
+                  )}
+                  {toast.description && (
+                    <Toast.Description fontSize="sm" color="gray.700">
+                      {toast.description}
+                    </Toast.Description>
+                  )}
+                </Stack>
+                {closable && (
+                  <Toast.CloseTrigger asChild>
+                    <CloseButton size="sm" />
+                  </Toast.CloseTrigger>
+                )}
+              </Flex>
+            </Toast.Root>
+          );
+        }}
+      </ChakraToaster>
+    </Portal>
+  );
 }
 
-export { getSeverityColorScheme, getSeverityBg, getSeverityBorderColor };
+export { getSeverityColorPalette as getSeverityColorScheme, getSeverityBg, getSeverityBorderColor };
 export default ToastContainer;
