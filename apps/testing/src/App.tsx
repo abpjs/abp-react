@@ -75,7 +75,7 @@ function Home() {
 
   return (
     <div>
-      <h1>ABP React Framework v0.7.6</h1>
+      <h1>ABP React Framework v0.8.0</h1>
       <p>Test application for @abpjs packages.</p>
 
       <div className="test-section">

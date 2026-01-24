@@ -102,14 +102,16 @@ export function AbpProvider({
 
   // Setup axios interceptors ONCE - uses userRef to always get current token
   useEffect(() => {
-    const interceptorId = createApiInterceptor(axiosInstance, {
+    const { requestId, responseId } = createApiInterceptor(axiosInstance, {
       getAccessToken: () => userRef.current?.access_token ?? null,
       getLanguage: () => store.getState().session.language,
+      dispatch: store.dispatch,
     });
 
-    // Cleanup: remove interceptor when provider unmounts
+    // Cleanup: remove interceptors when provider unmounts
     return () => {
-      axiosInstance.interceptors.request.eject(interceptorId);
+      axiosInstance.interceptors.request.eject(requestId);
+      axiosInstance.interceptors.response.eject(responseId);
     };
   }, [axiosInstance, store]); // Note: user NOT in deps - we use userRef instead
 
