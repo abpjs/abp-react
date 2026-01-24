@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/permission-management",
-  "version": "0.7.6",
+  "version": "0.8.0",
   "description": "ABP Framework permission-management components for React - translated from @abp/ng.permission-management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -47,7 +47,7 @@
     "@abpjs/theme-shared": "workspace:*"
   },
   "devDependencies": {
-    "@abp/ng.permission-management": "0.7.6"
+    "@abp/ng.permission-management": "0.8.0"
   },
   "author": "tekthar.com",
   "license": "LGPL-3.0",
