@@ -226,7 +226,7 @@ function TestLoader() {
 
   return (
     <div className="test-section">
-      <h2>Loader Tests (v0.8.0)</h2>
+      <h2>Loader Tests (v0.9.0)</h2>
 
       <div className="test-card">
         <h3>useLoader() Hook</h3>
@@ -258,7 +258,7 @@ function TestEllipsis() {
 
   return (
     <div className="test-section">
-      <h2>Ellipsis Component (v0.8.0)</h2>
+      <h2>Ellipsis Component (v0.9.0)</h2>
 
       <div className="test-card">
         <h3>Basic Ellipsis</h3>

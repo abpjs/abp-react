@@ -41,7 +41,7 @@ function TestLoaderBar() {
 
   return (
     <div className="test-section">
-      <h2>LoaderBar Component (v0.8.0)</h2>
+      <h2>LoaderBar Component (v0.9.0)</h2>
 
       {showLoaderBar && <LoaderBar />}
 
@@ -91,7 +91,7 @@ function TestErrorComponentDisplay() {
 
   return (
     <div className="test-section">
-      <h2>ErrorComponent (v0.8.0)</h2>
+      <h2>ErrorComponent (v0.9.0)</h2>
 
       <div className="test-card">
         <h3>Error Display Component</h3>
@@ -381,11 +381,117 @@ function TestModal() {
   )
 }
 
+function TestModalV090() {
+  const toaster = useToaster()
+  const [busyModalVisible, setBusyModalVisible] = useState(false)
+  const [isBusy, setIsBusy] = useState(false)
+  const [heightModalVisible, setHeightModalVisible] = useState(false)
+  const [initCount, setInitCount] = useState(0)
+
+  const handleBusySubmit = async () => {
+    setIsBusy(true)
+    // Simulate async operation
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    setIsBusy(false)
+    toaster.success('Operation completed!', 'Success')
+    setBusyModalVisible(false)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>Modal v0.9.0 Features</h2>
+
+      <div className="test-card">
+        <h3>Busy State (prevents closing)</h3>
+        <p>When <code>busy=true</code>, the modal cannot be closed via overlay click, Escape, or close button.</p>
+        <button onClick={() => setBusyModalVisible(true)}>Open Busy Modal Demo</button>
+
+        <Modal
+          visible={busyModalVisible}
+          onVisibleChange={setBusyModalVisible}
+          busy={isBusy}
+          header="Busy Modal Demo"
+          footer={
+            <>
+              <button
+                onClick={() => setBusyModalVisible(false)}
+                disabled={isBusy}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: '1px solid #666',
+                  background: 'transparent',
+                  color: isBusy ? '#666' : '#aaa',
+                  cursor: isBusy ? 'not-allowed' : 'pointer'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBusySubmit}
+                disabled={isBusy}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '4px',
+                  border: 'none',
+                  background: isBusy ? '#444' : '#646cff',
+                  color: 'white',
+                  cursor: isBusy ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isBusy ? 'Saving...' : 'Save'}
+              </button>
+            </>
+          }
+        >
+          <p>Click "Save" to simulate a 2-second operation.</p>
+          <p>During this time, you <strong>cannot close</strong> the modal (try clicking outside or pressing Escape).</p>
+          <p style={{ marginTop: '1rem', color: isBusy ? '#f88' : '#888' }}>
+            Busy state: <strong>{isBusy ? 'Yes (locked)' : 'No'}</strong>
+          </p>
+        </Modal>
+      </div>
+
+      <div className="test-card">
+        <h3>Height & onInit Props</h3>
+        <p>Test <code>height</code>, <code>minHeight</code>, and <code>onInit</code> callback.</p>
+        <p>onInit fired: <strong>{initCount}</strong> times</p>
+        <button onClick={() => setHeightModalVisible(true)}>Open Height Demo Modal</button>
+
+        <Modal
+          visible={heightModalVisible}
+          onVisibleChange={setHeightModalVisible}
+          minHeight={300}
+          onInit={() => {
+            setInitCount(prev => prev + 1)
+            console.log('Modal initialized!')
+          }}
+          header="Height Demo Modal"
+          footer={
+            <button
+              onClick={() => setHeightModalVisible(false)}
+              style={{ padding: '0.5rem 1rem', borderRadius: '4px', border: 'none', background: '#646cff', color: 'white', cursor: 'pointer' }}
+            >
+              Close
+            </button>
+          }
+        >
+          <p>This modal has <code>minHeight={'{300}'}</code> set.</p>
+          <p>The <code>onInit</code> callback fires each time the modal opens.</p>
+          <p style={{ marginTop: '1rem', color: '#888' }}>
+            Check the console for "Modal initialized!" message.
+          </p>
+        </Modal>
+      </div>
+    </div>
+  )
+}
+
 export function TestThemeSharedPage() {
   return (
     <div>
       <h1>@abpjs/theme-shared Tests</h1>
-      <p>Testing toast notifications, confirmation dialogs, modals, error handling, and v0.8.0 components.</p>
+      <p>Testing toast notifications, confirmation dialogs, modals, error handling, and v0.9.0 components.</p>
 
       <TestLoaderBar />
       <TestErrorComponentDisplay />
@@ -393,6 +499,7 @@ export function TestThemeSharedPage() {
       <TestConfirmation />
       <TestErrorHandler />
       <TestModal />
+      <TestModalV090 />
     </div>
   )
 }

@@ -19,12 +19,18 @@ export interface ModalProps {
   visible: boolean;
   /** Callback when visibility changes */
   onVisibleChange?: (visible: boolean) => void;
+  /** Whether the modal is in a busy/loading state (v0.9.0) */
+  busy?: boolean;
   /** Modal size */
   size?: ModalSize;
   /** Center the modal vertically */
   centered?: boolean;
   /** Custom CSS class for the modal container */
   modalClass?: string;
+  /** Fixed height for the modal (v0.9.0) */
+  height?: number | string;
+  /** Minimum height for the modal (v0.9.0) */
+  minHeight?: number | string;
   /** Header content */
   header?: ReactNode;
   /** Body content (children) */
@@ -41,6 +47,8 @@ export interface ModalProps {
   closeOnEscape?: boolean;
   /** Whether to scroll the modal body if content overflows */
   scrollBehavior?: 'inside' | 'outside';
+  /** Callback when modal is initialized/opened (v0.9.0) */
+  onInit?: () => void;
   // New Chakra v3 optional features (disabled by default to match ABP behavior)
   /**
    * Motion preset for modal animation.
@@ -113,9 +121,12 @@ function getSizeWidth(size: ModalSize): string {
 export function Modal({
   visible,
   onVisibleChange,
+  busy = false,
   size = 'md',
   centered = true,
   modalClass,
+  height,
+  minHeight,
   header,
   children,
   footer,
@@ -126,8 +137,30 @@ export function Modal({
   motionPreset = 'scale',
   trapFocus = true,
   preventScroll = true,
+  onInit,
 }: ModalProps): React.ReactElement {
+  // Track previous visibility to detect open transition
+  const prevVisibleRef = React.useRef(false);
+  const onInitRef = React.useRef(onInit);
+
+  // Keep onInit ref updated
+  React.useEffect(() => {
+    onInitRef.current = onInit;
+  }, [onInit]);
+
+  // Call onInit only when modal transitions from closed to open
+  React.useEffect(() => {
+    if (visible && !prevVisibleRef.current && onInitRef.current) {
+      onInitRef.current();
+    }
+    prevVisibleRef.current = visible;
+  }, [visible]);
+
   const handleOpenChange = (details: { open: boolean }) => {
+    // Don't allow closing if busy
+    if (busy && !details.open) {
+      return;
+    }
     onVisibleChange?.(details.open);
   };
 
@@ -136,8 +169,8 @@ export function Modal({
       open={visible}
       onOpenChange={handleOpenChange}
       placement={centered ? 'center' : 'top'}
-      closeOnInteractOutside={closeOnOverlayClick}
-      closeOnEscape={closeOnEscape}
+      closeOnInteractOutside={closeOnOverlayClick && !busy}
+      closeOnEscape={closeOnEscape && !busy}
       scrollBehavior={scrollBehavior}
       motionPreset={motionPreset}
       trapFocus={trapFocus}
@@ -151,6 +184,8 @@ export function Modal({
             width={getSizeWidth(size)}
             maxWidth={size === 'full' ? '100vw' : undefined}
             maxHeight={size === 'full' ? '100vh' : undefined}
+            height={height}
+            minHeight={minHeight}
           >
             {/* Header */}
             {(header || showCloseButton) && (
