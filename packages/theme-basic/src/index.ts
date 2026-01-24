@@ -2,7 +2,7 @@
  * @abpjs/theme-basic
  *
  * ABP Framework Theme Basic components for React.
- * Translated from @abp/ng.theme.basic v0.7.6
+ * Translated from @abp/ng.theme.basic v0.8.0
  *
  * This package provides the basic theme layout components for ABP React applications.
  */
