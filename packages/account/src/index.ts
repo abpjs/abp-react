@@ -1,7 +1,7 @@
 /**
  * @abpjs/account
  * ABP Framework Account module for React
- * Translated from @abp/ng.account v0.7.6
+ * Translated from @abp/ng.account v0.8.0
  */
 
 // Models
