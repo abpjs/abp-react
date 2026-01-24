@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/abp-react",
-  "version": "0.7.6",
+  "version": "0.8.0",
   "description": "ABP Framework for React - Monorepo",
   "private": true,
   "scripts": {

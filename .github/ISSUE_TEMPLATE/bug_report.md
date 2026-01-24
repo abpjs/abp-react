@@ -31,7 +31,7 @@ If applicable, add screenshots to help explain your problem.
 
 ## 🌍 Environment
 
-- **Package Version**: [e.g., @abpjs/core@0.7.6]
+- **Package Version**: [e.g., @abpjs/core@0.8.0]
 - **Node.js Version**: [e.g., 18.0.0]
 - **pnpm Version**: [e.g., 8.15.0]
 - **OS**: [e.g., Windows 10, macOS 13, Linux Ubuntu 22.04]
@@ -41,6 +41,8 @@ If applicable, add screenshots to help explain your problem.
 
 - [ ] @abpjs/core
 - [ ] @abpjs/account
+- [ ] @abpjs/feature-management
+- [ ] @abpjs/identity
 - [ ] @abpjs/permission-management
 - [ ] @abpjs/tenant-management
 - [ ] @abpjs/theme-basic

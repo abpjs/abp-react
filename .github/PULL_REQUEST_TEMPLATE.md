@@ -22,6 +22,8 @@ Closes #
 
 - [ ] @abpjs/core
 - [ ] @abpjs/account
+- [ ] @abpjs/feature-management
+- [ ] @abpjs/identity
 - [ ] @abpjs/permission-management
 - [ ] @abpjs/tenant-management
 - [ ] @abpjs/theme-basic

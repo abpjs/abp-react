@@ -6,6 +6,7 @@ We currently support the following versions with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 0.8.x   | :white_check_mark: |
 | 0.7.x   | :white_check_mark: |
 | < 0.7   | :x:                |
 
@@ -77,7 +78,7 @@ When using this library:
 ## Security Updates
 
 Security updates will be:
-- Released as patch versions (e.g., 0.7.6 → 0.7.7)
+- Released as patch versions (e.g., 0.8.0 → 0.8.1)
 - Documented in release notes
 - Tagged with security labels on GitHub
 

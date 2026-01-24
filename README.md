@@ -3,7 +3,7 @@
 > ABP Framework for React - A React frontend replacement for the ABP Angular frontend
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
-[![Version](https://img.shields.io/badge/version-0.7.6-blue)](https://github.com)
+[![Version](https://img.shields.io/badge/version-0.8.0-blue)](https://github.com)
 [![Work in Progress](https://img.shields.io/badge/status-WIP-orange)](https://github.com)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-10.28.0-orange)](https://pnpm.io/)
@@ -59,6 +59,8 @@ This monorepo contains the following packages:
 |---------|-------------|
 | [`@abpjs/core`](./packages/core) | Core ABP Framework functionality - hooks, services, state management, authentication |
 | [`@abpjs/account`](./packages/account) | Account module - login, register, tenant switching |
+| [`@abpjs/feature-management`](./packages/feature-management) | Feature management components - toggle and configure features |
+| [`@abpjs/identity`](./packages/identity) | Identity management - users, roles, claims |
 | [`@abpjs/permission-management`](./packages/permission-management) | Permission management components |
 | [`@abpjs/tenant-management`](./packages/tenant-management) | Tenant management components |
 | [`@abpjs/theme-basic`](./packages/theme-basic) | Basic theme layouts and navigation components |
@@ -94,7 +96,7 @@ pnpm test
 pnpm add @abpjs/core @abpjs/theme-basic
 
 # Or install all packages you need
-pnpm add @abpjs/core @abpjs/account @abpjs/theme-basic
+pnpm add @abpjs/core @abpjs/account @abpjs/identity @abpjs/theme-basic
 ```
 
 ### Example
@@ -124,6 +126,8 @@ function App() {
 ├── packages/          # All packages
 │   ├── core/
 │   ├── account/
+│   ├── feature-management/
+│   ├── identity/
 │   ├── permission-management/
 │   ├── tenant-management/
 │   ├── theme-basic/
@@ -201,6 +205,8 @@ Please see our contributing guidelines (coming soon) for more details.
 
 - [Core Package Documentation](./packages/core/README.md)
 - [Account Package Documentation](./packages/account/README.md)
+- [Feature Management Package Documentation](./packages/feature-management/README.md)
+- [Identity Package Documentation](./packages/identity/README.md)
 - [Theme Basic Usage Guide](./packages/theme-basic/USAGE.md)
 
 ## 🔗 Links
@@ -210,7 +216,7 @@ Please see our contributing guidelines (coming soon) for more details.
 
 ## ⚠️ Status
 
-**Current Version**: 0.7.6 (matching ABP Framework backend version 0.7.6)
+**Current Version**: 0.8.0 (matching ABP Framework backend version 0.8.0)
 
 This is an active translation project. Frontend features are being added continuously as we work through the ABP Framework frontend packages version by version. All packages are designed to work with the corresponding ABP Framework backend version.
 
