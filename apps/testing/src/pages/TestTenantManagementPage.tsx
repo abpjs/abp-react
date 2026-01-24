@@ -9,10 +9,13 @@ import {
   useTenantManagement,
   type TenantManagement,
 } from '@abpjs/tenant-management'
+import { FeatureManagementModal } from '@abpjs/feature-management'
 
 function TestTenantModal() {
   const [modalVisible, setModalVisible] = useState(false)
+  const [featureModalVisible, setFeatureModalVisible] = useState(false)
   const [editTenantId, setEditTenantId] = useState<string | undefined>()
+  const [featureTenantId, setFeatureTenantId] = useState('')
   const [initialView, setInitialView] = useState<'tenant' | 'connectionString'>('tenant')
   const { isAuthenticated } = useAuth()
 
@@ -96,9 +99,41 @@ function TestTenantModal() {
       </div>
 
       <div className="test-card">
+        <h3>Manage Tenant Features</h3>
+        <p>Open the feature management modal for a tenant (providerName="T"):</p>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
+          <input
+            type="text"
+            placeholder="Enter Tenant ID"
+            value={featureTenantId}
+            onChange={(e) => setFeatureTenantId(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+              background: '#1a1a1a',
+              color: 'white',
+              flex: 1
+            }}
+          />
+          <button
+            onClick={() => setFeatureModalVisible(true)}
+            disabled={!featureTenantId || !isAuthenticated}
+          >
+            Manage Features
+          </button>
+        </div>
+        <p style={{ fontSize: '12px', color: '#888' }}>
+          Uses @abpjs/feature-management FeatureManagementModal component
+        </p>
+      </div>
+
+      <div className="test-card">
         <h3>Modal State</h3>
-        <p>Visible: {modalVisible ? 'true' : 'false'}</p>
+        <p>Tenant Modal Visible: {modalVisible ? 'true' : 'false'}</p>
+        <p>Feature Modal Visible: {featureModalVisible ? 'true' : 'false'}</p>
         <p>Edit Tenant ID: {editTenantId || 'none (creating new)'}</p>
+        <p>Feature Tenant ID: {featureTenantId || 'none'}</p>
         <p>Initial View: {initialView}</p>
         {!isAuthenticated && (
           <p style={{ color: '#f88', marginTop: '0.5rem' }}>
@@ -115,6 +150,16 @@ function TestTenantModal() {
         onSave={() => {
           console.log('Tenant saved successfully!')
           setModalVisible(false)
+        }}
+      />
+
+      <FeatureManagementModal
+        providerName="T"
+        providerKey={featureTenantId}
+        visible={featureModalVisible}
+        onVisibleChange={setFeatureModalVisible}
+        onSave={() => {
+          console.log('Tenant features saved successfully!')
         }}
       />
     </div>
@@ -144,6 +189,8 @@ function TestTenantHook() {
   const [testTenantId, setTestTenantId] = useState('')
   const [testTenantName, setTestTenantName] = useState('')
   const [testConnectionString, setTestConnectionString] = useState('')
+  const [featureModalVisible, setFeatureModalVisible] = useState(false)
+  const [featureTenantId, setFeatureTenantId] = useState('')
 
   // Fetch tenants on mount
   useEffect(() => {
@@ -419,9 +466,18 @@ function TestTenantHook() {
                           setTestTenantId(tenant.id)
                           fetchTenantById(tenant.id)
                         }}
-                        style={{ padding: '4px 8px' }}
+                        style={{ marginRight: '0.5rem', padding: '4px 8px' }}
                       >
                         Fetch
+                      </button>
+                      <button
+                        onClick={() => {
+                          setFeatureTenantId(tenant.id)
+                          setFeatureModalVisible(true)
+                        }}
+                        style={{ padding: '4px 8px', background: '#646cff' }}
+                      >
+                        Features
                       </button>
                     </td>
                   </tr>
@@ -465,6 +521,16 @@ function TestTenantHook() {
           Clears all tenant data and resets to initial state
         </p>
       </div>
+
+      <FeatureManagementModal
+        providerName="T"
+        providerKey={featureTenantId}
+        visible={featureModalVisible}
+        onVisibleChange={setFeatureModalVisible}
+        onSave={() => {
+          console.log('Tenant features saved from hook section!')
+        }}
+      />
     </div>
   )
 }

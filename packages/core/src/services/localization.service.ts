@@ -9,6 +9,8 @@ export class LocalizationService {
    * @param interpolateParams Parameters to interpolate into the string
    */
   t(key: string, ...interpolateParams: string[]): string {
+    if (!key) key = '';
+
     const state = this.getState().config;
     const keys = key.split('::') as [string, string];
 

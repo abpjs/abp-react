@@ -11,7 +11,7 @@ assignees: ''
 Which ABP Framework Angular package contains the feature you want translated?
 
 - Package: `@abp/ng.*` [e.g., @abp/ng.core]
-- Version: [e.g., 0.7.6]
+- Version: [e.g., 0.8.0]
 - Component/Feature: [e.g., UserMenuComponent]
 
 ## 🎯 Feature Description

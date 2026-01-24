@@ -15,6 +15,7 @@ import {
   TestPermissionManagementPage,
   TestTenantManagementPage,
   TestIdentityPage,
+  TestFeatureManagementPage,
 } from './pages'
 import './App.css'
 
@@ -75,7 +76,7 @@ function Home() {
 
   return (
     <div>
-      <h1>ABP React Framework v0.7.6</h1>
+      <h1>ABP React Framework v0.8.0</h1>
       <p>Test application for @abpjs packages.</p>
 
       <div className="test-section">
@@ -123,6 +124,12 @@ function Home() {
             <h3>@abpjs/identity</h3>
             <p>User and role management, identity hooks</p>
             <Link to="/test/identity" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
+
+          <div className="test-card">
+            <h3>@abpjs/feature-management</h3>
+            <p>Feature management modal, tenant/edition features</p>
+            <Link to="/test/feature-management" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
           </div>
         </div>
       </div>
@@ -198,6 +205,7 @@ function App() {
         <Route path="/test/permission-management" element={<TestPermissionManagementPage />} />
         <Route path="/test/tenant-management" element={<TestTenantManagementPage />} />
         <Route path="/test/identity" element={<TestIdentityPage />} />
+        <Route path="/test/feature-management" element={<TestFeatureManagementPage />} />
       </Route>
 
       {/* Auth pages with LayoutAccount - using @abpjs/account */}

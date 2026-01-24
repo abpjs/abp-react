@@ -2,7 +2,7 @@
  * @abpjs/theme-shared
  *
  * ABP Framework Theme Shared components for React.
- * Translated from @abp/ng.theme.shared v0.7.6
+ * Translated from @abp/ng.theme.shared v0.8.0
  *
  * This package provides shared UI components, services, and utilities
  * for theme/modal management in ABP Framework React applications.
@@ -10,6 +10,9 @@
 
 // Models
 export * from './models';
+
+// Constants
+export * from './constants';
 
 // Contexts (Services)
 export * from './contexts';

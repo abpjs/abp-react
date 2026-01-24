@@ -26,6 +26,8 @@ Describe any alternative solutions or features you've considered.
 
 - [ ] @abpjs/core
 - [ ] @abpjs/account
+- [ ] @abpjs/feature-management
+- [ ] @abpjs/identity
 - [ ] @abpjs/permission-management
 - [ ] @abpjs/tenant-management
 - [ ] @abpjs/theme-basic

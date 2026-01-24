@@ -2,7 +2,7 @@
  * @abpjs/identity
  *
  * ABP Framework identity components for React.
- * Translated from @abp/ng.identity version 0.7.6.
+ * Translated from @abp/ng.identity version 0.8.0.
  *
  * This package provides:
  * - Identity models (User, Role, etc.)

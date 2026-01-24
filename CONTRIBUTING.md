@@ -18,7 +18,7 @@ We welcome contributions in many forms:
 ### Prerequisites
 
 - Node.js >= 18.0.0
-- pnpm >= 8.0.0
+- pnpm >= 10.0.0
 - Git
 
 ### Setup

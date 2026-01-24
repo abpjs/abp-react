@@ -1,16 +1,19 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { configReducer, ConfigState } from '../slices/config.slice';
+import { loaderReducer, LoaderState } from '../slices/loader.slice';
 import { profileReducer, ProfileState } from '../slices/profile.slice';
 import { sessionReducer, SessionState } from '../slices/session.slice';
 
 export interface RootState {
   config: ConfigState;
+  loader: LoaderState;
   profile: ProfileState;
   session: SessionState;
 }
 
 const rootReducer = combineReducers({
   config: configReducer,
+  loader: loaderReducer,
   profile: profileReducer,
   session: sessionReducer,
 });

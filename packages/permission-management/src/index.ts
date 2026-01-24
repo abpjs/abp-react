@@ -1,7 +1,7 @@
 /**
  * @abpjs/permission-management
  * ABP Framework Permission Management module for React
- * Translated from @abp/ng.permission-management v0.7.6
+ * Translated from @abp/ng.permission-management v0.8.0
  */
 
 // Models
