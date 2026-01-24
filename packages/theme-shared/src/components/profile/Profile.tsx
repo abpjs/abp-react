@@ -8,7 +8,8 @@ import {
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { useLocalization, useProfile } from '@abpjs/core';
-import { Modal, useToaster } from '@abpjs/theme-shared';
+import { Modal } from '../modal';
+import { useToaster } from '../../contexts';
 import { Check } from 'lucide-react';
 
 export interface ProfileProps {
@@ -28,7 +29,7 @@ interface ProfileFormData {
 
 /**
  * Profile modal component for editing user profile.
- * Translated from Angular ProfileComponent.
+ * Translated from Angular ProfileComponent (moved from theme-basic in v0.9.0).
  *
  * Provides a modal dialog for editing user profile with:
  * - Username (required)
@@ -67,6 +68,9 @@ export function Profile({
       phoneNumber: '',
     },
   });
+
+  // Track if modal is busy (submitting or loading)
+  const modalBusy = isSubmitting || loading;
 
   // Fetch profile and populate form when modal opens
   useEffect(() => {
@@ -109,18 +113,20 @@ export function Profile({
   };
 
   const handleClose = () => {
-    onVisibleChange(false);
+    if (!modalBusy) {
+      onVisibleChange(false);
+    }
   };
 
   const modalFooter = (
     <>
-      <Button variant="ghost" mr={3} onClick={handleClose}>
+      <Button variant="ghost" mr={3} onClick={handleClose} disabled={modalBusy}>
         {t('AbpIdentity::Cancel') || 'Cancel'}
       </Button>
       <Button
         colorPalette="blue"
         type="submit"
-        loading={isSubmitting || loading}
+        loading={modalBusy}
         form="profile-form"
       >
         <Check size={16} />
@@ -133,6 +139,7 @@ export function Profile({
     <Modal
       visible={visible}
       onVisibleChange={onVisibleChange}
+      busy={modalBusy}
       header={t('AbpIdentity::PersonalInfo') || 'Personal Info'}
       footer={modalFooter}
       size="lg"

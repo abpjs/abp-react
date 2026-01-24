@@ -2,10 +2,17 @@
  * @abpjs/theme-shared
  *
  * ABP Framework Theme Shared components for React.
- * Translated from @abp/ng.theme.shared v0.8.0
+ * Translated from @abp/ng.theme.shared v0.9.0
  *
  * This package provides shared UI components, services, and utilities
  * for theme/modal management in ABP Framework React applications.
+ *
+ * New in v0.9.0:
+ * - ChangePassword component (moved from theme-basic)
+ * - Profile component (moved from theme-basic)
+ * - Modal busy prop for preventing close during operations
+ * - Modal height/minHeight props
+ * - Modal onInit callback
  */
 
 // Models
