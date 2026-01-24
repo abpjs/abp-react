@@ -5,16 +5,16 @@ export class ProfileService {
   constructor(private rest: RestService) {}
 
   get(): Promise<Profile.Response> {
-    return this.rest.get<Profile.Response>('/api/identity/profile');
+    return this.rest.get<Profile.Response>('/api/identity/my-profile');
   }
 
   update(body: Profile.Response): Promise<Profile.Response> {
-    return this.rest.put<Profile.Response, Profile.Response>('/api/identity/profile', body);
+    return this.rest.put<Profile.Response, Profile.Response>('/api/identity/my-profile', body);
   }
 
   changePassword(body: Profile.ChangePasswordRequest): Promise<void> {
     return this.rest.post<Profile.ChangePasswordRequest, void>(
-      '/api/identity/profile/changePassword',
+      '/api/identity/my-profile/changePassword',
       body
     );
   }

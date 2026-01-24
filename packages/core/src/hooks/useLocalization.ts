@@ -17,6 +17,8 @@ export function useLocalization() {
    */
   const t = useCallback(
     (key: string, ...interpolateParams: string[]): string => {
+      if (!key) key = '';
+
       const keys = key.split('::') as [string, string];
 
       if (keys[0] === '') {
