@@ -16,6 +16,7 @@ import {
   TbShield,
   TbBuilding,
   TbId,
+  TbToggleRight,
 } from 'react-icons/tb'
 import './index.css'
 import App from './App.tsx'
@@ -68,6 +69,7 @@ const appRoutes: ABP.FullRoute[] = [
       { name: 'Permission Management', path: 'permission-management', order: 5, layout: eLayoutType.application, icon: <TbShield /> },
       { name: 'Tenant Management', path: 'tenant-management', order: 6, layout: eLayoutType.application, icon: <TbBuilding /> },
       { name: 'Identity', path: 'identity', order: 7, layout: eLayoutType.application, icon: <TbId /> },
+      { name: 'Feature Management', path: 'feature-management', order: 8, layout: eLayoutType.application, icon: <TbToggleRight /> },
     ]
   },
 ]
