@@ -1,6 +1,7 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useConfirmation } from '../contexts/confirmation.context';
 import { Toaster } from '../models';
+import { ErrorComponentProps } from '../components/errors/ErrorComponent';
 
 // Optional navigation function type
 type NavigateFunction = (to: string) => void;
@@ -25,6 +26,14 @@ export interface HttpErrorResponse {
 }
 
 /**
+ * Error component instance configuration.
+ */
+export interface ErrorComponentInstance {
+  title: string;
+  details: string;
+}
+
+/**
  * Error handler interface.
  */
 export interface ErrorHandler {
@@ -34,6 +43,12 @@ export interface ErrorHandler {
   showError: (message: string, title?: string) => Promise<Toaster.Status>;
   /** Navigate to the login page */
   navigateToLogin: () => void;
+  /** Create error component props for full-page error display */
+  createErrorComponent: (instance: Partial<ErrorComponentInstance>) => ErrorComponentProps;
+  /** Current error component props (null if no error) */
+  errorComponentProps: ErrorComponentProps | null;
+  /** Clear the current error component */
+  clearErrorComponent: () => void;
 }
 
 /**
@@ -100,6 +115,7 @@ export interface UseErrorHandlerOptions {
 export function useErrorHandler(options: UseErrorHandlerOptions = {}): ErrorHandler {
   const { navigate, loginPath = '/account/login' } = options;
   const confirmation = useConfirmation();
+  const [errorComponentProps, setErrorComponentProps] = useState<ErrorComponentProps | null>(null);
 
   const navigateToLogin = useCallback(() => {
     if (navigate) {
@@ -114,6 +130,24 @@ export function useErrorHandler(options: UseErrorHandlerOptions = {}): ErrorHand
       return confirmation.error(message, title || 'AbpUi::Error');
     },
     [confirmation]
+  );
+
+  const clearErrorComponent = useCallback(() => {
+    setErrorComponentProps(null);
+  }, []);
+
+  const createErrorComponent = useCallback(
+    (instance: Partial<ErrorComponentInstance>): ErrorComponentProps => {
+      const props: ErrorComponentProps = {
+        title: instance.title || 'Error',
+        details: instance.details || 'An error has occurred.',
+        onDestroy: clearErrorComponent,
+        showCloseButton: true,
+      };
+      setErrorComponentProps(props);
+      return props;
+    },
+    [clearErrorComponent]
   );
 
   const handleError = useCallback(
@@ -150,6 +184,9 @@ export function useErrorHandler(options: UseErrorHandlerOptions = {}): ErrorHand
     handleError,
     showError,
     navigateToLogin,
+    createErrorComponent,
+    errorComponentProps,
+    clearErrorComponent,
   };
 }
 

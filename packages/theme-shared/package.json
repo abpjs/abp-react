@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/theme-shared",
-  "version": "0.7.6",
+  "version": "0.8.0",
   "description": "ABP Framework Theme Shared components for React - translated from @abp/ng.theme.shared",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -40,7 +40,7 @@
     "react-icons": "^5.5.0"
   },
   "devDependencies": {
-    "@abp/ng.theme.shared": "0.7.6"
+    "@abp/ng.theme.shared": "0.8.0"
   },
   "author": "tekthar.com",
   "license": "LGPL-3.0",
