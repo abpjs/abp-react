@@ -7,7 +7,8 @@ import {
 } from '@chakra-ui/react';
 import { useForm } from 'react-hook-form';
 import { useLocalization, useProfile } from '@abpjs/core';
-import { Modal, useToaster } from '@abpjs/theme-shared';
+import { Modal } from '../modal';
+import { useToaster } from '../../contexts';
 import { Check } from 'lucide-react';
 
 export interface ChangePasswordProps {
@@ -25,7 +26,7 @@ interface ChangePasswordFormData {
 
 /**
  * Change password modal component.
- * Translated from Angular ChangePasswordComponent.
+ * Translated from Angular ChangePasswordComponent (moved from theme-basic in v0.9.0).
  *
  * Provides a modal dialog for changing the user's password with:
  * - Current password input
@@ -94,7 +95,9 @@ export function ChangePassword({
   };
 
   const handleClose = () => {
-    onVisibleChange(false);
+    if (!isSubmitting) {
+      onVisibleChange(false);
+    }
   };
 
   // Password validation rules
@@ -126,7 +129,7 @@ export function ChangePassword({
 
   const modalFooter = (
     <>
-      <Button variant="ghost" mr={3} onClick={handleClose}>
+      <Button variant="ghost" mr={3} onClick={handleClose} disabled={isSubmitting}>
         {t('AbpIdentity::Cancel') || 'Cancel'}
       </Button>
       <Button
@@ -145,6 +148,7 @@ export function ChangePassword({
     <Modal
       visible={visible}
       onVisibleChange={onVisibleChange}
+      busy={isSubmitting}
       header={t('AbpIdentity::ChangePassword') || 'Change Password'}
       footer={modalFooter}
       centered
@@ -192,7 +196,7 @@ export function ChangePassword({
               {...register('repeatNewPassword', {
                 required:
                   t('AbpIdentity::ThisFieldIsRequired') || 'This field is required',
-                validate: (value) =>
+                validate: (value: string) =>
                   value === newPassword ||
                   t('AbpIdentity::Identity.PasswordConfirmationFailed') ||
                   'Passwords do not match',

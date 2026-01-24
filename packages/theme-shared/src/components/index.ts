@@ -4,3 +4,5 @@ export * from './errors';
 export * from './loader-bar';
 export * from './modal';
 export * from './ui';
+export * from './change-password';
+export * from './profile';
