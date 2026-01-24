@@ -1,6 +1,6 @@
 /**
  * Test page for @abpjs/theme-shared package
- * Tests: Toaster, Confirmation dialogs, Modal, Error handler
+ * Tests: Toaster, Confirmation dialogs, Modal, Error handler, LoaderBar, ErrorComponent
  */
 import { useState } from 'react'
 import {
@@ -9,7 +9,149 @@ import {
   useErrorHandler,
   Modal,
   Toaster,
+  LoaderBar,
+  ErrorComponent,
 } from '@abpjs/theme-shared'
+import { useAbp } from '@abpjs/core'
+
+function TestLoaderBar() {
+  const { restService } = useAbp()
+  const [showLoaderBar, setShowLoaderBar] = useState(true)
+
+  const triggerLoading = async () => {
+    try {
+      // This will trigger the loader bar via the API interceptor
+      await restService.get('/api/abp/application-configuration')
+    } catch (err) {
+      console.log('API call completed')
+    }
+  }
+
+  const triggerMultipleLoads = async () => {
+    try {
+      await Promise.all([
+        restService.get('/api/abp/application-configuration'),
+        restService.get('/api/abp/application-configuration'),
+        restService.get('/api/abp/application-configuration'),
+      ])
+    } catch (err) {
+      console.log('API calls completed')
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>LoaderBar Component (v0.8.0)</h2>
+
+      {showLoaderBar && <LoaderBar />}
+
+      <div className="test-card">
+        <h3>Loading Progress Bar</h3>
+        <p>The LoaderBar shows a progress bar at the top of the page during HTTP requests.</p>
+        <p>It automatically listens to LoaderStart/LoaderStop actions dispatched by the API interceptor.</p>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label>
+            <input
+              type="checkbox"
+              checked={showLoaderBar}
+              onChange={(e) => setShowLoaderBar(e.target.checked)}
+            />
+            {' '}Show LoaderBar
+          </label>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button onClick={triggerLoading}>
+            Trigger Single API Call
+          </button>
+          <button onClick={triggerMultipleLoads}>
+            Trigger 3 Concurrent Calls
+          </button>
+        </div>
+        <p style={{ marginTop: '0.5rem', color: '#888', fontSize: '0.85rem' }}>
+          Watch the blue progress bar at the top of the page when clicking the buttons.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function TestErrorComponentDisplay() {
+  const [showError, setShowError] = useState(false)
+  const [errorTitle, setErrorTitle] = useState('404')
+  const [errorDetails, setErrorDetails] = useState('The page you are looking for was not found.')
+
+  const errorPresets = [
+    { title: '404', details: 'The page you are looking for was not found.' },
+    { title: '500', details: 'An internal server error occurred. Please try again later.' },
+    { title: '403', details: 'You do not have permission to access this resource.' },
+    { title: 'Error', details: 'Something went wrong. Please contact support.' },
+  ]
+
+  return (
+    <div className="test-section">
+      <h2>ErrorComponent (v0.8.0)</h2>
+
+      <div className="test-card">
+        <h3>Error Display Component</h3>
+        <p>The ErrorComponent is used for displaying full-page error states.</p>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+            Error Title:{' '}
+            <input
+              type="text"
+              value={errorTitle}
+              onChange={(e) => setErrorTitle(e.target.value)}
+              style={{ padding: '0.25rem', marginLeft: '0.5rem' }}
+            />
+          </label>
+          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+            Error Details:{' '}
+            <input
+              type="text"
+              value={errorDetails}
+              onChange={(e) => setErrorDetails(e.target.value)}
+              style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '300px' }}
+            />
+          </label>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          {errorPresets.map((preset) => (
+            <button
+              key={preset.title}
+              onClick={() => {
+                setErrorTitle(preset.title)
+                setErrorDetails(preset.details)
+                setShowError(true)
+              }}
+            >
+              Show {preset.title} Error
+            </button>
+          ))}
+        </div>
+
+        <button onClick={() => setShowError(!showError)}>
+          {showError ? 'Hide' : 'Show'} Error Component
+        </button>
+
+        {showError && (
+          <div style={{ marginTop: '1rem', border: '1px solid #333', borderRadius: '8px', padding: '1rem' }}>
+            <ErrorComponent
+              title={errorTitle}
+              details={errorDetails}
+              showCloseButton
+              onDestroy={() => setShowError(false)}
+              closeButtonText="Dismiss"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
 
 function TestToaster() {
   const toaster = useToaster()
@@ -243,8 +385,10 @@ export function TestThemeSharedPage() {
   return (
     <div>
       <h1>@abpjs/theme-shared Tests</h1>
-      <p>Testing toast notifications, confirmation dialogs, modals, and error handling.</p>
+      <p>Testing toast notifications, confirmation dialogs, modals, error handling, and v0.8.0 components.</p>
 
+      <TestLoaderBar />
+      <TestErrorComponentDisplay />
       <TestToaster />
       <TestConfirmation />
       <TestErrorHandler />
