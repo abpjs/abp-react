@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/tenant-management",
-  "version": "0.7.6",
+  "version": "0.8.0",
   "description": "ABP Framework tenant-management components for React - translated from @abp/ng.tenant-management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -38,7 +38,7 @@
     "@abpjs/theme-shared": "workspace:*"
   },
   "devDependencies": {
-    "@abp/ng.tenant-management": "0.7.6",
+    "@abp/ng.tenant-management": "0.8.0",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.4.0"
