@@ -207,3 +207,29 @@ export const selectSetting_ = (key: string) => (state: { config: ConfigState }) 
 export const selectLocalizationValue =
   (resourceName: string, key: string) => (state: { config: ConfigState }) =>
     state.config.localization.values[resourceName]?.[key];
+
+export const selectApplicationInfo = (state: { config: ConfigState }) =>
+  state.config.environment.application;
+
+// Helper function to find a route by path or name recursively
+function findRouteDeep(
+  routes: ABP.FullRoute[],
+  path?: string,
+  name?: string
+): ABP.FullRoute | undefined {
+  for (const route of routes) {
+    if ((path && route.path === path) || (name && route.name === name)) {
+      return route;
+    }
+    if (route.children && route.children.length) {
+      const found = findRouteDeep(route.children as ABP.FullRoute[], path, name);
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
+
+export const selectRoute =
+  (path?: string, name?: string) =>
+  (state: { config: ConfigState }): ABP.FullRoute | undefined =>
+    findRouteDeep(state.config.routes, path, name);

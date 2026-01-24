@@ -6,7 +6,13 @@ export namespace Config {
     [key: string]: any;
   }
 
+  export interface Application {
+    name: string;
+    logoUrl?: string;
+  }
+
   export interface Environment {
+    application?: Application;
     production: boolean;
     oAuthConfig: UserManagerSettings;
     apis: Apis;
