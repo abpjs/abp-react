@@ -12,6 +12,7 @@
   "dependencies": {
     "@abpjs/account": "workspace:*",
     "@abpjs/core": "workspace:*",
+    "@abpjs/feature-management": "workspace:*",
     "@abpjs/identity": "workspace:*",
     "@abpjs/permission-management": "workspace:*",
     "@abpjs/tenant-management": "workspace:*",

@@ -1,0 +1,86 @@
+{
+  "name": "@abpjs/feature-management",
+  "version": "0.8.0",
+  "description": "ABP Framework feature-management components for React - translated from @abp/ng.feature-management",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup src/index.ts --format cjs,esm --watch",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "abp",
+    "react",
+    "framework",
+    "feature-management"
+  ],
+  "dependencies": {
+    "@chakra-ui/react": "^3.2.0",
+    "@emotion/react": "^11.11.0",
+    "@abpjs/core": "workspace:*",
+    "@abpjs/theme-shared": "workspace:*",
+    "@abpjs/permission-management": "workspace:*"
+  },
+  "devDependencies": {
+    "@abp/ng.feature-management": "0.0.83",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-react": "^7.0.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
+    "jsdom": "^24.0.0",
+    "postcss": "^8.4.32",
+    "prettier": "^3.7.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.0",
+    "tailwindcss": "^3.4.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "author": "tekthar.com",
+  "license": "LGPL-3.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abpjs/abp-react"
+  },
+  "homepage": "https://docs.abpjs.io/docs/packages/feature-management/overview",
+  "bugs": {
+    "url": "https://github.com/abpjs/abp-react/issues"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0",
+    "react-router-dom": ">=6.0.0"
+  }
+}
