@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Session } from '../models';
+import { ABP, Session } from '../models';
 
 export interface SessionState extends Session.State {}
 
@@ -14,7 +14,7 @@ function loadSessionFromStorage(): SessionState {
   } catch {
     // Ignore parse errors
   }
-  return { language: '' };
+  return { language: '', tenant: { id: '', name: '' } };
 }
 
 function saveSessionToStorage(state: SessionState): void {
@@ -35,6 +35,10 @@ export const sessionSlice = createSlice({
       state.language = action.payload;
       saveSessionToStorage(state);
     },
+    setTenant: (state, action: PayloadAction<ABP.BasicItem>) => {
+      state.tenant = action.payload;
+      saveSessionToStorage(state);
+    },
   },
 });
 
@@ -43,3 +47,4 @@ export const sessionReducer = sessionSlice.reducer;
 
 // Selectors
 export const selectLanguage = (state: { session: SessionState }) => state.session.language;
+export const selectTenant = (state: { session: SessionState }) => state.session.tenant;

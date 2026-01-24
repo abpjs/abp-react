@@ -12,10 +12,11 @@ export class ProfileService {
     return this.rest.put<Profile.Response, Profile.Response>('/api/identity/my-profile', body);
   }
 
-  changePassword(body: Profile.ChangePasswordRequest): Promise<void> {
+  changePassword(body: Profile.ChangePasswordRequest, skipHandleError?: boolean): Promise<void> {
     return this.rest.post<Profile.ChangePasswordRequest, void>(
       '/api/identity/my-profile/changePassword',
-      body
+      body,
+      { skipHandleError }
     );
   }
 }

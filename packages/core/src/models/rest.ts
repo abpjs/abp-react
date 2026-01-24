@@ -2,7 +2,7 @@ import { ResponseType } from 'axios';
 
 export namespace Rest {
   export interface Config {
-    throwErr?: boolean;
+    skipHandleError?: boolean;
     observe?: Observe;
   }
 

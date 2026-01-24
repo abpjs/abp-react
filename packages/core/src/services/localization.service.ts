@@ -4,6 +4,13 @@ export class LocalizationService {
   constructor(private getState: () => RootState) {}
 
   /**
+   * Get current language from session state
+   */
+  get currentLang(): string {
+    return this.getState().session.language;
+  }
+
+  /**
    * Get a localized string by key
    * @param key The localization key in format "ResourceName::Key" or "::Key" for default resource
    * @param interpolateParams Parameters to interpolate into the string

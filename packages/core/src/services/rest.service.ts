@@ -42,7 +42,7 @@ export class RestService {
     config: Rest.Config = {},
     apiName?: string
   ): Promise<R> {
-    const { throwErr = false, observe = Rest.Observe.Body } = config;
+    const { skipHandleError = false, observe = Rest.Observe.Body } = config;
     const baseUrl = apiName ? this.getApiUrl(apiName) : this.getApiUrl();
     const url = `${baseUrl}${request.url}`;
 
@@ -68,7 +68,7 @@ export class RestService {
 
       return response.data;
     } catch (err) {
-      if (throwErr) {
+      if (skipHandleError) {
         throw err;
       }
       return this.handleError(err as AxiosError);
