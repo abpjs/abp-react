@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useRestService } from '@abpjs/core';
+import { useRestService, ABP } from '@abpjs/core';
 import { Identity } from '../models';
 import { IdentityService } from '../services';
 
@@ -25,8 +25,8 @@ export interface UseRolesReturn {
   isLoading: boolean;
   /** Error message if any */
   error: string | null;
-  /** Fetch all roles */
-  fetchRoles: () => Promise<RoleOperationResult>;
+  /** Fetch all roles with optional pagination/filtering (v0.9.0) */
+  fetchRoles: (params?: ABP.PageQueryParams) => Promise<RoleOperationResult>;
   /** Get a role by ID and set it as selected */
   getRoleById: (id: string) => Promise<RoleOperationResult>;
   /** Create a new role */
@@ -93,14 +93,15 @@ export function useRoles(): UseRolesReturn {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Fetch all roles
+   * Fetch all roles with optional pagination/filtering (v0.9.0)
+   * @param params - Optional query parameters for pagination and filtering
    */
-  const fetchRoles = useCallback(async (): Promise<RoleOperationResult> => {
+  const fetchRoles = useCallback(async (params?: ABP.PageQueryParams): Promise<RoleOperationResult> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await service.getRoles();
+      const response = await service.getRoles(params);
       setRoles(response.items || []);
       setTotalCount(response.totalCount || 0);
       setIsLoading(false);

@@ -3,7 +3,7 @@
  * Tests: RolesComponent, UsersComponent, useRoles, useUsers, useIdentity hooks
  */
 import { useState, useEffect } from 'react'
-import { useAuth } from '@abpjs/core'
+import { useAuth, type ABP } from '@abpjs/core'
 import {
   RolesComponent,
   UsersComponent,
@@ -90,6 +90,11 @@ function TestRolesHook() {
   const [testRoleName, setTestRoleName] = useState('')
   const [testIsDefault, setTestIsDefault] = useState(false)
   const [testIsPublic, setTestIsPublic] = useState(true)
+  const [rolePageQuery, setRolePageQuery] = useState<ABP.PageQueryParams>({
+    skipCount: 0,
+    maxResultCount: 10,
+  })
+  const [roleFilter, setRoleFilter] = useState('')
 
   useEffect(() => {
     fetchRoles()
@@ -110,6 +115,74 @@ function TestRolesHook() {
       </div>
 
       <div className="test-card">
+        <h3>Roles Pagination & Filtering (v0.9.0)</h3>
+        <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
+          New in v0.9.0: fetchRoles now accepts optional ABP.PageQueryParams
+        </p>
+        <p>Current query:</p>
+        <pre style={{  padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+          {JSON.stringify(rolePageQuery, null, 2)}
+        </pre>
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
+          <input
+            type="text"
+            placeholder="Filter by name..."
+            value={roleFilter}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+              flex: 1
+            }}
+          />
+          <button
+            onClick={() => {
+              const newQuery = { ...rolePageQuery, filter: roleFilter || undefined }
+              setRolePageQuery(newQuery)
+              fetchRoles(newQuery)
+            }}
+            disabled={isLoading}
+          >
+            Search
+          </button>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            onClick={() => {
+              const newQuery = { ...rolePageQuery, skipCount: Math.max(0, (rolePageQuery.skipCount || 0) - 10) }
+              setRolePageQuery(newQuery)
+              fetchRoles(newQuery)
+            }}
+            disabled={isLoading || (rolePageQuery.skipCount || 0) === 0}
+          >
+            Previous Page
+          </button>
+          <button
+            onClick={() => {
+              const newQuery = { ...rolePageQuery, skipCount: (rolePageQuery.skipCount || 0) + 10 }
+              setRolePageQuery(newQuery)
+              fetchRoles(newQuery)
+            }}
+            disabled={isLoading || (rolePageQuery.skipCount || 0) + 10 >= totalCount}
+          >
+            Next Page
+          </button>
+          <button
+            onClick={() => {
+              const newQuery = { skipCount: 0, maxResultCount: 10 }
+              setRolePageQuery(newQuery)
+              setRoleFilter('')
+              fetchRoles(newQuery)
+            }}
+            disabled={isLoading}
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <div className="test-card">
         <h3>Get Role by ID</h3>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' }}>
           <input
@@ -121,8 +194,6 @@ function TestRolesHook() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -151,8 +222,6 @@ function TestRolesHook() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
             }}
           />
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -204,9 +273,7 @@ function TestRolesHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
+              border: '1px solid #333'
             }}
           />
           <input
@@ -217,9 +284,7 @@ function TestRolesHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
+              border: '1px solid #333'
             }}
           />
           <button
@@ -255,8 +320,6 @@ function TestRolesHook() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -389,7 +452,7 @@ function TestUsersHook() {
       <div className="test-card">
         <h3>Pagination</h3>
         <p>Current page query:</p>
-        <pre style={{ background: '#1a1a1a', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+        <pre style={{  padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
           {JSON.stringify(pageQuery, null, 2)}
         </pre>
         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
@@ -428,8 +491,6 @@ function TestUsersHook() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -467,9 +528,7 @@ function TestUsersHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
+              border: '1px solid #333'
             }}
           />
           <input
@@ -480,9 +539,7 @@ function TestUsersHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
+              border: '1px solid #333'
             }}
           />
           <input
@@ -493,9 +550,7 @@ function TestUsersHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
+              border: '1px solid #333'
             }}
           />
           <button
@@ -538,8 +593,6 @@ function TestUsersHook() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -691,7 +744,7 @@ function TestRouteConstants() {
       <div className="test-card">
         <h3>IDENTITY_ROUTES</h3>
         <p>Route configuration for the identity module:</p>
-        <pre style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
           {JSON.stringify(IDENTITY_ROUTES, null, 2)}
         </pre>
       </div>
@@ -699,7 +752,7 @@ function TestRouteConstants() {
       <div className="test-card">
         <h3>IDENTITY_ROUTE_PATHS</h3>
         <p>Programmatic navigation paths:</p>
-        <pre style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
           {JSON.stringify(IDENTITY_ROUTE_PATHS, null, 2)}
         </pre>
       </div>
@@ -707,7 +760,7 @@ function TestRouteConstants() {
       <div className="test-card">
         <h3>IDENTITY_POLICIES</h3>
         <p>Required policies for identity operations:</p>
-        <pre style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
           {JSON.stringify(IDENTITY_POLICIES, null, 2)}
         </pre>
       </div>
@@ -809,7 +862,7 @@ function TestApiEndpoints() {
         <h3>Request/Response Formats</h3>
         <div style={{ marginBottom: '1rem' }}>
           <h4>Create Role Request:</h4>
-          <pre style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+          <pre style={{  padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`{
   "name": "string",
   "isDefault": boolean,
@@ -819,7 +872,7 @@ function TestApiEndpoints() {
         </div>
         <div style={{ marginBottom: '1rem' }}>
           <h4>Create User Request:</h4>
-          <pre style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+          <pre style={{  padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`{
   "userName": "string",
   "name": "string",
@@ -835,7 +888,7 @@ function TestApiEndpoints() {
         </div>
         <div>
           <h4>User Response:</h4>
-          <pre style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+          <pre style={{  padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`{
   "id": "string",
   "userName": "string",

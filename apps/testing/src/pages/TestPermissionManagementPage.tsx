@@ -37,8 +37,6 @@ function TestPermissionModal() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -67,8 +65,6 @@ function TestPermissionModal() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -81,7 +77,7 @@ function TestPermissionModal() {
         </div>
         {currentUserId && (
           <p style={{ color: '#888', fontSize: '12px' }}>
-            Your User ID: <code style={{ background: '#333', padding: '2px 4px', borderRadius: '2px' }}>{currentUserId}</code>
+            Your User ID: <code style={{ background: 'rgba(50,50,50,0.10)', padding: '2px 4px', borderRadius: '2px' }}>{currentUserId}</code>
             <button
               style={{ marginLeft: '8px', fontSize: '12px', padding: '2px 8px' }}
               onClick={() => setTestUserId(currentUserId)}
@@ -173,9 +169,7 @@ function TestPermissionHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
+              border: '1px solid #333'
             }}
           >
             <option value="R">Role (R)</option>
@@ -190,8 +184,6 @@ function TestPermissionHook() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
