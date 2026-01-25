@@ -11,8 +11,10 @@ import {
   Toaster,
   LoaderBar,
   ErrorComponent,
+  ChangePassword,
+  Profile,
 } from '@abpjs/theme-shared'
-import { useAbp } from '@abpjs/core'
+import { useAbp, useAuth } from '@abpjs/core'
 
 function TestLoaderBar() {
   const { restService } = useAbp()
@@ -487,6 +489,78 @@ function TestModalV090() {
   )
 }
 
+function TestChangePassword() {
+  const { isAuthenticated } = useAuth()
+  const [visible, setVisible] = useState(false)
+
+  return (
+    <div className="test-section">
+      <h2>ChangePassword Component (v0.9.0)</h2>
+      <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
+        New in v0.9.0: Moved from @abpjs/theme-basic to @abpjs/theme-shared
+      </p>
+
+      {!isAuthenticated ? (
+        <div className="test-card">
+          <p style={{ color: '#f88' }}>
+            You must be authenticated to test the ChangePassword component
+          </p>
+        </div>
+      ) : (
+        <div className="test-card">
+          <h3>Change Password Modal</h3>
+          <p>Opens a modal for changing the current user's password.</p>
+          <p style={{ fontSize: '14px', color: '#888' }}>
+            The component handles success/error notifications internally.
+          </p>
+          <button onClick={() => setVisible(true)}>Open Change Password</button>
+
+          <ChangePassword
+            visible={visible}
+            onVisibleChange={setVisible}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TestProfile() {
+  const { isAuthenticated } = useAuth()
+  const [visible, setVisible] = useState(false)
+
+  return (
+    <div className="test-section">
+      <h2>Profile Component (v0.9.0)</h2>
+      <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
+        New in v0.9.0: Moved from @abpjs/theme-basic to @abpjs/theme-shared
+      </p>
+
+      {!isAuthenticated ? (
+        <div className="test-card">
+          <p style={{ color: '#f88' }}>
+            You must be authenticated to test the Profile component
+          </p>
+        </div>
+      ) : (
+        <div className="test-card">
+          <h3>Profile Modal</h3>
+          <p>Opens a modal for editing the current user's profile.</p>
+          <p style={{ fontSize: '14px', color: '#888' }}>
+            The component handles success/error notifications internally.
+          </p>
+          <button onClick={() => setVisible(true)}>Open Profile</button>
+
+          <Profile
+            visible={visible}
+            onVisibleChange={setVisible}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function TestThemeSharedPage() {
   return (
     <div>
@@ -500,6 +574,8 @@ export function TestThemeSharedPage() {
       <TestErrorHandler />
       <TestModal />
       <TestModalV090 />
+      <TestChangePassword />
+      <TestProfile />
     </div>
   )
 }

@@ -19,13 +19,15 @@ export class IdentityService {
   // ========================
 
   /**
-   * Get all roles
+   * Get all roles with optional pagination/filtering (v0.9.0)
+   * @param params - Optional query parameters for pagination and filtering
    * @returns Promise with paginated role response
    */
-  getRoles(): Promise<Identity.RoleResponse> {
+  getRoles(params: ABP.PageQueryParams = {}): Promise<Identity.RoleResponse> {
     return this.rest.request<null, Identity.RoleResponse>({
       method: 'GET',
       url: '/api/identity/roles',
+      params,
     });
   }
 

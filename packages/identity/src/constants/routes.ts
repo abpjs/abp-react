@@ -1,41 +1,45 @@
 import { ABP, eLayoutType } from '@abpjs/core';
 
 /**
- * Identity module routes configuration.
+ * Identity module routes configuration (v0.9.0 format).
  * Translated from @abp/ng.identity IDENTITY_ROUTES.
  *
  * These routes define the navigation structure for the identity module
  * within the ABP Framework application.
+ *
+ * In v0.9.0, the format changed from `ABP.FullRoute[]` to `{ routes: ABP.FullRoute[] }`
  */
-export const IDENTITY_ROUTES: ABP.FullRoute[] = [
-  {
-    name: 'AbpUiNavigation::Menu:Administration',
-    path: '',
-    order: 1,
-    wrapper: true,
-  },
-  {
-    name: 'AbpIdentity::Menu:IdentityManagement',
-    path: 'identity',
-    order: 1,
-    parentName: 'AbpUiNavigation::Menu:Administration',
-    layout: eLayoutType.application,
-    children: [
-      {
-        path: 'roles',
-        name: 'AbpIdentity::Roles',
-        order: 2,
-        requiredPolicy: 'AbpIdentity.Roles',
-      },
-      {
-        path: 'users',
-        name: 'AbpIdentity::Users',
-        order: 1,
-        requiredPolicy: 'AbpIdentity.Users',
-      },
-    ],
-  },
-];
+export const IDENTITY_ROUTES: { routes: ABP.FullRoute[] } = {
+  routes: [
+    {
+      name: 'AbpUiNavigation::Menu:Administration',
+      path: '',
+      order: 1,
+      wrapper: true,
+    },
+    {
+      name: 'AbpIdentity::Menu:IdentityManagement',
+      path: 'identity',
+      order: 1,
+      parentName: 'AbpUiNavigation::Menu:Administration',
+      layout: eLayoutType.application,
+      children: [
+        {
+          path: 'roles',
+          name: 'AbpIdentity::Roles',
+          order: 2,
+          requiredPolicy: 'AbpIdentity.Roles',
+        },
+        {
+          path: 'users',
+          name: 'AbpIdentity::Users',
+          order: 1,
+          requiredPolicy: 'AbpIdentity.Users',
+        },
+      ],
+    },
+  ],
+};
 
 /**
  * Route paths for the identity module.

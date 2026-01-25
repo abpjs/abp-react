@@ -51,8 +51,6 @@ function TestTenantModal() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -81,8 +79,6 @@ function TestTenantModal() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -111,8 +107,6 @@ function TestTenantModal() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -223,8 +217,6 @@ function TestTenantHook() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -253,8 +245,6 @@ function TestTenantHook() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -286,9 +276,7 @@ function TestTenantHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
+              border: '1px solid #333'
             }}
           />
           <input
@@ -299,9 +287,7 @@ function TestTenantHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
+              border: '1px solid #333'
             }}
           />
           <button
@@ -334,8 +320,6 @@ function TestTenantHook() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -368,9 +352,7 @@ function TestTenantHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
+              border: '1px solid #333'
             }}
           />
           <input
@@ -381,9 +363,7 @@ function TestTenantHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
+              border: '1px solid #333'
             }}
           />
           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -599,7 +579,7 @@ function TestApiEndpoints() {
         <h3>Request/Response Formats</h3>
         <div style={{ marginBottom: '1rem' }}>
           <h4>Create Tenant Request:</h4>
-          <pre style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+          <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`{
   "name": "string"
 }`}
@@ -607,7 +587,7 @@ function TestApiEndpoints() {
         </div>
         <div style={{ marginBottom: '1rem' }}>
           <h4>Update Tenant Request:</h4>
-          <pre style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+          <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`{
   "id": "string",
   "name": "string"
@@ -616,7 +596,7 @@ function TestApiEndpoints() {
         </div>
         <div style={{ marginBottom: '1rem' }}>
           <h4>Tenant Response:</h4>
-          <pre style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+          <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`{
   "items": [
     {

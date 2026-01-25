@@ -33,8 +33,6 @@ function TestFeatureModal() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -63,8 +61,6 @@ function TestFeatureModal() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -157,9 +153,7 @@ function TestFeatureHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white'
+              border: '1px solid #333'
             }}
           >
             <option value="T">Tenant (T)</option>
@@ -174,8 +168,6 @@ function TestFeatureHook() {
               padding: '8px',
               borderRadius: '4px',
               border: '1px solid #333',
-              background: '#1a1a1a',
-              color: 'white',
               flex: 1
             }}
           />
@@ -244,8 +236,6 @@ function TestFeatureHook() {
                           padding: '4px 8px',
                           borderRadius: '4px',
                           border: '1px solid #333',
-                          background: '#1a1a1a',
-                          color: 'white',
                           width: '100%'
                         }}
                       />
@@ -337,7 +327,7 @@ function TestModels() {
 
       <div className="test-card">
         <h3>FeatureManagement Namespace</h3>
-        <pre style={{ background: '#1a1a1a', padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`interface Feature {
   name: string;
   value: string;
