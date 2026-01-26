@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useRestService } from '@abpjs/core';
+import { useRestService, ABP } from '@abpjs/core';
 import { TenantManagement } from '../models';
 import { TenantManagementService } from '../services';
 
@@ -17,6 +17,8 @@ export interface TenantManagementResult {
 export interface UseTenantManagementReturn {
   /** List of tenants */
   tenants: TenantManagement.Item[];
+  /** Total count of tenants */
+  totalCount: number;
   /** Currently selected tenant */
   selectedTenant: TenantManagement.Item | null;
   /** Loading state */
@@ -27,8 +29,8 @@ export interface UseTenantManagementReturn {
   defaultConnectionString: string;
   /** Whether the selected tenant uses shared database */
   useSharedDatabase: boolean;
-  /** Fetch all tenants */
-  fetchTenants: () => Promise<TenantManagementResult>;
+  /** Fetch all tenants (with optional params in v0.9.0) */
+  fetchTenants: (params?: ABP.PageQueryParams) => Promise<TenantManagementResult>;
   /** Fetch a tenant by ID */
   fetchTenantById: (id: string) => Promise<TenantManagementResult>;
   /** Create a new tenant */
@@ -94,6 +96,7 @@ export function useTenantManagement(): UseTenantManagementReturn {
 
   // State
   const [tenants, setTenants] = useState<TenantManagement.Item[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [selectedTenant, setSelectedTenant] = useState<TenantManagement.Item | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,15 +104,16 @@ export function useTenantManagement(): UseTenantManagementReturn {
   const [useSharedDatabase, setUseSharedDatabase] = useState<boolean>(true);
 
   /**
-   * Fetch all tenants
+   * Fetch all tenants (with optional params in v0.9.0)
    */
-  const fetchTenants = useCallback(async (): Promise<TenantManagementResult> => {
+  const fetchTenants = useCallback(async (params?: ABP.PageQueryParams): Promise<TenantManagementResult> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await service.getAll();
+      const response = await service.getAll(params);
       setTenants(response.items);
+      setTotalCount(response.totalCount);
       setIsLoading(false);
       return { success: true };
     } catch (err: unknown) {
@@ -298,6 +302,7 @@ export function useTenantManagement(): UseTenantManagementReturn {
    */
   const reset = useCallback(() => {
     setTenants([]);
+    setTotalCount(0);
     setSelectedTenant(null);
     setIsLoading(false);
     setError(null);
@@ -307,6 +312,7 @@ export function useTenantManagement(): UseTenantManagementReturn {
 
   return {
     tenants,
+    totalCount,
     selectedTenant,
     isLoading,
     error,

@@ -8,6 +8,9 @@ import {
   TenantManagementModal,
   useTenantManagement,
   type TenantManagement,
+  TENANT_MANAGEMENT_ROUTES,
+  TENANT_MANAGEMENT_ROUTE_PATHS,
+  TENANT_MANAGEMENT_POLICIES,
 } from '@abpjs/tenant-management'
 import { FeatureManagementModal } from '@abpjs/feature-management'
 
@@ -161,8 +164,10 @@ function TestTenantModal() {
 }
 
 function TestTenantHook() {
+  const { isAuthenticated } = useAuth()
   const {
     tenants,
+    totalCount,
     selectedTenant,
     isLoading,
     error,
@@ -186,10 +191,12 @@ function TestTenantHook() {
   const [featureModalVisible, setFeatureModalVisible] = useState(false)
   const [featureTenantId, setFeatureTenantId] = useState('')
 
-  // Fetch tenants on mount
+  // Fetch tenants on mount (only if authenticated)
   useEffect(() => {
-    fetchTenants()
-  }, [fetchTenants])
+    if (isAuthenticated) {
+      fetchTenants()
+    }
+  }, [fetchTenants, isAuthenticated])
 
   return (
     <div className="test-section">
@@ -411,15 +418,21 @@ function TestTenantHook() {
         <h3>Hook State</h3>
         <p>isLoading: {isLoading ? 'true' : 'false'}</p>
         <p>error: {error || 'null'}</p>
-        <p>tenants count: {tenants.length}</p>
+        <p>tenants count: {tenants?.length ?? 0}</p>
+        <p>totalCount: {totalCount}</p>
         <p>selectedTenant: {selectedTenant ? `${selectedTenant.name} (${selectedTenant.id})` : 'none'}</p>
         <p>defaultConnectionString: {defaultConnectionString || 'empty'}</p>
         <p>useSharedDatabase: {useSharedDatabase ? 'true' : 'false'}</p>
+        {!isAuthenticated && (
+          <p style={{ color: '#f88', marginTop: '0.5rem' }}>
+            ⚠️ You must be authenticated to use tenant management features
+          </p>
+        )}
       </div>
 
-      {tenants.length > 0 && (
+      {tenants && tenants.length > 0 && (
         <div className="test-card">
-          <h3>Tenants List ({tenants.length})</h3>
+          <h3>Tenants List ({tenants.length} of {totalCount})</h3>
           <div style={{ maxHeight: '300px', overflow: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
@@ -613,6 +626,38 @@ function TestApiEndpoints() {
   )
 }
 
+function TestRouteConstants() {
+  return (
+    <div className="test-section">
+      <h2>Route Constants (v0.9.0)</h2>
+
+      <div className="test-card">
+        <h3>TENANT_MANAGEMENT_ROUTES</h3>
+        <p>Route configuration for the tenant management module (v0.9.0 format):</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+          {JSON.stringify(TENANT_MANAGEMENT_ROUTES, null, 2)}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>TENANT_MANAGEMENT_ROUTE_PATHS</h3>
+        <p>Programmatic navigation paths:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+          {JSON.stringify(TENANT_MANAGEMENT_ROUTE_PATHS, null, 2)}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>TENANT_MANAGEMENT_POLICIES</h3>
+        <p>Required policies for tenant management operations:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+          {JSON.stringify(TENANT_MANAGEMENT_POLICIES, null, 2)}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 export function TestTenantManagementPage() {
   return (
     <div>
@@ -621,6 +666,7 @@ export function TestTenantManagementPage() {
 
       <TestTenantModal />
       <TestTenantHook />
+      <TestRouteConstants />
       <TestApiEndpoints />
     </div>
   )
