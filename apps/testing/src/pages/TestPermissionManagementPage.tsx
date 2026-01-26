@@ -148,6 +148,7 @@ function TestPermissionHook() {
     setSelectedGroup,
     togglePermission,
     isGranted,
+    isGrantedByRole,
   } = usePermissionManagement()
 
   const handleFetch = () => {
@@ -240,6 +241,11 @@ function TestPermissionHook() {
                       {permission.isGranted && (
                         <span style={{ fontSize: '12px', color: '#6f6' }}>(originally granted)</span>
                       )}
+                      {isGrantedByRole(permission.grantedProviders) && (
+                        <span style={{ fontSize: '12px', color: '#ff6', background: '#333', padding: '1px 4px', borderRadius: '3px' }}>
+                          from role
+                        </span>
+                      )}
                     </label>
                   </li>
                 ))}
@@ -264,6 +270,7 @@ function TestPermissionHook() {
             <tr><td style={{ padding: '8px' }}>setSelectedGroup</td><td>Select a permission group</td></tr>
             <tr><td style={{ padding: '8px' }}>togglePermission</td><td>Toggle a permission on/off</td></tr>
             <tr><td style={{ padding: '8px' }}>isGranted</td><td>Check if permission is granted</td></tr>
+            <tr><td style={{ padding: '8px' }}>isGrantedByRole</td><td>Check if permission is granted by a role (v0.9.0)</td></tr>
           </tbody>
         </table>
       </div>

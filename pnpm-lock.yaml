@@ -421,16 +421,37 @@ importers:
       '@emotion/react':
         specifier: ^11.11.0
         version: 11.14.0(@types/react@18.3.27)(react@18.3.1)
+    devDependencies:
+      '@abp/ng.permission-management':
+        specifier: 0.9.0
+        version: 0.9.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/forms@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/platform-browser@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))(rxjs@7.8.2))(@angular/router@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/platform-browser@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))(rxjs@7.8.2))(jquery@3.7.1)(popper.js@1.16.1)(rxjs@7.8.2)
+      '@testing-library/jest-dom':
+        specifier: ^6.4.0
+        version: 6.9.1
+      '@testing-library/react':
+        specifier: ^14.2.0
+        version: 14.3.1(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@types/react':
+        specifier: ^18.2.0
+        version: 18.3.27
+      '@types/react-dom':
+        specifier: ^18.2.0
+        version: 18.3.7(@types/react@18.3.27)
+      '@vitest/coverage-v8':
+        specifier: ^1.2.0
+        version: 1.6.1(vitest@1.6.1(@types/node@24.10.7)(jsdom@24.1.3))
+      jsdom:
+        specifier: ^24.0.0
+        version: 24.1.3
       react:
         specifier: ^18.2.0
         version: 18.3.1
       react-dom:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
-    devDependencies:
-      '@abp/ng.permission-management':
-        specifier: 0.8.0
-        version: 0.8.0(jquery@3.7.1)(popper.js@1.16.1)
+      vitest:
+        specifier: ^1.2.0
+        version: 1.6.1(@types/node@24.10.7)(jsdom@24.1.3)
 
   packages/tenant-management:
     dependencies:
@@ -599,8 +620,8 @@ packages:
   '@abp/ng.identity@0.9.0':
     resolution: {integrity: sha512-iRrYKoGf+wKKl5H16SMIShDTsXevZmyCI3dfVM3iMp4z3mVB6CbO6oPk5NNnDh5gpQIG9G5L61mNLAgJRpKz0w==}
 
-  '@abp/ng.permission-management@0.8.0':
-    resolution: {integrity: sha512-dARFHUyDXlxRlOolt0Ra6G8giJ/izWusdTOCrn1X+kcszk59f1Gzxf5fNmF3R73hGn/Q0aFP6hVxXKVYt5HjTA==}
+  '@abp/ng.permission-management@0.9.0':
+    resolution: {integrity: sha512-xDuokrzJIeGK7GeIKUsuxBWSm6n/6x17VdFgqx67xt9AJV7RVUYe0f0wfaBRPHq41dZCt+duP4FtQSikriEBVw==}
 
   '@abp/ng.permission-management@0.9.2':
     resolution: {integrity: sha512-3hTUFKC3HohipfXHULZhe8jN/sDRRNQetsgZQQ8ZaYCJ81c+b/MidKXex6McofIX1iRUChjs972tfDXC7P9ozQ==}
@@ -610,9 +631,6 @@ packages:
 
   '@abp/ng.theme.basic@0.9.0':
     resolution: {integrity: sha512-DGVQfA2taB9IUKsK+jPT+nqyqvbxx8jvamznYLHnh9fY+jw0njIhipOc3IZpXnTmSTNc+q0F+MWbA5IJTp6kYQ==}
-
-  '@abp/ng.theme.shared@0.8.0':
-    resolution: {integrity: sha512-8sRrvegRyyoirwddZ33voqtp6yajWqJIttVZKsNip1XfYK0ywjqU30cXy9lhxKOw6J2XS3ax4aGe+gwKy/+WpA==}
 
   '@abp/ng.theme.shared@0.8.3':
     resolution: {integrity: sha512-hObpzXODr28HhNfqMSN6sVJ6RfQiW92lVfAQErf2lqjSmrp6PAu8xRdZ4B8lce/TKTBcQuUMaR85Nrw4uLL8PQ==}
@@ -1277,14 +1295,6 @@ packages:
       '@angular/core': ^8.0.0
       '@angular/forms': ^8.0.0
       rxjs: ^6.4.0
-
-  '@ngx-validate/core@0.0.1':
-    resolution: {integrity: sha512-wwe7e9NbTmFmEnHywcFS59Dn9HL4pfBUC5Rq6nx4v5ETyMnvFaYZhgGuagD5SAHIc2NFd7ZoZ2EfAXwSXy5l4Q==}
-    peerDependencies:
-      '@angular/common': '>=5.0.0 <8.0.0'
-      '@angular/core': '>=5.0.0 <8.0.0'
-      '@angular/forms': '>=5.0.0 <8.0.0'
-      rxjs: '>=6.0.0 || ^5.6.0-forward-compat.4'
 
   '@ngx-validate/core@0.0.4':
     resolution: {integrity: sha512-PSOd40Y+H2Gq4hxjGWKScDXI0svSMHYVw4QBxvdEKSNlAk+bon2H4xjJW4Pe2GShekuGGlBWNQ8oXrU7Zin+Ug==}
@@ -4014,16 +4024,6 @@ snapshots:
       - popper.js
       - rxjs
 
-  '@abp/ng.core@0.8.3':
-    dependencies:
-      '@ngxs/router-plugin': 3.8.2(@ngxs/store@3.8.2)
-      '@ngxs/storage-plugin': 3.8.2(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@ngxs/store@3.8.2(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(rxjs@7.8.2)
-      '@ngxs/store': 3.8.2(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2)
-      angular-oauth2-oidc: 8.0.4(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))
-      just-compare: 1.5.1
-      snq: 1.0.3
-      tslib: 1.14.1
-
   '@abp/ng.core@0.8.3(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/forms@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/platform-browser@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))(rxjs@7.8.2))(rxjs@7.8.2)':
     dependencies:
       '@angular/common': 21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2)
@@ -4118,9 +4118,9 @@ snapshots:
       - popper.js
       - rxjs
 
-  '@abp/ng.permission-management@0.8.0(jquery@3.7.1)(popper.js@1.16.1)':
+  '@abp/ng.permission-management@0.9.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/forms@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/platform-browser@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))(rxjs@7.8.2))(@angular/router@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/platform-browser@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))(rxjs@7.8.2))(jquery@3.7.1)(popper.js@1.16.1)(rxjs@7.8.2)':
     dependencies:
-      '@abp/ng.theme.shared': 0.8.0(jquery@3.7.1)(popper.js@1.16.1)
+      '@abp/ng.theme.shared': 0.9.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/forms@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/platform-browser@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))(rxjs@7.8.2))(@angular/router@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/platform-browser@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))(rxjs@7.8.2))(jquery@3.7.1)(popper.js@1.16.1)(rxjs@7.8.2)
       tslib: 1.14.1
     transitivePeerDependencies:
       - '@angular/common'
@@ -4161,27 +4161,6 @@ snapshots:
   '@abp/ng.theme.basic@0.9.0':
     dependencies:
       '@abp/ng.theme.shared': 0.9.0
-      tslib: 1.14.1
-    transitivePeerDependencies:
-      - '@angular/common'
-      - '@angular/core'
-      - '@angular/forms'
-      - '@angular/router'
-      - jquery
-      - popper.js
-      - rxjs
-
-  '@abp/ng.theme.shared@0.8.0(jquery@3.7.1)(popper.js@1.16.1)':
-    dependencies:
-      '@abp/ng.core': 0.8.3
-      '@angular/cdk': 8.2.3(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))
-      '@ng-bootstrap/ng-bootstrap': 5.3.1(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/forms@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/platform-browser@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))(rxjs@7.8.2))(rxjs@7.8.2)
-      '@ngx-validate/core': 0.0.1
-      bootstrap: 4.6.2(jquery@3.7.1)(popper.js@1.16.1)
-      font-awesome: 4.7.0
-      ngx-perfect-scrollbar: 8.0.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2)
-      primeicons: 1.0.0
-      primeng: 8.1.1
       tslib: 1.14.1
     transitivePeerDependencies:
       - '@angular/common'
@@ -4936,10 +4915,6 @@ snapshots:
       '@angular/core': 17.3.12(rxjs@7.8.2)(zone.js@0.14.10)
       '@angular/forms': 21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/platform-browser@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))(rxjs@7.8.2)
       rxjs: 7.8.2
-      tslib: 1.14.1
-
-  '@ngx-validate/core@0.0.1':
-    dependencies:
       tslib: 1.14.1
 
   '@ngx-validate/core@0.0.4(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/forms@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(@angular/platform-browser@21.1.0(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))(rxjs@7.8.2))(rxjs@7.8.2)':
