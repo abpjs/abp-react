@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/feature-management",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "ABP Framework feature-management components for React - translated from @abp/ng.feature-management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -41,7 +41,7 @@
     "@abpjs/permission-management": "workspace:*"
   },
   "devDependencies": {
-    "@abp/ng.feature-management": "0.0.83",
+    "@abp/ng.feature-management": "0.9.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.6.1",
@@ -63,7 +63,8 @@
     "tailwindcss": "^3.4.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "@vitest/coverage-v8": "^1.2.0",
+    "vitest": "^1.2.0"
   },
   "author": "tekthar.com",
   "license": "LGPL-3.0",
