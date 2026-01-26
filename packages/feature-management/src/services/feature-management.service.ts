@@ -3,7 +3,7 @@ import { FeatureManagement } from '../models';
 
 /**
  * Service for feature management API calls
- * Translated from @abp/ng.feature-management v0.8.0
+ * Translated from @abp/ng.feature-management v0.9.0
  */
 export class FeatureManagementService {
   private rest: RestService;
