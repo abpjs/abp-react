@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link as RouterLink } from 'react-router-dom';
-import { useLocalization } from '@abpjs/core';
-import { Button } from '@abpjs/theme-shared';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useLocalization, useUserManager, useAbp, configActions } from '@abpjs/core';
+import { Button, useToaster } from '@abpjs/theme-shared';
 import { Box, Heading, Input, Link, HStack, Show } from '@chakra-ui/react';
 import { TenantBox } from '../TenantBox';
-import type { RegisterFormData } from '../../models';
+import { useAccountService } from '../../hooks/useAccountService';
+import type { RegisterFormData, RegisterRequest } from '../../models';
 import {
   Card,
   Container,
@@ -102,8 +104,10 @@ export interface RegisterFormProps {
  *
  * This is the React equivalent of Angular's RegisterComponent.
  *
- * Note: In v0.7.6, the onSubmit only validates the form but does not
- * make an API call. This matches the Angular implementation.
+ * In v0.9.0, this component now makes API calls for registration using
+ * AccountService and automatically logs in the user after successful registration.
+ *
+ * @since 0.9.0 - Now uses AccountService for registration
  *
  * @example
  * ```tsx
@@ -122,16 +126,21 @@ export function RegisterForm({
   showLoginLink = true,
   loginUrl = '/account/login',
   onRegisterSuccess,
-  // Note: onRegisterError will be used when registration API is implemented
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onRegisterError: _onRegisterError,
+  onRegisterError,
 }: RegisterFormProps) {
   const { t } = useLocalization();
+  const navigate = useNavigate();
+  const accountService = useAccountService();
+  const toaster = useToaster();
+  const userManager = useUserManager();
+  const { store, applicationConfigurationService } = useAbp();
+
+  const [inProgress, setInProgress] = useState(false);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -143,14 +152,69 @@ export function RegisterForm({
 
   /**
    * Handle form submission
-   * Note: In v0.7.6, this only validates - no API call is made
+   * In v0.9.0, this calls the register API and auto-logs in the user
    */
   const onSubmit = async (data: RegisterFormData) => {
-    // In v0.7.6, the Angular RegisterComponent.onSubmit() only validates
-    // and returns if form is invalid. No API call is made.
-    // We maintain this behavior for version parity.
-    console.log('Register form submitted (no API call in v0.7.6):', data);
-    onRegisterSuccess?.();
+    setInProgress(true);
+
+    const newUser: RegisterRequest = {
+      userName: data.username,
+      password: data.password,
+      emailAddress: data.email,
+      appName: 'React',
+    };
+
+    try {
+      // Step 1: Register the user
+      await accountService.register(newUser);
+
+      // Step 2: Sign in the user using password flow
+      if (userManager) {
+        try {
+          await userManager.signinResourceOwnerCredentials({
+            username: newUser.userName,
+            password: newUser.password,
+          });
+
+          // Step 3: Refresh application configuration
+          const config = await applicationConfigurationService.getConfiguration();
+          store.dispatch(configActions.setApplicationConfiguration(config));
+
+          // Step 4: Navigate to home
+          navigate('/');
+          onRegisterSuccess?.();
+        } catch (loginErr) {
+          // Registration succeeded but auto-login failed
+          // Still consider this a success, user can login manually
+          console.warn('Auto-login failed after registration:', loginErr);
+          toaster.success(
+            t('AbpAccount::SuccessfullyRegistered') || 'Successfully registered! Please log in.',
+            t('AbpAccount::Success') || 'Success'
+          );
+          navigate(loginUrl);
+          onRegisterSuccess?.();
+        }
+      } else {
+        // No user manager configured, just redirect to login
+        toaster.success(
+          t('AbpAccount::SuccessfullyRegistered') || 'Successfully registered! Please log in.',
+          t('AbpAccount::Success') || 'Success'
+        );
+        navigate(loginUrl);
+        onRegisterSuccess?.();
+      }
+    } catch (err: any) {
+      const errorMessage =
+        err?.error?.error_description ||
+        err?.error?.error?.message ||
+        t('AbpAccount::DefaultErrorMessage') ||
+        'An error occurred';
+
+      toaster.error(errorMessage, t('AbpUi::Error') || 'Error', { life: 7000 });
+      onRegisterError?.(errorMessage);
+    } finally {
+      setInProgress(false);
+    }
   };
 
   return (
@@ -166,7 +230,6 @@ export function RegisterForm({
 
             <Stack gap={{ base: '2', md: '3' }} textAlign="center">
               <Heading size={{ base: '2xl', md: '3xl' }}>{t('AbpAccount::Register')}</Heading>
-              {/* <Text color="fg.muted">{t('AbpAccount::CreateYourAccount')}</Text> */}
             </Stack>
 
             <form onSubmit={handleSubmit(onSubmit)} noValidate>
@@ -228,7 +291,7 @@ export function RegisterForm({
                   <Button
                     type="submit"
                     colorPalette="blue"
-                    loading={isSubmitting}
+                    loading={inProgress}
                     loadingText={t('AbpAccount::Register')}
                   >
                     {t('AbpAccount::Register')}

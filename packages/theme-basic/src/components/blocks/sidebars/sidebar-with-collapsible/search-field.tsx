@@ -1,4 +1,4 @@
-import { Icon, Input, InputGroup } from '@chakra-ui/react'
+import { Input, InputGroup } from '@chakra-ui/react'
 import { LuSearch } from 'react-icons/lu'
 import { useLocalization } from '@abpjs/core'
 import { useSearch } from './search-context'
@@ -10,11 +10,7 @@ export const SearchField = () => {
   return (
     <InputGroup
       flex="1"
-      startElement={
-        <Icon size="sm">
-          <LuSearch />
-        </Icon>
-      }
+      startElement={<LuSearch />}
     >
       <Input
         placeholder={t('AbpUi::Search')}
