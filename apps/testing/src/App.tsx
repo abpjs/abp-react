@@ -7,6 +7,7 @@ import { Routes, Route, Link, useSearchParams, useNavigate } from 'react-router-
 import { useAbp, useAuth, useConfig, AuthGuard } from '@abpjs/core'
 import { LayoutApplication, LayoutAccount, LayoutEmpty } from '@abpjs/theme-basic'
 import { LoginPage as AccountLoginPage, RegisterPage as AccountRegisterPage } from '@abpjs/account'
+import { SettingLayout } from '@abpjs/setting-management'
 import {
   TestCorePage,
   TestThemeSharedPage,
@@ -214,6 +215,8 @@ function App() {
         <Route path="/test/identity" element={<TestIdentityPage />} />
         <Route path="/test/feature-management" element={<TestFeatureManagementPage />} />
         <Route path="/test/setting-management" element={<TestSettingManagementPage />} />
+        {/* Setting management page from @abpjs/setting-management */}
+        <Route path="/setting-management" element={<SettingLayout />} />
       </Route>
 
       {/* Auth pages with LayoutAccount - using @abpjs/account */}

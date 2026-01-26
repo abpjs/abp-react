@@ -12,7 +12,7 @@ export const SETTING_MANAGEMENT_ROUTES: { routes: ABP.FullRoute[] } = {
   routes: [
     {
       name: 'Settings',
-      path: '/setting-management',
+      path: 'setting-management',
       layout: 'application' as eLayoutType,
       order: 100,
     },

@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { AbpProvider, type ABP, type Config, eLayoutType } from '@abpjs/core'
 import { ThemeBasicProvider, LAYOUTS } from '@abpjs/theme-basic'
 import { AccountProvider, ACCOUNT_ROUTES } from '@abpjs/account'
+import { SETTING_MANAGEMENT_ROUTES } from '@abpjs/setting-management'
 import {
   TbHome,
   TbInfoCircle,
@@ -17,6 +18,7 @@ import {
   TbBuilding,
   TbId,
   TbToggleRight,
+  TbSettings,
 } from 'react-icons/tb'
 import './index.css'
 import App from './App.tsx'
@@ -70,13 +72,19 @@ const appRoutes: ABP.FullRoute[] = [
       { name: 'Tenant Management', path: 'tenant-management', order: 6, layout: eLayoutType.application, icon: <TbBuilding /> },
       { name: 'Identity', path: 'identity', order: 7, layout: eLayoutType.application, icon: <TbId /> },
       { name: 'Feature Management', path: 'feature-management', order: 8, layout: eLayoutType.application, icon: <TbToggleRight /> },
+      { name: 'Setting Management', path: 'setting-management', order: 9, layout: eLayoutType.application, icon: <TbSettings /> },
     ]
   },
 ]
 
-// Combine app routes with account routes from @abpjs/account
-// Note: In v0.9.0, ACCOUNT_ROUTES is an object with a `routes` property
-const routes: ABP.FullRoute[] = [...appRoutes, ...ACCOUNT_ROUTES.routes]
+// Combine app routes with package routes
+// Note: In v0.9.0, route exports are objects with a `routes` property
+// Add icons to setting-management routes for sidebar display
+const settingRoutes = SETTING_MANAGEMENT_ROUTES.routes.map(route => ({
+  ...route,
+  icon: <TbSettings />,
+}))
+const routes: ABP.FullRoute[] = [...appRoutes, ...ACCOUNT_ROUTES.routes, ...settingRoutes]
 
 // Define requirements with layout components from theme.basic
 const requirements: Config.Requirements = {

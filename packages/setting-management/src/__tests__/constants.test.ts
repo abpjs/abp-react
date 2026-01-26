@@ -19,7 +19,7 @@ describe('SETTING_MANAGEMENT_ROUTES', () => {
   it('should have correct route configuration', () => {
     const settingsRoute = SETTING_MANAGEMENT_ROUTES.routes[0];
     expect(settingsRoute.name).toBe('Settings');
-    expect(settingsRoute.path).toBe('/setting-management');
+    expect(settingsRoute.path).toBe('setting-management');
     expect(settingsRoute.layout).toBe('application');
     expect(settingsRoute.order).toBe(100);
   });
