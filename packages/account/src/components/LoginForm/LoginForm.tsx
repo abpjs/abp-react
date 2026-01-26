@@ -9,7 +9,6 @@ import { TenantBox } from '../TenantBox';
 import { usePasswordFlow } from '../../hooks';
 import type { LoginFormData } from '../../models';
 import {
-  Avatar,
   Card,
   Container,
   Field,
@@ -17,10 +16,8 @@ import {
   InputGroup,
   Stack,
   Text,
-} from '@chakra-ui/react'
-import { ImagePlaceholder } from "./image-placeholder"
-
-import { LuLock, LuMail } from 'react-icons/lu'
+} from '@chakra-ui/react';
+import { LuLock, LuMail } from 'react-icons/lu';
 /**
  * Zod schema for login form validation
  * Matches Angular validators: required, maxLength(255) for username, maxLength(32) for password

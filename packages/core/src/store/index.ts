@@ -26,9 +26,15 @@ export function createAbpStore(preloadedState?: Partial<RootState>) {
       getDefaultMiddleware({
         serializableCheck: {
           // Ignore these paths in the state (for non-serializable data like React components)
-          ignoredPaths: ['config.requirements.layouts'],
-          // Ignore these paths in actions (for setConfig action with layouts)
-          ignoredActionPaths: ['payload.requirements.layouts'],
+          ignoredPaths: [
+            'config.requirements.layouts',
+            'config.routes', // Routes contain icon ReactNodes
+          ],
+          // Ignore these paths in actions (for setConfig action with layouts and routes)
+          ignoredActionPaths: [
+            'payload.requirements.layouts',
+            'payload.routes', // Routes contain icon ReactNodes
+          ],
         },
       }),
   });

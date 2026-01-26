@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
-import { useLocalization } from '@abpjs/core';
-import { Modal, Button, FormField } from '@abpjs/theme-shared';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useLocalization, sessionActions, selectTenant } from '@abpjs/core';
+import { Modal, Button, useToaster } from '@abpjs/theme-shared';
 import { Box, Text, Link, Input, VStack } from '@chakra-ui/react';
-import type { TenantInfo } from '../../models';
+import { useAccountService } from '../../hooks/useAccountService';
 
 /**
  * Props for TenantBox component
@@ -21,50 +21,98 @@ export interface TenantBoxProps {
  * Displays the currently selected tenant and allows users to switch tenants.
  * This is a direct translation of Angular's TenantBoxComponent.
  *
- * Note: In v0.7.6, this component stores the tenant selection locally
- * and does not integrate with the backend tenant resolution API.
+ * In v0.9.0, this component integrates with the backend tenant resolution API
+ * and properly updates the session state.
+ *
+ * @since 0.9.0 - Now uses AccountService for tenant lookup
  */
 export function TenantBox({ containerStyle }: TenantBoxProps) {
   const { t } = useLocalization();
-  const [selected, setSelected] = useState<TenantInfo | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
+  const dispatch = useDispatch();
+  const accountService = useAccountService();
+  const toaster = useToaster();
 
-  const { register, handleSubmit, reset } = useForm<TenantInfo>({
-    defaultValues: {
-      name: '',
-    },
-  });
+  // Get current tenant from Redux store
+  const currentTenant = useSelector(selectTenant);
+
+  // Local state
+  const [tenantName, setTenantName] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Initialize tenant name from store on mount
+  useEffect(() => {
+    setTenantName(currentTenant?.name || '');
+  }, [currentTenant]);
 
   /**
    * Open the tenant switch modal
    */
-  const openModal = useCallback(() => {
-    reset({ name: selected?.name || '' });
-    setModalVisible(true);
-  }, [selected, reset]);
-
-  /**
-   * Handle switch button click
-   */
   const onSwitch = useCallback(() => {
-    setSelected(null);
-    openModal();
-  }, [openModal]);
+    setIsModalVisible(true);
+  }, []);
 
   /**
    * Save the selected tenant
    */
-  const onSave = useCallback((data: TenantInfo) => {
-    setSelected(data.name ? data : null);
-    setModalVisible(false);
-  }, []);
+  const save = useCallback(async () => {
+    if (tenantName) {
+      setIsLoading(true);
+      try {
+        const { success, tenantId } = await accountService.findTenant(tenantName);
+
+        if (success) {
+          const newTenant = {
+            id: tenantId,
+            name: tenantName,
+          };
+          dispatch(sessionActions.setTenant(newTenant));
+          setIsModalVisible(false);
+        } else {
+          toaster.error(
+            t('AbpUiMultiTenancy::GivenTenantIsNotAvailable', tenantName) ||
+              `Tenant "${tenantName}" is not available`,
+            t('AbpUi::Error') || 'Error'
+          );
+          // Reset tenant name on failure
+          setTenantName('');
+        }
+      } catch (err: any) {
+        const errorMessage =
+          err?.error?.error_description ||
+          err?.error?.error?.message ||
+          t('AbpUi::DefaultErrorMessage') ||
+          'An error occurred';
+        toaster.error(errorMessage, t('AbpUi::Error') || 'Error');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // Clear tenant when name is empty
+      dispatch(sessionActions.setTenant({ id: '', name: '' }));
+      setIsModalVisible(false);
+    }
+  }, [tenantName, accountService, dispatch, toaster, t]);
 
   /**
    * Close the modal without saving
    */
   const onClose = useCallback(() => {
-    setModalVisible(false);
-  }, []);
+    // Reset tenant name to current value
+    setTenantName(currentTenant?.name || '');
+    setIsModalVisible(false);
+  }, [currentTenant]);
+
+  /**
+   * Handle form submission
+   */
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      save();
+    },
+    [save]
+  );
 
   return (
     <>
@@ -84,7 +132,7 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
         </Text>
         <Text as="strong">
           <Text as="i">
-            {selected?.name || t('AbpUiMultiTenancy::NotSelected')}
+            {currentTenant?.name || t('AbpUiMultiTenancy::NotSelected')}
           </Text>
         </Text>
         {' ('}
@@ -102,8 +150,8 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
 
       {/* Tenant Switch Modal */}
       <Modal
-        visible={modalVisible}
-        onVisibleChange={setModalVisible}
+        visible={isModalVisible}
+        onVisibleChange={setIsModalVisible}
         size="md"
         header={t('AbpUiMultiTenancy::SwitchTenant') || 'Switch Tenant'}
         footer={
@@ -111,18 +159,32 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
             <Button variant="ghost" colorPalette="gray" onClick={onClose}>
               {t('AbpTenantManagement::Cancel')}
             </Button>
-            <Button colorPalette="blue" onClick={handleSubmit(onSave)}>
+            <Button
+              colorPalette="blue"
+              onClick={save}
+              loading={isLoading}
+              loadingText={t('AbpTenantManagement::Save')}
+            >
               <CheckIcon />
               {t('AbpTenantManagement::Save')}
             </Button>
           </>
         }
       >
-        <form onSubmit={handleSubmit(onSave)}>
+        <form onSubmit={handleSubmit}>
           <VStack gap={4} align="stretch">
-            <FormField label={t('AbpUiMultiTenancy::Name')} htmlFor="tenant-name">
-              <Input id="tenant-name" type="text" {...register('name')} />
-            </FormField>
+            <Box>
+              <Text as="label" mb={1} display="block">
+                {t('AbpUiMultiTenancy::Name')}
+              </Text>
+              <Input
+                id="tenant-name"
+                type="text"
+                value={tenantName}
+                onChange={(e) => setTenantName(e.target.value)}
+                autoFocus
+              />
+            </Box>
             <Text fontSize="sm" color="gray.600">
               {t('AbpUiMultiTenancy::SwitchTenantHint')}
             </Text>

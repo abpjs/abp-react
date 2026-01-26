@@ -1,5 +1,5 @@
 'use client'
-import { Badge, Button, Collapsible, HStack, Icon, Spacer, Stack } from '@chakra-ui/react'
+import { Badge, Button, Collapsible, HStack, Icon, Spacer, Stack, chakra }  from '@chakra-ui/react'
 import { LuChevronDown } from 'react-icons/lu'
 import { SidebarLink } from './sidebar-link'
 import { useConfig, ABP, useDirection } from '@abpjs/core'
@@ -120,14 +120,14 @@ const CollapsibleNavLink = ({ route }: CollapsibleNavLinkProps) => {
               )}
               <Collapsible.Context>
                 {(context) => (
-                  <Icon
+                  <chakra.span
                     aria-hidden
                     transition="transform 0.2s"
                     transformOrigin="center"
-                    transform={context.open ? 'rotate(180deg)' : undefined}
-                  >
-                    <LuChevronDown />
-                  </Icon>
+                    transform={context.open ? 'rotate(180deg)' : undefined}>
+
+                      <LuChevronDown />
+                  </chakra.span>
                 )}
               </Collapsible.Context>
             </HStack>
