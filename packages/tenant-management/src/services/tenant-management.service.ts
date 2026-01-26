@@ -1,9 +1,9 @@
-import { RestService } from '@abpjs/core';
+import { RestService, ABP } from '@abpjs/core';
 import { TenantManagement } from '../models';
 
 /**
  * Service for tenant management API calls
- * Translated from @abp/ng.tenant-management v0.8.0
+ * Translated from @abp/ng.tenant-management v0.9.0
  */
 export class TenantManagementService {
   private rest: RestService;
@@ -14,12 +14,14 @@ export class TenantManagementService {
 
   /**
    * Get all tenants (paginated)
+   * @param params Optional pagination and filter parameters
    * @returns Promise with paginated tenant response
    */
-  getAll(): Promise<TenantManagement.Response> {
-    return this.rest.request<void, TenantManagement.Response>({
+  getAll(params: ABP.PageQueryParams = {}): Promise<TenantManagement.Response> {
+    return this.rest.request<null, TenantManagement.Response>({
       method: 'GET',
       url: '/api/multi-tenancy/tenants',
+      params,
     });
   }
 

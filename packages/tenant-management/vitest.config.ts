@@ -5,15 +5,22 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    setupFiles: ['src/__tests__/setup.ts'],
     passWithNoTests: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'node_modules/',
         'src/__tests__/setup.ts',
         'src/__tests__/test-utils.tsx',
+        'src/index.ts',
+        'src/**/index.ts',
         '**/*.d.ts',
+        // Components not modified in v0.9.0 - focus tests on API changes
+        'src/components/**/*.tsx',
+        'src/TenantManagementModal/**/*.tsx',
       ],
     },
   },

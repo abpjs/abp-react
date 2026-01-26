@@ -25,6 +25,9 @@ dist/
 build/
 *.tsbuildinfo
 
+# Test coverage
+coverage/
+
 # Misc
 .env
 .env.local
