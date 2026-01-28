@@ -53,7 +53,7 @@ function TestSettingLayoutComponent() {
             <SettingLayout
               onTabSelect={logTabSelect}
             >
-              <div style={{ padding: '16px', background: '#222', borderRadius: '8px' }}>
+              <div style={{ padding: '16px', borderRadius: '8px' }}>
                 <h4>Content Area</h4>
                 <p>This is where the settings content would render based on the selected tab.</p>
                 <p style={{ color: '#888', fontSize: '14px' }}>
@@ -326,7 +326,7 @@ function TestSettingManagementService() {
         <button onClick={handleServiceAddSetting}>
           Add Tab via Service
         </button>
-        <pre style={{ marginTop: '8px', padding: '8px', background: '#222', borderRadius: '4px', fontSize: '12px' }}>
+        <pre style={{ marginTop: '8px', padding: '8px', borderRadius: '4px', fontSize: '12px' }}>
 {`import { getSettingManagementService } from '@abpjs/setting-management';
 
 const service = getSettingManagementService();
@@ -348,7 +348,7 @@ function TestConstants() {
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
           Default route configuration for the setting management module:
         </p>
-        <pre style={{ padding: '1rem', background: '#222', borderRadius: '4px', overflow: 'auto' }}>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {JSON.stringify(SETTING_MANAGEMENT_ROUTES, null, 2)}
         </pre>
       </div>
@@ -366,7 +366,7 @@ function TestModels() {
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
           Re-exported from @abpjs/theme-shared:
         </p>
-        <pre style={{ padding: '1rem', background: '#222', borderRadius: '4px', overflow: 'auto' }}>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`interface SettingTab {
   /** Display name of the tab */
   name: string;
@@ -382,7 +382,7 @@ function TestModels() {
 
       <div className="test-card">
         <h3>UseSettingManagementReturn Interface</h3>
-        <pre style={{ padding: '1rem', background: '#222', borderRadius: '4px', overflow: 'auto' }}>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`interface UseSettingManagementReturn {
   settings: SettingTab[];
   selected: SettingTab | null;
