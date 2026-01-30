@@ -12,6 +12,12 @@ export interface TenantManagementResult {
 }
 
 /**
+ * Sort order type
+ * @since 1.0.0
+ */
+export type SortOrder = 'asc' | 'desc' | '';
+
+/**
  * Return type for useTenantManagement hook
  */
 export interface UseTenantManagementReturn {
@@ -29,7 +35,11 @@ export interface UseTenantManagementReturn {
   defaultConnectionString: string;
   /** Whether the selected tenant uses shared database */
   useSharedDatabase: boolean;
-  /** Fetch all tenants (with optional params in v0.9.0) */
+  /** Current sort key @since 1.0.0 */
+  sortKey: string;
+  /** Current sort order @since 1.0.0 */
+  sortOrder: SortOrder;
+  /** Fetch all tenants (with optional params) */
   fetchTenants: (params?: ABP.PageQueryParams) => Promise<TenantManagementResult>;
   /** Fetch a tenant by ID */
   fetchTenantById: (id: string) => Promise<TenantManagementResult>;
@@ -54,6 +64,10 @@ export interface UseTenantManagementReturn {
   setUseSharedDatabase: (value: boolean) => void;
   /** Set default connection string */
   setDefaultConnectionString: (value: string) => void;
+  /** Set sort key @since 1.0.0 */
+  setSortKey: (key: string) => void;
+  /** Set sort order @since 1.0.0 */
+  setSortOrder: (order: SortOrder) => void;
   /** Reset all state */
   reset: () => void;
 }
@@ -102,6 +116,9 @@ export function useTenantManagement(): UseTenantManagementReturn {
   const [error, setError] = useState<string | null>(null);
   const [defaultConnectionString, setDefaultConnectionString] = useState<string>('');
   const [useSharedDatabase, setUseSharedDatabase] = useState<boolean>(true);
+  // Sorting state (v1.0.0)
+  const [sortKey, setSortKey] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('');
 
   /**
    * Fetch all tenants (with optional params in v0.9.0)
@@ -318,6 +335,8 @@ export function useTenantManagement(): UseTenantManagementReturn {
     error,
     defaultConnectionString,
     useSharedDatabase,
+    sortKey,
+    sortOrder,
     fetchTenants,
     fetchTenantById,
     createTenant,
@@ -329,6 +348,8 @@ export function useTenantManagement(): UseTenantManagementReturn {
     setSelectedTenant,
     setUseSharedDatabase,
     setDefaultConnectionString,
+    setSortKey,
+    setSortOrder,
     reset,
   };
 }

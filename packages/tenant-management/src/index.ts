@@ -1,7 +1,7 @@
 /**
  * @abpjs/tenant-management
  * ABP Framework Tenant Management module for React
- * Translated from @abp/ng.tenant-management v0.9.0
+ * Translated from @abp/ng.tenant-management v1.0.0
  */
 
 // Models

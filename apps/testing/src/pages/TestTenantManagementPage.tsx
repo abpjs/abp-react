@@ -173,6 +173,8 @@ function TestTenantHook() {
     error,
     defaultConnectionString,
     useSharedDatabase,
+    sortKey,
+    sortOrder,
     fetchTenants,
     fetchTenantById,
     createTenant,
@@ -182,6 +184,8 @@ function TestTenantHook() {
     updateConnectionString,
     deleteConnectionString,
     setSelectedTenant,
+    setSortKey,
+    setSortOrder,
     reset,
   } = useTenantManagement()
 
@@ -415,6 +419,39 @@ function TestTenantHook() {
       </div>
 
       <div className="test-card">
+        <h3>Sorting (v1.0.0)</h3>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
+          <div>
+            <label style={{ marginRight: '0.5rem' }}>Sort Key:</label>
+            <select
+              value={sortKey}
+              onChange={(e) => setSortKey(e.target.value)}
+              style={{ padding: '8px', borderRadius: '4px', border: '1px solid #333' }}
+            >
+              <option value="name">Name</option>
+              <option value="id">ID</option>
+              <option value="createdAt">Created At</option>
+            </select>
+          </div>
+          <div>
+            <label style={{ marginRight: '0.5rem' }}>Sort Order:</label>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc' | '')}
+              style={{ padding: '8px', borderRadius: '4px', border: '1px solid #333' }}
+            >
+              <option value="">None</option>
+              <option value="asc">Ascending</option>
+              <option value="desc">Descending</option>
+            </select>
+          </div>
+        </div>
+        <p style={{ fontSize: '14px', color: '#888' }}>
+          Current: sortKey="{sortKey}", sortOrder="{sortOrder || '(empty)'}"
+        </p>
+      </div>
+
+      <div className="test-card">
         <h3>Hook State</h3>
         <p>isLoading: {isLoading ? 'true' : 'false'}</p>
         <p>error: {error || 'null'}</p>
@@ -423,6 +460,8 @@ function TestTenantHook() {
         <p>selectedTenant: {selectedTenant ? `${selectedTenant.name} (${selectedTenant.id})` : 'none'}</p>
         <p>defaultConnectionString: {defaultConnectionString || 'empty'}</p>
         <p>useSharedDatabase: {useSharedDatabase ? 'true' : 'false'}</p>
+        <p>sortKey: {sortKey}</p>
+        <p>sortOrder: {sortOrder || '(empty)'}</p>
         {!isAuthenticated && (
           <p style={{ color: '#f88', marginTop: '0.5rem' }}>
             ⚠️ You must be authenticated to use tenant management features
@@ -500,6 +539,8 @@ function TestTenantHook() {
             <tr><td style={{ padding: '8px' }}>updateConnectionString</td><td>Set connection string for a tenant</td></tr>
             <tr><td style={{ padding: '8px' }}>deleteConnectionString</td><td>Remove connection string (use shared DB)</td></tr>
             <tr><td style={{ padding: '8px' }}>setSelectedTenant</td><td>Set the selected tenant</td></tr>
+            <tr><td style={{ padding: '8px' }}>setSortKey</td><td>Set sort key (v1.0.0)</td></tr>
+            <tr><td style={{ padding: '8px' }}>setSortOrder</td><td>Set sort order: asc, desc, or empty (v1.0.0)</td></tr>
             <tr><td style={{ padding: '8px' }}>reset</td><td>Reset all state</td></tr>
           </tbody>
         </table>
@@ -629,11 +670,11 @@ function TestApiEndpoints() {
 function TestRouteConstants() {
   return (
     <div className="test-section">
-      <h2>Route Constants (v0.9.0)</h2>
+      <h2>Route Constants (v1.0.0)</h2>
 
       <div className="test-card">
         <h3>TENANT_MANAGEMENT_ROUTES</h3>
-        <p>Route configuration for the tenant management module (v0.9.0 format):</p>
+        <p>Route configuration for the tenant management module:</p>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
           {JSON.stringify(TENANT_MANAGEMENT_ROUTES, null, 2)}
         </pre>
