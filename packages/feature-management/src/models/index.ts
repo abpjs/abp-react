@@ -1,6 +1,6 @@
 /**
  * Feature Management Models
- * Translated from @abp/ng.feature-management v0.9.0
+ * Translated from @abp/ng.feature-management v1.0.0
  */
 
 export namespace FeatureManagement {
