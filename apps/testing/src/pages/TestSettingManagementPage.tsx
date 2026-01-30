@@ -307,7 +307,11 @@ function TestSettingManagementService() {
 
   return (
     <div className="test-section">
-      <h2>SettingManagementService (Singleton)</h2>
+      <h2>SettingManagementService (v1.0.0)</h2>
+      <p style={{ fontSize: '14px', color: '#888', marginBottom: '1rem' }}>
+        Note: In Angular v1.0.0, this service was removed in favor of using Store directly.
+        In React, we keep this service as it provides a clean API without requiring a global store.
+      </p>
 
       <div className="test-card">
         <h3>Service State</h3>
@@ -341,12 +345,13 @@ service.subscribe(() => console.log('Changed!'));`}
 function TestConstants() {
   return (
     <div className="test-section">
-      <h2>Constants</h2>
+      <h2>Constants (v1.0.0)</h2>
 
       <div className="test-card">
         <h3>SETTING_MANAGEMENT_ROUTES</h3>
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
-          Default route configuration for the setting management module:
+          Default route configuration for the setting management module.
+          Note: In Angular v1.0.0, route constants were removed. We keep them in React for convenience.
         </p>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {JSON.stringify(SETTING_MANAGEMENT_ROUTES, null, 2)}

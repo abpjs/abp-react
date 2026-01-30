@@ -1,6 +1,6 @@
 /**
  * Setting Management Models
- * Translated from @abp/ng.setting-management v0.9.0
+ * Translated from @abp/ng.setting-management v1.0.0
  */
 
 // Re-export SettingTab from theme-shared
