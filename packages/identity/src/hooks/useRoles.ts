@@ -12,6 +12,12 @@ export interface RoleOperationResult {
 }
 
 /**
+ * Sort order type
+ * @since 1.0.0
+ */
+export type SortOrder = 'asc' | 'desc' | '';
+
+/**
  * Return type for useRoles hook
  */
 export interface UseRolesReturn {
@@ -25,7 +31,11 @@ export interface UseRolesReturn {
   isLoading: boolean;
   /** Error message if any */
   error: string | null;
-  /** Fetch all roles with optional pagination/filtering (v0.9.0) */
+  /** Current sort key @since 1.0.0 */
+  sortKey: string;
+  /** Current sort order @since 1.0.0 */
+  sortOrder: SortOrder;
+  /** Fetch all roles with optional pagination/filtering */
   fetchRoles: (params?: ABP.PageQueryParams) => Promise<RoleOperationResult>;
   /** Get a role by ID and set it as selected */
   getRoleById: (id: string) => Promise<RoleOperationResult>;
@@ -37,6 +47,10 @@ export interface UseRolesReturn {
   deleteRole: (id: string) => Promise<RoleOperationResult>;
   /** Set the selected role */
   setSelectedRole: (role: Identity.RoleItem | null) => void;
+  /** Set sort key @since 1.0.0 */
+  setSortKey: (key: string) => void;
+  /** Set sort order @since 1.0.0 */
+  setSortOrder: (order: SortOrder) => void;
   /** Reset state */
   reset: () => void;
 }
@@ -91,6 +105,9 @@ export function useRoles(): UseRolesReturn {
   const [selectedRole, setSelectedRole] = useState<Identity.RoleItem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Sorting state (v1.0.0)
+  const [sortKey, setSortKey] = useState<string>('name');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('');
 
   /**
    * Fetch all roles with optional pagination/filtering (v0.9.0)
@@ -223,12 +240,16 @@ export function useRoles(): UseRolesReturn {
     selectedRole,
     isLoading,
     error,
+    sortKey,
+    sortOrder,
     fetchRoles,
     getRoleById,
     createRole,
     updateRole,
     deleteRole,
     setSelectedRole,
+    setSortKey,
+    setSortOrder,
     reset,
   };
 }

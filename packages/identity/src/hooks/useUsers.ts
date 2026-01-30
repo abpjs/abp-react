@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { useRestService, ABP } from '@abpjs/core';
 import { Identity } from '../models';
 import { IdentityService } from '../services';
+import { SortOrder } from './useRoles';
 
 /**
  * Result from user operations
@@ -29,6 +30,10 @@ export interface UseUsersReturn {
   error: string | null;
   /** Current page query parameters */
   pageQuery: ABP.PageQueryParams;
+  /** Current sort key @since 1.0.0 */
+  sortKey: string;
+  /** Current sort order @since 1.0.0 */
+  sortOrder: SortOrder;
   /** Fetch users with pagination */
   fetchUsers: (params?: ABP.PageQueryParams) => Promise<UserOperationResult>;
   /** Get a user by ID and set it as selected */
@@ -45,6 +50,10 @@ export interface UseUsersReturn {
   setSelectedUser: (user: Identity.UserItem | null) => void;
   /** Set page query parameters */
   setPageQuery: (query: ABP.PageQueryParams) => void;
+  /** Set sort key @since 1.0.0 */
+  setSortKey: (key: string) => void;
+  /** Set sort order @since 1.0.0 */
+  setSortOrder: (order: SortOrder) => void;
   /** Reset state */
   reset: () => void;
 }
@@ -108,6 +117,9 @@ export function useUsers(): UseUsersReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pageQuery, setPageQuery] = useState<ABP.PageQueryParams>(DEFAULT_PAGE_QUERY);
+  // Sorting state (v1.0.0)
+  const [sortKey, setSortKey] = useState<string>('userName');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('');
 
   /**
    * Fetch users with pagination
@@ -271,6 +283,8 @@ export function useUsers(): UseUsersReturn {
     isLoading,
     error,
     pageQuery,
+    sortKey,
+    sortOrder,
     fetchUsers,
     getUserById,
     getUserRoles,
@@ -279,6 +293,8 @@ export function useUsers(): UseUsersReturn {
     deleteUser,
     setSelectedUser,
     setPageQuery,
+    setSortKey,
+    setSortOrder,
     reset,
   };
 }

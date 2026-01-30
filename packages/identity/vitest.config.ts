@@ -9,12 +9,22 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'node_modules/',
-        'src/__tests__/setup.ts',
-        'src/__tests__/test-utils.tsx',
+        'src/__tests__/**',
+        '**/index.ts',
         '**/*.d.ts',
+        '**/*.test.{ts,tsx}',
+        '**/*.spec.{ts,tsx}',
+        'src/components/**',
       ],
+      thresholds: {
+        statements: 75,
+        branches: 75,
+        functions: 75,
+        lines: 75,
+      },
     },
   },
 });
