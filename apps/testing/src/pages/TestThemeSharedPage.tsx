@@ -43,7 +43,7 @@ function TestLoaderBar() {
 
   return (
     <div className="test-section">
-      <h2>LoaderBar Component (v0.9.0)</h2>
+      <h2>LoaderBar Component</h2>
 
       {showLoaderBar && <LoaderBar />}
 
@@ -93,7 +93,7 @@ function TestErrorComponentDisplay() {
 
   return (
     <div className="test-section">
-      <h2>ErrorComponent (v0.9.0)</h2>
+      <h2>ErrorComponent</h2>
 
       <div className="test-card">
         <h3>Error Display Component</h3>
@@ -401,7 +401,7 @@ function TestModalV090() {
 
   return (
     <div className="test-section">
-      <h2>Modal v0.9.0 Features</h2>
+      <h2>Modal Advanced Features</h2>
 
       <div className="test-card">
         <h3>Busy State (prevents closing)</h3>
@@ -495,10 +495,7 @@ function TestChangePassword() {
 
   return (
     <div className="test-section">
-      <h2>ChangePassword Component (v0.9.0)</h2>
-      <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
-        New in v0.9.0: Moved from @abpjs/theme-basic to @abpjs/theme-shared
-      </p>
+      <h2>ChangePassword Component</h2>
 
       {!isAuthenticated ? (
         <div className="test-card">
@@ -531,10 +528,7 @@ function TestProfile() {
 
   return (
     <div className="test-section">
-      <h2>Profile Component (v0.9.0)</h2>
-      <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
-        New in v0.9.0: Moved from @abpjs/theme-basic to @abpjs/theme-shared
-      </p>
+      <h2>Profile Component</h2>
 
       {!isAuthenticated ? (
         <div className="test-card">
@@ -565,7 +559,7 @@ export function TestThemeSharedPage() {
   return (
     <div>
       <h1>@abpjs/theme-shared Tests</h1>
-      <p>Testing toast notifications, confirmation dialogs, modals, error handling, and v0.9.0 components.</p>
+      <p>Testing toast notifications, confirmation dialogs, modals, error handling, and shared components.</p>
 
       <TestLoaderBar />
       <TestErrorComponentDisplay />

@@ -41,7 +41,8 @@
     "react-icons": "^5.5.0"
   },
   "devDependencies": {
-    "@abp/ng.theme.shared": "0.9.0"
+    "@abp/ng.theme.shared": "1.0.0",
+    "@vitest/coverage-v8": "^1.6.1"
   },
   "author": "tekthar.com",
   "license": "LGPL-3.0",

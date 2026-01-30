@@ -11,6 +11,11 @@ vi.mock('@abpjs/core', () => ({
   useLocalization: () => ({
     t: (key: string) => key,
   }),
+  useDirection: () => ({
+    dir: 'ltr',
+    startSide: 'left',
+    endSide: 'right',
+  }),
 }));
 
 // Helper components for testing
