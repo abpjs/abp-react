@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/account",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "description": "ABP Framework Account module for React - Translation of @abp/ng.account",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
