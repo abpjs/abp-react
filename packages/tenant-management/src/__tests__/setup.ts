@@ -24,7 +24,7 @@ global.ResizeObserver = vi.fn().mockImplementation(() => ({
 }));
 
 // Mock scrollTo
-Element.prototype.scrollTo = vi.fn();
+Element.prototype.scrollTo = vi.fn() as unknown as typeof Element.prototype.scrollTo;
 
 // Mock requestAnimationFrame
 global.requestAnimationFrame = vi.fn((cb) => setTimeout(cb, 0));
