@@ -62,6 +62,7 @@ This monorepo contains the following packages:
 | [`@abpjs/feature-management`](./packages/feature-management) | Feature management components - toggle and configure features |
 | [`@abpjs/identity`](./packages/identity) | Identity management - users, roles, claims |
 | [`@abpjs/permission-management`](./packages/permission-management) | Permission management components |
+| [`@abpjs/setting-management`](./packages/setting-management) | Setting management - application settings configuration |
 | [`@abpjs/tenant-management`](./packages/tenant-management) | Tenant management components |
 | [`@abpjs/theme-basic`](./packages/theme-basic) | Basic theme layouts and navigation components |
 | [`@abpjs/theme-shared`](./packages/theme-shared) | Shared theme components - toasts, modals, confirmations |
@@ -129,6 +130,7 @@ function App() {
 │   ├── feature-management/
 │   ├── identity/
 │   ├── permission-management/
+│   ├── setting-management/
 │   ├── tenant-management/
 │   ├── theme-basic/
 │   └── theme-shared/
@@ -207,6 +209,7 @@ Please see our contributing guidelines (coming soon) for more details.
 - [Account Package Documentation](./packages/account/README.md)
 - [Feature Management Package Documentation](./packages/feature-management/README.md)
 - [Identity Package Documentation](./packages/identity/README.md)
+- [Setting Management Package Documentation](./packages/setting-management/README.md)
 - [Theme Basic Usage Guide](./packages/theme-basic/USAGE.md)
 
 ## 🔗 Links

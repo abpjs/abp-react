@@ -13,6 +13,7 @@ import {
   TestThemeSharedPage,
   TestThemeBasicPage,
   TestAccountPage,
+  TestAccountProPage,
   TestPermissionManagementPage,
   TestTenantManagementPage,
   TestIdentityPage,
@@ -108,6 +109,12 @@ function Home() {
             <h3>@abpjs/account</h3>
             <p>Login, register, tenant switching</p>
             <Link to="/test/account" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
+
+          <div className="test-card">
+            <h3>@abpjs/account-pro</h3>
+            <p>Password reset, profile management, pro features</p>
+            <Link to="/test/account-pro" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
           </div>
 
           <div className="test-card">
@@ -210,6 +217,7 @@ function App() {
         <Route path="/test/theme-shared" element={<TestThemeSharedPage />} />
         <Route path="/test/theme-basic" element={<TestThemeBasicPage />} />
         <Route path="/test/account" element={<TestAccountPage />} />
+        <Route path="/test/account-pro" element={<TestAccountProPage />} />
         <Route path="/test/permission-management" element={<TestPermissionManagementPage />} />
         <Route path="/test/tenant-management" element={<TestTenantManagementPage />} />
         <Route path="/test/identity" element={<TestIdentityPage />} />
