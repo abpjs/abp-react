@@ -17,6 +17,7 @@ import {
   TestPermissionManagementPage,
   TestTenantManagementPage,
   TestIdentityPage,
+  TestIdentityProPage,
   TestFeatureManagementPage,
   TestSettingManagementPage,
 } from './pages'
@@ -136,6 +137,12 @@ function Home() {
           </div>
 
           <div className="test-card">
+            <h3>@abpjs/identity-pro</h3>
+            <p>Claim types, user/role claims, pro features</p>
+            <Link to="/test/identity-pro" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
+
+          <div className="test-card">
             <h3>@abpjs/feature-management</h3>
             <p>Feature management modal, tenant/edition features</p>
             <Link to="/test/feature-management" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
@@ -221,6 +228,7 @@ function App() {
         <Route path="/test/permission-management" element={<TestPermissionManagementPage />} />
         <Route path="/test/tenant-management" element={<TestTenantManagementPage />} />
         <Route path="/test/identity" element={<TestIdentityPage />} />
+        <Route path="/test/identity-pro" element={<TestIdentityProPage />} />
         <Route path="/test/feature-management" element={<TestFeatureManagementPage />} />
         <Route path="/test/setting-management" element={<TestSettingManagementPage />} />
         {/* Setting management page from @abpjs/setting-management */}

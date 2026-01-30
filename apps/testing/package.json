@@ -15,6 +15,7 @@
     "@abpjs/core": "workspace:*",
     "@abpjs/feature-management": "workspace:*",
     "@abpjs/identity": "workspace:*",
+    "@abpjs/identity-pro": "workspace:*",
     "@abpjs/permission-management": "workspace:*",
     "@abpjs/tenant-management": "workspace:*",
     "@abpjs/setting-management": "workspace:*",
