@@ -1,0 +1,160 @@
+import { ABP } from '@abpjs/core';
+
+/**
+ * Identity namespace containing all types related to identity management.
+ * Translated from @volo/abp.ng.identity Identity namespace.
+ *
+ * Pro features include:
+ * - Claim type management
+ * - User/Role claims management
+ *
+ * @since 0.7.2
+ */
+export namespace Identity {
+  /**
+   * Identity state shape for state management
+   */
+  export interface State {
+    roles: RoleResponse;
+    users: UserResponse;
+    selectedRole: RoleItem;
+    selectedUser: UserItem;
+    selectedUserRoles: RoleItem[];
+    /** Pro: Claim type names for dropdowns */
+    claimTypes: ClaimTypeName[];
+    /** Pro: Paginated claim types response */
+    claims: ClaimResponse;
+    /** Pro: Selected claim type for editing */
+    selectedClaim: ClaimType;
+  }
+
+  /**
+   * Paginated response for roles
+   */
+  export type RoleResponse = ABP.PagedResponse<RoleItem>;
+
+  /**
+   * Request payload for creating/updating a role
+   */
+  export interface RoleSaveRequest {
+    name: string;
+    isDefault: boolean;
+    isPublic: boolean;
+  }
+
+  /**
+   * Role item returned from the API
+   */
+  export interface RoleItem extends RoleSaveRequest {
+    isStatic: boolean;
+    concurrencyStamp: string;
+    id: string;
+  }
+
+  /**
+   * Paginated response for users
+   */
+  export type UserResponse = ABP.PagedResponse<UserItem>;
+
+  /**
+   * Base user properties
+   */
+  export interface User {
+    userName: string;
+    name: string;
+    surname: string;
+    email: string;
+    phoneNumber: string;
+    twoFactorEnabled: boolean;
+    lockoutEnabled: boolean;
+  }
+
+  /**
+   * User item returned from the API
+   */
+  export interface UserItem extends User {
+    tenantId: string;
+    emailConfirmed: boolean;
+    phoneNumberConfirmed: boolean;
+    isLockedOut: boolean;
+    concurrencyStamp: string;
+    id: string;
+  }
+
+  /**
+   * Request payload for creating/updating a user
+   */
+  export interface UserSaveRequest extends User {
+    password: string;
+    roleNames: string[];
+  }
+
+  // ========================
+  // Pro Features: Claims
+  // ========================
+
+  /**
+   * Simple claim type name for dropdowns
+   * Pro feature since 0.7.2
+   */
+  export interface ClaimTypeName {
+    name: string;
+  }
+
+  /**
+   * Full claim type definition
+   * Pro feature since 0.7.2
+   */
+  export interface ClaimType {
+    /** Optional ID for existing claim types */
+    id?: string;
+    /** Claim type name (e.g., 'email', 'role') */
+    name: string;
+    /** Whether this claim is required */
+    required: boolean;
+    /** Whether this claim type is static (built-in) */
+    isStatic: boolean;
+    /** Regex pattern for value validation */
+    regex: string;
+    /** Human-readable description of the regex pattern */
+    regexDescription: string;
+    /** Claim type description */
+    description: string;
+    /** Value type: 0=String, 1=Int, 2=Boolean, 3=DateTime */
+    valueType: number;
+    /** String representation of value type */
+    valueTypeAsString?: string;
+  }
+
+  /**
+   * Claim request for assigning claims to users or roles
+   * Pro feature since 0.7.2
+   */
+  export interface ClaimRequest {
+    /** User ID (for user claims) */
+    userId?: string;
+    /** Role ID (for role claims) */
+    roleId?: string;
+    /** The claim type name */
+    claimType: string;
+    /** The claim value */
+    claimValue: string;
+  }
+
+  /**
+   * Paginated response for claim types
+   * Pro feature since 0.7.2
+   */
+  export type ClaimResponse = ABP.PagedResponse<ClaimType>;
+
+  /**
+   * Value type enumeration for claim types
+   * Pro feature since 0.7.2
+   */
+  export enum ClaimValueType {
+    String = 0,
+    Int = 1,
+    Boolean = 2,
+    DateTime = 3,
+  }
+}
