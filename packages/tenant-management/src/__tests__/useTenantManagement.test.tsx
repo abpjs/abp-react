@@ -67,7 +67,16 @@ describe('useTenantManagement', () => {
       expect(typeof result.current.setSelectedTenant).toBe('function');
       expect(typeof result.current.setUseSharedDatabase).toBe('function');
       expect(typeof result.current.setDefaultConnectionString).toBe('function');
+      expect(typeof result.current.setSortKey).toBe('function');
+      expect(typeof result.current.setSortOrder).toBe('function');
       expect(typeof result.current.reset).toBe('function');
+    });
+
+    it('should return initial sorting state (v1.0.0)', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      expect(result.current.sortKey).toBe('name');
+      expect(result.current.sortOrder).toBe('');
     });
   });
 
@@ -387,6 +396,52 @@ describe('useTenantManagement', () => {
 
       expect(result.current.defaultConnectionString).toBe('Server=test');
     });
+
+    it('should set sort key (v1.0.0)', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      act(() => {
+        result.current.setSortKey('id');
+      });
+
+      expect(result.current.sortKey).toBe('id');
+    });
+
+    it('should set sort order to asc (v1.0.0)', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      act(() => {
+        result.current.setSortOrder('asc');
+      });
+
+      expect(result.current.sortOrder).toBe('asc');
+    });
+
+    it('should set sort order to desc (v1.0.0)', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      act(() => {
+        result.current.setSortOrder('desc');
+      });
+
+      expect(result.current.sortOrder).toBe('desc');
+    });
+
+    it('should clear sort order (v1.0.0)', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      // First set a sort order
+      act(() => {
+        result.current.setSortOrder('asc');
+      });
+      expect(result.current.sortOrder).toBe('asc');
+
+      // Then clear it
+      act(() => {
+        result.current.setSortOrder('');
+      });
+      expect(result.current.sortOrder).toBe('');
+    });
   });
 
   describe('reset', () => {
@@ -423,6 +478,70 @@ describe('useTenantManagement', () => {
       expect(result.current.error).toBeNull();
       expect(result.current.defaultConnectionString).toBe('');
       expect(result.current.useSharedDatabase).toBe(true);
+    });
+  });
+
+  describe('sorting (v1.0.0)', () => {
+    it('should change sort key and order together', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      act(() => {
+        result.current.setSortKey('createdAt');
+        result.current.setSortOrder('desc');
+      });
+
+      expect(result.current.sortKey).toBe('createdAt');
+      expect(result.current.sortOrder).toBe('desc');
+    });
+
+    it('should maintain sort state independently of other state changes', async () => {
+      mockGetAll.mockResolvedValue({
+        items: [{ id: '1', name: 'Tenant' }],
+        totalCount: 1,
+      });
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      // Set sort state
+      act(() => {
+        result.current.setSortKey('id');
+        result.current.setSortOrder('asc');
+      });
+
+      // Fetch tenants
+      await act(async () => {
+        await result.current.fetchTenants();
+      });
+
+      // Sort state should be maintained
+      expect(result.current.sortKey).toBe('id');
+      expect(result.current.sortOrder).toBe('asc');
+      expect(result.current.tenants).toHaveLength(1);
+    });
+
+    it('should allow toggling sort order between asc, desc, and empty', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      // Initial state
+      expect(result.current.sortOrder).toBe('');
+
+      // Set to asc
+      act(() => {
+        result.current.setSortOrder('asc');
+      });
+      expect(result.current.sortOrder).toBe('asc');
+
+      // Toggle to desc
+      act(() => {
+        result.current.setSortOrder('desc');
+      });
+      expect(result.current.sortOrder).toBe('desc');
+
+      // Clear sort order
+      act(() => {
+        result.current.setSortOrder('');
+      });
+      expect(result.current.sortOrder).toBe('');
     });
   });
 });

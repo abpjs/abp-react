@@ -1,6 +1,6 @@
 /**
  * Tenant Management module type definitions
- * Translated from @abp/ng.tenant-management v0.7.6
+ * Translated from @abp/ng.tenant-management v1.0.0
  */
 
 import type { ABP } from '@abpjs/core';
