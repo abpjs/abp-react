@@ -16,6 +16,7 @@
     "@abpjs/identity": "workspace:*",
     "@abpjs/permission-management": "workspace:*",
     "@abpjs/tenant-management": "workspace:*",
+    "@abpjs/setting-management": "workspace:*",
     "@abpjs/theme-basic": "workspace:*",
     "@abpjs/theme-shared": "workspace:*",
     "@reduxjs/toolkit": "^2.0.0",

@@ -7,6 +7,7 @@ import { Routes, Route, Link, useSearchParams, useNavigate } from 'react-router-
 import { useAbp, useAuth, useConfig, AuthGuard } from '@abpjs/core'
 import { LayoutApplication, LayoutAccount, LayoutEmpty } from '@abpjs/theme-basic'
 import { LoginPage as AccountLoginPage, RegisterPage as AccountRegisterPage } from '@abpjs/account'
+import { SettingLayout } from '@abpjs/setting-management'
 import {
   TestCorePage,
   TestThemeSharedPage,
@@ -16,6 +17,7 @@ import {
   TestTenantManagementPage,
   TestIdentityPage,
   TestFeatureManagementPage,
+  TestSettingManagementPage,
 } from './pages'
 import './App.css'
 
@@ -131,6 +133,12 @@ function Home() {
             <p>Feature management modal, tenant/edition features</p>
             <Link to="/test/feature-management" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
           </div>
+
+          <div className="test-card">
+            <h3>@abpjs/setting-management</h3>
+            <p>Setting layout, tabs management, settings page</p>
+            <Link to="/test/setting-management" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
         </div>
       </div>
 
@@ -206,6 +214,9 @@ function App() {
         <Route path="/test/tenant-management" element={<TestTenantManagementPage />} />
         <Route path="/test/identity" element={<TestIdentityPage />} />
         <Route path="/test/feature-management" element={<TestFeatureManagementPage />} />
+        <Route path="/test/setting-management" element={<TestSettingManagementPage />} />
+        {/* Setting management page from @abpjs/setting-management */}
+        <Route path="/setting-management" element={<SettingLayout />} />
       </Route>
 
       {/* Auth pages with LayoutAccount - using @abpjs/account */}
