@@ -20,6 +20,7 @@ import {
   TestIdentityProPage,
   TestFeatureManagementPage,
   TestSettingManagementPage,
+  TestLanguageManagementPage,
 } from './pages'
 import './App.css'
 
@@ -153,6 +154,12 @@ function Home() {
             <p>Setting layout, tabs management, settings page</p>
             <Link to="/test/setting-management" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
           </div>
+
+          <div className="test-card">
+            <h3>@abpjs/language-management</h3>
+            <p>Language management, localization texts, cultures</p>
+            <Link to="/test/language-management" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
         </div>
       </div>
 
@@ -231,6 +238,7 @@ function App() {
         <Route path="/test/identity-pro" element={<TestIdentityProPage />} />
         <Route path="/test/feature-management" element={<TestFeatureManagementPage />} />
         <Route path="/test/setting-management" element={<TestSettingManagementPage />} />
+        <Route path="/test/language-management" element={<TestLanguageManagementPage />} />
         {/* Setting management page from @abpjs/setting-management */}
         <Route path="/setting-management" element={<SettingLayout />} />
       </Route>
