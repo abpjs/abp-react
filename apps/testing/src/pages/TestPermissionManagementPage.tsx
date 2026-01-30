@@ -144,11 +144,17 @@ function TestPermissionHook() {
     selectedGroup,
     isLoading,
     error,
+    selectThisTab,
+    selectAllTab,
     fetchPermissions,
     setSelectedGroup,
     togglePermission,
+    toggleSelectThisTab,
+    toggleSelectAll,
+    getSelectedGroupPermissions,
     isGranted,
     isGrantedByRole,
+    reset,
   } = usePermissionManagement()
 
   const handleFetch = () => {
@@ -201,6 +207,8 @@ function TestPermissionHook() {
         <p>entityDisplayName: {entityDisplayName || 'N/A'}</p>
         <p>groups count: {groups.length}</p>
         <p>selectedGroup: {selectedGroup?.displayName || 'none'}</p>
+        <p>selectThisTab: {selectThisTab ? 'true' : 'false'}</p>
+        <p>selectAllTab: {selectAllTab ? 'true' : 'false'}</p>
       </div>
 
       {groups.length > 0 && (
@@ -228,9 +236,20 @@ function TestPermissionHook() {
           {selectedGroup && (
             <div>
               <h4>Permissions in "{selectedGroup.displayName}"</h4>
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                <button onClick={toggleSelectThisTab}>
+                  {selectThisTab ? 'Deselect' : 'Select'} This Tab
+                </button>
+                <button onClick={toggleSelectAll}>
+                  {selectAllTab ? 'Deselect' : 'Select'} All
+                </button>
+                <button onClick={reset} style={{ background: '#f44', color: 'white' }}>
+                  Reset
+                </button>
+              </div>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {selectedGroup.permissions?.map((permission) => (
-                  <li key={permission.name} style={{ padding: '4px 0' }}>
+                {getSelectedGroupPermissions().map((permission) => (
+                  <li key={permission.name} style={{ padding: '4px 0', marginLeft: `${permission.margin}px` }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                       <input
                         type="checkbox"
@@ -269,8 +288,12 @@ function TestPermissionHook() {
             <tr><td style={{ padding: '8px' }}>savePermissions</td><td>Save modified permissions</td></tr>
             <tr><td style={{ padding: '8px' }}>setSelectedGroup</td><td>Select a permission group</td></tr>
             <tr><td style={{ padding: '8px' }}>togglePermission</td><td>Toggle a permission on/off</td></tr>
+            <tr><td style={{ padding: '8px' }}>toggleSelectThisTab</td><td>Toggle all permissions in current tab</td></tr>
+            <tr><td style={{ padding: '8px' }}>toggleSelectAll</td><td>Toggle all permissions</td></tr>
+            <tr><td style={{ padding: '8px' }}>getSelectedGroupPermissions</td><td>Get permissions for selected group with margin</td></tr>
             <tr><td style={{ padding: '8px' }}>isGranted</td><td>Check if permission is granted</td></tr>
-            <tr><td style={{ padding: '8px' }}>isGrantedByRole</td><td>Check if permission is granted by a role (v0.9.0)</td></tr>
+            <tr><td style={{ padding: '8px' }}>isGrantedByRole</td><td>Check if permission is granted by a role</td></tr>
+            <tr><td style={{ padding: '8px' }}>reset</td><td>Reset all state</td></tr>
           </tbody>
         </table>
       </div>

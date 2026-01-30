@@ -1,6 +1,6 @@
 /**
  * Permission Management module type definitions
- * Translated from @abp/ng.permission-management v0.9.0
+ * Translated from @abp/ng.permission-management v1.0.0
  */
 
 /**
