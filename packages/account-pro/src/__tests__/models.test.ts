@@ -1,0 +1,183 @@
+import { describe, it, expect } from 'vitest';
+import type {
+  AccountOptions,
+  LoginFormData,
+  RegisterFormData,
+  TenantInfo,
+  RegisterRequest,
+  RegisterResponse,
+  TenantIdResponse,
+  SendPasswordResetCodeRequest,
+  ResetPasswordRequest,
+  ForgotPasswordFormData,
+  ResetPasswordFormData,
+  ChangePasswordFormData,
+  ChangePasswordRequest,
+  PersonalSettingsFormData,
+  UpdateProfileRequest,
+  ProfileResponse,
+  PasswordFlowResult,
+} from '../models';
+
+describe('Models', () => {
+  describe('AccountOptions', () => {
+    it('should allow all optional properties', () => {
+      const options: AccountOptions = {};
+      expect(options).toBeDefined();
+    });
+
+    it('should allow full options', () => {
+      const options: AccountOptions = {
+        redirectUrl: '/dashboard',
+        redirectToLogin: true,
+        loginUrl: '/login',
+        registerUrl: '/register',
+        enableSocialLogins: true,
+        enableTwoFactor: true,
+      };
+      expect(options.redirectUrl).toBe('/dashboard');
+      expect(options.enableTwoFactor).toBe(true);
+    });
+  });
+
+  describe('LoginFormData', () => {
+    it('should have required properties', () => {
+      const data: LoginFormData = {
+        username: 'testuser',
+        password: 'password123',
+      };
+      expect(data.username).toBe('testuser');
+      expect(data.password).toBe('password123');
+    });
+
+    it('should allow optional rememberMe', () => {
+      const data: LoginFormData = {
+        username: 'testuser',
+        password: 'password123',
+        rememberMe: true,
+      };
+      expect(data.rememberMe).toBe(true);
+    });
+  });
+
+  describe('RegisterFormData', () => {
+    it('should have required properties', () => {
+      const data: RegisterFormData = {
+        username: 'testuser',
+        emailAddress: 'test@example.com',
+        password: 'password123',
+      };
+      expect(data.username).toBe('testuser');
+      expect(data.emailAddress).toBe('test@example.com');
+    });
+  });
+
+  describe('TenantIdResponse', () => {
+    it('should have success and tenantId', () => {
+      const response: TenantIdResponse = {
+        success: true,
+        tenantId: '123',
+      };
+      expect(response.success).toBe(true);
+      expect(response.tenantId).toBe('123');
+    });
+
+    it('should allow null tenantId', () => {
+      const response: TenantIdResponse = {
+        success: false,
+        tenantId: null,
+      };
+      expect(response.success).toBe(false);
+      expect(response.tenantId).toBeNull();
+    });
+  });
+
+  describe('SendPasswordResetCodeRequest', () => {
+    it('should have required email', () => {
+      const request: SendPasswordResetCodeRequest = {
+        email: 'test@example.com',
+      };
+      expect(request.email).toBe('test@example.com');
+    });
+
+    it('should allow optional properties', () => {
+      const request: SendPasswordResetCodeRequest = {
+        email: 'test@example.com',
+        appName: 'TestApp',
+        returnUrl: '/login',
+        returnUrlHash: '#success',
+      };
+      expect(request.appName).toBe('TestApp');
+    });
+  });
+
+  describe('ResetPasswordRequest', () => {
+    it('should have all required properties', () => {
+      const request: ResetPasswordRequest = {
+        userId: '123',
+        resetToken: 'token123',
+        password: 'newpassword',
+      };
+      expect(request.userId).toBe('123');
+      expect(request.resetToken).toBe('token123');
+      expect(request.password).toBe('newpassword');
+    });
+  });
+
+  describe('ChangePasswordFormData', () => {
+    it('should have all required properties', () => {
+      const data: ChangePasswordFormData = {
+        currentPassword: 'oldpass',
+        newPassword: 'newpass',
+        confirmNewPassword: 'newpass',
+      };
+      expect(data.currentPassword).toBe('oldpass');
+      expect(data.newPassword).toBe('newpass');
+      expect(data.confirmNewPassword).toBe('newpass');
+    });
+  });
+
+  describe('ProfileResponse', () => {
+    it('should have required properties', () => {
+      const response: ProfileResponse = {
+        userName: 'testuser',
+        email: 'test@example.com',
+      };
+      expect(response.userName).toBe('testuser');
+      expect(response.email).toBe('test@example.com');
+    });
+
+    it('should allow optional properties', () => {
+      const response: ProfileResponse = {
+        userName: 'testuser',
+        email: 'test@example.com',
+        name: 'Test',
+        surname: 'User',
+        phoneNumber: '+1234567890',
+        isEmailConfirmed: true,
+        isPhoneNumberConfirmed: false,
+        isTwoFactorEnabled: true,
+      };
+      expect(response.name).toBe('Test');
+      expect(response.isTwoFactorEnabled).toBe(true);
+    });
+  });
+
+  describe('PasswordFlowResult', () => {
+    it('should have success property', () => {
+      const result: PasswordFlowResult = {
+        success: true,
+      };
+      expect(result.success).toBe(true);
+    });
+
+    it('should allow optional error', () => {
+      const result: PasswordFlowResult = {
+        success: false,
+        error: 'Invalid credentials',
+      };
+      expect(result.success).toBe(false);
+      expect(result.error).toBe('Invalid credentials');
+    });
+  });
+});

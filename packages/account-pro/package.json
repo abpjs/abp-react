@@ -1,0 +1,80 @@
+{
+  "name": "@abpjs/account-pro",
+  "version": "0.7.2",
+  "description": "ABP Framework Account Pro module for React - Translation of @volo/abp.ng.account",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "@abpjs/core": ">=0.7.0",
+    "@abpjs/theme-shared": ">=0.7.0",
+    "@chakra-ui/react": ">=3.0.0",
+    "react-redux": ">=8.0.0",
+    "react-router-dom": ">=6.0.0",
+    "react-hook-form": ">=7.0.0",
+    "zod": ">=3.0.0",
+    "@hookform/resolvers": ">=3.0.0",
+    "react-icons": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@volo/abp.ng.account": "0.7.2",
+    "@abpjs/core": "workspace:*",
+    "@abpjs/theme-shared": "workspace:*",
+    "@chakra-ui/react": "^3.2.1",
+    "@emotion/react": "^11.14.0",
+    "@hookform/resolvers": "^3.9.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitest/coverage-v8": "^3.0.2",
+    "jsdom": "^26.0.0",
+    "next-themes": "^0.4.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.54.2",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.1.3",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.2",
+    "zod": "^3.24.1",
+    "react-icons": "^5.4.0"
+  },
+  "keywords": [
+    "abp",
+    "react",
+    "account",
+    "account-pro",
+    "authentication",
+    "login",
+    "register",
+    "password-reset"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AhmedBinTa662/abp-react.git",
+    "directory": "packages/account-pro"
+  },
+  "license": "MIT"
+}
