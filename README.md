@@ -3,7 +3,7 @@
 > ABP Framework for React - A React frontend replacement for the ABP Angular frontend
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
-[![Version](https://img.shields.io/badge/version-0.8.0-blue)](https://github.com)
+[![Version](https://img.shields.io/badge/version-0.9.0-blue)](https://github.com)
 [![Work in Progress](https://img.shields.io/badge/status-WIP-orange)](https://github.com)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-10.28.0-orange)](https://pnpm.io/)
