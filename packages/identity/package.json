@@ -24,7 +24,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
     "type-check": "tsc --noEmit",
-    "test": "vitest",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prepublishOnly": "pnpm run build"
   },
   "keywords": [
@@ -63,7 +64,8 @@
     "tailwindcss": "^3.4.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "vitest": "^1.0.0",
+    "@vitest/coverage-v8": "^1.0.0"
   },
   "author": "tekthar.com",
   "license": "LGPL-3.0",

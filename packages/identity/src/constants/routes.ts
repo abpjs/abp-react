@@ -1,13 +1,15 @@
 import { ABP, eLayoutType } from '@abpjs/core';
 
 /**
- * Identity module routes configuration (v0.9.0 format).
+ * Identity module routes configuration.
  * Translated from @abp/ng.identity IDENTITY_ROUTES.
  *
  * These routes define the navigation structure for the identity module
  * within the ABP Framework application.
  *
- * In v0.9.0, the format changed from `ABP.FullRoute[]` to `{ routes: ABP.FullRoute[] }`
+ * @deprecated since version 1.0.0. Route configuration is now handled by
+ * identity config services. This constant is kept for backwards compatibility
+ * but may be removed in future versions.
  */
 export const IDENTITY_ROUTES: { routes: ABP.FullRoute[] } = {
   routes: [

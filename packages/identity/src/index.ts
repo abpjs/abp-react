@@ -2,7 +2,7 @@
  * @abpjs/identity
  *
  * ABP Framework identity components for React.
- * Translated from @abp/ng.identity version 0.9.0.
+ * Translated from @abp/ng.identity version 1.0.0.
  *
  * This package provides:
  * - Identity models (User, Role, etc.)
@@ -11,9 +11,10 @@
  * - UI components for role and user management
  * - Route constants for navigation
  *
- * New in v0.9.0:
- * - getRoles now supports pagination/filtering params
- * - IDENTITY_ROUTES format changed to { routes: ABP.FullRoute[] }
+ * Changes in v1.0.0:
+ * - IDENTITY_ROUTES is now deprecated (use identity config services instead)
+ * - IdentityProviders is deprecated
+ * - Improved sorting support with sortKey in table components
  *
  * @example
  * ```tsx

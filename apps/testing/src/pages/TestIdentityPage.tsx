@@ -77,12 +77,16 @@ function TestRolesHook() {
     selectedRole,
     isLoading,
     error,
+    sortKey,
+    sortOrder,
     fetchRoles,
     getRoleById,
     createRole,
     updateRole,
     deleteRole,
     setSelectedRole,
+    setSortKey,
+    setSortOrder,
     reset,
   } = useRoles()
 
@@ -115,9 +119,28 @@ function TestRolesHook() {
       </div>
 
       <div className="test-card">
-        <h3>Roles Pagination & Filtering (v0.9.0)</h3>
+        <h3>Sorting (v1.0.0)</h3>
         <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
-          New in v0.9.0: fetchRoles now accepts optional ABP.PageQueryParams
+          New in v1.0.0: sortKey and sortOrder state for column sorting
+        </p>
+        <p>Current sortKey: <code>{sortKey}</code></p>
+        <p>Current sortOrder: <code>{sortOrder || '(empty)'}</code></p>
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <button onClick={() => setSortKey('name')}>Sort by Name</button>
+          <button onClick={() => setSortKey('isDefault')}>Sort by Default</button>
+          <button onClick={() => setSortKey('isPublic')}>Sort by Public</button>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <button onClick={() => setSortOrder('asc')}>Ascending</button>
+          <button onClick={() => setSortOrder('desc')}>Descending</button>
+          <button onClick={() => setSortOrder('')}>Clear Order</button>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>Roles Pagination & Filtering</h3>
+        <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
+          fetchRoles accepts optional ABP.PageQueryParams
         </p>
         <p>Current query:</p>
         <pre style={{  padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
@@ -347,6 +370,8 @@ function TestRolesHook() {
         <p>roles count: {roles.length}</p>
         <p>totalCount: {totalCount}</p>
         <p>selectedRole: {selectedRole ? `${selectedRole.name} (${selectedRole.id})` : 'none'}</p>
+        <p>sortKey: {sortKey}</p>
+        <p>sortOrder: {sortOrder || '(empty)'}</p>
       </div>
 
       {roles.length > 0 && (
@@ -415,6 +440,8 @@ function TestUsersHook() {
     isLoading,
     error,
     pageQuery,
+    sortKey,
+    sortOrder,
     fetchUsers,
     getUserById,
     getUserRoles,
@@ -423,6 +450,8 @@ function TestUsersHook() {
     deleteUser,
     setSelectedUser,
     setPageQuery,
+    setSortKey,
+    setSortOrder,
     reset,
   } = useUsers()
 
@@ -447,6 +476,25 @@ function TestUsersHook() {
         <p style={{ marginTop: '0.5rem', fontSize: '14px', color: '#888' }}>
           Fetches users with pagination
         </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Sorting (v1.0.0)</h3>
+        <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
+          New in v1.0.0: sortKey and sortOrder state for column sorting
+        </p>
+        <p>Current sortKey: <code>{sortKey}</code></p>
+        <p>Current sortOrder: <code>{sortOrder || '(empty)'}</code></p>
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <button onClick={() => setSortKey('userName')}>Sort by Username</button>
+          <button onClick={() => setSortKey('email')}>Sort by Email</button>
+          <button onClick={() => setSortKey('name')}>Sort by Name</button>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <button onClick={() => setSortOrder('asc')}>Ascending</button>
+          <button onClick={() => setSortOrder('desc')}>Descending</button>
+          <button onClick={() => setSortOrder('')}>Clear Order</button>
+        </div>
       </div>
 
       <div className="test-card">
@@ -621,6 +669,8 @@ function TestUsersHook() {
         <p>totalCount: {totalCount}</p>
         <p>selectedUser: {selectedUser ? `${selectedUser.userName} (${selectedUser.id})` : 'none'}</p>
         <p>selectedUserRoles: {selectedUserRoles.length > 0 ? selectedUserRoles.map(r => r.name).join(', ') : 'none'}</p>
+        <p>sortKey: {sortKey}</p>
+        <p>sortOrder: {sortOrder || '(empty)'}</p>
       </div>
 
       {users.length > 0 && (
@@ -930,6 +980,8 @@ function TestHookMethods() {
             <tr><td style={{ padding: '8px' }}>updateRole</td><td>Update an existing role</td></tr>
             <tr><td style={{ padding: '8px' }}>deleteRole</td><td>Delete a role</td></tr>
             <tr><td style={{ padding: '8px' }}>setSelectedRole</td><td>Set the selected role</td></tr>
+            <tr><td style={{ padding: '8px' }}>setSortKey</td><td>Set sort key (v1.0.0)</td></tr>
+            <tr><td style={{ padding: '8px' }}>setSortOrder</td><td>Set sort order (v1.0.0)</td></tr>
             <tr><td style={{ padding: '8px' }}>reset</td><td>Reset all role state</td></tr>
           </tbody>
         </table>
@@ -953,6 +1005,8 @@ function TestHookMethods() {
             <tr><td style={{ padding: '8px' }}>deleteUser</td><td>Delete a user</td></tr>
             <tr><td style={{ padding: '8px' }}>setSelectedUser</td><td>Set the selected user</td></tr>
             <tr><td style={{ padding: '8px' }}>setPageQuery</td><td>Set pagination parameters</td></tr>
+            <tr><td style={{ padding: '8px' }}>setSortKey</td><td>Set sort key (v1.0.0)</td></tr>
+            <tr><td style={{ padding: '8px' }}>setSortOrder</td><td>Set sort order (v1.0.0)</td></tr>
             <tr><td style={{ padding: '8px' }}>reset</td><td>Reset all user state</td></tr>
           </tbody>
         </table>
