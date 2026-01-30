@@ -12,6 +12,7 @@ import { eLayoutType, type ABP } from '@abpjs/core';
  *   - /account/register
  *
  * @since 0.9.0 - Changed from array to object with `routes` property
+ * @deprecated since version 0.9 - Routes are now configured via AccountProvider
  */
 export const ACCOUNT_ROUTES: { routes: ABP.FullRoute[] } = {
   routes: [
