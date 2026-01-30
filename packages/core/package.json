@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/core",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "ABP Framework Core for React - Translation of @abp/ng.core",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
