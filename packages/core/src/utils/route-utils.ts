@@ -78,7 +78,7 @@ export function sortRoutes(routes: ABP.FullRoute[] = []): ABP.FullRoute[] {
  */
 export function setUrls(routes: ABP.FullRoute[], parentUrl?: string): ABP.FullRoute[] {
   if (parentUrl) {
-    return routes.map((route) => ({
+    return routes.map((route): ABP.FullRoute => ({
       ...route,
       url: `${parentUrl}/${route.path}`,
       ...(route.children &&
@@ -88,7 +88,7 @@ export function setUrls(routes: ABP.FullRoute[], parentUrl?: string): ABP.FullRo
     }));
   }
 
-  return routes.map((route) => ({
+  return routes.map((route): ABP.FullRoute => ({
     ...route,
     url: `/${route.path}`,
     ...(route.children &&
@@ -127,4 +127,36 @@ export function flattenRoutes(routes: ABP.FullRoute[]): ABP.FullRoute[] {
     }
     return acc;
   }, []);
+}
+
+// Internal storage for dynamically added routes
+let abpRoutes: ABP.FullRoute[] = [];
+
+/**
+ * Add routes to the ABP route registry
+ * This allows modules to register their routes dynamically
+ * @since 1.0.0
+ */
+export function addAbpRoutes(routes: ABP.FullRoute | ABP.FullRoute[]): void {
+  if (Array.isArray(routes)) {
+    abpRoutes = [...abpRoutes, ...routes];
+  } else {
+    abpRoutes = [...abpRoutes, routes];
+  }
+}
+
+/**
+ * Get all registered ABP routes
+ * @since 1.0.0
+ */
+export function getAbpRoutes(): ABP.FullRoute[] {
+  return [...abpRoutes];
+}
+
+/**
+ * Clear all registered ABP routes (useful for testing)
+ * @internal
+ */
+export function clearAbpRoutes(): void {
+  abpRoutes = [];
 }

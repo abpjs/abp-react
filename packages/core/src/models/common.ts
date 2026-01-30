@@ -49,4 +49,12 @@ export namespace ABP {
     id: string;
     name: string;
   }
+
+  /**
+   * Generic dictionary type for key-value pairs
+   * @since 1.0.0
+   */
+  export interface Dictionary<T = any> {
+    [key: string]: T;
+  }
 }

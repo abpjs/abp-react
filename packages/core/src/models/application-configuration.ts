@@ -1,10 +1,12 @@
+import { ABP } from './common';
+
 export namespace ApplicationConfiguration {
   export interface Response {
     localization: Localization;
     auth: Auth;
-    setting: Setting;
+    setting: Value;
     currentUser: CurrentUser;
-    features: Features;
+    features: Value;
   }
 
   export interface Localization {
@@ -34,22 +36,28 @@ export namespace ApplicationConfiguration {
     [key: string]: boolean;
   }
 
-  export interface Setting {
-    values: {
-      [key: string]: string;
-    };
+  /**
+   * Generic value container for settings and features
+   * @since 1.0.0
+   */
+  export interface Value {
+    values: ABP.Dictionary<string>;
   }
+
+  /**
+   * @deprecated Use Value instead
+   */
+  export type Setting = Value;
+
+  /**
+   * @deprecated Use Value instead
+   */
+  export type Features = Value;
 
   export interface CurrentUser {
     isAuthenticated: boolean;
     id: string;
     tenantId: string;
     userName: string;
-  }
-
-  export interface Features {
-    values: {
-      [key: string]: string;
-    };
   }
 }

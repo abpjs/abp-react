@@ -31,4 +31,13 @@ export namespace Config {
   export interface Requirements {
     layouts: ComponentType<any>[];
   }
+
+  /**
+   * Localization key with a default value fallback
+   * @since 1.0.0
+   */
+  export interface LocalizationWithDefault {
+    key: string;
+    defaultValue: string;
+  }
 }
