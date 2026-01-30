@@ -15,7 +15,16 @@ import {
   Permission,
   Ellipsis,
   selectRoutes,
+  organizeRoutes,
+  sortRoutes,
+  setUrls,
+  findRouteByName,
+  flattenRoutes,
+  addAbpRoutes,
+  getAbpRoutes,
+  clearAbpRoutes,
 } from '@abpjs/core'
+import type { ABP } from '@abpjs/core'
 
 // Localization response type
 interface LocalizationResponse {
@@ -315,6 +324,128 @@ function TestEllipsis() {
   )
 }
 
+function TestRouteUtils() {
+  const [testResults, setTestResults] = useState<string[]>([])
+  const [dynamicRoutes, setDynamicRoutes] = useState<ABP.FullRoute[]>([])
+
+  const runTests = () => {
+    const results: string[] = []
+
+    // Test 1: Sort routes by order
+    const unsortedRoutes: ABP.FullRoute[] = [
+      { name: 'Third', path: 'third', order: 3 },
+      { name: 'First', path: 'first', order: 1 },
+      { name: 'Second', path: 'second', order: 2 },
+    ]
+    const sorted = sortRoutes(unsortedRoutes)
+    results.push(`✓ sortRoutes: ${sorted.map(r => r.name).join(' -> ')}`)
+
+    // Test 2: Set URLs for routes
+    const routesWithoutUrls: ABP.FullRoute[] = [
+      { name: 'Home', path: 'home' },
+      { name: 'Admin', path: 'admin', children: [{ name: 'Users', path: 'users' }] },
+    ]
+    const withUrls = setUrls(routesWithoutUrls)
+    const homeUrl = (withUrls[0] as ABP.FullRoute & { url: string }).url
+    const usersUrl = ((withUrls[1] as ABP.FullRoute & { url: string }).children![0] as ABP.FullRoute & { url: string }).url
+    results.push(`✓ setUrls: Home -> ${homeUrl}, Admin/Users -> ${usersUrl}`)
+
+    // Test 3: Find route by name
+    const found = findRouteByName(withUrls, 'Users')
+    results.push(`✓ findRouteByName: Found '${found?.name}' at path '${found?.path}'`)
+
+    // Test 4: Flatten nested routes
+    const flattened = flattenRoutes(withUrls)
+    results.push(`✓ flattenRoutes: ${flattened.length} routes (${flattened.map(r => r.name).join(', ')})`)
+
+    // Test 5: Organize routes with parent-child relationships
+    const flatRoutes: ABP.FullRoute[] = [
+      { name: 'Dashboard', path: 'dashboard', order: 1 },
+      { name: 'Settings', path: 'settings', parentName: 'Admin', order: 1 },
+      { name: 'Admin', path: 'admin', order: 2 },
+    ]
+    const organized = organizeRoutes(flatRoutes)
+    const adminRoute = organized.find(r => r.name === 'Admin')
+    results.push(`✓ organizeRoutes: Admin has ${adminRoute?.children?.length || 0} children`)
+
+    // Test 6: Dynamic route registry
+    clearAbpRoutes()
+    addAbpRoutes({ name: 'Dynamic1', path: 'dynamic1' })
+    addAbpRoutes([{ name: 'Dynamic2', path: 'dynamic2' }, { name: 'Dynamic3', path: 'dynamic3' }])
+    const registered = getAbpRoutes()
+    results.push(`✓ Route registry: ${registered.length} routes registered`)
+    setDynamicRoutes(registered)
+
+    setTestResults(results)
+  }
+
+  const clearRegistry = () => {
+    clearAbpRoutes()
+    setDynamicRoutes(getAbpRoutes())
+    setTestResults([...testResults, '✓ Route registry cleared'])
+  }
+
+  return (
+    <div className="test-section">
+      <h2>Route Utilities Tests (v1.0.0)</h2>
+
+      <div className="test-card">
+        <h3>Route Utility Functions</h3>
+        <p>Test the new route manipulation utilities added in v1.0.0.</p>
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button onClick={runTests}>Run All Tests</button>
+          <button onClick={clearRegistry}>Clear Route Registry</button>
+        </div>
+
+        {testResults.length > 0 && (
+          <div style={{ marginTop: '1rem' }}>
+            <h4>Test Results:</h4>
+            <pre style={{
+              background: '#1a1a2e',
+              padding: '1rem',
+              borderRadius: '4px',
+              maxHeight: '300px',
+              overflow: 'auto'
+            }}>
+              {testResults.join('\n')}
+            </pre>
+          </div>
+        )}
+
+        {dynamicRoutes.length > 0 && (
+          <div style={{ marginTop: '1rem' }}>
+            <h4>Dynamic Routes Registry ({dynamicRoutes.length}):</h4>
+            <pre style={{
+              background: '#1a1a2e',
+              padding: '1rem',
+              borderRadius: '4px',
+              maxHeight: '200px',
+              overflow: 'auto'
+            }}>
+              {JSON.stringify(dynamicRoutes, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>Available Functions</h3>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          <li>✓ <code>sortRoutes(routes)</code> - Sort by order property</li>
+          <li>✓ <code>setUrls(routes, parentUrl?)</code> - Generate URLs recursively</li>
+          <li>✓ <code>findRouteByName(routes, name)</code> - Find route by name</li>
+          <li>✓ <code>flattenRoutes(routes)</code> - Flatten nested structure</li>
+          <li>✓ <code>organizeRoutes(routes)</code> - Build parent-child hierarchy</li>
+          <li>✓ <code>addAbpRoutes(route | routes[])</code> - Register routes dynamically</li>
+          <li>✓ <code>getAbpRoutes()</code> - Get registered routes</li>
+          <li>✓ <code>clearAbpRoutes()</code> - Clear route registry</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 function TestComponents() {
   const config = useConfig()
   const grantedPolicies = config.auth?.grantedPolicies || {}
@@ -356,6 +487,7 @@ export function TestCorePage() {
 
       <TestLoader />
       <TestEllipsis />
+      <TestRouteUtils />
       <TestLocalization />
       <TestHooks />
       <TestComponents />

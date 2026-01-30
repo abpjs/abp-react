@@ -233,3 +233,68 @@ export const selectRoute =
   (path?: string, name?: string) =>
   (state: { config: ConfigState }): ABP.FullRoute | undefined =>
     findRouteDeep(state.config.routes, path, name);
+
+/**
+ * Get all settings, optionally filtered by keyword
+ * @param keyword - Optional keyword to filter setting keys
+ * @since 1.0.0
+ */
+export const selectSettings =
+  (keyword?: string) =>
+  (state: { config: ConfigState }): Record<string, string> => {
+    const settings = state.config.setting.values;
+    if (!keyword) return { ...settings };
+
+    return Object.keys(settings)
+      .filter((key) => key.includes(keyword))
+      .reduce<Record<string, string>>((acc, key) => {
+        acc[key] = settings[key];
+        return acc;
+      }, {});
+  };
+
+/**
+ * Get a localized string by key with interpolation support
+ * @param key - Localization key (string) or object with key and defaultValue
+ * @param interpolateParams - Parameters to interpolate into the string
+ * @since 1.0.0
+ */
+export const selectLocalizationString =
+  (key: string | Config.LocalizationWithDefault, ...interpolateParams: string[]) =>
+  (state: { config: ConfigState }): string => {
+    const keyStr = typeof key === 'string' ? key : key.key;
+    const defaultValue = typeof key === 'string' ? keyStr : key.defaultValue;
+
+    const { values } = state.config.localization;
+    const defaultResourceName = state.config.environment.localization?.defaultResourceName || '';
+
+    // Parse key format: "ResourceName::Key" or just "Key"
+    const parts = keyStr.split('::');
+    let resourceName: string;
+    let localizationKey: string;
+
+    if (parts.length === 2) {
+      resourceName = parts[0];
+      localizationKey = parts[1];
+    } else {
+      resourceName = defaultResourceName;
+      localizationKey = keyStr;
+    }
+
+    let result = values[resourceName]?.[localizationKey] ?? defaultValue;
+
+    // Interpolate parameters
+    if (interpolateParams.length > 0) {
+      interpolateParams.forEach((param, index) => {
+        result = result.replace(new RegExp(`\\{${index}\\}`, 'g'), param);
+        result = result.replace(new RegExp(`\\{\\s*'${index}'\\s*\\}`, 'g'), param);
+      });
+    }
+
+    return result;
+  };
+
+/**
+ * @deprecated Use selectLocalizationString instead. To be deleted in v2
+ */
+export const selectCopy = selectLocalizationString;

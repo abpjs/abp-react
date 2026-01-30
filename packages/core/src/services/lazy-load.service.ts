@@ -5,7 +5,11 @@ type LoadedLibraries = Record<string, Promise<void> | undefined>;
 export class LazyLoadService {
   private loadedLibraries: LoadedLibraries = {};
 
-  load(
+  /**
+   * Load a single URL
+   * @internal
+   */
+  private loadSingle(
     url: string | null,
     type: 'script' | 'style',
     content: string = '',
@@ -54,8 +58,39 @@ export class LazyLoadService {
     return this.loadedLibraries[key];
   }
 
+  /**
+   * Load one or more URLs
+   * @param urlOrUrls - Single URL string, array of URLs, or null for inline content
+   * @param type - Type of resource to load ('script' or 'style')
+   * @param content - Inline content (for inline scripts/styles)
+   * @param targetQuery - Query selector for the target element
+   * @param position - Position relative to target element
+   * @since 1.0.0 - Now accepts string[] for urlOrUrls parameter
+   */
+  load(
+    urlOrUrls: string | string[] | null,
+    type: 'script' | 'style',
+    content: string = '',
+    targetQuery: string = 'body',
+    position: InsertPosition = 'afterend'
+  ): Promise<void> | undefined {
+    // Handle array of URLs
+    if (Array.isArray(urlOrUrls)) {
+      const promises = urlOrUrls
+        .map((url) => this.loadSingle(url, type, content, targetQuery, position))
+        .filter((p): p is Promise<void> => p !== undefined);
+
+      if (promises.length === 0) return undefined;
+
+      return Promise.all(promises).then(() => undefined);
+    }
+
+    // Handle single URL or null
+    return this.loadSingle(urlOrUrls, type, content, targetQuery, position);
+  }
+
   loadScript(
-    url: string,
+    url: string | string[],
     targetQuery?: string,
     position?: InsertPosition
   ): Promise<void> | undefined {
@@ -63,7 +98,7 @@ export class LazyLoadService {
   }
 
   loadStyle(
-    url: string,
+    url: string | string[],
     targetQuery?: string,
     position?: InsertPosition
   ): Promise<void> | undefined {
