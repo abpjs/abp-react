@@ -18,6 +18,7 @@ import type {
   ProfileResponse,
   PasswordFlowResult,
 } from '../models';
+import { Account } from '../models';
 
 describe('Models', () => {
   describe('AccountOptions', () => {
@@ -37,6 +38,66 @@ describe('Models', () => {
       };
       expect(options.redirectUrl).toBe('/dashboard');
       expect(options.enableTwoFactor).toBe(true);
+    });
+
+    it('should allow enableLocalLogin option (v2.0.0)', () => {
+      const options: AccountOptions = {
+        enableLocalLogin: true,
+      };
+      expect(options.enableLocalLogin).toBe(true);
+    });
+
+    it('should allow disabling local login (v2.0.0)', () => {
+      const options: AccountOptions = {
+        enableLocalLogin: false,
+        enableSocialLogins: true,
+      };
+      expect(options.enableLocalLogin).toBe(false);
+      expect(options.enableSocialLogins).toBe(true);
+    });
+  });
+
+  describe('Account namespace (v2.0.0)', () => {
+    describe('TenantBoxComponentInputs', () => {
+      it('should be a valid empty interface', () => {
+        const inputs: Account.TenantBoxComponentInputs = {};
+        expect(inputs).toBeDefined();
+      });
+    });
+
+    describe('TenantBoxComponentOutputs', () => {
+      it('should be a valid empty interface', () => {
+        const outputs: Account.TenantBoxComponentOutputs = {};
+        expect(outputs).toBeDefined();
+      });
+    });
+
+    describe('PersonalSettingsComponentInputs', () => {
+      it('should be a valid empty interface', () => {
+        const inputs: Account.PersonalSettingsComponentInputs = {};
+        expect(inputs).toBeDefined();
+      });
+    });
+
+    describe('PersonalSettingsComponentOutputs', () => {
+      it('should be a valid empty interface', () => {
+        const outputs: Account.PersonalSettingsComponentOutputs = {};
+        expect(outputs).toBeDefined();
+      });
+    });
+
+    describe('ChangePasswordComponentInputs', () => {
+      it('should be a valid empty interface', () => {
+        const inputs: Account.ChangePasswordComponentInputs = {};
+        expect(inputs).toBeDefined();
+      });
+    });
+
+    describe('ChangePasswordComponentOutputs', () => {
+      it('should be a valid empty interface', () => {
+        const outputs: Account.ChangePasswordComponentOutputs = {};
+        expect(outputs).toBeDefined();
+      });
     });
   });
 

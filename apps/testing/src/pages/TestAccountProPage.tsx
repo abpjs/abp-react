@@ -23,6 +23,7 @@ import { useToaster } from '@abpjs/theme-shared'
 function TestLoginForm() {
   const toaster = useToaster()
   const [showForm, setShowForm] = useState(false)
+  const [isSelfRegistrationEnabled, setIsSelfRegistrationEnabled] = useState(true)
 
   return (
     <div className="test-section">
@@ -40,6 +41,7 @@ function TestLoginForm() {
             <LoginForm
               showTenantBox={true}
               showRegisterLink={true}
+              isSelfRegistrationEnabled={isSelfRegistrationEnabled}
               registerUrl="/account/register"
               onLoginSuccess={() => {
                 toaster.success('Login successful!', 'Success')
@@ -50,6 +52,22 @@ function TestLoginForm() {
             />
           </div>
         )}
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>isSelfRegistrationEnabled <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.0.0)</span></h3>
+        <p>Controls visibility of the register link based on whether self-registration is enabled:</p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '0.5rem' }}>
+          <input
+            type="checkbox"
+            checked={isSelfRegistrationEnabled}
+            onChange={(e) => setIsSelfRegistrationEnabled(e.target.checked)}
+          />
+          <span>isSelfRegistrationEnabled: {isSelfRegistrationEnabled ? 'true' : 'false'}</span>
+        </label>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          When false, the "Are you a new user? Register" link is hidden even if showRegisterLink is true.
+        </p>
       </div>
 
       <div className="test-card">
@@ -65,6 +83,7 @@ function TestLoginForm() {
           <tbody>
             <tr><td style={{ padding: '8px' }}>showTenantBox</td><td>boolean</td><td>true</td></tr>
             <tr><td style={{ padding: '8px' }}>showRegisterLink</td><td>boolean</td><td>true</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>isSelfRegistrationEnabled</td><td>boolean</td><td>true <span style={{ color: '#4f4', fontSize: '10px' }}>(v2.0.0)</span></td></tr>
             <tr><td style={{ padding: '8px' }}>registerUrl</td><td>string</td><td>/account/register</td></tr>
             <tr><td style={{ padding: '8px' }}>onLoginSuccess</td><td>() =&gt; void</td><td>-</td></tr>
             <tr><td style={{ padding: '8px' }}>onLoginError</td><td>(error: string) =&gt; void</td><td>-</td></tr>
@@ -78,6 +97,7 @@ function TestLoginForm() {
 function TestRegisterForm() {
   const toaster = useToaster()
   const [showForm, setShowForm] = useState(false)
+  const [isSelfRegistrationEnabled, setIsSelfRegistrationEnabled] = useState(true)
 
   return (
     <div className="test-section">
@@ -95,6 +115,7 @@ function TestRegisterForm() {
             <RegisterForm
               showTenantBox={true}
               showLoginLink={true}
+              isSelfRegistrationEnabled={isSelfRegistrationEnabled}
               loginUrl="/account/login"
               onRegisterSuccess={() => {
                 toaster.success('Registration successful!', 'Success')
@@ -105,6 +126,22 @@ function TestRegisterForm() {
             />
           </div>
         )}
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>isSelfRegistrationEnabled <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.0.0)</span></h3>
+        <p>Controls whether the registration form is shown or a disabled message:</p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', marginTop: '0.5rem' }}>
+          <input
+            type="checkbox"
+            checked={isSelfRegistrationEnabled}
+            onChange={(e) => setIsSelfRegistrationEnabled(e.target.checked)}
+          />
+          <span>isSelfRegistrationEnabled: {isSelfRegistrationEnabled ? 'true' : 'false'}</span>
+        </label>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          When false, the form fields are hidden and a "Self-registration is not enabled" message is displayed.
+        </p>
       </div>
 
       <div className="test-card">
@@ -120,6 +157,7 @@ function TestRegisterForm() {
           <tbody>
             <tr><td style={{ padding: '8px' }}>showTenantBox</td><td>boolean</td><td>true</td></tr>
             <tr><td style={{ padding: '8px' }}>showLoginLink</td><td>boolean</td><td>true</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>isSelfRegistrationEnabled</td><td>boolean</td><td>true <span style={{ color: '#4f4', fontSize: '10px' }}>(v2.0.0)</span></td></tr>
             <tr><td style={{ padding: '8px' }}>loginUrl</td><td>string</td><td>/account/login</td></tr>
             <tr><td style={{ padding: '8px' }}>onRegisterSuccess</td><td>() =&gt; void</td><td>-</td></tr>
             <tr><td style={{ padding: '8px' }}>onRegisterError</td><td>(error: string) =&gt; void</td><td>-</td></tr>
@@ -419,6 +457,106 @@ function TestManageProfile() {
   )
 }
 
+function TestAccountOptions() {
+  return (
+    <div className="test-section">
+      <h2>AccountOptions <span style={{ color: '#4f4', fontSize: '14px' }}>(v2.0.0)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>enableLocalLogin <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.0.0)</span></h3>
+        <p>New option to control whether local login (username/password) is enabled:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`// AccountProProvider with enableLocalLogin
+<AccountProProvider
+  options={{
+    enableLocalLogin: true,   // Allow username/password login
+    enableSocialLogins: true, // Also allow social logins
+  }}
+>
+  <App />
+</AccountProProvider>`}
+        </pre>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          When <code>enableLocalLogin</code> is false, only external login providers (OAuth, social logins) are available.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>All AccountOptions</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Option</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Default</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>redirectUrl</td><td>string</td><td>/</td><td>URL to redirect after login</td></tr>
+            <tr><td style={{ padding: '8px' }}>redirectToLogin</td><td>boolean</td><td>true</td><td>Redirect to login on 401</td></tr>
+            <tr><td style={{ padding: '8px' }}>loginUrl</td><td>string</td><td>/account/login</td><td>Custom login page URL</td></tr>
+            <tr><td style={{ padding: '8px' }}>registerUrl</td><td>string</td><td>/account/register</td><td>Custom register page URL</td></tr>
+            <tr><td style={{ padding: '8px' }}>enableSocialLogins</td><td>boolean</td><td>false</td><td>Enable social login providers</td></tr>
+            <tr><td style={{ padding: '8px' }}>enableTwoFactor</td><td>boolean</td><td>false</td><td>Enable 2FA support</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>enableLocalLogin</td><td>boolean</td><td>true</td><td>Enable username/password login (v2.0.0)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function TestComponentInterfaces() {
+  return (
+    <div className="test-section">
+      <h2>Account Component Interfaces <span style={{ color: '#4f4', fontSize: '14px' }}>(v2.0.0)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Account Namespace</h3>
+        <p>New namespace containing component interface types for TypeScript support:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import { Account } from '@abpjs/account-pro';
+
+// Component input/output interfaces
+const inputs: Account.TenantBoxComponentInputs = {};
+const outputs: Account.TenantBoxComponentOutputs = {};
+
+const settingsInputs: Account.PersonalSettingsComponentInputs = {};
+const settingsOutputs: Account.PersonalSettingsComponentOutputs = {};
+
+const passwordInputs: Account.ChangePasswordComponentInputs = {};
+const passwordOutputs: Account.ChangePasswordComponentOutputs = {};`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Available Interfaces</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Interface</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Component</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>TenantBoxComponentInputs</td><td>TenantBox</td><td>Input props interface</td></tr>
+            <tr><td style={{ padding: '8px' }}>TenantBoxComponentOutputs</td><td>TenantBox</td><td>Output callbacks interface</td></tr>
+            <tr><td style={{ padding: '8px' }}>PersonalSettingsComponentInputs</td><td>PersonalSettings</td><td>Input props interface</td></tr>
+            <tr><td style={{ padding: '8px' }}>PersonalSettingsComponentOutputs</td><td>PersonalSettings</td><td>Output callbacks interface</td></tr>
+            <tr><td style={{ padding: '8px' }}>ChangePasswordComponentInputs</td><td>ChangePassword</td><td>Input props interface</td></tr>
+            <tr><td style={{ padding: '8px' }}>ChangePasswordComponentOutputs</td><td>ChangePassword</td><td>Output callbacks interface</td></tr>
+          </tbody>
+        </table>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          These interfaces are currently empty but provide extension points for future customization.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function TestAccountProRoutes() {
   return (
     <div className="test-section">
@@ -497,6 +635,7 @@ export function TestAccountProPage() {
           <li>Change Password for authenticated users</li>
           <li>Personal Settings / Profile management</li>
           <li>Enhanced Login with forgot password link</li>
+          <li style={{ color: '#90cdf4' }}>v2.0.0: enableLocalLogin option, isSelfRegistrationEnabled prop, Account namespace interfaces</li>
         </ul>
       </div>
 
@@ -511,6 +650,8 @@ export function TestAccountProPage() {
       <TestPersonalSettings />
       <TestManageProfile />
       <TestTenantBox />
+      <TestAccountOptions />
+      <TestComponentInterfaces />
       <TestAccountProRoutes />
     </div>
   )

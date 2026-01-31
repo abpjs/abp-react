@@ -29,6 +29,37 @@ describe('AccountProProvider', () => {
       expect(result.current.enableTwoFactor).toBe(true);
       expect(result.current.redirectToLogin).toBe(true); // Default preserved
     });
+
+    it('should have enableLocalLogin default to true (v2.0.0)', () => {
+      const { result } = renderHook(() => useAccountProOptions());
+
+      expect(result.current.enableLocalLogin).toBe(true);
+    });
+
+    it('should allow disabling local login via options (v2.0.0)', () => {
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <AccountProProvider options={{ enableLocalLogin: false }}>
+          {children}
+        </AccountProProvider>
+      );
+
+      const { result } = renderHook(() => useAccountProOptions(), { wrapper });
+
+      expect(result.current.enableLocalLogin).toBe(false);
+    });
+
+    it('should allow configuring both local and social logins (v2.0.0)', () => {
+      const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <AccountProProvider options={{ enableLocalLogin: false, enableSocialLogins: true }}>
+          {children}
+        </AccountProProvider>
+      );
+
+      const { result } = renderHook(() => useAccountProOptions(), { wrapper });
+
+      expect(result.current.enableLocalLogin).toBe(false);
+      expect(result.current.enableSocialLogins).toBe(true);
+    });
   });
 
   describe('useAccountProContext', () => {

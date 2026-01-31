@@ -72,6 +72,14 @@ export interface LoginFormProps {
   forgotPasswordUrl?: string;
 
   /**
+   * Whether self-registration is enabled
+   * When false, hides the register link regardless of showRegisterLink
+   * @default true
+   * @since 2.0.0
+   */
+  isSelfRegistrationEnabled?: boolean;
+
+  /**
    * Callback fired on successful login
    */
   onLoginSuccess?: () => void;
@@ -89,6 +97,7 @@ export interface LoginFormProps {
  * It handles user authentication using OAuth password flow.
  *
  * @since 0.7.2
+ * @updated 2.0.0 Added isSelfRegistrationEnabled prop
  *
  * @example
  * ```tsx
@@ -97,6 +106,7 @@ export interface LoginFormProps {
  *     <LoginForm
  *       showTenantBox={true}
  *       showForgotPasswordLink={true}
+ *       isSelfRegistrationEnabled={true}
  *       onLoginSuccess={() => console.log('Logged in!')}
  *     />
  *   );
@@ -109,6 +119,7 @@ export function LoginForm({
   showForgotPasswordLink = true,
   registerUrl = '/account/register',
   forgotPasswordUrl = '/account/forgot-password',
+  isSelfRegistrationEnabled = true,
   onLoginSuccess,
   onLoginError,
 }: LoginFormProps) {
@@ -229,8 +240,8 @@ export function LoginForm({
                   </Show>
                 </Stack>
 
-                {/* Register Link */}
-                <Show when={showRegisterLink}>
+                {/* Register Link - Only show if both showRegisterLink and isSelfRegistrationEnabled are true */}
+                <Show when={showRegisterLink && isSelfRegistrationEnabled}>
                   <Card.Root size="sm" mt="10">
                     <Card.Body>
                       <HStack textStyle="sm">

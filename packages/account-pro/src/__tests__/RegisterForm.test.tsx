@@ -173,4 +173,44 @@ describe('RegisterForm', () => {
     const loginLink = screen.getByText('AbpAccount::Login').closest('a');
     expect(loginLink).toHaveAttribute('href', '/custom-login');
   });
+
+  // v2.0.0 - isSelfRegistrationEnabled tests
+  describe('isSelfRegistrationEnabled (v2.0.0)', () => {
+    it('should render the form when isSelfRegistrationEnabled is true (default)', () => {
+      renderWithRouter(<RegisterForm />);
+      expect(screen.getByRole('heading')).toHaveTextContent('AbpAccount::Register');
+      expect(document.getElementById('input-user-name')).toBeInTheDocument();
+      expect(document.getElementById('input-email-address')).toBeInTheDocument();
+      expect(document.getElementById('input-password')).toBeInTheDocument();
+    });
+
+    it('should show disabled message when isSelfRegistrationEnabled is false', () => {
+      renderWithRouter(<RegisterForm isSelfRegistrationEnabled={false} />);
+      expect(screen.getByRole('heading')).toHaveTextContent('AbpAccount::Register');
+      expect(screen.getByText('AbpAccount::SelfRegistrationDisabledMessage')).toBeInTheDocument();
+    });
+
+    it('should not show form fields when isSelfRegistrationEnabled is false', () => {
+      renderWithRouter(<RegisterForm isSelfRegistrationEnabled={false} />);
+      expect(document.getElementById('input-user-name')).not.toBeInTheDocument();
+      expect(document.getElementById('input-email-address')).not.toBeInTheDocument();
+      expect(document.getElementById('input-password')).not.toBeInTheDocument();
+    });
+
+    it('should show login link in disabled state', () => {
+      renderWithRouter(<RegisterForm isSelfRegistrationEnabled={false} />);
+      expect(screen.getByText('AbpAccount::Login')).toBeInTheDocument();
+    });
+
+    it('should use custom loginUrl in disabled state', () => {
+      renderWithRouter(<RegisterForm isSelfRegistrationEnabled={false} loginUrl="/custom-login" />);
+      const loginLink = screen.getByText('AbpAccount::Login').closest('a');
+      expect(loginLink).toHaveAttribute('href', '/custom-login');
+    });
+
+    it('should not show tenant box in disabled state', () => {
+      renderWithRouter(<RegisterForm isSelfRegistrationEnabled={false} showTenantBox={true} />);
+      expect(screen.queryByTestId('tenant-box')).not.toBeInTheDocument();
+    });
+  });
 });

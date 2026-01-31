@@ -4,6 +4,7 @@ import type { AccountOptions } from '../models';
 /**
  * Default account pro options
  * @since 0.7.2
+ * @updated 2.0.0 Added enableLocalLogin
  */
 const DEFAULT_OPTIONS: Required<AccountOptions> = {
   redirectUrl: '/',
@@ -12,6 +13,7 @@ const DEFAULT_OPTIONS: Required<AccountOptions> = {
   registerUrl: '/account/register',
   enableSocialLogins: false,
   enableTwoFactor: false,
+  enableLocalLogin: true,
 };
 
 /**

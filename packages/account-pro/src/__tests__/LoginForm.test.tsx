@@ -152,4 +152,34 @@ describe('LoginForm', () => {
     const forgotLink = screen.getByText('AbpAccount::ForgotPassword').closest('a');
     expect(forgotLink).toHaveAttribute('href', '/custom-forgot');
   });
+
+  // v2.0.0 - isSelfRegistrationEnabled tests
+  describe('isSelfRegistrationEnabled (v2.0.0)', () => {
+    it('should show register link when isSelfRegistrationEnabled is true (default)', () => {
+      renderWithRouter(<LoginForm />);
+      expect(screen.getByText('AbpAccount::Register')).toBeInTheDocument();
+      expect(screen.getByText('AbpAccount::AreYouANewUser')).toBeInTheDocument();
+    });
+
+    it('should hide register link when isSelfRegistrationEnabled is false', () => {
+      renderWithRouter(<LoginForm isSelfRegistrationEnabled={false} />);
+      expect(screen.queryByText('AbpAccount::Register')).not.toBeInTheDocument();
+      expect(screen.queryByText('AbpAccount::AreYouANewUser')).not.toBeInTheDocument();
+    });
+
+    it('should hide register link when showRegisterLink is true but isSelfRegistrationEnabled is false', () => {
+      renderWithRouter(<LoginForm showRegisterLink={true} isSelfRegistrationEnabled={false} />);
+      expect(screen.queryByText('AbpAccount::Register')).not.toBeInTheDocument();
+    });
+
+    it('should hide register link when showRegisterLink is false even if isSelfRegistrationEnabled is true', () => {
+      renderWithRouter(<LoginForm showRegisterLink={false} isSelfRegistrationEnabled={true} />);
+      expect(screen.queryByText('AbpAccount::Register')).not.toBeInTheDocument();
+    });
+
+    it('should show register link only when both showRegisterLink and isSelfRegistrationEnabled are true', () => {
+      renderWithRouter(<LoginForm showRegisterLink={true} isSelfRegistrationEnabled={true} />);
+      expect(screen.getByText('AbpAccount::Register')).toBeInTheDocument();
+    });
+  });
 });

@@ -33,6 +33,13 @@ export interface RegisterFormProps {
   showTenantBox?: boolean;
   showLoginLink?: boolean;
   loginUrl?: string;
+  /**
+   * Whether self-registration is enabled
+   * When false, the registration form may redirect or show a message
+   * @default true
+   * @since 2.0.0
+   */
+  isSelfRegistrationEnabled?: boolean;
   onRegisterSuccess?: () => void;
   onRegisterError?: (error: string) => void;
 }
@@ -40,11 +47,13 @@ export interface RegisterFormProps {
 /**
  * RegisterForm - User registration form component
  * @since 0.7.2
+ * @updated 2.0.0 Added isSelfRegistrationEnabled prop
  */
 export function RegisterForm({
   showTenantBox = true,
   showLoginLink = true,
   loginUrl = '/account/login',
+  isSelfRegistrationEnabled = true,
   onRegisterSuccess,
   onRegisterError,
 }: RegisterFormProps) {
@@ -60,6 +69,35 @@ export function RegisterForm({
     resolver: zodResolver(registerSchema),
     defaultValues: { username: '', emailAddress: '', password: '' },
   });
+
+  // If self-registration is disabled, show a message and redirect to login
+  if (!isSelfRegistrationEnabled) {
+    return (
+      <Flex height="full" flex="1">
+        <Box flex="1.5" py={{ base: '24', md: '32' }}>
+          <Container maxW="md">
+            <Stack gap="8">
+              <Stack gap={{ base: '2', md: '3' }} textAlign="center">
+                <Heading size={{ base: '2xl', md: '3xl' }}>{t('AbpAccount::Register')}</Heading>
+              </Stack>
+              <Card.Root size="sm">
+                <Card.Body>
+                  <Text textAlign="center" mb={4}>
+                    {t('AbpAccount::SelfRegistrationDisabledMessage') || 'Self-registration is not enabled. Please contact an administrator.'}
+                  </Text>
+                  <HStack justifyContent="center" textStyle="sm">
+                    <Link asChild variant="underline" fontWeight="semibold">
+                      <RouterLink to={loginUrl}>{t('AbpAccount::Login')}</RouterLink>
+                    </Link>
+                  </HStack>
+                </Card.Body>
+              </Card.Root>
+            </Stack>
+          </Container>
+        </Box>
+      </Flex>
+    );
+  }
 
   const onSubmit = async (data: RegisterFormData) => {
     setInProgress(true);
