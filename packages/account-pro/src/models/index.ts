@@ -1,7 +1,55 @@
 /**
  * @abpjs/account-pro Models
- * Translated from @volo/abp.ng.account v0.7.2
+ * Translated from @volo/abp.ng.account v2.0.0
  */
+
+/**
+ * Account namespace containing component interface types
+ * @since 2.0.0
+ */
+export namespace Account {
+  /**
+   * Input props for TenantBox component
+   * @since 2.0.0
+   */
+  export interface TenantBoxComponentInputs {
+  }
+
+  /**
+   * Output callbacks for TenantBox component
+   * @since 2.0.0
+   */
+  export interface TenantBoxComponentOutputs {
+  }
+
+  /**
+   * Input props for PersonalSettings component
+   * @since 2.0.0
+   */
+  export interface PersonalSettingsComponentInputs {
+  }
+
+  /**
+   * Output callbacks for PersonalSettings component
+   * @since 2.0.0
+   */
+  export interface PersonalSettingsComponentOutputs {
+  }
+
+  /**
+   * Input props for ChangePassword component
+   * @since 2.0.0
+   */
+  export interface ChangePasswordComponentInputs {
+  }
+
+  /**
+   * Output callbacks for ChangePassword component
+   * @since 2.0.0
+   */
+  export interface ChangePasswordComponentOutputs {
+  }
+}
 
 /**
  * Password flow result
@@ -47,6 +95,14 @@ export interface AccountOptions {
    * @since 0.7.2
    */
   enableTwoFactor?: boolean;
+
+  /**
+   * Whether local login (username/password) is enabled
+   * When false, only external login providers (social logins) are available
+   * @default true
+   * @since 2.0.0
+   */
+  enableLocalLogin?: boolean;
 }
 
 /**

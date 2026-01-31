@@ -38,7 +38,7 @@
     "react-icons": ">=5.0.0"
   },
   "devDependencies": {
-    "@volo/abp.ng.account": "0.7.2",
+    "@volo/abp.ng.account": "2.0.0",
     "@abpjs/core": "workspace:*",
     "@abpjs/theme-shared": "workspace:*",
     "@chakra-ui/react": "^3.2.1",
