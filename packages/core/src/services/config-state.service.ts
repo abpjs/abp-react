@@ -213,8 +213,3 @@ export class ConfigStateService {
     return parseOr();
   }
 }
-
-/**
- * @deprecated Use ConfigStateService instead. Will be removed in v2.0.0
- */
-export { ConfigStateService as ConfigService };

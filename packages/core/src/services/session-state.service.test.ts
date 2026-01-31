@@ -21,6 +21,11 @@ describe('SessionStateService', () => {
       session: {
         language: 'en',
         tenant: { id: 'tenant-123', name: 'Test Tenant' },
+        sessionDetail: {
+          openedTabCount: 2,
+          lastExitTime: 1234567890,
+          remember: true,
+        },
       },
       profile: {
         profile: null,
@@ -72,6 +77,40 @@ describe('SessionStateService', () => {
       const tenant = service.getTenant();
       expect(tenant.id).toBe('');
       expect(tenant.name).toBe('');
+    });
+  });
+
+  describe('getSessionDetail (v2.0.0)', () => {
+    it('should return the current session detail', () => {
+      const sessionDetail = service.getSessionDetail();
+      expect(sessionDetail).toBeDefined();
+      expect(sessionDetail.openedTabCount).toBe(2);
+      expect(sessionDetail.lastExitTime).toBe(1234567890);
+      expect(sessionDetail.remember).toBe(true);
+    });
+
+    it('should return updated session detail when state changes', () => {
+      mockState.session.sessionDetail = {
+        openedTabCount: 5,
+        lastExitTime: 9999999999,
+        remember: false,
+      };
+      const sessionDetail = service.getSessionDetail();
+      expect(sessionDetail.openedTabCount).toBe(5);
+      expect(sessionDetail.lastExitTime).toBe(9999999999);
+      expect(sessionDetail.remember).toBe(false);
+    });
+
+    it('should return default values when session detail is empty', () => {
+      mockState.session.sessionDetail = {
+        openedTabCount: 0,
+        lastExitTime: 0,
+        remember: false,
+      };
+      const sessionDetail = service.getSessionDetail();
+      expect(sessionDetail.openedTabCount).toBe(0);
+      expect(sessionDetail.lastExitTime).toBe(0);
+      expect(sessionDetail.remember).toBe(false);
     });
   });
 });

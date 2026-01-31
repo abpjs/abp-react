@@ -137,6 +137,188 @@ describe('config.slice', () => {
         expect(state.routes[0].path).toBe('dashboard');
         expect(state.routes[0].url).toBe('/dashboard');
       });
+
+      it('should update children when newValue contains children', () => {
+        const stateWithRoutes: ConfigState = {
+          ...initialState,
+          routes: [{ name: 'Admin', path: 'admin', url: '/admin' }],
+        };
+
+        const state = configReducer(
+          stateWithRoutes,
+          configActions.patchRoute({
+            name: 'Admin',
+            newValue: {
+              children: [
+                { name: 'Users', path: 'users' },
+                { name: 'Roles', path: 'roles' },
+              ],
+            },
+          })
+        );
+
+        expect(state.routes[0].children).toHaveLength(2);
+        expect(state.routes[0].children![0].name).toBe('Users');
+        expect(state.routes[0].children![0].url).toBe('/admin/users');
+        expect(state.routes[0].children![1].name).toBe('Roles');
+        expect(state.routes[0].children![1].url).toBe('/admin/roles');
+      });
+
+      it('should not modify routes that do not match the name', () => {
+        const stateWithRoutes: ConfigState = {
+          ...initialState,
+          routes: [
+            { name: 'Home', path: 'home' },
+            { name: 'About', path: 'about' },
+          ],
+        };
+
+        const state = configReducer(
+          stateWithRoutes,
+          configActions.patchRoute({
+            name: 'Contact',
+            newValue: { path: 'contact-us' },
+          })
+        );
+
+        // Routes should remain unchanged
+        expect(state.routes[0].path).toBe('home');
+        expect(state.routes[1].path).toBe('about');
+      });
+    });
+
+    describe('addRoute (v2.0.0)', () => {
+      it('should add route at root level when no parentName', () => {
+        const state = configReducer(
+          initialState,
+          configActions.addRoute({
+            name: 'NewRoute',
+            path: 'new-route',
+          })
+        );
+
+        expect(state.routes).toHaveLength(1);
+        expect(state.routes[0].name).toBe('NewRoute');
+        expect(state.routes[0].path).toBe('new-route');
+        expect(state.routes[0].url).toBe('/new-route');
+      });
+
+      it('should add route as child when parentName is provided', () => {
+        const stateWithRoutes: ConfigState = {
+          ...initialState,
+          routes: [{ name: 'Admin', path: 'admin', url: '/admin' }],
+        };
+
+        const state = configReducer(
+          stateWithRoutes,
+          configActions.addRoute({
+            name: 'Users',
+            path: 'users',
+            parentName: 'Admin',
+          })
+        );
+
+        expect(state.routes[0].children).toHaveLength(1);
+        expect(state.routes[0].children![0].name).toBe('Users');
+        expect(state.routes[0].children![0].url).toBe('/admin/users');
+      });
+
+      it('should add route to nested parent', () => {
+        const stateWithRoutes: ConfigState = {
+          ...initialState,
+          routes: [
+            {
+              name: 'Admin',
+              path: 'admin',
+              url: '/admin',
+              children: [{ name: 'Users', path: 'users', url: '/admin/users' }],
+            },
+          ],
+        };
+
+        const state = configReducer(
+          stateWithRoutes,
+          configActions.addRoute({
+            name: 'UserDetails',
+            path: 'details',
+            parentName: 'Users',
+          })
+        );
+
+        expect(state.routes[0].children![0].children).toHaveLength(1);
+        expect(state.routes[0].children![0].children![0].name).toBe('UserDetails');
+        expect(state.routes[0].children![0].children![0].url).toBe('/admin/users/details');
+      });
+
+      it('should preserve existing children when adding new route', () => {
+        const stateWithRoutes: ConfigState = {
+          ...initialState,
+          routes: [
+            {
+              name: 'Admin',
+              path: 'admin',
+              url: '/admin',
+              children: [{ name: 'Existing', path: 'existing' }],
+            },
+          ],
+        };
+
+        const state = configReducer(
+          stateWithRoutes,
+          configActions.addRoute({
+            name: 'NewChild',
+            path: 'new-child',
+            parentName: 'Admin',
+          })
+        );
+
+        expect(state.routes[0].children).toHaveLength(2);
+        expect(state.routes[0].children![0].name).toBe('Existing');
+        expect(state.routes[0].children![1].name).toBe('NewChild');
+      });
+
+      it('should not modify routes that do not match parentName', () => {
+        const stateWithRoutes: ConfigState = {
+          ...initialState,
+          routes: [
+            { name: 'Home', path: 'home', url: '/home' },
+            { name: 'About', path: 'about', url: '/about' },
+          ],
+        };
+
+        const state = configReducer(
+          stateWithRoutes,
+          configActions.addRoute({
+            name: 'Contact',
+            path: 'contact',
+            parentName: 'NonExistent',
+          })
+        );
+
+        // Routes should remain unchanged since parent doesn't exist
+        expect(state.routes).toHaveLength(2);
+        expect(state.routes[0].name).toBe('Home');
+        expect(state.routes[1].name).toBe('About');
+      });
+
+      it('should handle multiple root level routes when adding without parentName', () => {
+        const stateWithRoutes: ConfigState = {
+          ...initialState,
+          routes: [{ name: 'Home', path: 'home', url: '/home' }],
+        };
+
+        const state = configReducer(
+          stateWithRoutes,
+          configActions.addRoute({
+            name: 'Dashboard',
+            path: 'dashboard',
+          })
+        );
+
+        expect(state.routes).toHaveLength(2);
+        expect(state.routes[1].name).toBe('Dashboard');
+        expect(state.routes[1].url).toBe('/dashboard');
+      });
     });
 
     describe('setApplicationConfiguration', () => {

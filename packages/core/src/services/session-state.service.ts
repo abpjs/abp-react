@@ -1,5 +1,5 @@
 import { RootState } from '../store';
-import { ABP } from '../models';
+import { ABP, Session } from '../models';
 
 /**
  * SessionStateService provides access to session state.
@@ -20,5 +20,13 @@ export class SessionStateService {
    */
   getTenant(): ABP.BasicItem {
     return this.getState().session.tenant;
+  }
+
+  /**
+   * Get the session detail information
+   * @since 2.0.0
+   */
+  getSessionDetail(): Session.SessionDetail {
+    return this.getState().session.sessionDetail;
   }
 }

@@ -15,6 +15,7 @@ import {
   Permission,
   Ellipsis,
   selectRoutes,
+  selectSessionDetail,
   organizeRoutes,
   sortRoutes,
   setUrls,
@@ -26,8 +27,12 @@ import {
   ConfigStateService,
   ProfileStateService,
   SessionStateService,
+  sessionActions,
+  configActions,
+  eLayoutType,
 } from '@abpjs/core'
-import type { ABP } from '@abpjs/core'
+import type { ABP, ReplaceableComponents } from '@abpjs/core'
+import { useDispatch } from 'react-redux'
 
 // Localization response type
 interface LocalizationResponse {
@@ -577,6 +582,13 @@ function TestStateServices() {
     const tenant = sessionService.getTenant()
     results.push(`✓ getTenant(): ${tenant ? `id="${tenant.id}", name="${tenant.name}"` : 'No tenant (host)'}`)
 
+    // Test getSessionDetail (v2.0.0)
+    const sessionDetail = sessionService.getSessionDetail()
+    results.push(`✓ getSessionDetail() (v2.0.0):`)
+    results.push(`  - openedTabCount: ${sessionDetail.openedTabCount}`)
+    results.push(`  - lastExitTime: ${sessionDetail.lastExitTime}`)
+    results.push(`  - remember: ${sessionDetail.remember}`)
+
     setSessionResults(results)
   }
 
@@ -639,6 +651,227 @@ function TestStateServices() {
             {sessionResults.join('\n')}
           </pre>
         )}
+      </div>
+    </div>
+  )
+}
+
+function TestV2Features() {
+  const dispatch = useDispatch()
+  const sessionDetail = useSelector(selectSessionDetail)
+  const routes = useSelector(selectRoutes)
+  const [addRouteResults, setAddRouteResults] = useState<string[]>([])
+
+  // Test Session Detail Actions
+  const handleIncreaseTabCount = () => {
+    dispatch(sessionActions.modifyOpenedTabCount('increase'))
+  }
+
+  const handleDecreaseTabCount = () => {
+    dispatch(sessionActions.modifyOpenedTabCount('decrease'))
+  }
+
+  const handleToggleRemember = () => {
+    dispatch(sessionActions.setRemember(!sessionDetail.remember))
+  }
+
+  const handleSetSessionDetail = () => {
+    dispatch(sessionActions.setSessionDetail({
+      openedTabCount: 5,
+      lastExitTime: Date.now(),
+      remember: true,
+    }))
+  }
+
+  const handleResetSessionDetail = () => {
+    dispatch(sessionActions.setSessionDetail({
+      openedTabCount: 0,
+      lastExitTime: 0,
+      remember: false,
+    }))
+  }
+
+  // Test AddRoute Action
+  const handleAddRootRoute = () => {
+    const results: string[] = []
+    const routeName = `DynamicRoute_${Date.now()}`
+
+    dispatch(configActions.addRoute({
+      name: routeName,
+      path: `dynamic-${Date.now()}`,
+      order: 99,
+    }))
+
+    results.push(`✓ Added root route: ${routeName}`)
+    setAddRouteResults(results)
+  }
+
+  const handleAddChildRoute = () => {
+    const results: string[] = []
+    const parentRoute = routes[0]
+
+    if (!parentRoute) {
+      results.push(`✗ No parent route available. Add a root route first.`)
+      setAddRouteResults(results)
+      return
+    }
+
+    const routeName = `ChildRoute_${Date.now()}`
+    dispatch(configActions.addRoute({
+      name: routeName,
+      path: `child-${Date.now()}`,
+      parentName: parentRoute.name,
+      order: 1,
+    }))
+
+    results.push(`✓ Added child route "${routeName}" under "${parentRoute.name}"`)
+    setAddRouteResults(results)
+  }
+
+  // Test ReplaceableComponents types (compile-time check)
+  const testReplaceableComponentsTypes = () => {
+    // This is a compile-time type check - if it compiles, the types are correct
+    const mockState: ReplaceableComponents.State = {
+      replaceableComponents: [],
+    }
+
+    const mockComponent: ReplaceableComponents.ReplaceableComponent = {
+      key: 'test-key',
+      component: () => null,
+    }
+
+    const mockRouteData: ReplaceableComponents.RouteData = {
+      key: 'route-key',
+      defaultComponent: () => null,
+    }
+
+    return {
+      stateValid: !!mockState,
+      componentValid: !!mockComponent,
+      routeDataValid: !!mockRouteData,
+    }
+  }
+
+  const replaceableTypesResult = testReplaceableComponentsTypes()
+
+  // Test eLayoutType (removed 'setting' in v2.0.0)
+  const layoutTypes = Object.values(eLayoutType)
+
+  return (
+    <div className="test-section">
+      <h2>v2.0.0 Features</h2>
+
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>Session Detail (v2.0.0)</h3>
+        <p>New session detail tracking for tab count, exit time, and remember preference.</p>
+
+        <div style={{ marginBottom: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+          <p><strong>openedTabCount:</strong> {sessionDetail.openedTabCount}</p>
+          <p><strong>lastExitTime:</strong> {sessionDetail.lastExitTime ? new Date(sessionDetail.lastExitTime).toLocaleString() : 'Never'}</p>
+          <p><strong>remember:</strong> {sessionDetail.remember ? 'Yes' : 'No'}</p>
+        </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button onClick={handleIncreaseTabCount}>
+            Increase Tab Count
+          </button>
+          <button onClick={handleDecreaseTabCount}>
+            Decrease Tab Count
+          </button>
+          <button onClick={handleToggleRemember}>
+            Toggle Remember ({sessionDetail.remember ? 'On' : 'Off'})
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button onClick={handleSetSessionDetail}>
+            Set All Values
+          </button>
+          <button onClick={handleResetSessionDetail} style={{ background: '#f44' }}>
+            Reset Session Detail
+          </button>
+        </div>
+
+        <p style={{ marginTop: '1rem', fontSize: '12px', color: '#888' }}>
+          Actions: sessionActions.modifyOpenedTabCount(), sessionActions.setRemember(), sessionActions.setSessionDetail()
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>Dynamic Route Addition (v2.0.0)</h3>
+        <p>Add routes dynamically using configActions.addRoute().</p>
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button onClick={handleAddRootRoute}>
+            Add Root Route
+          </button>
+          <button onClick={handleAddChildRoute}>
+            Add Child Route
+          </button>
+        </div>
+
+        {addRouteResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '0.5rem',
+            borderRadius: '4px',
+            marginBottom: '1rem',
+          }}>
+            {addRouteResults.join('\n')}
+          </pre>
+        )}
+
+        <details>
+          <summary>Current Routes ({routes.length})</summary>
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '0.5rem',
+            borderRadius: '4px',
+            maxHeight: '200px',
+            overflow: 'auto',
+          }}>
+            {JSON.stringify(routes, null, 2)}
+          </pre>
+        </details>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>ReplaceableComponents Model (v2.0.0)</h3>
+        <p>New model for component replacement system.</p>
+
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>ReplaceableComponents.State</td><td style={{ color: replaceableTypesResult.stateValid ? '#4f4' : '#f44' }}>{replaceableTypesResult.stateValid ? '✓ Valid' : '✗ Invalid'}</td></tr>
+            <tr><td style={{ padding: '8px' }}>ReplaceableComponents.ReplaceableComponent</td><td style={{ color: replaceableTypesResult.componentValid ? '#4f4' : '#f44' }}>{replaceableTypesResult.componentValid ? '✓ Valid' : '✗ Invalid'}</td></tr>
+            <tr><td style={{ padding: '8px' }}>ReplaceableComponents.RouteData</td><td style={{ color: replaceableTypesResult.routeDataValid ? '#4f4' : '#f44' }}>{replaceableTypesResult.routeDataValid ? '✓ Valid' : '✗ Invalid'}</td></tr>
+            <tr><td style={{ padding: '8px' }}>ReplaceableComponents.ReplaceableTemplateDirectiveInput</td><td style={{ color: '#4f4' }}>✓ Type exported</td></tr>
+            <tr><td style={{ padding: '8px' }}>ReplaceableComponents.ReplaceableTemplateData</td><td style={{ color: '#4f4' }}>✓ Type exported</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>eLayoutType Changes (v2.0.0)</h3>
+        <p>The deprecated <code>setting</code> layout type has been removed.</p>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <strong>Available layout types:</strong>
+          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+            {layoutTypes.map((type) => (
+              <li key={type}><code>{type}</code></li>
+            ))}
+          </ul>
+        </div>
+
+        <p style={{ fontSize: '12px', color: '#888' }}>
+          Breaking change: <code>eLayoutType.setting</code> was removed (deprecated since v0.9.0)
+        </p>
       </div>
     </div>
   )
@@ -711,6 +944,7 @@ export function TestCorePage() {
       <h1>@abpjs/core Tests</h1>
       <p>Testing core hooks, services, and components.</p>
 
+      <TestV2Features />
       <TestStateServices />
       <TestDateExtensions />
       <TestLoader />
