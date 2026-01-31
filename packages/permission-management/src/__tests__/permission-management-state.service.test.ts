@@ -1,11 +1,21 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { PermissionManagementStateService } from '../services/permission-management-state.service';
+import { PermissionManagementService } from '../services/permission-management.service';
 import type { PermissionManagement } from '../models';
+
+// Mock the PermissionManagementService
+vi.mock('../services/permission-management.service', () => ({
+  PermissionManagementService: vi.fn().mockImplementation(() => ({
+    getPermissions: vi.fn(),
+    updatePermissions: vi.fn(),
+  })),
+}));
 
 describe('PermissionManagementStateService', () => {
   let service: PermissionManagementStateService;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     service = new PermissionManagementStateService();
   });
 
@@ -177,6 +187,335 @@ describe('PermissionManagementStateService', () => {
 
       expect(service.getPermissionGroups()[0].name).toBe('Second');
       expect(service.getEntityDisplayName()).toBe('Second Entity');
+    });
+  });
+
+  describe('constructor with PermissionManagementService (v2.0.0)', () => {
+    it('should accept PermissionManagementService in constructor', () => {
+      const mockPermissionService = {
+        getPermissions: vi.fn(),
+        updatePermissions: vi.fn(),
+      } as unknown as PermissionManagementService;
+
+      const stateService = new PermissionManagementStateService(mockPermissionService);
+      expect(stateService).toBeInstanceOf(PermissionManagementStateService);
+    });
+
+    it('should work without PermissionManagementService', () => {
+      const stateService = new PermissionManagementStateService();
+      expect(stateService).toBeInstanceOf(PermissionManagementStateService);
+    });
+
+    it('should work with undefined PermissionManagementService', () => {
+      const stateService = new PermissionManagementStateService(undefined);
+      expect(stateService).toBeInstanceOf(PermissionManagementStateService);
+    });
+  });
+
+  describe('dispatchGetPermissions (v2.0.0)', () => {
+    it('should throw error when PermissionManagementService is not provided', async () => {
+      const stateService = new PermissionManagementStateService();
+
+      await expect(
+        stateService.dispatchGetPermissions({
+          providerKey: 'role-id',
+          providerName: 'R',
+        })
+      ).rejects.toThrow(
+        'PermissionManagementService is required for dispatchGetPermissions. Pass it to the constructor.'
+      );
+    });
+
+    it('should call getPermissions and update internal state', async () => {
+      const mockResponse: PermissionManagement.Response = {
+        entityDisplayName: 'Admin Role',
+        groups: [
+          {
+            name: 'IdentityManagement',
+            displayName: 'Identity Management',
+            permissions: [
+              {
+                name: 'AbpIdentity.Users',
+                displayName: 'User Management',
+                isGranted: true,
+                parentName: '',
+                allowedProviders: ['R', 'U'],
+                grantedProviders: [{ providerName: 'R', providerKey: 'admin' }],
+              },
+            ],
+          },
+        ],
+      };
+
+      const mockPermissionService = {
+        getPermissions: vi.fn().mockResolvedValue(mockResponse),
+        updatePermissions: vi.fn(),
+      } as unknown as PermissionManagementService;
+
+      const stateService = new PermissionManagementStateService(mockPermissionService);
+
+      const result = await stateService.dispatchGetPermissions({
+        providerKey: 'role-id',
+        providerName: 'R',
+      });
+
+      expect(mockPermissionService.getPermissions).toHaveBeenCalledWith({
+        providerKey: 'role-id',
+        providerName: 'R',
+      });
+      expect(result).toEqual(mockResponse);
+      expect(stateService.getPermissionGroups()).toEqual(mockResponse.groups);
+      expect(stateService.getEntityDisplayName()).toBe('Admin Role');
+    });
+
+    it('should handle empty groups in response', async () => {
+      const mockResponse: PermissionManagement.Response = {
+        entityDisplayName: 'Empty Entity',
+        groups: [],
+      };
+
+      const mockPermissionService = {
+        getPermissions: vi.fn().mockResolvedValue(mockResponse),
+        updatePermissions: vi.fn(),
+      } as unknown as PermissionManagementService;
+
+      const stateService = new PermissionManagementStateService(mockPermissionService);
+
+      await stateService.dispatchGetPermissions({
+        providerKey: 'user-id',
+        providerName: 'U',
+      });
+
+      expect(stateService.getPermissionGroups()).toEqual([]);
+      expect(stateService.getEntityDisplayName()).toBe('Empty Entity');
+    });
+
+    it('should handle API errors', async () => {
+      const mockPermissionService = {
+        getPermissions: vi.fn().mockRejectedValue(new Error('API Error')),
+        updatePermissions: vi.fn(),
+      } as unknown as PermissionManagementService;
+
+      const stateService = new PermissionManagementStateService(mockPermissionService);
+
+      await expect(
+        stateService.dispatchGetPermissions({
+          providerKey: 'role-id',
+          providerName: 'R',
+        })
+      ).rejects.toThrow('API Error');
+    });
+
+    it('should overwrite previous state when called again', async () => {
+      const firstResponse: PermissionManagement.Response = {
+        entityDisplayName: 'First Entity',
+        groups: [{ name: 'Group1', displayName: 'First Group', permissions: [] }],
+      };
+
+      const secondResponse: PermissionManagement.Response = {
+        entityDisplayName: 'Second Entity',
+        groups: [{ name: 'Group2', displayName: 'Second Group', permissions: [] }],
+      };
+
+      const mockPermissionService = {
+        getPermissions: vi.fn()
+          .mockResolvedValueOnce(firstResponse)
+          .mockResolvedValueOnce(secondResponse),
+        updatePermissions: vi.fn(),
+      } as unknown as PermissionManagementService;
+
+      const stateService = new PermissionManagementStateService(mockPermissionService);
+
+      await stateService.dispatchGetPermissions({ providerKey: 'id1', providerName: 'R' });
+      expect(stateService.getEntityDisplayName()).toBe('First Entity');
+
+      await stateService.dispatchGetPermissions({ providerKey: 'id2', providerName: 'U' });
+      expect(stateService.getEntityDisplayName()).toBe('Second Entity');
+      expect(stateService.getPermissionGroups()[0].name).toBe('Group2');
+    });
+  });
+
+  describe('dispatchUpdatePermissions (v2.0.0)', () => {
+    it('should throw error when PermissionManagementService is not provided', async () => {
+      const stateService = new PermissionManagementStateService();
+
+      await expect(
+        stateService.dispatchUpdatePermissions({
+          providerKey: 'role-id',
+          providerName: 'R',
+          permissions: [],
+        })
+      ).rejects.toThrow(
+        'PermissionManagementService is required for dispatchUpdatePermissions. Pass it to the constructor.'
+      );
+    });
+
+    it('should call updatePermissions and then refresh via getPermissions', async () => {
+      const refreshedResponse: PermissionManagement.Response = {
+        entityDisplayName: 'Admin Role',
+        groups: [
+          {
+            name: 'IdentityManagement',
+            displayName: 'Identity Management',
+            permissions: [
+              {
+                name: 'AbpIdentity.Users',
+                displayName: 'User Management',
+                isGranted: true,
+                parentName: '',
+                allowedProviders: ['R'],
+                grantedProviders: [],
+              },
+            ],
+          },
+        ],
+      };
+
+      const mockPermissionService = {
+        getPermissions: vi.fn().mockResolvedValue(refreshedResponse),
+        updatePermissions: vi.fn().mockResolvedValue(undefined),
+      } as unknown as PermissionManagementService;
+
+      const stateService = new PermissionManagementStateService(mockPermissionService);
+
+      const updateRequest: PermissionManagement.UpdateRequest = {
+        providerKey: 'role-id',
+        providerName: 'R',
+        permissions: [{ name: 'AbpIdentity.Users', isGranted: true }],
+      };
+
+      await stateService.dispatchUpdatePermissions(updateRequest);
+
+      expect(mockPermissionService.updatePermissions).toHaveBeenCalledWith(updateRequest);
+      expect(mockPermissionService.getPermissions).toHaveBeenCalledWith({
+        providerKey: 'role-id',
+        providerName: 'R',
+      });
+      expect(stateService.getPermissionGroups()).toEqual(refreshedResponse.groups);
+      expect(stateService.getEntityDisplayName()).toBe('Admin Role');
+    });
+
+    it('should handle update with empty permissions array', async () => {
+      const refreshedResponse: PermissionManagement.Response = {
+        entityDisplayName: 'Test Entity',
+        groups: [],
+      };
+
+      const mockPermissionService = {
+        getPermissions: vi.fn().mockResolvedValue(refreshedResponse),
+        updatePermissions: vi.fn().mockResolvedValue(undefined),
+      } as unknown as PermissionManagementService;
+
+      const stateService = new PermissionManagementStateService(mockPermissionService);
+
+      await stateService.dispatchUpdatePermissions({
+        providerKey: 'user-id',
+        providerName: 'U',
+        permissions: [],
+      });
+
+      expect(mockPermissionService.updatePermissions).toHaveBeenCalled();
+      expect(mockPermissionService.getPermissions).toHaveBeenCalled();
+    });
+
+    it('should handle updatePermissions API error', async () => {
+      const mockPermissionService = {
+        getPermissions: vi.fn(),
+        updatePermissions: vi.fn().mockRejectedValue(new Error('Update failed')),
+      } as unknown as PermissionManagementService;
+
+      const stateService = new PermissionManagementStateService(mockPermissionService);
+
+      await expect(
+        stateService.dispatchUpdatePermissions({
+          providerKey: 'role-id',
+          providerName: 'R',
+          permissions: [],
+        })
+      ).rejects.toThrow('Update failed');
+
+      // getPermissions should not be called if updatePermissions fails
+      expect(mockPermissionService.getPermissions).not.toHaveBeenCalled();
+    });
+
+    it('should handle getPermissions failure after successful update', async () => {
+      const mockPermissionService = {
+        getPermissions: vi.fn().mockRejectedValue(new Error('Refresh failed')),
+        updatePermissions: vi.fn().mockResolvedValue(undefined),
+      } as unknown as PermissionManagementService;
+
+      const stateService = new PermissionManagementStateService(mockPermissionService);
+
+      await expect(
+        stateService.dispatchUpdatePermissions({
+          providerKey: 'role-id',
+          providerName: 'R',
+          permissions: [],
+        })
+      ).rejects.toThrow('Refresh failed');
+
+      // updatePermissions should have been called
+      expect(mockPermissionService.updatePermissions).toHaveBeenCalled();
+    });
+
+    it('should update multiple permissions at once', async () => {
+      const refreshedResponse: PermissionManagement.Response = {
+        entityDisplayName: 'Admin Role',
+        groups: [
+          {
+            name: 'IdentityManagement',
+            displayName: 'Identity Management',
+            permissions: [
+              {
+                name: 'AbpIdentity.Users',
+                displayName: 'User Management',
+                isGranted: true,
+                parentName: '',
+                allowedProviders: ['R'],
+                grantedProviders: [],
+              },
+              {
+                name: 'AbpIdentity.Users.Create',
+                displayName: 'Create Users',
+                isGranted: true,
+                parentName: 'AbpIdentity.Users',
+                allowedProviders: ['R'],
+                grantedProviders: [],
+              },
+              {
+                name: 'AbpIdentity.Users.Delete',
+                displayName: 'Delete Users',
+                isGranted: false,
+                parentName: 'AbpIdentity.Users',
+                allowedProviders: ['R'],
+                grantedProviders: [],
+              },
+            ],
+          },
+        ],
+      };
+
+      const mockPermissionService = {
+        getPermissions: vi.fn().mockResolvedValue(refreshedResponse),
+        updatePermissions: vi.fn().mockResolvedValue(undefined),
+      } as unknown as PermissionManagementService;
+
+      const stateService = new PermissionManagementStateService(mockPermissionService);
+
+      const updateRequest: PermissionManagement.UpdateRequest = {
+        providerKey: 'role-id',
+        providerName: 'R',
+        permissions: [
+          { name: 'AbpIdentity.Users', isGranted: true },
+          { name: 'AbpIdentity.Users.Create', isGranted: true },
+          { name: 'AbpIdentity.Users.Delete', isGranted: false },
+        ],
+      };
+
+      await stateService.dispatchUpdatePermissions(updateRequest);
+
+      expect(mockPermissionService.updatePermissions).toHaveBeenCalledWith(updateRequest);
+      expect(stateService.getPermissionGroups()[0].permissions).toHaveLength(3);
     });
   });
 

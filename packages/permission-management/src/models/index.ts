@@ -73,6 +73,34 @@ export namespace PermissionManagement {
     providerKey: string;
     providerName: string;
   }
+
+  // ========================
+  // Component Interface Types (v2.0.0)
+  // ========================
+
+  /**
+   * Input props for PermissionManagementComponent
+   * @since 2.0.0
+   */
+  export interface PermissionManagementComponentInputs {
+    /** Whether the modal is visible */
+    visible: boolean;
+    /** Provider name (e.g., 'R' for Role, 'U' for User) */
+    readonly providerName: string;
+    /** Provider key (e.g., role ID or user ID) */
+    readonly providerKey: string;
+    /** Hide the provider badges on permissions */
+    readonly hideBadges: boolean;
+  }
+
+  /**
+   * Output callbacks for PermissionManagementComponent
+   * @since 2.0.0
+   */
+  export interface PermissionManagementComponentOutputs {
+    /** Callback when visibility changes */
+    readonly visibleChange?: (visible: boolean) => void;
+  }
 }
 
 /**

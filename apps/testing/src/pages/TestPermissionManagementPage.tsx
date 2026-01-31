@@ -1,13 +1,15 @@
 /**
  * Test page for @abpjs/permission-management package
- * Tests: PermissionManagementModal, usePermissionManagement hook
+ * Tests: PermissionManagementModal, usePermissionManagement hook, PermissionManagementStateService
  */
 import { useState } from 'react'
 import { useAuth, useConfig } from '@abpjs/core'
 import {
   PermissionManagementModal,
   usePermissionManagement,
+  PermissionManagementStateService,
 } from '@abpjs/permission-management'
+import type { PermissionManagement } from '@abpjs/permission-management'
 
 function TestPermissionModal() {
   const [roleModalVisible, setRoleModalVisible] = useState(false)
@@ -325,6 +327,272 @@ function TestPermissionHook() {
   )
 }
 
+function TestPermissionManagementStateService() {
+  const [providerKey, setProviderKey] = useState('')
+  const [providerName, setProviderName] = useState<'R' | 'U'>('R')
+  const [stateServiceResult, setStateServiceResult] = useState<string>('')
+  const [isLoading, setIsLoading] = useState(false)
+  const { isAuthenticated } = useAuth()
+
+  // Create a state service instance (in real usage, this would be shared via context)
+  const [stateService] = useState(() => new PermissionManagementStateService())
+
+  const handleDispatchGetPermissions = async () => {
+    if (!providerKey) return
+    setIsLoading(true)
+    setStateServiceResult('')
+    try {
+      const result = await stateService.dispatchGetPermissions({
+        providerKey,
+        providerName,
+      })
+      setStateServiceResult(JSON.stringify({
+        entityDisplayName: result.entityDisplayName,
+        groupsCount: result.groups.length,
+        groups: result.groups.map(g => ({
+          name: g.name,
+          displayName: g.displayName,
+          permissionsCount: g.permissions.length,
+        })),
+      }, null, 2))
+    } catch (error) {
+      setStateServiceResult(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDispatchUpdatePermissions = async () => {
+    if (!providerKey) return
+    setIsLoading(true)
+    setStateServiceResult('')
+    try {
+      // Example: toggle a permission (in real usage, you'd get the actual permissions to update)
+      await stateService.dispatchUpdatePermissions({
+        providerKey,
+        providerName,
+        permissions: [], // Empty for demo - would contain actual permission changes
+      })
+      setStateServiceResult('Permissions updated successfully! State has been refreshed.')
+    } catch (error) {
+      setStateServiceResult(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>PermissionManagementStateService (v2.0.0)</h2>
+
+      <div className="test-card">
+        <h3>Dispatch Methods</h3>
+        <p>The PermissionManagementStateService provides dispatch methods for getting and updating permissions:</p>
+
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
+          <select
+            value={providerName}
+            onChange={(e) => setProviderName(e.target.value as 'R' | 'U')}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333'
+            }}
+          >
+            <option value="R">Role (R)</option>
+            <option value="U">User (U)</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Provider Key (ID)"
+            value={providerKey}
+            onChange={(e) => setProviderKey(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+              flex: 1
+            }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button
+            onClick={handleDispatchGetPermissions}
+            disabled={!providerKey || !isAuthenticated || isLoading}
+          >
+            {isLoading ? 'Loading...' : 'dispatchGetPermissions()'}
+          </button>
+          <button
+            onClick={handleDispatchUpdatePermissions}
+            disabled={!providerKey || !isAuthenticated || isLoading}
+          >
+            {isLoading ? 'Loading...' : 'dispatchUpdatePermissions()'}
+          </button>
+        </div>
+
+        {stateServiceResult && (
+          <pre style={{
+            background: 'rgba(50,50,50,0.3)',
+            padding: '1rem',
+            borderRadius: '4px',
+            overflow: 'auto',
+            maxHeight: '300px',
+            fontSize: '12px'
+          }}>
+            {stateServiceResult}
+          </pre>
+        )}
+
+        {!isAuthenticated && (
+          <p style={{ color: '#f88', fontSize: '12px' }}>Login required to use state service</p>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>State Service Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Version</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>getPermissionGroups()</td><td>Get current permission groups</td><td>v1.1.0</td></tr>
+            <tr><td style={{ padding: '8px' }}>getEntityDisplayName()</td><td>Get entity display name</td><td>v1.1.0</td></tr>
+            <tr><td style={{ padding: '8px' }}>setPermissionResponse()</td><td>Set permission response state</td><td>v1.1.0</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.1)' }}><td style={{ padding: '8px' }}>dispatchGetPermissions()</td><td>Fetch permissions from API and update state</td><td>v2.0.0</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.1)' }}><td style={{ padding: '8px' }}>dispatchUpdatePermissions()</td><td>Update permissions via API and refresh state</td><td>v2.0.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Constructor (v2.0.0)</h3>
+        <p>The state service now accepts an optional <code>PermissionManagementService</code> in the constructor:</p>
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px'
+        }}>
+{`// Without service (basic state management)
+const stateService = new PermissionManagementStateService();
+
+// With service (enables dispatch methods)
+const stateService = new PermissionManagementStateService(permissionService);`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
+function TestComponentInterfaces() {
+  // Demo of component interface types (v2.0.0)
+  const componentInputs: PermissionManagement.PermissionManagementComponentInputs = {
+    visible: true,
+    providerName: 'R',
+    providerKey: 'admin-role-id',
+    hideBadges: false,
+  }
+
+  const componentOutputs: PermissionManagement.PermissionManagementComponentOutputs = {
+    visibleChange: (visible: boolean) => {
+      console.log('Visibility changed:', visible)
+    },
+  }
+
+  return (
+    <div className="test-section">
+      <h2>Component Interface Types (v2.0.0)</h2>
+
+      <div className="test-card">
+        <h3>PermissionManagementComponentInputs</h3>
+        <p>Interface defining the input props for the permission management component:</p>
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px'
+        }}>
+{`interface PermissionManagementComponentInputs {
+  visible: boolean;           // Whether the modal is visible
+  readonly providerName: string;  // Provider name ('R' for Role, 'U' for User)
+  readonly providerKey: string;   // Provider key (role ID or user ID)
+  readonly hideBadges: boolean;   // Hide provider badges on permissions
+}`}
+        </pre>
+        <p style={{ marginTop: '1rem' }}>Example usage:</p>
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px'
+        }}>
+{JSON.stringify(componentInputs, null, 2)}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>PermissionManagementComponentOutputs</h3>
+        <p>Interface defining the output callbacks for the permission management component:</p>
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px'
+        }}>
+{`interface PermissionManagementComponentOutputs {
+  readonly visibleChange?: (visible: boolean) => void;  // Callback when visibility changes
+}`}
+        </pre>
+        <p style={{ marginTop: '1rem' }}>Example usage:</p>
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px'
+        }}>
+{`{
+  visibleChange: (visible) => console.log('Visibility:', visible)
+}`}
+        </pre>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          visibleChange callback is defined: {typeof componentOutputs.visibleChange === 'function' ? 'Yes' : 'No'}
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Type-Safe Component Props</h3>
+        <p>These interfaces ensure type safety when using the PermissionManagementModal component:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Interface</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Properties</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>PermissionManagementComponentInputs</td>
+              <td style={{ padding: '8px' }}>visible, providerName, providerKey, hideBadges</td>
+              <td style={{ padding: '8px' }}>Component input props</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>PermissionManagementComponentOutputs</td>
+              <td style={{ padding: '8px' }}>visibleChange</td>
+              <td style={{ padding: '8px' }}>Component output callbacks</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestApiEndpoints() {
   return (
     <div className="test-section">
@@ -370,10 +638,12 @@ export function TestPermissionManagementPage() {
   return (
     <div>
       <h1>@abpjs/permission-management Tests</h1>
-      <p>Testing permission management modal and hooks.</p>
+      <p>Testing permission management modal, hooks, and state service.</p>
 
       <TestPermissionModal />
       <TestPermissionHook />
+      <TestPermissionManagementStateService />
+      <TestComponentInterfaces />
       <TestApiEndpoints />
     </div>
   )
