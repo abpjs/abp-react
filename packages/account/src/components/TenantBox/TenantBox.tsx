@@ -38,7 +38,7 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
   // Local state
   const [tenantName, setTenantName] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [inProgress, setInProgress] = useState(false);
 
   // Initialize tenant name from store on mount
   useEffect(() => {
@@ -57,7 +57,7 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
    */
   const save = useCallback(async () => {
     if (tenantName) {
-      setIsLoading(true);
+      setInProgress(true);
       try {
         const { success, tenantId } = await accountService.findTenant(tenantName);
 
@@ -85,7 +85,7 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
           'An error occurred';
         toaster.error(errorMessage, t('AbpUi::Error') || 'Error');
       } finally {
-        setIsLoading(false);
+        setInProgress(false);
       }
     } else {
       // Clear tenant when name is empty
@@ -162,7 +162,7 @@ export function TenantBox({ containerStyle }: TenantBoxProps) {
             <Button
               colorPalette="blue"
               onClick={save}
-              loading={isLoading}
+              loading={inProgress}
               loadingText={t('AbpTenantManagement::Save')}
             >
               <CheckIcon />

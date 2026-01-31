@@ -10,6 +10,11 @@ import {
   TenantBox,
   LoginPage,
   RegisterPage,
+  // v1.1.0 additions
+  AuthWrapper,
+  ChangePasswordForm,
+  PersonalSettingsForm,
+  ManageProfile,
   useAccountOptions,
   usePasswordFlow,
   useAccountService,
@@ -332,6 +337,232 @@ function TestAccountPages() {
   )
 }
 
+function TestAuthWrapper() {
+  const [showWrapper, setShowWrapper] = useState(false)
+
+  return (
+    <div className="test-section">
+      <h2>AuthWrapper Component (v1.1.0)</h2>
+
+      <div className="test-card">
+        <h3>Authentication Layout Wrapper</h3>
+        <p>AuthWrapper provides a consistent layout for authentication forms:</p>
+        <button onClick={() => setShowWrapper(!showWrapper)}>
+          {showWrapper ? 'Hide AuthWrapper' : 'Show AuthWrapper'}
+        </button>
+
+        {showWrapper && (
+          <div style={{ marginTop: '1rem', border: '1px solid #333', borderRadius: '8px', overflow: 'hidden' }}>
+            <AuthWrapper
+              mainContent={
+                <div style={{ textAlign: 'center' }}>
+                  <h3>Main Content Area</h3>
+                  <p>Your login form, register form, or other auth content goes here.</p>
+                </div>
+              }
+              cancelContent={
+                <a href="#" style={{ color: '#646cff' }}>Cancel and go back</a>
+              }
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>AuthWrapper Props</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Prop</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>children</td><td>ReactNode</td><td>Main content (alternative to mainContent)</td></tr>
+            <tr><td style={{ padding: '8px' }}>mainContent</td><td>ReactNode</td><td>Main content template</td></tr>
+            <tr><td style={{ padding: '8px' }}>cancelContent</td><td>ReactNode</td><td>Footer/cancel content</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function TestChangePasswordForm() {
+  const toaster = useToaster()
+  const [showForm, setShowForm] = useState(false)
+
+  return (
+    <div className="test-section">
+      <h2>ChangePasswordForm Component (v1.1.0)</h2>
+
+      <div className="test-card">
+        <h3>Change Password Form</h3>
+        <p>Form for authenticated users to change their password:</p>
+        <button onClick={() => setShowForm(!showForm)}>
+          {showForm ? 'Hide Form' : 'Show Change Password Form'}
+        </button>
+
+        {showForm && (
+          <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #333', borderRadius: '8px', maxWidth: '400px' }}>
+            <ChangePasswordForm
+              onSuccess={() => {
+                toaster.success('Password changed successfully!', 'Success')
+              }}
+              onError={(error) => {
+                toaster.error(error, 'Password Change Failed')
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>Password Requirements</h3>
+        <ul>
+          <li>Minimum 6 characters</li>
+          <li>Maximum 32 characters</li>
+          <li>At least one lowercase letter</li>
+          <li>At least one uppercase letter</li>
+          <li>At least one number</li>
+          <li>At least one special character</li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>ChangePasswordForm Props</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Prop</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>onSuccess</td><td>() =&gt; void</td><td>Called on successful password change</td></tr>
+            <tr><td style={{ padding: '8px' }}>onError</td><td>(error: string) =&gt; void</td><td>Called on error</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function TestPersonalSettingsForm() {
+  const toaster = useToaster()
+  const [showForm, setShowForm] = useState(false)
+
+  return (
+    <div className="test-section">
+      <h2>PersonalSettingsForm Component (v1.1.0)</h2>
+
+      <div className="test-card">
+        <h3>Personal Settings Form</h3>
+        <p>Form for users to update their personal information:</p>
+        <button onClick={() => setShowForm(!showForm)}>
+          {showForm ? 'Hide Form' : 'Show Personal Settings Form'}
+        </button>
+
+        {showForm && (
+          <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #333', borderRadius: '8px', maxWidth: '400px' }}>
+            <PersonalSettingsForm
+              onSuccess={() => {
+                toaster.success('Profile updated successfully!', 'Success')
+              }}
+              onError={(error) => {
+                toaster.error(error, 'Profile Update Failed')
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>Fields</h3>
+        <ul>
+          <li>Username (required)</li>
+          <li>Email Address (required)</li>
+          <li>Name (optional)</li>
+          <li>Surname (optional)</li>
+          <li>Phone Number (optional)</li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>PersonalSettingsForm Props</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Prop</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>onSuccess</td><td>() =&gt; void</td><td>Called on successful update</td></tr>
+            <tr><td style={{ padding: '8px' }}>onError</td><td>(error: string) =&gt; void</td><td>Called on error</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function TestManageProfile() {
+  const [showProfile, setShowProfile] = useState(false)
+
+  return (
+    <div className="test-section">
+      <h2>ManageProfile Component (v1.1.0)</h2>
+
+      <div className="test-card">
+        <h3>Profile Management Page</h3>
+        <p>Tabbed interface for managing user profile with Personal Settings and Change Password tabs:</p>
+        <button onClick={() => setShowProfile(!showProfile)}>
+          {showProfile ? 'Hide ManageProfile' : 'Show ManageProfile'}
+        </button>
+
+        {showProfile && (
+          <div style={{ marginTop: '1rem', border: '1px solid #333', borderRadius: '8px', overflow: 'hidden' }}>
+            <ManageProfile
+              defaultTabIndex={0}
+              onTabChange={(index) => console.log('Tab changed to:', index)}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>ManageProfile Props</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Prop</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Default</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>defaultTabIndex</td><td>number</td><td>0</td></tr>
+            <tr><td style={{ padding: '8px' }}>onTabChange</td><td>(index: number) =&gt; void</td><td>-</td></tr>
+            <tr><td style={{ padding: '8px' }}>customTabs</td><td>ProfileTab[]</td><td>Default tabs</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Default Tabs</h3>
+        <ol>
+          <li>Personal Settings - User profile information</li>
+          <li>Change Password - Password update form</li>
+        </ol>
+      </div>
+    </div>
+  )
+}
+
 function TestAccountProvider() {
   return (
     <div className="test-section">
@@ -451,6 +682,7 @@ export function TestAccountPage() {
     <div>
       <h1>@abpjs/account Tests</h1>
       <p>Testing login, register, tenant switching, and account-related features.</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 1.1.0 - Includes profile management components</p>
 
       <TestAuthState />
       <TestPasswordFlow />
@@ -459,6 +691,16 @@ export function TestAccountPage() {
       <TestRegisterForm />
       <TestAccountPages />
       <TestTenantBox />
+
+      {/* v1.1.0 Components */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #333', paddingTop: '1rem' }}>
+        v1.1.0 New Components
+      </h2>
+      <TestAuthWrapper />
+      <TestChangePasswordForm />
+      <TestPersonalSettingsForm />
+      <TestManageProfile />
+
       <TestAccountProvider />
       <TestAccountOptions />
       <TestAccountRoutes />
