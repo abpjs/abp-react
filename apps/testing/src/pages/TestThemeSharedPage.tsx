@@ -19,6 +19,9 @@ import { useAbp, useAuth } from '@abpjs/core'
 function TestLoaderBar() {
   const { restService } = useAbp()
   const [showLoaderBar, setShowLoaderBar] = useState(true)
+  // v1.1.0: New intervalPeriod and stopDelay props
+  const [intervalPeriod, setIntervalPeriod] = useState(300)
+  const [stopDelay, setStopDelay] = useState(400)
 
   const triggerLoading = async () => {
     try {
@@ -45,7 +48,12 @@ function TestLoaderBar() {
     <div className="test-section">
       <h2>LoaderBar Component</h2>
 
-      {showLoaderBar && <LoaderBar />}
+      {showLoaderBar && (
+        <LoaderBar
+          intervalPeriod={intervalPeriod}
+          stopDelay={stopDelay}
+        />
+      )}
 
       <div className="test-card">
         <h3>Loading Progress Bar</h3>
@@ -73,6 +81,53 @@ function TestLoaderBar() {
         </div>
         <p style={{ marginTop: '0.5rem', color: '#888', fontSize: '0.85rem' }}>
           Watch the blue progress bar at the top of the page when clicking the buttons.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>v1.1.0: intervalPeriod & stopDelay Props</h3>
+        <p>Control the animation timing of the progress bar.</p>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+            intervalPeriod (animation interval, default: 300ms):{' '}
+            <input
+              type="number"
+              value={intervalPeriod}
+              onChange={(e) => setIntervalPeriod(Number(e.target.value))}
+              min={50}
+              max={1000}
+              step={50}
+              style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
+            />
+          </label>
+          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+            stopDelay (hide delay after loading, default: 400ms):{' '}
+            <input
+              type="number"
+              value={stopDelay}
+              onChange={(e) => setStopDelay(Number(e.target.value))}
+              min={0}
+              max={2000}
+              step={100}
+              style={{ padding: '0.25rem', marginLeft: '0.5rem', width: '80px' }}
+            />
+          </label>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button onClick={() => { setIntervalPeriod(100); setStopDelay(200); }}>
+            Fast Animation
+          </button>
+          <button onClick={() => { setIntervalPeriod(300); setStopDelay(400); }}>
+            Default Settings
+          </button>
+          <button onClick={() => { setIntervalPeriod(500); setStopDelay(1000); }}>
+            Slow Animation
+          </button>
+        </div>
+        <p style={{ marginTop: '0.5rem', color: '#888', fontSize: '0.85rem' }}>
+          Trigger an API call after changing settings to see the difference.
         </p>
       </div>
     </div>
@@ -184,6 +239,22 @@ function TestToaster() {
     setTimeout(() => toaster.warn('Third toast', 'Warning'), 600)
   }
 
+  // v1.1.0: LocalizationParam support for message and title
+  const showLocalizationParamToast = () => {
+    toaster.success(
+      { key: 'AbpUi::Success', defaultValue: 'Operation completed successfully!' },
+      { key: 'AbpUi::SuccessTitle', defaultValue: 'Success' }
+    )
+  }
+
+  const showMixedParamToast = () => {
+    // Mix of string and LocalizationParam
+    toaster.info(
+      { key: 'AbpUi::Info', defaultValue: 'This message uses LocalizationParam' },
+      'Plain String Title'
+    )
+  }
+
   return (
     <div className="test-section">
       <h2>Toast Notifications (useToaster)</h2>
@@ -204,6 +275,18 @@ function TestToaster() {
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button onClick={showStickyToast}>Sticky Toast (no auto-dismiss)</button>
           <button onClick={showMultipleToasts}>Show Multiple Toasts</button>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>v1.1.0: LocalizationParam Support</h3>
+        <p>Toaster now accepts <code>LocalizationParam</code> objects with <code>key</code> and <code>defaultValue</code>.</p>
+        <p style={{ fontSize: '0.85rem', color: '#888' }}>
+          This allows for easier localization by providing a fallback value when the key is not found.
+        </p>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+          <button onClick={showLocalizationParamToast}>LocalizationParam (both)</button>
+          <button onClick={showMixedParamToast}>Mixed (object + string)</button>
         </div>
       </div>
     </div>
@@ -231,6 +314,34 @@ function TestConfirmation() {
       { yesCopy: 'Delete', cancelCopy: 'Keep' }
     )
     setConfirmResult(status === Toaster.Status.confirm ? 'Item deleted!' : 'Deletion cancelled')
+  }
+
+  // v1.1.0: New cancelText and yesText props (replace deprecated cancelCopy/yesCopy)
+  const showV110Confirmation = async () => {
+    setConfirmResult(null)
+    const status = await confirmation.warn(
+      'This uses the new v1.1.0 cancelText and yesText props.',
+      'v1.1.0 Confirmation',
+      {
+        yesText: 'Proceed',
+        cancelText: 'Go Back'
+      }
+    )
+    setConfirmResult(status === Toaster.Status.confirm ? 'Proceeded!' : 'Went back')
+  }
+
+  // v1.1.0: LocalizationParam support for cancelText/yesText
+  const showLocalizationParamConfirmation = async () => {
+    setConfirmResult(null)
+    const status = await confirmation.info(
+      'This uses LocalizationParam objects with key and defaultValue.',
+      'LocalizationParam Demo',
+      {
+        yesText: { key: 'AbpUi::Yes', defaultValue: 'Yes (Default)' },
+        cancelText: { key: 'AbpUi::No', defaultValue: 'No (Default)' }
+      }
+    )
+    setConfirmResult(status === Toaster.Status.confirm ? 'Yes selected!' : 'No selected')
   }
 
   const showInfoConfirmation = async () => {
@@ -264,6 +375,23 @@ function TestConfirmation() {
           <button onClick={showDeleteConfirmation}>Delete Confirmation</button>
           <button onClick={showInfoConfirmation}>Info (OK only)</button>
           <button onClick={showSuccessConfirmation}>Success Confirmation</button>
+        </div>
+        {confirmResult && (
+          <p style={{ marginTop: '0.5rem', color: confirmResult.includes('!') ? '#6f6' : '#f88' }}>
+            Result: {confirmResult}
+          </p>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>v1.1.0: cancelText & yesText Props</h3>
+        <p>New props that replace the deprecated <code>cancelCopy</code> and <code>yesCopy</code>.</p>
+        <p style={{ fontSize: '0.85rem', color: '#888' }}>
+          These props also support <code>LocalizationParam</code> objects with <code>key</code> and <code>defaultValue</code>.
+        </p>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+          <button onClick={showV110Confirmation}>yesText/cancelText (strings)</button>
+          <button onClick={showLocalizationParamConfirmation}>LocalizationParam objects</button>
         </div>
         {confirmResult && (
           <p style={{ marginTop: '0.5rem', color: confirmResult.includes('!') ? '#6f6' : '#f88' }}>

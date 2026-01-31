@@ -8,6 +8,18 @@ export interface LoaderBarProps {
   progressClass?: string;
   /** Custom filter function to determine if loading should be shown */
   filter?: (request: { url?: string; method?: string }) => boolean;
+  /**
+   * Interval period in milliseconds for progress bar animation.
+   * @default 300
+   * @since 1.1.0
+   */
+  intervalPeriod?: number;
+  /**
+   * Delay in milliseconds before hiding the progress bar after loading completes.
+   * @default 400
+   * @since 1.1.0
+   */
+  stopDelay?: number;
 }
 
 /**
@@ -35,6 +47,8 @@ export function LoaderBar({
   containerClass = 'abp-loader-bar',
   progressClass = 'abp-progress',
   filter,
+  intervalPeriod = 300,
+  stopDelay = 400,
 }: LoaderBarProps) {
   const { loading } = useLoader();
   const [isLoading, setIsLoading] = useState(false);
@@ -80,7 +94,7 @@ export function LoaderBar({
         }
         return prev + 10;
       });
-    }, 300);
+    }, intervalPeriod);
   };
 
   const stopLoading = () => {
@@ -96,7 +110,7 @@ export function LoaderBar({
     setTimeout(() => {
       setIsLoading(false);
       setProgressLevel(0);
-    }, 400);
+    }, stopDelay);
   };
 
   if (!isLoading && progressLevel === 0) {

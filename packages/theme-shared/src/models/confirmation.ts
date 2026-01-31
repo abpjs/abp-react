@@ -2,6 +2,7 @@
  * Confirmation namespace containing types for confirmation dialogs.
  * Translated from @abp/ng.theme.shared/lib/models/confirmation.ts
  */
+import type { Config } from '@abpjs/core';
 import { Toaster } from './toaster';
 
 export namespace Confirmation {
@@ -14,9 +15,23 @@ export namespace Confirmation {
     hideCancelBtn?: boolean;
     /** Hide the yes/confirm button */
     hideYesBtn?: boolean;
-    /** Custom text for the cancel button (localization key) */
-    cancelCopy?: string;
-    /** Custom text for the yes button (localization key) */
-    yesCopy?: string;
+    /**
+     * Custom text for the cancel button
+     * @since 1.1.0 - Now accepts Config.LocalizationParam
+     */
+    cancelText?: Config.LocalizationParam;
+    /**
+     * Custom text for the yes button
+     * @since 1.1.0 - Now accepts Config.LocalizationParam
+     */
+    yesText?: Config.LocalizationParam;
+    /**
+     * @deprecated Use cancelText instead. Will be removed in v2.0.0
+     */
+    cancelCopy?: Config.LocalizationParam;
+    /**
+     * @deprecated Use yesCopy instead. Will be removed in v2.0.0
+     */
+    yesCopy?: Config.LocalizationParam;
   }
 }
