@@ -22,6 +22,7 @@ import {
   TestSettingManagementPage,
   TestLanguageManagementPage,
   TestSaasPage,
+  TestAuditLoggingPage,
 } from './pages'
 import './App.css'
 

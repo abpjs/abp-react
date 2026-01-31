@@ -12,6 +12,7 @@
   "dependencies": {
     "@abpjs/account": "workspace:*",
     "@abpjs/account-pro": "workspace:*",
+    "@abpjs/audit-logging": "workspace:*",
     "@abpjs/core": "workspace:*",
     "@abpjs/feature-management": "workspace:*",
     "@abpjs/identity": "workspace:*",
