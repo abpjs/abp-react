@@ -43,6 +43,11 @@ export interface UsersComponentProps {
    * @since 1.1.0
    */
   requiredPasswordLength?: number;
+  /**
+   * Callback when permission modal visibility changes
+   * @since 2.0.0
+   */
+  onVisiblePermissionChange?: (visible: boolean) => void;
 }
 
 /**
@@ -114,6 +119,7 @@ export function UsersComponent({
   onUserDeleted,
   passwordRulesArr = [],
   requiredPasswordLength = 0,
+  onVisiblePermissionChange,
 }: UsersComponentProps): React.ReactElement {
   const { t } = useLocalization();
   const confirmation = useConfirmation();
@@ -604,7 +610,10 @@ export function UsersComponent({
       {/* Permission Management Modal */}
       <PermissionManagementModal
         visible={isPermissionModalOpen}
-        onVisibleChange={setIsPermissionModalOpen}
+        onVisibleChange={(visible) => {
+          setIsPermissionModalOpen(visible);
+          onVisiblePermissionChange?.(visible);
+        }}
         providerName="U"
         providerKey={permissionProviderKey}
       />

@@ -2,24 +2,27 @@
  * @abpjs/identity
  *
  * ABP Framework identity components for React.
- * Translated from @abp/ng.identity version 1.1.0.
+ * Translated from @abp/ng.identity version 2.0.0.
  *
  * This package provides:
  * - Identity models (User, Role, etc.)
  * - Identity service for API operations
+ * - IdentityStateService for stateful operations (v2.0.0)
  * - React hooks for state management (useRoles, useUsers, useIdentity)
  * - UI components for role and user management
- * - Route constants for navigation
+ * - Route path constants for navigation
+ *
+ * Changes in v2.0.0:
+ * - Added IdentityStateService for stateful identity operations
+ * - Added onVisiblePermissionChange callback to RolesComponent and UsersComponent
+ * - Added component interface types (RolesComponentInputs, RolesComponentOutputs, etc.)
+ * - Removed deprecated IDENTITY_ROUTES constant (use IDENTITY_ROUTE_PATHS instead)
+ * - Improved type signatures for onPageChange and onSearch callbacks
  *
  * Changes in v1.1.0:
  * - Added passwordRulesArr and requiredPasswordLength props to UsersComponent
  * - Removed RoleResolver and UserResolver (Angular route resolvers not needed in React)
  * - State method return types updated for better typing
- *
- * Changes in v1.0.0:
- * - IDENTITY_ROUTES is now deprecated (use identity config services instead)
- * - IdentityProviders is deprecated
- * - Improved sorting support with sortKey in table components
  *
  * @example
  * ```tsx
@@ -30,8 +33,14 @@
  *
  *   return (
  *     <div>
- *       <RolesComponent />
- *       <UsersComponent passwordRulesArr={['number', 'capital', 'small', 'special']} requiredPasswordLength={6} />
+ *       <RolesComponent
+ *         onVisiblePermissionChange={(visible) => console.log('Permission modal:', visible)}
+ *       />
+ *       <UsersComponent
+ *         passwordRulesArr={['number', 'capital', 'small', 'special']}
+ *         requiredPasswordLength={6}
+ *         onVisiblePermissionChange={(visible) => console.log('Permission modal:', visible)}
+ *       />
  *     </div>
  *   );
  * }

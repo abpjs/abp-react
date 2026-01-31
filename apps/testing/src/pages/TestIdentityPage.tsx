@@ -1,6 +1,12 @@
 /**
  * Test page for @abpjs/identity package
  * Tests: RolesComponent, UsersComponent, useRoles, useUsers, useIdentity hooks
+ *
+ * v2.0.0 Updates:
+ * - IdentityStateService for stateful identity operations
+ * - onVisiblePermissionChange callback for components
+ * - Component interface types (Identity.RolesComponentInputs, etc.)
+ * - IDENTITY_ROUTES removed (use IDENTITY_ROUTE_PATHS instead)
  */
 import { useState, useEffect } from 'react'
 import { useAuth, type ABP } from '@abpjs/core'
@@ -10,20 +16,45 @@ import {
   useRoles,
   useUsers,
   useIdentity,
-  type Identity,
-  type PasswordRule,
-  IDENTITY_ROUTES,
   IDENTITY_ROUTE_PATHS,
   IDENTITY_POLICIES,
 } from '@abpjs/identity'
+import type { Identity, PasswordRule } from '@abpjs/identity'
 
 function TestRolesComponent() {
   const { isAuthenticated } = useAuth()
+  const [permissionModalVisible, setPermissionModalVisible] = useState(false)
+  const [permissionChangeLog, setPermissionChangeLog] = useState<string[]>([])
+
+  const handleVisiblePermissionChange = (visible: boolean) => {
+    setPermissionModalVisible(visible)
+    setPermissionChangeLog(prev => [...prev.slice(-4), `Permission modal ${visible ? 'opened' : 'closed'} at ${new Date().toLocaleTimeString()}`])
+    console.log('Permission modal visibility changed:', visible)
+  }
 
   return (
     <div className="test-section">
       <h2>RolesComponent</h2>
       <p>Full roles management component with create, edit, delete, and permissions.</p>
+
+      {/* v2.0.0 onVisiblePermissionChange demo */}
+      <div className="test-card">
+        <h3>onVisiblePermissionChange (v2.0.0)</h3>
+        <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
+          New in v2.0.0: Callback when permission modal visibility changes.
+        </p>
+        <p>Permission modal visible: <code>{permissionModalVisible ? 'true' : 'false'}</code></p>
+        {permissionChangeLog.length > 0 && (
+          <div style={{ marginTop: '0.5rem', fontSize: '12px' }}>
+            <strong>Recent changes:</strong>
+            <ul style={{ margin: '0.25rem 0', paddingLeft: '1.5rem' }}>
+              {permissionChangeLog.map((log, i) => (
+                <li key={i}>{log}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
 
       {!isAuthenticated ? (
         <div className="test-card">
@@ -37,6 +68,7 @@ function TestRolesComponent() {
             onRoleCreated={() => console.log('Role created!')}
             onRoleUpdated={() => console.log('Role updated!')}
             onRoleDeleted={() => console.log('Role deleted!')}
+            onVisiblePermissionChange={handleVisiblePermissionChange}
           />
         </div>
       )}
@@ -49,6 +81,8 @@ function TestUsersComponent() {
   const [showPasswordRules, setShowPasswordRules] = useState(true)
   const [passwordLength, setPasswordLength] = useState(6)
   const [selectedRules, setSelectedRules] = useState<PasswordRule[]>(['number', 'capital', 'small', 'special'])
+  const [permissionModalVisible, setPermissionModalVisible] = useState(false)
+  const [permissionChangeLog, setPermissionChangeLog] = useState<string[]>([])
 
   const handleRuleToggle = (rule: PasswordRule) => {
     setSelectedRules(prev =>
@@ -58,10 +92,35 @@ function TestUsersComponent() {
     )
   }
 
+  const handleVisiblePermissionChange = (visible: boolean) => {
+    setPermissionModalVisible(visible)
+    setPermissionChangeLog(prev => [...prev.slice(-4), `Permission modal ${visible ? 'opened' : 'closed'} at ${new Date().toLocaleTimeString()}`])
+    console.log('Permission modal visibility changed:', visible)
+  }
+
   return (
     <div className="test-section">
       <h2>UsersComponent</h2>
       <p>Full users management component with create, edit, delete, role assignment, and permissions.</p>
+
+      {/* v2.0.0 onVisiblePermissionChange demo */}
+      <div className="test-card">
+        <h3>onVisiblePermissionChange (v2.0.0)</h3>
+        <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
+          New in v2.0.0: Callback when permission modal visibility changes.
+        </p>
+        <p>Permission modal visible: <code>{permissionModalVisible ? 'true' : 'false'}</code></p>
+        {permissionChangeLog.length > 0 && (
+          <div style={{ marginTop: '0.5rem', fontSize: '12px' }}>
+            <strong>Recent changes:</strong>
+            <ul style={{ margin: '0.25rem 0', paddingLeft: '1.5rem' }}>
+              {permissionChangeLog.map((log, i) => (
+                <li key={i}>{log}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
 
       {/* v1.1.0 Password Rules Configuration */}
       <div className="test-card">
@@ -160,6 +219,7 @@ requiredPasswordLength={${passwordLength}}`}
             onUserDeleted={() => console.log('User deleted!')}
             passwordRulesArr={showPasswordRules ? selectedRules : undefined}
             requiredPasswordLength={showPasswordRules ? passwordLength : undefined}
+            onVisiblePermissionChange={handleVisiblePermissionChange}
           />
         </div>
       )}
@@ -889,11 +949,10 @@ function TestRouteConstants() {
       <h2>Route Constants</h2>
 
       <div className="test-card">
-        <h3>IDENTITY_ROUTES</h3>
-        <p>Route configuration for the identity module:</p>
-        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
-          {JSON.stringify(IDENTITY_ROUTES, null, 2)}
-        </pre>
+        <h3>IDENTITY_ROUTES (Removed in v2.0.0)</h3>
+        <p style={{ color: '#f88' }}>
+          <strong>Deprecated and removed in v2.0.0.</strong> Use <code>IDENTITY_ROUTE_PATHS</code> for programmatic navigation instead.
+        </p>
       </div>
 
       <div className="test-card">
@@ -1153,17 +1212,213 @@ function TestHookMethods() {
   )
 }
 
+function TestIdentityStateService() {
+  return (
+    <div className="test-section">
+      <h2>IdentityStateService (v2.0.0)</h2>
+      <p>New in v2.0.0: A stateful service facade for identity operations.</p>
+
+      <div className="test-card">
+        <h3>Overview</h3>
+        <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
+          IdentityStateService provides a stateful wrapper around IdentityService, maintaining
+          local state for roles and users. It's the React equivalent of Angular's IdentityStateService
+          which wraps NGXS store operations.
+        </p>
+        <p style={{ fontSize: '14px' }}>
+          For most React use cases, prefer using the hooks (<code>useRoles</code>, <code>useUsers</code>, <code>useIdentity</code>)
+          instead of this class. This class is provided for programmatic/non-hook scenarios.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import { IdentityStateService, IdentityService } from '@abpjs/identity';
+import { RestService } from '@abpjs/core';
+
+// Create service instances
+const rest = new RestService();
+const identityService = new IdentityService(rest);
+const stateService = new IdentityStateService(identityService);
+
+// Fetch and get roles
+await stateService.dispatchGetRoles();
+const roles = stateService.getRoles();
+const totalCount = stateService.getRolesTotalCount();
+
+// Fetch and get users
+await stateService.dispatchGetUsers({ skipCount: 0, maxResultCount: 10 });
+const users = stateService.getUsers();
+
+// Create a role
+const newRole = await stateService.dispatchCreateRole({
+  name: 'NewRole',
+  isDefault: false,
+  isPublic: true,
+});`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Available Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>getRoles()</code></td><td>Get current roles from state</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>getRolesTotalCount()</code></td><td>Get total count of roles</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>getUsers()</code></td><td>Get current users from state</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>getUsersTotalCount()</code></td><td>Get total count of users</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>dispatchGetRoles(params?)</code></td><td>Fetch roles and update state</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>dispatchGetRoleById(id)</code></td><td>Fetch a role by ID</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>dispatchCreateRole(body)</code></td><td>Create a role and refresh list</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>dispatchUpdateRole({'{id, body}'})</code></td><td>Update a role and refresh list</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>dispatchDeleteRole(id)</code></td><td>Delete a role and refresh list</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>dispatchGetUsers(params?)</code></td><td>Fetch users and update state</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>dispatchGetUserById(id)</code></td><td>Fetch a user by ID</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>dispatchCreateUser(body)</code></td><td>Create a user and refresh list</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>dispatchUpdateUser({'{id, body}'})</code></td><td>Update a user and refresh list</td></tr>
+            <tr style={{ borderBottom: '1px solid #222' }}><td style={{ padding: '8px' }}><code>dispatchDeleteUser(id)</code></td><td>Delete a user and refresh list</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>dispatchGetUserRoles(id)</code></td><td>Get roles assigned to a user</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function TestComponentInterfaces() {
+  // Type demonstration - these interfaces define component props
+  const rolesInputs: Identity.RolesComponentInputs = {
+    onRoleCreated: (role) => console.log('Created:', role.name),
+    onRoleUpdated: (role) => console.log('Updated:', role.name),
+    onRoleDeleted: (id) => console.log('Deleted:', id),
+  }
+
+  const rolesOutputs: Identity.RolesComponentOutputs = {
+    onVisiblePermissionChange: (visible) => console.log('Permission modal:', visible),
+  }
+
+  const usersInputs: Identity.UsersComponentInputs = {
+    onUserCreated: (user) => console.log('Created:', user.userName),
+    passwordRulesArr: ['number', 'capital'],
+    requiredPasswordLength: 8,
+  }
+
+  const usersOutputs: Identity.UsersComponentOutputs = {
+    onVisiblePermissionChange: (visible) => console.log('Permission modal:', visible),
+  }
+
+  return (
+    <div className="test-section">
+      <h2>Component Interface Types (v2.0.0)</h2>
+      <p>New in v2.0.0: TypeScript interfaces for component input and output props.</p>
+
+      <div className="test-card">
+        <h3>Identity.RolesComponentInputs</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`interface RolesComponentInputs {
+  readonly onRoleCreated?: (role: RoleItem) => void;
+  readonly onRoleUpdated?: (role: RoleItem) => void;
+  readonly onRoleDeleted?: (id: string) => void;
+}`}
+        </pre>
+        <h4 style={{ marginTop: '1rem' }}>Current Test Value:</h4>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+          {`{ onRoleCreated: ${rolesInputs.onRoleCreated ? 'fn' : 'undefined'}, onRoleUpdated: ${rolesInputs.onRoleUpdated ? 'fn' : 'undefined'}, onRoleDeleted: ${rolesInputs.onRoleDeleted ? 'fn' : 'undefined'} }`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Identity.RolesComponentOutputs</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`interface RolesComponentOutputs {
+  readonly onVisiblePermissionChange?: (visible: boolean) => void;
+}`}
+        </pre>
+        <h4 style={{ marginTop: '1rem' }}>Current Test Value:</h4>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+          {`{ onVisiblePermissionChange: ${rolesOutputs.onVisiblePermissionChange ? 'fn' : 'undefined'} }`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Identity.UsersComponentInputs</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`interface UsersComponentInputs {
+  readonly onUserCreated?: (user: UserItem) => void;
+  readonly onUserUpdated?: (user: UserItem) => void;
+  readonly onUserDeleted?: (id: string) => void;
+  readonly passwordRulesArr?: ('number' | 'small' | 'capital' | 'special')[];
+  readonly requiredPasswordLength?: number;
+}`}
+        </pre>
+        <h4 style={{ marginTop: '1rem' }}>Current Test Value:</h4>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+          {JSON.stringify({
+            onUserCreated: 'fn',
+            passwordRulesArr: usersInputs.passwordRulesArr,
+            requiredPasswordLength: usersInputs.requiredPasswordLength,
+          }, null, 2)}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Identity.UsersComponentOutputs</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`interface UsersComponentOutputs {
+  readonly onVisiblePermissionChange?: (visible: boolean) => void;
+}`}
+        </pre>
+        <h4 style={{ marginTop: '1rem' }}>Current Test Value:</h4>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+          {`{ onVisiblePermissionChange: ${usersOutputs.onVisiblePermissionChange ? 'fn' : 'undefined'} }`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import type { Identity } from '@abpjs/identity';
+
+// Type your component props with these interfaces
+type RolesComponentProps =
+  Identity.RolesComponentInputs &
+  Identity.RolesComponentOutputs;
+
+type UsersComponentProps =
+  Identity.UsersComponentInputs &
+  Identity.UsersComponentOutputs;
+
+function MyRolesWrapper(props: RolesComponentProps) {
+  const { onRoleCreated, onVisiblePermissionChange } = props;
+  // ... component implementation
+}`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 export function TestIdentityPage() {
   return (
     <div>
       <h1>@abpjs/identity Tests</h1>
       <p>Testing identity management components and hooks for role and user management.</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.0.0 - Includes IdentityStateService and component interface types</p>
 
       <TestRolesComponent />
       <TestUsersComponent />
       <TestRolesHook />
       <TestUsersHook />
       <TestIdentityHook />
+      <TestIdentityStateService />
+      <TestComponentInterfaces />
       <TestRouteConstants />
       <TestApiEndpoints />
       <TestHookMethods />

@@ -120,13 +120,22 @@ vi.mock('@abpjs/theme-shared', () => ({
 }));
 
 // Mock @abpjs/permission-management
+const mockOnVisibleChange = vi.fn();
 vi.mock('@abpjs/permission-management', () => ({
-  PermissionManagementModal: ({ visible, providerName, providerKey }: any) =>
-    visible ? (
+  PermissionManagementModal: ({ visible, providerName, providerKey, onVisibleChange }: any) => {
+    // Store the callback for testing
+    if (onVisibleChange) {
+      mockOnVisibleChange.mockImplementation(onVisibleChange);
+    }
+    return visible ? (
       <div data-testid="permission-modal" data-provider-name={providerName} data-provider-key={providerKey}>
+        <button data-testid="close-permission-modal" onClick={() => onVisibleChange?.(false)}>
+          Close
+        </button>
         Permission Modal
       </div>
-    ) : null,
+    ) : null;
+  },
 }));
 
 // Mock @chakra-ui/react
@@ -471,6 +480,78 @@ describe('RolesComponent', () => {
       await waitFor(() => {
         const modal = screen.getByTestId('permission-modal');
         expect(modal).toHaveAttribute('data-provider-name', 'R');
+      });
+    });
+  });
+
+  describe('onVisiblePermissionChange (v2.0.0)', () => {
+    it('should call onVisiblePermissionChange when permission modal opens', async () => {
+      const onVisiblePermissionChange = vi.fn();
+      render(<RolesComponent onVisiblePermissionChange={onVisiblePermissionChange} />);
+
+      const permButtons = screen.getAllByTestId('menu-item-permissions');
+      await user.click(permButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('permission-modal')).toBeInTheDocument();
+      });
+
+      // The callback should have been set up when modal opened
+      expect(onVisiblePermissionChange).not.toHaveBeenCalledWith(false);
+    });
+
+    it('should call onVisiblePermissionChange with false when permission modal closes', async () => {
+      const onVisiblePermissionChange = vi.fn();
+      render(<RolesComponent onVisiblePermissionChange={onVisiblePermissionChange} />);
+
+      // Open the permission modal
+      const permButtons = screen.getAllByTestId('menu-item-permissions');
+      await user.click(permButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('permission-modal')).toBeInTheDocument();
+      });
+
+      // Close the permission modal
+      const closeButton = screen.getByTestId('close-permission-modal');
+      await user.click(closeButton);
+
+      await waitFor(() => {
+        expect(onVisiblePermissionChange).toHaveBeenCalledWith(false);
+      });
+    });
+
+    it('should not throw when onVisiblePermissionChange is not provided', async () => {
+      // This should not throw any errors
+      render(<RolesComponent />);
+
+      const permButtons = screen.getAllByTestId('menu-item-permissions');
+      await user.click(permButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('permission-modal')).toBeInTheDocument();
+      });
+
+      // Close the modal
+      const closeButton = screen.getByTestId('close-permission-modal');
+      await user.click(closeButton);
+
+      // Should not throw - modal should close
+      await waitFor(() => {
+        expect(screen.queryByTestId('permission-modal')).not.toBeInTheDocument();
+      });
+    });
+
+    it('should pass role name as providerKey to permission modal', async () => {
+      render(<RolesComponent />);
+
+      // Click permissions on the first role (admin)
+      const permButtons = screen.getAllByTestId('menu-item-permissions');
+      await user.click(permButtons[0]);
+
+      await waitFor(() => {
+        const modal = screen.getByTestId('permission-modal');
+        expect(modal).toHaveAttribute('data-provider-key', 'admin');
       });
     });
   });
