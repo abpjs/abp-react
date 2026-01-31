@@ -2,12 +2,12 @@
  * @abpjs/theme-basic
  *
  * ABP Framework Theme Basic components for React.
- * Translated from @abp/ng.theme.basic v0.9.0
+ * Translated from @abp/ng.theme.basic v2.0.0
  *
  * This package provides the basic theme layout components for ABP React applications.
  *
- * Note: In v0.9.0, ChangePassword and Profile components moved to @abpjs/theme-shared.
- * They are re-exported from this package for backward compatibility but are deprecated.
+ * @version 2.0.0
+ * @since 2.0.0 - Removed legacy .abp-confirm styles (no impact on React - we use Chakra UI)
  */
 
 // Models

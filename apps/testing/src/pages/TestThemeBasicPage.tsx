@@ -266,12 +266,48 @@ function TestApplicationInfo() {
   )
 }
 
+function TestVersionInfo() {
+  return (
+    <div className="test-section">
+      <h2>v2.0.0: Version Info</h2>
+
+      <div className="test-card">
+        <h3>What's New in v2.0.0</h3>
+        <p>Version 2.0.0 is a minor update with no functional changes for React users.</p>
+        <ul>
+          <li><strong>Removed:</strong> Legacy <code>.abp-confirm</code> CSS styles (Angular Bootstrap-specific)</li>
+          <li><strong>Updated:</strong> Dependency on <code>@abpjs/theme-shared</code> to v2.0.0</li>
+        </ul>
+        <p style={{ color: '#888', fontSize: '14px', marginTop: '8px' }}>
+          Note: The removed styles were for Angular's PrimeNG-based confirmation dialogs.
+          React uses Chakra UI, so this change has no impact.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>LAYOUTS Constant</h3>
+        <p>The package exports a <code>LAYOUTS</code> constant for ABP's dynamic layout system:</p>
+        <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+{`import { LAYOUTS } from '@abpjs/theme-basic';
+
+// LAYOUTS = [LayoutApplication, LayoutAccount, LayoutEmpty]
+// Each has a static 'type' property:
+// - LayoutApplication.type = 'application'
+// - LayoutAccount.type = 'account'
+// - LayoutEmpty.type = 'empty'`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 export function TestThemeBasicPage() {
   return (
     <div>
       <h1>@abpjs/theme-basic Tests</h1>
       <p>Testing layouts, navigation, and layout service.</p>
 
+      <TestVersionInfo />
       <TestLayoutService />
       <TestApplicationInfo />
       <TestLayouts />
