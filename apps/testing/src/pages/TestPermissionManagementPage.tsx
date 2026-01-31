@@ -14,6 +14,7 @@ function TestPermissionModal() {
   const [userModalVisible, setUserModalVisible] = useState(false)
   const [testRoleId, setTestRoleId] = useState('')
   const [testUserId, setTestUserId] = useState('')
+  const [hideBadges, setHideBadges] = useState(false)
   const { isAuthenticated } = useAuth()
   const config = useConfig()
 
@@ -89,6 +90,19 @@ function TestPermissionModal() {
       </div>
 
       <div className="test-card">
+        <h3>Modal Options (v1.1.0)</h3>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <input
+            type="checkbox"
+            checked={hideBadges}
+            onChange={(e) => setHideBadges(e.target.checked)}
+          />
+          <span>hideBadges</span>
+          <span style={{ fontSize: '12px', color: '#888' }}>- Hide provider badges (e.g., "R", "U") on permissions</span>
+        </label>
+      </div>
+
+      <div className="test-card">
         <h3>Component Props</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -104,6 +118,7 @@ function TestPermissionModal() {
             <tr><td style={{ padding: '8px' }}>visible</td><td>boolean</td><td>Yes</td></tr>
             <tr><td style={{ padding: '8px' }}>onVisibleChange</td><td>(visible: boolean) =&gt; void</td><td>No</td></tr>
             <tr><td style={{ padding: '8px' }}>onSave</td><td>() =&gt; void</td><td>No</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.1)' }}><td style={{ padding: '8px' }}>hideBadges</td><td>boolean</td><td>No (v1.1.0)</td></tr>
           </tbody>
         </table>
       </div>
@@ -114,6 +129,7 @@ function TestPermissionModal() {
         providerKey={testRoleId}
         visible={roleModalVisible}
         onVisibleChange={setRoleModalVisible}
+        hideBadges={hideBadges}
         onSave={() => {
           console.log('Role permissions saved!')
         }}
@@ -125,6 +141,7 @@ function TestPermissionModal() {
         providerKey={testUserId}
         visible={userModalVisible}
         onVisibleChange={setUserModalVisible}
+        hideBadges={hideBadges}
         onSave={() => {
           console.log('User permissions saved!')
         }}
@@ -154,6 +171,7 @@ function TestPermissionHook() {
     getSelectedGroupPermissions,
     isGranted,
     isGrantedByRole,
+    isGrantedByOtherProviderName,
     reset,
   } = usePermissionManagement()
 
@@ -265,6 +283,11 @@ function TestPermissionHook() {
                           from role
                         </span>
                       )}
+                      {isGrantedByOtherProviderName(permission.grantedProviders, testProviderName) && (
+                        <span style={{ fontSize: '12px', color: '#6cf', background: '#333', padding: '1px 4px', borderRadius: '3px', marginLeft: '4px' }}>
+                          granted by other provider
+                        </span>
+                      )}
                     </label>
                   </li>
                 ))}
@@ -292,7 +315,8 @@ function TestPermissionHook() {
             <tr><td style={{ padding: '8px' }}>toggleSelectAll</td><td>Toggle all permissions</td></tr>
             <tr><td style={{ padding: '8px' }}>getSelectedGroupPermissions</td><td>Get permissions for selected group with margin</td></tr>
             <tr><td style={{ padding: '8px' }}>isGranted</td><td>Check if permission is granted</td></tr>
-            <tr><td style={{ padding: '8px' }}>isGrantedByRole</td><td>Check if permission is granted by a role</td></tr>
+            <tr><td style={{ padding: '8px' }}>isGrantedByRole</td><td>Check if permission is granted by a role (deprecated in v1.1.0)</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.1)' }}><td style={{ padding: '8px' }}>isGrantedByOtherProviderName</td><td>Check if permission is granted by another provider (v1.1.0)</td></tr>
             <tr><td style={{ padding: '8px' }}>reset</td><td>Reset all state</td></tr>
           </tbody>
         </table>

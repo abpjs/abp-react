@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import { useLocalization } from '@abpjs/core';
 import { Modal, Alert, Button, Checkbox } from '@abpjs/theme-shared';
 import {
+  Badge,
   Box,
   Flex,
   Heading,
@@ -39,6 +40,13 @@ export interface PermissionManagementModalProps {
    * Callback fired when permissions are saved successfully
    */
   onSave?: () => void;
+
+  /**
+   * Hide the provider badges on permissions
+   * When true, badges showing which provider granted a permission are hidden.
+   * @since 1.1.0
+   */
+  hideBadges?: boolean;
 }
 
 /**
@@ -73,6 +81,7 @@ export function PermissionManagementModal({
   visible,
   onVisibleChange,
   onSave,
+  hideBadges = false,
 }: PermissionManagementModalProps): React.ReactElement {
   const { t } = useLocalization();
 
@@ -92,6 +101,7 @@ export function PermissionManagementModal({
     toggleSelectAll,
     getSelectedGroupPermissions,
     isGranted,
+    isGrantedByOtherProviderName,
     reset,
   } = usePermissionManagement();
 
@@ -298,13 +308,26 @@ export function PermissionManagementModal({
                       <VStack align="stretch" gap={2}>
                         {selectedGroupPermissions.map((permission) => (
                           <Box key={permission.name} ml={`${permission.margin}px`}>
-                            <Checkbox
-                              id={permission.name}
-                              checked={isGranted(permission.name)}
-                              onChange={() => handlePermissionClick(permission)}
-                            >
-                              {permission.displayName}
-                            </Checkbox>
+                            <Flex align="center" gap={2}>
+                              <Checkbox
+                                id={permission.name}
+                                checked={isGranted(permission.name)}
+                                onChange={() => handlePermissionClick(permission)}
+                              >
+                                {permission.displayName}
+                              </Checkbox>
+                              {/* Show provider badges when hideBadges is false (v1.1.0) */}
+                              {!hideBadges &&
+                                permission.grantedProviders &&
+                                isGrantedByOtherProviderName(permission.grantedProviders, providerName) && (
+                                  <Badge colorPalette="blue" size="sm">
+                                    {permission.grantedProviders
+                                      .filter((p) => p.providerName !== providerName)
+                                      .map((p) => p.providerName)
+                                      .join(', ')}
+                                  </Badge>
+                                )}
+                            </Flex>
                           </Box>
                         ))}
                       </VStack>
