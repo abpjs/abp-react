@@ -18,10 +18,13 @@ import {
   useAccountOptions,
   usePasswordFlow,
   useAccountService,
-  ACCOUNT_ROUTES,
+  // ACCOUNT_ROUTES removed in v2.0.0 - use AccountProvider instead
   ACCOUNT_PATHS,
   DEFAULT_REDIRECT_URL,
+  // v2.0.0 additions
+  useSelfRegistrationEnabled,
 } from '@abpjs/account'
+import type { Account } from '@abpjs/account'
 import { useAuth, useConfig } from '@abpjs/core'
 import { useToaster } from '@abpjs/theme-shared'
 
@@ -339,10 +342,11 @@ function TestAccountPages() {
 
 function TestAuthWrapper() {
   const [showWrapper, setShowWrapper] = useState(false)
+  const [enableLocalLogin, setEnableLocalLogin] = useState(true)
 
   return (
     <div className="test-section">
-      <h2>AuthWrapper Component (v1.1.0)</h2>
+      <h2>AuthWrapper Component (v1.1.0, updated v2.0.0)</h2>
 
       <div className="test-card">
         <h3>Authentication Layout Wrapper</h3>
@@ -354,6 +358,7 @@ function TestAuthWrapper() {
         {showWrapper && (
           <div style={{ marginTop: '1rem', border: '1px solid #333', borderRadius: '8px', overflow: 'hidden' }}>
             <AuthWrapper
+              enableLocalLogin={enableLocalLogin}
               mainContent={
                 <div style={{ textAlign: 'center' }}>
                   <h3>Main Content Area</h3>
@@ -366,6 +371,23 @@ function TestAuthWrapper() {
             />
           </div>
         )}
+      </div>
+
+      <div className="test-card">
+        <h3>enableLocalLogin Demo (v2.0.0)</h3>
+        <p>Toggle to see how AuthWrapper handles disabled local login:</p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <input
+            type="checkbox"
+            checked={enableLocalLogin}
+            onChange={(e) => setEnableLocalLogin(e.target.checked)}
+          />
+          Enable Local Login
+        </label>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+          When disabled, AuthWrapper shows a message instead of the login form.
+          This is controlled by the ABP setting <code>Abp.Account.EnableLocalLogin</code>.
+        </p>
       </div>
 
       <div className="test-card">
@@ -382,6 +404,7 @@ function TestAuthWrapper() {
             <tr><td style={{ padding: '8px' }}>children</td><td>ReactNode</td><td>Main content (alternative to mainContent)</td></tr>
             <tr><td style={{ padding: '8px' }}>mainContent</td><td>ReactNode</td><td>Main content template</td></tr>
             <tr><td style={{ padding: '8px' }}>cancelContent</td><td>ReactNode</td><td>Footer/cancel content</td></tr>
+            <tr style={{ backgroundColor: '#1a1a2e' }}><td style={{ padding: '8px' }}>enableLocalLogin</td><td>boolean</td><td><strong>(v2.0.0)</strong> Override local login enabled state</td></tr>
           </tbody>
         </table>
       </div>
@@ -609,11 +632,11 @@ function TestAccountRoutes() {
       <h2>Account Routes & Paths</h2>
 
       <div className="test-card">
-        <h3>ACCOUNT_ROUTES</h3>
-        <p>Pre-defined routes from @abpjs/account:</p>
-        <pre style={{ maxHeight: '200px', overflow: 'auto' }}>
-          {JSON.stringify(ACCOUNT_ROUTES, null, 2)}
-        </pre>
+        <h3>ACCOUNT_ROUTES (Removed in v2.0.0)</h3>
+        <p style={{ color: '#f39c12' }}>
+          ⚠️ <code>ACCOUNT_ROUTES</code> was deprecated in v0.9 and removed in v2.0.0.
+          Routes are now configured via <code>AccountProvider</code>.
+        </p>
       </div>
 
       <div className="test-card">
@@ -630,6 +653,93 @@ function TestAccountRoutes() {
           <li><Link to="/account/login" style={{ color: '#646cff' }}>Login Page &rarr;</Link></li>
           <li><Link to="/account/register" style={{ color: '#646cff' }}>Register Page &rarr;</Link></li>
         </ul>
+      </div>
+    </div>
+  )
+}
+
+function TestSelfRegistration() {
+  const isSelfRegistrationEnabled = useSelfRegistrationEnabled()
+
+  return (
+    <div className="test-section">
+      <h2>useSelfRegistrationEnabled Hook (v2.0.0)</h2>
+
+      <div className="test-card">
+        <h3>Self Registration Status</h3>
+        <p>
+          Self Registration Enabled:{' '}
+          <strong style={{ color: isSelfRegistrationEnabled ? '#2ecc71' : '#e74c3c' }}>
+            {isSelfRegistrationEnabled ? 'Yes' : 'No'}
+          </strong>
+        </p>
+        <p style={{ fontSize: '0.9rem', color: '#888' }}>
+          This reads from the ABP setting <code>Abp.Account.IsSelfRegistrationEnabled</code>.
+          When disabled, the register link is hidden from the login form and access to
+          the register page is restricted.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Hook Usage</h3>
+        <pre style={{ fontSize: '12px' }}>{`import { useSelfRegistrationEnabled } from '@abpjs/account'
+
+function MyComponent() {
+  const isSelfRegistrationEnabled = useSelfRegistrationEnabled()
+
+  if (!isSelfRegistrationEnabled) {
+    return <p>Registration is disabled</p>
+  }
+
+  return <Link to="/register">Register</Link>
+}`}</pre>
+      </div>
+    </div>
+  )
+}
+
+function TestAccountNamespace() {
+  // Type-only demonstration - Account namespace provides interfaces
+  const authWrapperInputs: Account.AuthWrapperComponentInputs = {
+    mainContentRef: undefined,
+    cancelContentRef: undefined,
+  }
+
+  return (
+    <div className="test-section">
+      <h2>Account Namespace (v2.0.0)</h2>
+
+      <div className="test-card">
+        <h3>Component Interface Types</h3>
+        <p>The Account namespace provides TypeScript interfaces for component props:</p>
+        <ul>
+          <li><code>Account.AuthWrapperComponentInputs</code></li>
+          <li><code>Account.AuthWrapperComponentOutputs</code></li>
+          <li><code>Account.TenantBoxComponentInputs</code></li>
+          <li><code>Account.TenantBoxComponentOutputs</code></li>
+          <li><code>Account.PersonalSettingsComponentInputs</code></li>
+          <li><code>Account.PersonalSettingsComponentOutputs</code></li>
+          <li><code>Account.ChangePasswordComponentInputs</code></li>
+          <li><code>Account.ChangePasswordComponentOutputs</code></li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ fontSize: '12px' }}>{`import { Account } from '@abpjs/account'
+
+// Type your custom components with these interfaces
+const inputs: Account.AuthWrapperComponentInputs = {
+  mainContentRef: <LoginForm />,
+  cancelContentRef: <Link to="/">Cancel</Link>,
+}`}</pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Current Test Value</h3>
+        <pre style={{ fontSize: '12px' }}>
+          {JSON.stringify(authWrapperInputs, null, 2)}
+        </pre>
       </div>
     </div>
   )
@@ -682,7 +792,7 @@ export function TestAccountPage() {
     <div>
       <h1>@abpjs/account Tests</h1>
       <p>Testing login, register, tenant switching, and account-related features.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 1.1.0 - Includes profile management components</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.0.0 - Includes self-registration control and local login settings</p>
 
       <TestAuthState />
       <TestPasswordFlow />
@@ -694,12 +804,19 @@ export function TestAccountPage() {
 
       {/* v1.1.0 Components */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #333', paddingTop: '1rem' }}>
-        v1.1.0 New Components
+        v1.1.0 Components
       </h2>
       <TestAuthWrapper />
       <TestChangePasswordForm />
       <TestPersonalSettingsForm />
       <TestManageProfile />
+
+      {/* v2.0.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #646cff', paddingTop: '1rem' }}>
+        v2.0.0 New Features
+      </h2>
+      <TestSelfRegistration />
+      <TestAccountNamespace />
 
       <TestAccountProvider />
       <TestAccountOptions />

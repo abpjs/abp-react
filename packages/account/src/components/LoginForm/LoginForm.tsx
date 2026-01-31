@@ -6,7 +6,7 @@ import { useLocalization } from '@abpjs/core';
 import { Alert, Button, Checkbox } from '@abpjs/theme-shared';
 import { Box, Heading, Input, Link, HStack, Show } from '@chakra-ui/react';
 import { TenantBox } from '../TenantBox';
-import { usePasswordFlow } from '../../hooks';
+import { usePasswordFlow, useSelfRegistrationEnabled } from '../../hooks';
 import type { LoginFormData } from '../../models';
 import {
   Card,
@@ -73,6 +73,8 @@ export interface LoginFormProps {
  * This is the React equivalent of Angular's LoginComponent.
  * It handles user authentication using OAuth password flow.
  *
+ * @since 2.0.0 - Added isSelfRegistrationEnabled check from ABP settings
+ *
  * @example
  * ```tsx
  * function LoginPage() {
@@ -94,6 +96,9 @@ export function LoginForm({
 }: LoginFormProps) {
   const { t } = useLocalization();
   const { login, isLoading, error, clearError } = usePasswordFlow();
+
+  // v2.0.0: Check if self-registration is enabled from ABP settings
+  const isSelfRegistrationEnabled = useSelfRegistrationEnabled();
 
   const {
     register,
@@ -205,8 +210,8 @@ export function LoginForm({
                   <Link variant="plain">{t('AbpAccount::ForgotPassword')}</Link>
                 </Stack>
 
-                {/* Register Link */}
-                <Show when={showRegisterLink}>
+                {/* Register Link - only shown if self-registration is enabled (v2.0.0) */}
+                <Show when={showRegisterLink && isSelfRegistrationEnabled}>
                   <Card.Root size="sm" mt="10">
                     <Card.Body>
                       <HStack textStyle="sm">

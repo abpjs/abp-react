@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -7,7 +7,7 @@ import { useLocalization, useUserManager, useAbp, configActions } from '@abpjs/c
 import { Button, useToaster } from '@abpjs/theme-shared';
 import { Box, Heading, Input, Link, HStack, Show } from '@chakra-ui/react';
 import { TenantBox } from '../TenantBox';
-import { useAccountService } from '../../hooks/useAccountService';
+import { useAccountService, useSelfRegistrationEnabled } from '../../hooks';
 import type { RegisterFormData, RegisterRequest } from '../../models';
 import {
   Card,
@@ -108,6 +108,7 @@ export interface RegisterFormProps {
  * AccountService and automatically logs in the user after successful registration.
  *
  * @since 0.9.0 - Now uses AccountService for registration
+ * @since 2.0.0 - Added isSelfRegistrationEnabled check from ABP settings
  *
  * @example
  * ```tsx
@@ -136,6 +137,16 @@ export function RegisterForm({
   const { store, applicationConfigurationService } = useAbp();
 
   const [inProgress, setInProgress] = useState(false);
+
+  // v2.0.0: Check if self-registration is enabled from ABP settings
+  const isSelfRegistrationEnabled = useSelfRegistrationEnabled();
+
+  // Redirect to login if self-registration is disabled
+  useEffect(() => {
+    if (!isSelfRegistrationEnabled) {
+      navigate(loginUrl, { replace: true });
+    }
+  }, [isSelfRegistrationEnabled, navigate, loginUrl]);
 
   const {
     register,

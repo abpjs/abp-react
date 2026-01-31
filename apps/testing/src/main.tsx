@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { AbpProvider, type ABP, type Config, eLayoutType } from '@abpjs/core'
 import { ThemeBasicProvider, LAYOUTS } from '@abpjs/theme-basic'
-import { AccountProvider, ACCOUNT_ROUTES } from '@abpjs/account'
+import { AccountProvider } from '@abpjs/account'
 import { SETTING_MANAGEMENT_ROUTES } from '@abpjs/setting-management'
 import {
   TbHome,
@@ -79,12 +79,13 @@ const appRoutes: ABP.FullRoute[] = [
 
 // Combine app routes with package routes
 // Note: In v0.9.0, route exports are objects with a `routes` property
+// Note: ACCOUNT_ROUTES was removed in v2.0.0 - routes are now configured via AccountProvider
 // Add icons to setting-management routes for sidebar display
 const settingRoutes = SETTING_MANAGEMENT_ROUTES.routes.map(route => ({
   ...route,
   icon: <TbSettings />,
 }))
-const routes: ABP.FullRoute[] = [...appRoutes, ...ACCOUNT_ROUTES.routes, ...settingRoutes]
+const routes: ABP.FullRoute[] = [...appRoutes, ...settingRoutes]
 
 // Define requirements with layout components from theme.basic
 const requirements: Config.Requirements = {

@@ -1,41 +1,8 @@
-import { eLayoutType, type ABP } from '@abpjs/core';
-
 /**
- * Account module routes configuration
+ * Account module routes constants
  *
- * This is the React equivalent of Angular's ACCOUNT_ROUTES constant.
- * These routes are registered with the ABP routing system.
- *
- * Route structure:
- * - /account (invisible, uses account layout)
- *   - /account/login
- *   - /account/register
- *
- * @since 0.9.0 - Changed from array to object with `routes` property
- * @deprecated since version 0.9 - Routes are now configured via AccountProvider
+ * @since 2.0.0 - Removed deprecated ACCOUNT_ROUTES (use AccountProvider instead)
  */
-export const ACCOUNT_ROUTES: { routes: ABP.FullRoute[] } = {
-  routes: [
-    {
-      name: 'Account',
-      path: 'account',
-      invisible: true,
-      layout: eLayoutType.application,
-      children: [
-        {
-          path: 'login',
-          name: 'Login',
-          order: 1,
-        },
-        {
-          path: 'register',
-          name: 'Register',
-          order: 2,
-        },
-      ],
-    },
-  ],
-};
 
 /**
  * Default redirect path after login

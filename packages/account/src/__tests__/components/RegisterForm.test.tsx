@@ -129,9 +129,10 @@ vi.mock('../../components/TenantBox', () => ({
   TenantBox: () => <div data-testid="tenant-box">TenantBox</div>,
 }));
 
-// Mock useAccountService
-vi.mock('../../hooks/useAccountService', () => ({
+// Mock hooks
+vi.mock('../../hooks', () => ({
   useAccountService: () => mockAccountService,
+  useSelfRegistrationEnabled: () => true,
 }));
 
 // Mock react-icons
