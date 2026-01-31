@@ -2,10 +2,16 @@
  * @abpjs/theme-shared
  *
  * ABP Framework Theme Shared components for React.
- * Translated from @abp/ng.theme.shared v0.9.0
+ * Translated from @abp/ng.theme.shared v1.1.0
  *
  * This package provides shared UI components, services, and utilities
  * for theme/modal management in ABP Framework React applications.
+ *
+ * New in v1.1.0:
+ * - ToasterService now accepts Config.LocalizationParam for message and title
+ * - Confirmation.Options: Added cancelText/yesText (deprecated cancelCopy/yesCopy)
+ * - New HttpErrorConfig types for custom error screen configuration
+ * - LoaderBar: Added intervalPeriod and stopDelay props
  *
  * New in v0.9.0:
  * - ChangePassword component (moved from theme-basic)

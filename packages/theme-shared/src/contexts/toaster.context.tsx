@@ -7,6 +7,7 @@ import React, {
   useMemo,
   type ReactNode,
 } from 'react';
+import type { Config } from '@abpjs/core';
 import { Toaster } from '../models';
 
 /**
@@ -18,16 +19,17 @@ interface InternalToast extends Toaster.Message {
 
 /**
  * ToasterService interface - matches the Angular service API.
+ * Updated in v1.1.0 to accept Config.LocalizationParam for message and title.
  */
 export interface ToasterService {
   /** Show an info toast */
-  info(message: string, title?: string, options?: Toaster.Options): Promise<Toaster.Status>;
+  info(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options): Promise<Toaster.Status>;
   /** Show a success toast */
-  success(message: string, title?: string, options?: Toaster.Options): Promise<Toaster.Status>;
+  success(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options): Promise<Toaster.Status>;
   /** Show a warning toast */
-  warn(message: string, title?: string, options?: Toaster.Options): Promise<Toaster.Status>;
+  warn(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options): Promise<Toaster.Status>;
   /** Show an error toast */
-  error(message: string, title?: string, options?: Toaster.Options): Promise<Toaster.Status>;
+  error(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options): Promise<Toaster.Status>;
   /** Add multiple messages at once */
   addAll(messages: Toaster.Message[]): void;
   /** Clear all toasts or a specific one by status */
@@ -64,6 +66,17 @@ function generateId(): string {
  */
 const DEFAULT_LIFE = 5000;
 
+/**
+ * Helper to resolve LocalizationParam to string.
+ * In a real implementation, this would use the localization service.
+ */
+function resolveLocalizationParam(param: Config.LocalizationParam | undefined): string | undefined {
+  if (param === undefined) return undefined;
+  if (typeof param === 'string') return param;
+  // LocalizationWithDefault - return the key or defaultValue
+  return param.defaultValue || param.key;
+}
+
 export interface ToasterProviderProps {
   children: ReactNode;
 }
@@ -98,18 +111,22 @@ export function ToasterProvider({ children }: ToasterProviderProps): React.React
 
   const show = useCallback(
     (
-      message: string,
-      title: string | undefined,
+      message: Config.LocalizationParam,
+      title: Config.LocalizationParam | undefined,
       severity: Toaster.Severity,
       options?: Toaster.Options
     ): Promise<Toaster.Status> => {
       const id = options?.id?.toString() || generateId();
       const life = options?.sticky ? undefined : options?.life ?? DEFAULT_LIFE;
 
+      // Resolve localization params to strings
+      const resolvedMessage = resolveLocalizationParam(message) || '';
+      const resolvedTitle = resolveLocalizationParam(title);
+
       const toast: InternalToast = {
         id,
-        message,
-        title,
+        message: resolvedMessage,
+        title: resolvedTitle,
         severity,
         ...options,
       };
@@ -132,22 +149,22 @@ export function ToasterProvider({ children }: ToasterProviderProps): React.React
   );
 
   const info = useCallback(
-    (message: string, title?: string, options?: Toaster.Options) => show(message, title, 'info', options),
+    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options) => show(message, title, 'info', options),
     [show]
   );
 
   const success = useCallback(
-    (message: string, title?: string, options?: Toaster.Options) => show(message, title, 'success', options),
+    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options) => show(message, title, 'success', options),
     [show]
   );
 
   const warn = useCallback(
-    (message: string, title?: string, options?: Toaster.Options) => show(message, title, 'warn', options),
+    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options) => show(message, title, 'warn', options),
     [show]
   );
 
   const error = useCallback(
-    (message: string, title?: string, options?: Toaster.Options) => show(message, title, 'error', options),
+    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options) => show(message, title, 'error', options),
     [show]
   );
 

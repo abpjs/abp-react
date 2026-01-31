@@ -270,4 +270,95 @@ describe('ConfirmationDialog', () => {
     );
     // Should render without errors
   });
+
+  // v1.1.0 - New cancelText/yesText properties
+  describe('v1.1.0 - cancelText/yesText properties', () => {
+    it('should use yesText for yes button', async () => {
+      renderWithProvider('warn', 'Delete item?', 'Confirm', {
+        yesText: 'Confirm Delete',
+      });
+
+      await user.click(screen.getByTestId('trigger'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Confirm Delete' })).toBeInTheDocument();
+      });
+    });
+
+    it('should use cancelText for cancel button', async () => {
+      renderWithProvider('warn', 'Delete item?', 'Confirm', {
+        cancelText: 'Go Back',
+      });
+
+      await user.click(screen.getByTestId('trigger'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Go Back' })).toBeInTheDocument();
+      });
+    });
+
+    it('should use both yesText and cancelText', async () => {
+      renderWithProvider('warn', 'Save changes?', 'Confirm', {
+        yesText: 'Save',
+        cancelText: 'Discard',
+      });
+
+      await user.click(screen.getByTestId('trigger'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: 'Discard' })).toBeInTheDocument();
+      });
+    });
+
+    it('should prefer yesText over deprecated yesCopy', async () => {
+      renderWithProvider('warn', 'Test?', 'Confirm', {
+        yesText: 'New Yes',
+        yesCopy: 'Old Yes',
+      });
+
+      await user.click(screen.getByTestId('trigger'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'New Yes' })).toBeInTheDocument();
+      });
+    });
+
+    it('should prefer cancelText over deprecated cancelCopy', async () => {
+      renderWithProvider('warn', 'Test?', 'Confirm', {
+        cancelText: 'New Cancel',
+        cancelCopy: 'Old Cancel',
+      });
+
+      await user.click(screen.getByTestId('trigger'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'New Cancel' })).toBeInTheDocument();
+      });
+    });
+
+    it('should fallback to yesCopy when yesText is not provided', async () => {
+      renderWithProvider('warn', 'Test?', 'Confirm', {
+        yesCopy: 'Legacy Yes',
+      });
+
+      await user.click(screen.getByTestId('trigger'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Legacy Yes' })).toBeInTheDocument();
+      });
+    });
+
+    it('should fallback to cancelCopy when cancelText is not provided', async () => {
+      renderWithProvider('warn', 'Test?', 'Confirm', {
+        cancelCopy: 'Legacy Cancel',
+      });
+
+      await user.click(screen.getByTestId('trigger'));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Legacy Cancel' })).toBeInTheDocument();
+      });
+    });
+  });
 });

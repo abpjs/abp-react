@@ -6,7 +6,7 @@ import {
   Flex,
   Text,
 } from '@chakra-ui/react';
-import { useLocalization } from '@abpjs/core';
+import { useLocalization, type Config } from '@abpjs/core';
 import { useConfirmationState } from '../../contexts/confirmation.context';
 import { Toaster } from '../../models';
 import {
@@ -15,6 +15,16 @@ import {
   AlertTriangle,
   XCircle,
 } from 'lucide-react';
+
+/**
+ * Helper to extract key from LocalizationParam for the t() function.
+ * Handles both string and LocalizationWithDefault types.
+ */
+function getLocalizationKey(param: Config.LocalizationParam | undefined): string | undefined {
+  if (param === undefined) return undefined;
+  if (typeof param === 'string') return param;
+  return param.key;
+}
 
 /**
  * Get the icon component for a severity level.
@@ -95,13 +105,11 @@ export function ConfirmationDialog({ className }: ConfirmationDialogProps): Reac
     ? t(title, ...(options.titleLocalizationParams || []))
     : undefined;
 
-  // Localize button text
-  const yesCopy = options.yesCopy
-    ? t(options.yesCopy)
-    : t('AbpUi::Yes');
-  const cancelCopy = options.cancelCopy
-    ? t(options.cancelCopy)
-    : t('AbpUi::Cancel');
+  // Localize button text - use yesText/cancelText with fallback to deprecated yesCopy/cancelCopy
+  const yesKey = getLocalizationKey(options.yesText) || getLocalizationKey(options.yesCopy);
+  const cancelKey = getLocalizationKey(options.cancelText) || getLocalizationKey(options.cancelCopy);
+  const yesCopy = yesKey ? t(yesKey) : t('AbpUi::Yes');
+  const cancelCopy = cancelKey ? t(cancelKey) : t('AbpUi::Cancel');
 
   const handleConfirm = () => {
     respond(Toaster.Status.confirm);

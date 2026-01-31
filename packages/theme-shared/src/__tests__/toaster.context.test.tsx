@@ -280,6 +280,141 @@ describe('ToasterContext', () => {
       expect(result.current.toasts[0].messageLocalizationParams).toEqual(['param1', 'param2']);
       expect(result.current.toasts[0].titleLocalizationParams).toEqual(['titleParam']);
     });
+
+    // v1.1.0 - LocalizationParam support
+    describe('LocalizationParam support (v1.1.0)', () => {
+      it('should accept LocalizationWithDefault for message', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.info(
+            { key: 'Test::Message', defaultValue: 'Default message' },
+            'Test title',
+            { sticky: true }
+          );
+        });
+
+        expect(result.current.toasts).toHaveLength(1);
+        // Should resolve to defaultValue since localization service is not available
+        expect(result.current.toasts[0].message).toBe('Default message');
+      });
+
+      it('should accept LocalizationWithDefault for title', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.success(
+            'Message text',
+            { key: 'Test::Title', defaultValue: 'Default title' },
+            { sticky: true }
+          );
+        });
+
+        expect(result.current.toasts).toHaveLength(1);
+        expect(result.current.toasts[0].title).toBe('Default title');
+      });
+
+      it('should accept LocalizationWithDefault for both message and title', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.warn(
+            { key: 'Test::Warning', defaultValue: 'Warning message' },
+            { key: 'Test::WarningTitle', defaultValue: 'Warning title' },
+            { sticky: true }
+          );
+        });
+
+        expect(result.current.toasts).toHaveLength(1);
+        expect(result.current.toasts[0].message).toBe('Warning message');
+        expect(result.current.toasts[0].title).toBe('Warning title');
+      });
+
+      it('should use key when defaultValue is not provided', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.error(
+            { key: 'Test::ErrorKey', defaultValue: '' },
+            undefined,
+            { sticky: true }
+          );
+        });
+
+        expect(result.current.toasts).toHaveLength(1);
+        // When defaultValue is empty, should fall back to key
+        expect(result.current.toasts[0].message).toBe('Test::ErrorKey');
+      });
+
+      it('should handle undefined title with LocalizationWithDefault message', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.info(
+            { key: 'Test::NoTitle', defaultValue: 'No title message' },
+            undefined,
+            { sticky: true }
+          );
+        });
+
+        expect(result.current.toasts).toHaveLength(1);
+        expect(result.current.toasts[0].message).toBe('No title message');
+        expect(result.current.toasts[0].title).toBeUndefined();
+      });
+
+      it('should work with all severity methods using LocalizationParam', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.info({ key: 'info', defaultValue: 'Info' }, undefined, { sticky: true });
+          result.current.toaster.success({ key: 'success', defaultValue: 'Success' }, undefined, { sticky: true });
+          result.current.toaster.warn({ key: 'warn', defaultValue: 'Warn' }, undefined, { sticky: true });
+          result.current.toaster.error({ key: 'error', defaultValue: 'Error' }, undefined, { sticky: true });
+        });
+
+        expect(result.current.toasts).toHaveLength(4);
+        expect(result.current.toasts[0].message).toBe('Info');
+        expect(result.current.toasts[1].message).toBe('Success');
+        expect(result.current.toasts[2].message).toBe('Warn');
+        expect(result.current.toasts[3].message).toBe('Error');
+      });
+    });
   });
 
   describe('useToasts', () => {
