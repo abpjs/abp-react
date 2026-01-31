@@ -1,6 +1,6 @@
 /**
  * SaaS Models
- * Translated from @volo/abp.ng.saas v0.7.2
+ * Translated from @volo/abp.ng.saas v2.0.0
  */
 
 import type { ABP } from '@abpjs/core';

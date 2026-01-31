@@ -10,9 +10,14 @@ import {
   useTenants,
   useEditions,
   SAAS_ROUTES,
+  SaasStateService,
   type Saas,
 } from '@abpjs/saas'
 import { FeatureManagementModal } from '@abpjs/feature-management'
+
+// Type annotation to ensure SaasStateService is used
+const _stateServiceType: typeof SaasStateService | null = null
+void _stateServiceType
 
 function TestTenantsComponent() {
   const { isAuthenticated } = useAuth()
@@ -524,6 +529,179 @@ function TestRouteConstants() {
   )
 }
 
+function TestSaasStateServiceSection() {
+  return (
+    <div className="test-section">
+      <h2>SaasStateService (v2.0.0)</h2>
+
+      <div className="test-card">
+        <h3>Overview</h3>
+        <p>
+          The <code>SaasStateService</code> provides a stateful facade over SaaS operations,
+          maintaining internal state that mirrors the Angular NGXS store pattern.
+          It has <strong>12 dispatch methods</strong> and <strong>6 getter methods</strong>.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Dispatch Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Category</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }} rowSpan={6}>Tenants</td>
+              <td style={{ padding: '8px' }}>dispatchGetTenants</td>
+              <td>Fetch tenants with pagination</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchGetTenantById</td>
+              <td>Fetch a single tenant by ID</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchCreateTenant</td>
+              <td>Create a new tenant</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchUpdateTenant</td>
+              <td>Update an existing tenant</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchDeleteTenant</td>
+              <td>Delete a tenant</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchGetLatestTenants</td>
+              <td>Fetch latest tenants for dashboard</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }} rowSpan={5}>Editions</td>
+              <td style={{ padding: '8px' }}>dispatchGetEditions</td>
+              <td>Fetch editions with pagination</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchGetEditionById</td>
+              <td>Fetch a single edition by ID</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchCreateEdition</td>
+              <td>Create a new edition</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchUpdateEdition</td>
+              <td>Update an existing edition</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchDeleteEdition</td>
+              <td>Delete an edition</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>Statistics</td>
+              <td style={{ padding: '8px' }}>dispatchGetUsageStatistics</td>
+              <td>Fetch usage statistics</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Getter Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Return Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getTenants()</td>
+              <td style={{ padding: '8px' }}>Tenant[]</td>
+              <td>Get tenants from state</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getLatestTenants()</td>
+              <td style={{ padding: '8px' }}>Tenant[]</td>
+              <td>Get latest tenants from state (v2.0.0)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getTenantsTotalCount()</td>
+              <td style={{ padding: '8px' }}>number</td>
+              <td>Get total count of tenants</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getEditions()</td>
+              <td style={{ padding: '8px' }}>Edition[]</td>
+              <td>Get editions from state</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getEditionsTotalCount()</td>
+              <td style={{ padding: '8px' }}>number</td>
+              <td>Get total count of editions</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getUsageStatistics()</td>
+              <td style={{ padding: '8px' }}>Record&lt;string, number&gt;</td>
+              <td>Get usage statistics from state</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+{`import { SaasStateService } from '@abpjs/saas';
+import { useRestService } from '@abpjs/core';
+
+function MyComponent() {
+  const restService = useRestService();
+  const stateService = new SaasStateService(restService);
+
+  // Dispatch to fetch tenants
+  await stateService.dispatchGetTenants({ maxResultCount: 10 });
+
+  // Access the result from state
+  const tenants = stateService.getTenants();
+  const totalCount = stateService.getTenantsTotalCount();
+
+  // Fetch latest tenants for dashboard widget
+  await stateService.dispatchGetLatestTenants();
+  const latestTenants = stateService.getLatestTenants();
+
+  // Dispatch to fetch editions and statistics
+  await stateService.dispatchGetEditions();
+  await stateService.dispatchGetUsageStatistics();
+
+  // Create a new tenant
+  await stateService.dispatchCreateTenant({
+    name: 'New Tenant',
+    editionId: 'edition-id',
+    adminEmailAddress: 'admin@newtenant.com',
+    adminPassword: 'Password123!',
+  });
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>New v2.0.0 Features</h3>
+        <ul style={{ marginLeft: '1.5rem' }}>
+          <li><code>getLatestTenants()</code> - New getter for dashboard widget</li>
+          <li><code>dispatchGetLatestTenants()</code> - New dispatch for fetching latest tenants</li>
+          <li>All dispatch methods automatically refresh lists after create/update/delete</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 function TestApiEndpoints() {
   return (
     <div className="test-section">
@@ -579,6 +757,11 @@ function TestApiEndpoints() {
               <td style={{ padding: '8px' }}><code>DELETE</code></td>
               <td style={{ padding: '8px' }}><code>/api/saas/tenants/:id/default-connection-string</code></td>
               <td>Delete connection string</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>GET</code></td>
+              <td style={{ padding: '8px' }}><code>/api/saas/tenants/latest</code></td>
+              <td>Get latest tenants (v2.0.0)</td>
             </tr>
           </tbody>
         </table>
@@ -636,7 +819,7 @@ export function TestSaasPage() {
   return (
     <div>
       <h1>@abpjs/saas Tests</h1>
-      <p>Testing SaaS module for tenant and edition management.</p>
+      <p>Testing SaaS module for tenant and edition management (v2.0.0).</p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components for multi-tenant SaaS applications with tenant management,
         edition management, and connection string management.
@@ -646,6 +829,7 @@ export function TestSaasPage() {
       <TestEditionsComponent />
       <TestTenantsHook />
       <TestEditionsHook />
+      <TestSaasStateServiceSection />
       <TestRouteConstants />
       <TestApiEndpoints />
     </div>

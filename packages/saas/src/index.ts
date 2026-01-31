@@ -1,7 +1,7 @@
 /**
  * @abpjs/saas
  * ABP Framework SaaS module for React
- * Translated from @volo/abp.ng.saas v0.7.2
+ * Translated from @volo/abp.ng.saas v2.0.0
  */
 
 // Models
