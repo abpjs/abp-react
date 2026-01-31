@@ -2,7 +2,7 @@
  * @abpjs/identity
  *
  * ABP Framework identity components for React.
- * Translated from @abp/ng.identity version 1.0.0.
+ * Translated from @abp/ng.identity version 1.1.0.
  *
  * This package provides:
  * - Identity models (User, Role, etc.)
@@ -10,6 +10,11 @@
  * - React hooks for state management (useRoles, useUsers, useIdentity)
  * - UI components for role and user management
  * - Route constants for navigation
+ *
+ * Changes in v1.1.0:
+ * - Added passwordRulesArr and requiredPasswordLength props to UsersComponent
+ * - Removed RoleResolver and UserResolver (Angular route resolvers not needed in React)
+ * - State method return types updated for better typing
  *
  * Changes in v1.0.0:
  * - IDENTITY_ROUTES is now deprecated (use identity config services instead)
@@ -26,7 +31,7 @@
  *   return (
  *     <div>
  *       <RolesComponent />
- *       <UsersComponent />
+ *       <UsersComponent passwordRulesArr={['number', 'capital', 'small', 'special']} requiredPasswordLength={6} />
  *     </div>
  *   );
  * }
