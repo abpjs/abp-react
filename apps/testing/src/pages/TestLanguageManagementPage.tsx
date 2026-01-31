@@ -9,8 +9,13 @@ import {
   useLanguages,
   useLanguageTexts,
   LANGUAGE_MANAGEMENT_ROUTES,
+  LanguageManagementStateService,
 } from '@abpjs/language-management'
 import type { LanguageManagement } from '@abpjs/language-management'
+
+// Type annotation to ensure LanguageManagementStateService is used
+const _stateServiceType: typeof LanguageManagementStateService | null = null
+void _stateServiceType
 
 function TestLanguagesComponent() {
   const [showComponent, setShowComponent] = useState(false)
@@ -364,6 +369,163 @@ function MyComponent() {
   )
 }
 
+function TestLanguageManagementStateServiceSection() {
+  return (
+    <div className="test-section">
+      <h2>LanguageManagementStateService (v2.0.0)</h2>
+
+      <div className="test-card">
+        <h3>Overview</h3>
+        <p>
+          The <code>LanguageManagementStateService</code> provides a stateful facade over language management
+          operations, maintaining internal state that mirrors the Angular NGXS store pattern.
+          It has <strong>10 dispatch methods</strong> and <strong>6 getter methods</strong>.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Dispatch Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Category</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }} rowSpan={5}>Languages</td>
+              <td style={{ padding: '8px' }}>dispatchGetLanguages</td>
+              <td>Fetch languages with pagination</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchGetLanguageById</td>
+              <td>Fetch a single language by ID</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchCreateUpdateLanguage</td>
+              <td>Create or update a language</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchDeleteLanguage</td>
+              <td>Delete a language (returns null)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchSetAsDefaultLanguage</td>
+              <td>Set a language as default</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }} rowSpan={3}>Language Texts</td>
+              <td style={{ padding: '8px' }}>dispatchGetLanguageTexts</td>
+              <td>Fetch language texts with filters</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchUpdateLanguageTextByName</td>
+              <td>Update a language text</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchRestoreLanguageTextByName</td>
+              <td>Restore a language text to default</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }} rowSpan={2}>Metadata</td>
+              <td style={{ padding: '8px' }}>dispatchGetLanguageCultures</td>
+              <td>Fetch available cultures</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>dispatchGetLanguageResources</td>
+              <td>Fetch available resources</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Getter Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Return Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getLanguages()</td>
+              <td style={{ padding: '8px' }}>Language[]</td>
+              <td>Get languages from state</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getLanguagesTotalCount()</td>
+              <td style={{ padding: '8px' }}>number</td>
+              <td>Get total count of languages</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getLanguageTexts()</td>
+              <td style={{ padding: '8px' }}>LanguageText[]</td>
+              <td>Get language texts from state</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getLanguageTextsTotalCount()</td>
+              <td style={{ padding: '8px' }}>number</td>
+              <td>Get total count of texts</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getCultures()</td>
+              <td style={{ padding: '8px' }}>Culture[]</td>
+              <td>Get cultures from state</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>getResources()</td>
+              <td style={{ padding: '8px' }}>Resource[]</td>
+              <td>Get resources from state</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+{`import { LanguageManagementStateService } from '@abpjs/language-management';
+import { useRestService } from '@abpjs/core';
+
+function MyComponent() {
+  const restService = useRestService();
+  const stateService = new LanguageManagementStateService(restService);
+
+  // Dispatch to fetch languages
+  await stateService.dispatchGetLanguages({ maxResultCount: 10 });
+
+  // Access the result from state
+  const languages = stateService.getLanguages();
+  const totalCount = stateService.getLanguagesTotalCount();
+
+  // Dispatch to fetch cultures and resources
+  await stateService.dispatchGetLanguageCultures();
+  await stateService.dispatchGetLanguageResources();
+
+  // Create/update a language
+  await stateService.dispatchCreateUpdateLanguage({
+    cultureName: 'fr',
+    uiCultureName: 'fr',
+    displayName: 'French',
+    flagIcon: '🇫🇷',
+    isEnabled: true,
+  });
+
+  // Delete a language (returns null per v2.0.0 spec)
+  const result = await stateService.dispatchDeleteLanguage('lang-id');
+  console.log(result); // null
+}`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 function TestConstants() {
   return (
     <div className="test-section">
@@ -446,13 +608,14 @@ export function TestLanguageManagementPage() {
   return (
     <div>
       <h1>@abpjs/language-management Tests</h1>
-      <p>Testing language management components, hooks, and service (v0.7.2).</p>
+      <p>Testing language management components, hooks, and services (v2.0.0).</p>
 
       <TestLanguagesComponent />
       <TestLanguageTextsComponent />
       <TestUseLanguagesHook />
       <TestUseLanguageTextsHook />
       <TestLanguageManagementServiceSection />
+      <TestLanguageManagementStateServiceSection />
       <TestConstants />
       <TestModels />
     </div>

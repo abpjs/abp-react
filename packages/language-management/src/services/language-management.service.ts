@@ -1,6 +1,6 @@
 /**
  * Language Management Service
- * Translated from @volo/abp.ng.language-management v0.7.2
+ * Translated from @volo/abp.ng.language-management v2.0.0
  *
  * Provides API operations for managing languages and language texts (localization).
  */
@@ -12,7 +12,7 @@ import { LanguageManagement } from '../models';
  * Service for managing language-related API operations.
  * Handles languages, cultures, resources, and language texts CRUD operations.
  *
- * @since 0.7.2
+ * @since 2.0.0
  */
 export class LanguageManagementService {
   private rest: RestService;
