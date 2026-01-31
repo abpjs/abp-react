@@ -40,4 +40,10 @@ export namespace Config {
     key: string;
     defaultValue: string;
   }
+
+  /**
+   * Type for localization parameters - can be a simple string key or an object with default value
+   * @since 1.1.0
+   */
+  export type LocalizationParam = string | LocalizationWithDefault;
 }

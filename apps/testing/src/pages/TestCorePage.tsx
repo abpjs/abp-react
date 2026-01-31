@@ -23,6 +23,9 @@ import {
   addAbpRoutes,
   getAbpRoutes,
   clearAbpRoutes,
+  ConfigStateService,
+  ProfileStateService,
+  SessionStateService,
 } from '@abpjs/core'
 import type { ABP } from '@abpjs/core'
 
@@ -479,12 +482,237 @@ function TestComponents() {
   )
 }
 
+function TestStateServices() {
+  const { store } = useAbp()
+  const [configResults, setConfigResults] = useState<string[]>([])
+  const [profileResults, setProfileResults] = useState<string[]>([])
+  const [sessionResults, setSessionResults] = useState<string[]>([])
+
+  const testConfigStateService = () => {
+    const results: string[] = []
+    const configService = new ConfigStateService(() => store.getState())
+
+    // Test getAll
+    const allConfig = configService.getAll()
+    results.push(`✓ getAll(): ${allConfig ? 'Got config state' : 'No config'}`)
+
+    // Test getApplicationInfo
+    const appInfo = configService.getApplicationInfo()
+    results.push(`✓ getApplicationInfo(): name="${appInfo?.name || 'N/A'}"`)
+
+    // Test getOne
+    const environment = configService.getOne('environment')
+    results.push(`✓ getOne('environment'): ${environment ? 'Found' : 'Not found'}`)
+
+    // Test getDeep
+    const currentUserId = configService.getDeep('currentUser.id')
+    results.push(`✓ getDeep('currentUser.id'): ${currentUserId || 'N/A'}`)
+
+    // Test getApiUrl
+    const apiUrl = configService.getApiUrl()
+    results.push(`✓ getApiUrl(): "${apiUrl}"`)
+
+    // Test getRoute by path
+    const homeRoute = configService.getRoute('/')
+    results.push(`✓ getRoute('/'): ${homeRoute?.name || 'Not found'}`)
+
+    // Test getRoute by name
+    const namedRoute = configService.getRoute(undefined, 'Home')
+    results.push(`✓ getRoute(undefined, 'Home'): ${namedRoute?.path || 'Not found'}`)
+
+    // Test getRoute by url (v1.1.0)
+    const urlRoute = configService.getRoute(undefined, undefined, '/')
+    results.push(`✓ getRoute(undefined, undefined, '/'): ${urlRoute?.name || 'Not found'} (v1.1.0)`)
+
+    // Test getSetting
+    const setting = configService.getSetting('Abp.Localization.DefaultLanguage')
+    results.push(`✓ getSetting('Abp.Localization.DefaultLanguage'): ${setting || 'Not set'}`)
+
+    // Test getSettings with keyword (v1.1.0)
+    const settings = configService.getSettings('Localization')
+    const settingCount = Object.keys(settings || {}).length
+    results.push(`✓ getSettings('Localization'): ${settingCount} settings found (v1.1.0)`)
+
+    // Test getGrantedPolicy
+    const hasPolicy = configService.getGrantedPolicy('AbpIdentity.Roles')
+    results.push(`✓ getGrantedPolicy('AbpIdentity.Roles'): ${hasPolicy}`)
+
+    // Test getLocalization
+    const localized = configService.getLocalization('AbpIdentity::Roles')
+    results.push(`✓ getLocalization('AbpIdentity::Roles'): "${localized}"`)
+
+    // Test getLocalization with default (v1.1.0)
+    const localizedWithDefault = configService.getLocalization({ key: 'NonExistent::Key', defaultValue: 'Default Text' })
+    results.push(`✓ getLocalization({ key, defaultValue }): "${localizedWithDefault}" (v1.1.0)`)
+
+    setConfigResults(results)
+  }
+
+  const testProfileStateService = () => {
+    const results: string[] = []
+    const profileService = new ProfileStateService(() => store.getState())
+
+    // Test getProfile
+    const profile = profileService.getProfile()
+    results.push(`✓ getProfile(): ${profile ? `userName="${profile.userName || 'N/A'}"` : 'No profile loaded'}`)
+
+    if (profile) {
+      results.push(`  - email: ${profile.email || 'N/A'}`)
+      results.push(`  - name: ${profile.name || 'N/A'}`)
+      results.push(`  - surname: ${profile.surname || 'N/A'}`)
+    }
+
+    setProfileResults(results)
+  }
+
+  const testSessionStateService = () => {
+    const results: string[] = []
+    const sessionService = new SessionStateService(() => store.getState())
+
+    // Test getLanguage
+    const language = sessionService.getLanguage()
+    results.push(`✓ getLanguage(): "${language || 'Not set'}"`)
+
+    // Test getTenant
+    const tenant = sessionService.getTenant()
+    results.push(`✓ getTenant(): ${tenant ? `id="${tenant.id}", name="${tenant.name}"` : 'No tenant (host)'}`)
+
+    setSessionResults(results)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>State Services Tests (v1.1.0)</h2>
+
+      <div className="test-card">
+        <h3>ConfigStateService</h3>
+        <p>New service for accessing config state directly from Redux store.</p>
+        <button onClick={testConfigStateService}>Run Config Tests</button>
+
+        {configResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '300px',
+            overflow: 'auto',
+            marginTop: '1rem'
+          }}>
+            {configResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>ProfileStateService</h3>
+        <p>New service for accessing profile state from Redux store.</p>
+        <button onClick={testProfileStateService}>Run Profile Tests</button>
+
+        {profileResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '200px',
+            overflow: 'auto',
+            marginTop: '1rem'
+          }}>
+            {profileResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>SessionStateService</h3>
+        <p>New service for accessing session state from Redux store.</p>
+        <button onClick={testSessionStateService}>Run Session Tests</button>
+
+        {sessionResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '200px',
+            overflow: 'auto',
+            marginTop: '1rem'
+          }}>
+            {sessionResults.join('\n')}
+          </pre>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function TestDateExtensions() {
+  const [results, setResults] = useState<string[]>([])
+
+  const testDateExtension = () => {
+    const results: string[] = []
+
+    // Test toLocalISOString
+    const date = new Date('2024-06-15T14:30:00Z')
+    const localISO = date.toLocalISOString()
+    const standardISO = date.toISOString()
+
+    results.push(`✓ Date.toLocalISOString() (v1.1.0)`)
+    results.push(`  - Input: new Date('2024-06-15T14:30:00Z')`)
+    results.push(`  - toISOString(): ${standardISO}`)
+    results.push(`  - toLocalISOString(): ${localISO}`)
+
+    // Test with current date
+    const now = new Date()
+    results.push(``)
+    results.push(`✓ Current date:`)
+    results.push(`  - toISOString(): ${now.toISOString()}`)
+    results.push(`  - toLocalISOString(): ${now.toLocalISOString()}`)
+
+    // Explain the difference
+    const tzOffset = -now.getTimezoneOffset()
+    const tzHours = Math.floor(Math.abs(tzOffset) / 60)
+    const tzMins = Math.abs(tzOffset) % 60
+    const tzSign = tzOffset >= 0 ? '+' : '-'
+    results.push(``)
+    results.push(`Timezone offset: UTC${tzSign}${String(tzHours).padStart(2, '0')}:${String(tzMins).padStart(2, '0')}`)
+    results.push(`Note: toLocalISOString() returns time in local timezone without 'Z' suffix`)
+
+    setResults(results)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>Date Extensions Tests (v1.1.0)</h2>
+
+      <div className="test-card">
+        <h3>Date.prototype.toLocalISOString()</h3>
+        <p>New method added to Date prototype that returns ISO string in local timezone.</p>
+        <button onClick={testDateExtension}>Run Date Tests</button>
+
+        {results.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '300px',
+            overflow: 'auto',
+            marginTop: '1rem'
+          }}>
+            {results.join('\n')}
+          </pre>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function TestCorePage() {
   return (
     <div>
       <h1>@abpjs/core Tests</h1>
       <p>Testing core hooks, services, and components.</p>
 
+      <TestStateServices />
+      <TestDateExtensions />
       <TestLoader />
       <TestEllipsis />
       <TestRouteUtils />

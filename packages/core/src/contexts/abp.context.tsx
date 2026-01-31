@@ -9,7 +9,7 @@ import { createApiInterceptor } from '../interceptors/api.interceptor';
 import { RestService } from '../services/rest.service';
 import { ProfileService } from '../services/profile.service';
 import { ApplicationConfigurationService } from '../services/application-configuration.service';
-import { ConfigService } from '../services/config.service';
+import { ConfigStateService } from '../services/config-state.service';
 import { LocalizationService } from '../services/localization.service';
 import { LazyLoadService } from '../services/lazy-load.service';
 import { ABP, Config } from '../models';
@@ -23,7 +23,7 @@ export interface AbpContextValue {
   restService: RestService;
   profileService: ProfileService;
   applicationConfigurationService: ApplicationConfigurationService;
-  configService: ConfigService;
+  configService: ConfigStateService;
   localizationService: LocalizationService;
   lazyLoadService: LazyLoadService;
 }
@@ -81,7 +81,7 @@ export function AbpProvider({
       restService,
       profileService: new ProfileService(restService),
       applicationConfigurationService: new ApplicationConfigurationService(restService),
-      configService: new ConfigService(getState),
+      configService: new ConfigStateService(getState),
       localizationService: new LocalizationService(getState),
       lazyLoadService: new LazyLoadService(),
     };
@@ -257,7 +257,7 @@ export function useProfileService(): ProfileService {
   return useAbp().profileService;
 }
 
-export function useConfigService(): ConfigService {
+export function useConfigService(): ConfigStateService {
   return useAbp().configService;
 }
 
