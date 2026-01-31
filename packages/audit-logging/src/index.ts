@@ -1,7 +1,7 @@
 /**
  * @abpjs/audit-logging
  * ABP Framework Audit Logging module for React
- * Translated from @volo/abp.ng.audit-logging v0.7.2
+ * Translated from @volo/abp.ng.audit-logging v2.0.0
  */
 
 // Models

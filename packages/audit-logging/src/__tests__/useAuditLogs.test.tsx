@@ -1,6 +1,6 @@
 /**
  * Tests for useAuditLogs hook
- * @abpjs/audit-logging v0.7.2
+ * @abpjs/audit-logging v2.0.0
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
@@ -159,6 +159,18 @@ describe('useAuditLogs', () => {
 
       expect(result.current.selectedLog).toBeNull();
     });
+
+    it('should handle non-Error rejection', async () => {
+      mockRequest.mockRejectedValueOnce('String error');
+
+      const { result } = renderHook(() => useAuditLogs());
+
+      await act(async () => {
+        const res = await result.current.getAuditLogById('invalid-id');
+        expect(res.success).toBe(false);
+        expect(res.error).toBe('Failed to fetch audit log');
+      });
+    });
   });
 
   describe('fetchAverageExecutionStats', () => {
@@ -188,6 +200,18 @@ describe('useAuditLogs', () => {
 
       expect(result.current.error).toBe('Stats error');
     });
+
+    it('should handle non-Error rejection', async () => {
+      mockRequest.mockRejectedValueOnce('String error');
+
+      const { result } = renderHook(() => useAuditLogs());
+
+      await act(async () => {
+        const res = await result.current.fetchAverageExecutionStats();
+        expect(res.success).toBe(false);
+        expect(res.error).toBe('Failed to fetch average execution statistics');
+      });
+    });
   });
 
   describe('fetchErrorRateStats', () => {
@@ -203,6 +227,57 @@ describe('useAuditLogs', () => {
       });
 
       expect(result.current.errorRateStats).toEqual(mockResponse.data);
+    });
+
+    it('should handle fetch error rate stats error with Error instance', async () => {
+      mockRequest.mockRejectedValueOnce(new Error('Error rate stats error'));
+
+      const { result } = renderHook(() => useAuditLogs());
+
+      await act(async () => {
+        const res = await result.current.fetchErrorRateStats();
+        expect(res.success).toBe(false);
+        expect(res.error).toBe('Error rate stats error');
+      });
+
+      expect(result.current.error).toBe('Error rate stats error');
+    });
+
+    it('should handle fetch error rate stats error with non-Error value', async () => {
+      mockRequest.mockRejectedValueOnce('String error');
+
+      const { result } = renderHook(() => useAuditLogs());
+
+      await act(async () => {
+        const res = await result.current.fetchErrorRateStats();
+        expect(res.success).toBe(false);
+        expect(res.error).toBe('Failed to fetch error rate statistics');
+      });
+
+      expect(result.current.error).toBe('Failed to fetch error rate statistics');
+    });
+
+    it('should pass filter parameters to the API', async () => {
+      const mockResponse = { data: { errors: 5, success: 95 } };
+      mockRequest.mockResolvedValueOnce(mockResponse);
+
+      const { result } = renderHook(() => useAuditLogs());
+
+      const params = {
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      };
+
+      await act(async () => {
+        const res = await result.current.fetchErrorRateStats(params);
+        expect(res.success).toBe(true);
+      });
+
+      expect(mockRequest).toHaveBeenCalledWith({
+        method: 'GET',
+        url: '/api/audit-logging/audit-logs/statistics/error-rate',
+        params,
+      });
     });
   });
 
