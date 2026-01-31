@@ -168,6 +168,12 @@ function Home() {
             <p>Tenant management, edition management, SaaS features</p>
             <Link to="/test/saas" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
           </div>
+
+          <div className="test-card">
+            <h3>@abpjs/audit-logging</h3>
+            <p>Audit logs, HTTP methods/status tracking, statistics</p>
+            <Link to="/test/audit-logging" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
         </div>
       </div>
 
@@ -248,6 +254,7 @@ function App() {
         <Route path="/test/setting-management" element={<TestSettingManagementPage />} />
         <Route path="/test/language-management" element={<TestLanguageManagementPage />} />
         <Route path="/test/saas" element={<TestSaasPage />} />
+        <Route path="/test/audit-logging" element={<TestAuditLoggingPage />} />
         {/* Setting management page from @abpjs/setting-management */}
         <Route path="/setting-management" element={<SettingLayout />} />
       </Route>

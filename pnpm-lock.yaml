@@ -80,6 +80,9 @@ importers:
       '@abpjs/account-pro':
         specifier: workspace:*
         version: link:../../packages/account-pro
+      '@abpjs/audit-logging':
+        specifier: workspace:*
+        version: link:../../packages/audit-logging
       '@abpjs/core':
         specifier: workspace:*
         version: link:../../packages/core
