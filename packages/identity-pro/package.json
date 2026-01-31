@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/identity-pro",
-  "version": "0.7.2",
+  "version": "2.0.0",
   "description": "ABP Framework identity pro components for React - translated from @volo/abp.ng.identity",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
