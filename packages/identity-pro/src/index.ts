@@ -2,20 +2,22 @@
  * @abpjs/identity-pro
  *
  * ABP Framework identity pro components for React.
- * Translated from @volo/abp.ng.identity version 0.7.2.
+ * Translated from @volo/abp.ng.identity version 2.0.0.
  *
  * This package provides:
  * - Identity models (User, Role, ClaimType, etc.)
  * - Identity service for API operations
+ * - Identity state service with dispatch methods (v2.0.0)
  * - React hooks for state management (useRoles, useUsers, useIdentity, useClaims)
  * - UI components for role, user, and claim type management
  * - Route constants for navigation
  *
- * Pro features in v0.7.2:
+ * Pro features:
  * - Claim type management (ClaimsComponent)
  * - User/Role claims management (ClaimModal)
  * - ClaimType, ClaimTypeName, ClaimRequest models
  * - useClaims hook for claim operations
+ * - IdentityStateService with 17 dispatch methods (v2.0.0)
  *
  * @example
  * ```tsx
@@ -35,7 +37,7 @@
  * ```
  *
  * @packageDocumentation
- * @since 0.7.2
+ * @since 2.0.0
  */
 
 // Models

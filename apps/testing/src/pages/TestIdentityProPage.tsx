@@ -1,6 +1,7 @@
 /**
  * Test page for @abpjs/identity-pro package
- * Tests: ClaimsComponent, ClaimModal, useClaims hook, and Pro-specific features
+ * Tests: ClaimsComponent, ClaimModal, useClaims hook, IdentityStateService, and Pro-specific features
+ * @since 2.0.0
  */
 import { useState, useEffect } from 'react'
 import { useAuth } from '@abpjs/core'
@@ -9,6 +10,7 @@ import {
   ClaimModal,
   useClaims,
   type Identity,
+  type IdentityStateService,
 } from '@abpjs/identity-pro'
 
 function TestClaimsComponent() {
@@ -683,6 +685,148 @@ function TestProApiEndpoints() {
   )
 }
 
+/**
+ * Test section for IdentityStateService (v2.0.0)
+ */
+function TestIdentityStateServiceSection() {
+  const [stateServiceInfo, setStateServiceInfo] = useState<string>('')
+
+  // Type check to verify the type is exported correctly
+  const _typeCheck: IdentityStateService | null = null
+  void _typeCheck
+
+  const showMethods = () => {
+    setStateServiceInfo(`IdentityStateService (v2.0.0)
+
+Getter Methods:
+- getRoles(): Identity.RoleItem[]
+- getRolesTotalCount(): number
+- getUsers(): Identity.UserItem[]
+- getUsersTotalCount(): number
+- getClaimTypes(): Identity.ClaimType[]
+- getClaimTypesTotalCount(): number
+- getClaimTypeNames(): Identity.ClaimTypeName[]
+
+Role Dispatch Methods (v2.0.0):
+- dispatchGetRoles(params?): Promise<Identity.RoleResponse>
+- dispatchGetRoleById(id): Promise<Identity.RoleItem>
+- dispatchDeleteRole(id): Promise<Identity.RoleItem>
+- dispatchCreateRole(body): Promise<Identity.RoleItem>
+- dispatchUpdateRole(id, body): Promise<Identity.RoleItem>
+
+User Dispatch Methods (v2.0.0):
+- dispatchGetUsers(params?): Promise<Identity.UserResponse>
+- dispatchGetUserById(id): Promise<Identity.UserItem>
+- dispatchDeleteUser(id): Promise<void>
+- dispatchCreateUser(body): Promise<Identity.UserItem>
+- dispatchUpdateUser(id, body): Promise<Identity.UserItem>
+- dispatchGetUserRoles(id): Promise<Identity.RoleItem[]>
+
+ClaimType Dispatch Methods (v2.0.0):
+- dispatchGetClaimTypes(params?): Promise<Identity.ClaimResponse>
+- dispatchGetClaimTypeById(id): Promise<Identity.ClaimType>
+- dispatchDeleteClaimType(id): Promise<void>
+- dispatchCreateClaimType(body): Promise<Identity.ClaimType>
+- dispatchUpdateClaimType(body): Promise<Identity.ClaimType>
+- dispatchGetClaimTypeNames(): Promise<Identity.ClaimTypeName[]>
+
+The state service maintains internal state and provides
+facade methods for dispatching identity actions.`)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>IdentityStateService <span style={{ fontSize: '14px', color: '#4ade80' }}>(v2.0.0)</span></h2>
+
+      <div className="test-card">
+        <h3>State Service Overview</h3>
+        <p>
+          The <code>IdentityStateService</code> provides a stateful facade over the identity API.
+          It maintains internal state for roles, users, and claim types, and provides 17 dispatch methods for CRUD operations.
+        </p>
+        <button onClick={showMethods}>
+          Show All Methods
+        </button>
+        {stateServiceInfo && (
+          <pre style={{ marginTop: '1rem', padding: '1rem', borderRadius: '4px', overflow: 'auto', whiteSpace: 'pre-wrap', fontSize: '12px' }}>
+            {stateServiceInfo}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>New in v2.0.0: 17 Dispatch Methods</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          The following dispatch methods were added in v2.0.0:
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Category</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Methods</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>Roles</td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                <code>dispatchGetRoles</code>, <code>dispatchGetRoleById</code>, <code>dispatchDeleteRole</code>, <code>dispatchCreateRole</code>, <code>dispatchUpdateRole</code>
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>Users</td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                <code>dispatchGetUsers</code>, <code>dispatchGetUserById</code>, <code>dispatchDeleteUser</code>, <code>dispatchCreateUser</code>, <code>dispatchUpdateUser</code>, <code>dispatchGetUserRoles</code>
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>Claim Types</td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                <code>dispatchGetClaimTypes</code>, <code>dispatchGetClaimTypeById</code>, <code>dispatchDeleteClaimType</code>, <code>dispatchCreateClaimType</code>, <code>dispatchUpdateClaimType</code>, <code>dispatchGetClaimTypeNames</code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import { IdentityStateService } from '@abpjs/identity-pro';
+import { useRestService } from '@abpjs/core';
+
+function MyComponent() {
+  const restService = useRestService();
+  const stateService = new IdentityStateService(restService);
+
+  // Dispatch methods update internal state
+  await stateService.dispatchGetRoles({ maxResultCount: 10 });
+
+  // Access state via getters
+  const roles = stateService.getRoles();
+  const totalCount = stateService.getRolesTotalCount();
+
+  // Create a new role (v2.0.0)
+  const newRole = await stateService.dispatchCreateRole({
+    name: 'NewRole',
+    isDefault: false,
+    isPublic: true
+  });
+
+  // Fetch users
+  await stateService.dispatchGetUsers({ filter: 'admin' });
+  const users = stateService.getUsers();
+
+  // Manage claim types
+  await stateService.dispatchGetClaimTypes();
+  const claimTypes = stateService.getClaimTypes();
+}`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 function TestProHookMethods() {
   return (
     <div className="test-section">
@@ -758,14 +902,15 @@ export function TestIdentityProPage() {
   return (
     <div>
       <h1>@abpjs/identity-pro Tests</h1>
-      <p>Testing identity pro components and hooks for claim type management.</p>
+      <p>Testing identity pro components, hooks, and services for claim type management (v2.0.0).</p>
       <p style={{ color: '#6f6', fontSize: '14px' }}>
-        Pro features since v0.7.2: Claim type management, user/role claims
+        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods (v2.0.0)
       </p>
 
       <TestClaimsComponent />
       <TestClaimModal />
       <TestClaimsHook />
+      <TestIdentityStateServiceSection />
       <TestProApiEndpoints />
       <TestProHookMethods />
     </div>
