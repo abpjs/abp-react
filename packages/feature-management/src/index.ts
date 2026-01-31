@@ -1,7 +1,10 @@
 /**
  * @abpjs/feature-management
  * ABP Framework Feature Management module for React
- * Translated from @abp/ng.feature-management v1.1.0
+ * Translated from @abp/ng.feature-management v2.0.0
+ *
+ * @version 2.0.0
+ * @since 2.0.0 - Added FeatureManagementComponentInputs/Outputs interfaces
  */
 
 // Models
