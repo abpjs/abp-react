@@ -9,7 +9,7 @@ import {
   Flex,
   CloseButton,
 } from '@chakra-ui/react';
-import { useLocalization } from '@abpjs/core';
+import { useLocalization, type Config } from '@abpjs/core';
 import { useToasterContext } from '../../contexts/toaster.context';
 import { Toaster } from '../../models';
 import {
@@ -17,10 +17,21 @@ import {
   Info,
   AlertTriangle,
   XCircle,
+  Circle,
 } from 'lucide-react';
 
 /**
+ * Helper to resolve LocalizationParam to string.
+ */
+function resolveLocalizationParam(param: Config.LocalizationParam | undefined): string | undefined {
+  if (param === undefined) return undefined;
+  if (typeof param === 'string') return param;
+  return param.defaultValue || param.key;
+}
+
+/**
  * Get the icon component for a severity level.
+ * @since 2.0.0 - Added 'neutral' and 'warning' support
  */
 function SeverityIcon({ severity }: { severity: Toaster.Severity }): React.ReactElement {
   const iconProps = { size: 20 };
@@ -30,15 +41,19 @@ function SeverityIcon({ severity }: { severity: Toaster.Severity }): React.React
       return <CheckCircle {...iconProps} color="var(--chakra-colors-green-500)" />;
     case 'info':
       return <Info {...iconProps} color="var(--chakra-colors-blue-500)" />;
-    case 'warn':
+    case 'warning':
       return <AlertTriangle {...iconProps} color="var(--chakra-colors-yellow-500)" />;
     case 'error':
       return <XCircle {...iconProps} color="var(--chakra-colors-red-500)" />;
+    case 'neutral':
+    default:
+      return <Circle {...iconProps} color="var(--chakra-colors-gray-500)" />;
   }
 }
 
 /**
  * Get Chakra color palette for severity.
+ * @since 2.0.0 - Added 'neutral' and 'warning' support
  */
 function getSeverityColorPalette(severity: Toaster.Severity): string {
   switch (severity) {
@@ -46,15 +61,19 @@ function getSeverityColorPalette(severity: Toaster.Severity): string {
       return 'green';
     case 'info':
       return 'blue';
-    case 'warn':
+    case 'warning':
       return 'yellow';
     case 'error':
       return 'red';
+    case 'neutral':
+    default:
+      return 'gray';
   }
 }
 
 /**
  * Get background color for severity.
+ * @since 2.0.0 - Added 'neutral' and 'warning' support
  */
 function getSeverityBg(severity: Toaster.Severity): string {
   switch (severity) {
@@ -62,15 +81,19 @@ function getSeverityBg(severity: Toaster.Severity): string {
       return 'green.50';
     case 'info':
       return 'blue.50';
-    case 'warn':
+    case 'warning':
       return 'yellow.50';
     case 'error':
       return 'red.50';
+    case 'neutral':
+    default:
+      return 'gray.50';
   }
 }
 
 /**
  * Get border color for severity.
+ * @since 2.0.0 - Added 'neutral' and 'warning' support
  */
 function getSeverityBorderColor(severity: Toaster.Severity): string {
   switch (severity) {
@@ -78,15 +101,19 @@ function getSeverityBorderColor(severity: Toaster.Severity): string {
       return 'green.200';
     case 'info':
       return 'blue.200';
-    case 'warn':
+    case 'warning':
       return 'yellow.200';
     case 'error':
       return 'red.200';
+    case 'neutral':
+    default:
+      return 'gray.200';
   }
 }
 
 /**
  * Map severity to Chakra toast type.
+ * @since 2.0.0 - Added 'neutral' support
  */
 function mapSeverityToType(severity: Toaster.Severity): 'success' | 'info' | 'warning' | 'error' {
   switch (severity) {
@@ -94,16 +121,24 @@ function mapSeverityToType(severity: Toaster.Severity): 'success' | 'info' | 'wa
       return 'success';
     case 'info':
       return 'info';
-    case 'warn':
+    case 'warning':
       return 'warning';
     case 'error':
       return 'error';
+    case 'neutral':
+    default:
+      return 'info';
   }
 }
 
 export interface ToastContainerProps {
   /** Position of toasts */
   position?: 'top' | 'top-right' | 'top-left' | 'bottom' | 'bottom-right' | 'bottom-left';
+  /**
+   * Container key for filtering toasts to this container
+   * @since 2.0.0
+   */
+  containerKey?: string;
 }
 
 /**
@@ -154,6 +189,8 @@ function getToaster(placement: ReturnType<typeof getPlacement>) {
  * handle RTL languages - toasts will appear on the correct side based on
  * the current text direction.
  *
+ * @since 2.0.0 - Added containerKey prop for filtering toasts
+ *
  * @example
  * ```tsx
  * function App() {
@@ -166,11 +203,11 @@ function getToaster(placement: ReturnType<typeof getPlacement>) {
  * }
  * ```
  */
-export function ToastContainer({ position = 'bottom-right' }: ToastContainerProps): React.ReactElement {
+export function ToastContainer({ position = 'bottom-right', containerKey }: ToastContainerProps): React.ReactElement {
 
   const { toasts, service } = useToasterContext();
   const { t } = useLocalization();
-  const displayedToastsRef = useRef<Set<string>>(new Set());
+  const displayedToastsRef = useRef<Set<number>>(new Set());
 
   // Get the placement based on position prop
   const placement = useMemo(() => getPlacement(position), [position]);
@@ -178,35 +215,45 @@ export function ToastContainer({ position = 'bottom-right' }: ToastContainerProp
   // Get or create toaster for this placement
   const toaster = useMemo(() => getToaster(placement), [placement]);
 
+  // Filter toasts by container key if provided
+  const filteredToasts = useMemo(() => {
+    if (!containerKey) return toasts;
+    return toasts.filter((toast) => toast.options?.containerKey === containerKey);
+  }, [toasts, containerKey]);
+
   // Sync our toast state with Chakra's toast system
   useEffect(() => {
     // Process new toasts that haven't been displayed yet
-    const newToasts = toasts.filter((toast) => !displayedToastsRef.current.has(toast.id));
+    const newToasts = filteredToasts.filter((toast) => !displayedToastsRef.current.has(toast.id));
 
     newToasts.forEach((toast) => {
       // Mark as displayed immediately to prevent duplicate processing
       displayedToastsRef.current.add(toast.id);
 
+      const messageStr = resolveLocalizationParam(toast.message) || '';
       const localizedMessage = t(
-        toast.message,
-        ...(toast.messageLocalizationParams || [])
+        messageStr,
+        ...(toast.options?.messageLocalizationParams || [])
       );
-      const localizedTitle = toast.title
-        ? t(toast.title, ...(toast.titleLocalizationParams || []))
+      const titleStr = resolveLocalizationParam(toast.title);
+      const localizedTitle = titleStr
+        ? t(titleStr, ...(toast.options?.titleLocalizationParams || []))
         : undefined;
+
+      const severity = (toast.severity as Toaster.Severity) || 'info';
 
       // Use requestAnimationFrame to ensure each toast is created in a separate frame
       // This helps Chakra's toaster properly handle multiple toasts
       requestAnimationFrame(() => {
         toaster.create({
-          id: toast.id,
+          id: String(toast.id),
           title: localizedTitle,
           description: localizedMessage,
-          type: mapSeverityToType(toast.severity),
-          duration: toast.sticky ? undefined : (toast.life || 5000),
+          type: mapSeverityToType(severity),
+          duration: toast.options?.sticky ? undefined : (toast.options?.life || 5000),
           meta: {
-            closable: toast.closable !== false,
-            severity: toast.severity,
+            closable: toast.options?.closable !== false,
+            severity: severity,
           },
           onStatusChange: (details) => {
             if (details.status === 'unmounted') {
@@ -217,7 +264,7 @@ export function ToastContainer({ position = 'bottom-right' }: ToastContainerProp
         });
       });
     });
-  }, [toasts, t, service, toaster]);
+  }, [filteredToasts, t, service, toaster]);
 
   return (
     <Portal>

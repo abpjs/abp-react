@@ -2,10 +2,23 @@
  * @abpjs/theme-shared
  *
  * ABP Framework Theme Shared components for React.
- * Translated from @abp/ng.theme.shared v1.1.0
+ * Translated from @abp/ng.theme.shared v2.0.0
  *
  * This package provides shared UI components, services, and utilities
  * for theme/modal management in ABP Framework React applications.
+ *
+ * New in v2.0.0:
+ * - ToasterService: Methods now return number (toast ID) instead of Promise<Status>
+ * - ToasterService: Added subscribe() method for observable pattern
+ * - ToasterService: Removed addAll method (use show directly)
+ * - Toaster.Options renamed to Toaster.ToastOptions
+ * - New Toaster.Toast interface
+ * - Toaster.Severity: Changed 'warn' to 'warning', added 'neutral'
+ * - Confirmation.Options: No longer extends Toaster.Options
+ * - Confirmation: Added DialogData interface and Severity type
+ * - Confirmation.Options: Removed deprecated cancelCopy/yesCopy
+ * - ConfirmationService: Added show(), listenToEscape(), subscribe() methods
+ * - Updated styles with sorting icon classes
  *
  * New in v1.1.0:
  * - ToasterService now accepts Config.LocalizationParam for message and title

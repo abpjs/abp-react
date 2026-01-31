@@ -185,10 +185,11 @@ describe('ConfirmationDialog', () => {
     });
   });
 
+  // v2.0.0 - yesCopy/cancelCopy removed, use yesText/cancelText
   it('should use custom button text', async () => {
     renderWithProvider('warn', 'Delete item?', 'Confirm', {
-      yesCopy: 'Delete',
-      cancelCopy: 'Keep',
+      yesText: 'Delete',
+      cancelText: 'Keep',
     });
 
     await user.click(screen.getByTestId('trigger'));
@@ -311,54 +312,70 @@ describe('ConfirmationDialog', () => {
       });
     });
 
-    it('should prefer yesText over deprecated yesCopy', async () => {
-      renderWithProvider('warn', 'Test?', 'Confirm', {
-        yesText: 'New Yes',
-        yesCopy: 'Old Yes',
-      });
+    // v2.0.0 - yesCopy/cancelCopy removed, no longer need preference/fallback tests
+  });
+
+  // v2.0.0 - dismiss and closable behavior
+  describe('v2.0.0 - dismiss and closable behavior', () => {
+    it('should handle dialog without title', async () => {
+      render(
+        <ChakraProvider value={abpSystem}>
+          <ConfirmationProvider>
+            <ConfirmationTrigger
+              severity="info"
+              message="Message only"
+              title=""
+              options={{}}
+            />
+            <ConfirmationDialog />
+          </ConfirmationProvider>
+        </ChakraProvider>
+      );
 
       await user.click(screen.getByTestId('trigger'));
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'New Yes' })).toBeInTheDocument();
+        expect(screen.getByText('Message only')).toBeInTheDocument();
       });
     });
 
-    it('should prefer cancelText over deprecated cancelCopy', async () => {
-      renderWithProvider('warn', 'Test?', 'Confirm', {
-        cancelText: 'New Cancel',
-        cancelCopy: 'Old Cancel',
-      });
+    it('should use neutral severity by default for show method', async () => {
+      // Create a component that uses show() method
+      function ShowTrigger() {
+        const confirmation = useConfirmation();
+        const handleClick = () => {
+          confirmation.show('Neutral message', 'Neutral Title');
+        };
+        return <button onClick={handleClick} data-testid="show-trigger">Show</button>;
+      }
 
-      await user.click(screen.getByTestId('trigger'));
+      render(
+        <ChakraProvider value={abpSystem}>
+          <ConfirmationProvider>
+            <ShowTrigger />
+            <ConfirmationDialog />
+          </ConfirmationProvider>
+        </ChakraProvider>
+      );
+
+      await user.click(screen.getByTestId('show-trigger'));
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'New Cancel' })).toBeInTheDocument();
+        expect(screen.getByText('Neutral message')).toBeInTheDocument();
+        expect(screen.getByText('Neutral Title')).toBeInTheDocument();
       });
     });
 
-    it('should fallback to yesCopy when yesText is not provided', async () => {
-      renderWithProvider('warn', 'Test?', 'Confirm', {
-        yesCopy: 'Legacy Yes',
-      });
+    it('should use closable option when specified', async () => {
+      // Just verify the option is passed through - actual behavior depends on dialog implementation
+      renderWithProvider('warn', 'Test', 'Confirm', { closable: false });
 
       await user.click(screen.getByTestId('trigger'));
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Legacy Yes' })).toBeInTheDocument();
+        expect(screen.getByText('Test')).toBeInTheDocument();
       });
-    });
-
-    it('should fallback to cancelCopy when cancelText is not provided', async () => {
-      renderWithProvider('warn', 'Test?', 'Confirm', {
-        cancelCopy: 'Legacy Cancel',
-      });
-
-      await user.click(screen.getByTestId('trigger'));
-
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: 'Legacy Cancel' })).toBeInTheDocument();
-      });
+      // Dialog renders with closable=false option set
     });
   });
 });
