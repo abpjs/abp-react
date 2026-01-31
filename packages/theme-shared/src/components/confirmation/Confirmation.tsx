@@ -8,13 +8,23 @@ import {
 } from '@chakra-ui/react';
 import { useLocalization, type Config } from '@abpjs/core';
 import { useConfirmationState } from '../../contexts/confirmation.context';
-import { Toaster } from '../../models';
+import { Confirmation, Toaster } from '../../models';
 import {
   CheckCircle,
   Info,
   AlertTriangle,
   XCircle,
+  Circle,
 } from 'lucide-react';
+
+/**
+ * Helper to resolve LocalizationParam to string.
+ */
+function resolveLocalizationParam(param: Config.LocalizationParam | undefined): string | undefined {
+  if (param === undefined) return undefined;
+  if (typeof param === 'string') return param;
+  return param.defaultValue || param.key;
+}
 
 /**
  * Helper to extract key from LocalizationParam for the t() function.
@@ -28,8 +38,9 @@ function getLocalizationKey(param: Config.LocalizationParam | undefined): string
 
 /**
  * Get the icon component for a severity level.
+ * @since 2.0.0 - Added 'neutral' and 'warning' support, uses Confirmation.Severity
  */
-function SeverityIcon({ severity }: { severity: Toaster.Severity }): React.ReactElement {
+function SeverityIcon({ severity }: { severity: Confirmation.Severity }): React.ReactElement {
   const iconProps = { size: 24 };
 
   switch (severity) {
@@ -37,26 +48,33 @@ function SeverityIcon({ severity }: { severity: Toaster.Severity }): React.React
       return <CheckCircle {...iconProps} color="var(--chakra-colors-green-500)" />;
     case 'info':
       return <Info {...iconProps} color="var(--chakra-colors-blue-500)" />;
-    case 'warn':
+    case 'warning':
       return <AlertTriangle {...iconProps} color="var(--chakra-colors-yellow-500)" />;
     case 'error':
       return <XCircle {...iconProps} color="var(--chakra-colors-red-500)" />;
+    case 'neutral':
+    default:
+      return <Circle {...iconProps} color="var(--chakra-colors-gray-500)" />;
   }
 }
 
 /**
  * Get Chakra color palette for severity.
+ * @since 2.0.0 - Added 'neutral' and 'warning' support, uses Confirmation.Severity
  */
-function getSeverityColorPalette(severity: Toaster.Severity): string {
+function getSeverityColorPalette(severity: Confirmation.Severity): string {
   switch (severity) {
     case 'success':
       return 'green';
     case 'info':
       return 'blue';
-    case 'warn':
+    case 'warning':
       return 'yellow';
     case 'error':
       return 'red';
+    case 'neutral':
+    default:
+      return 'gray';
   }
 }
 
@@ -72,6 +90,8 @@ export interface ConfirmationDialogProps {
  * Place this component once in your app to display confirmations.
  *
  * In Chakra v3, we use Dialog with role="alertdialog" instead of AlertDialog.
+ *
+ * @since 2.0.0 - Updated to use Confirmation.DialogData structure
  *
  * @example
  * ```tsx
@@ -94,20 +114,22 @@ export function ConfirmationDialog({ className }: ConfirmationDialogProps): Reac
     return null;
   }
 
-  const { message, title, severity, options } = confirmation;
+  const { message, title, severity = 'neutral', options } = confirmation;
 
   // Localize message and title
+  const messageStr = resolveLocalizationParam(message) || '';
   const localizedMessage = t(
-    message,
-    ...(options.messageLocalizationParams || [])
+    messageStr,
+    ...(options?.messageLocalizationParams || [])
   );
-  const localizedTitle = title
-    ? t(title, ...(options.titleLocalizationParams || []))
+  const titleStr = resolveLocalizationParam(title);
+  const localizedTitle = titleStr
+    ? t(titleStr, ...(options?.titleLocalizationParams || []))
     : undefined;
 
-  // Localize button text - use yesText/cancelText with fallback to deprecated yesCopy/cancelCopy
-  const yesKey = getLocalizationKey(options.yesText) || getLocalizationKey(options.yesCopy);
-  const cancelKey = getLocalizationKey(options.cancelText) || getLocalizationKey(options.cancelCopy);
+  // Localize button text
+  const yesKey = getLocalizationKey(options?.yesText);
+  const cancelKey = getLocalizationKey(options?.cancelText);
   const yesCopy = yesKey ? t(yesKey) : t('AbpUi::Yes');
   const cancelCopy = cancelKey ? t(cancelKey) : t('AbpUi::Cancel');
 
@@ -124,7 +146,7 @@ export function ConfirmationDialog({ className }: ConfirmationDialogProps): Reac
   };
 
   const handleOpenChange = (details: { open: boolean }) => {
-    if (!details.open) {
+    if (!details.open && options?.closable !== false) {
       handleDismiss();
     }
   };
@@ -160,7 +182,7 @@ export function ConfirmationDialog({ className }: ConfirmationDialogProps): Reac
 
             <Dialog.Footer>
               <Flex gap={3}>
-                {!options.hideCancelBtn && (
+                {!options?.hideCancelBtn && (
                   <Button
                     ref={cancelRef}
                     variant="ghost"
@@ -169,7 +191,7 @@ export function ConfirmationDialog({ className }: ConfirmationDialogProps): Reac
                     {cancelCopy}
                   </Button>
                 )}
-                {!options.hideYesBtn && (
+                {!options?.hideYesBtn && (
                   <Button
                     colorPalette={getSeverityColorPalette(severity)}
                     onClick={handleConfirm}

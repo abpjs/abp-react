@@ -5,37 +5,100 @@ import React, {
   useState,
   useRef,
   useMemo,
+  useEffect,
   type ReactNode,
 } from 'react';
 import type { Config } from '@abpjs/core';
 import { Toaster } from '../models';
 
 /**
- * Internal toast message with unique ID for tracking.
+ * Internal toast with numeric ID for tracking.
+ * @since 2.0.0 - Uses Toaster.Toast structure with numeric ID
  */
-interface InternalToast extends Toaster.Message {
-  id: string;
+interface InternalToast extends Toaster.Toast {
+  /** Numeric ID assigned by the service */
+  id: number;
 }
 
 /**
+ * Subscriber callback type for toasts$ observable pattern
+ * @since 2.0.0
+ */
+type ToastsSubscriber = (toasts: Toaster.Toast[]) => void;
+
+/**
  * ToasterService interface - matches the Angular service API.
- * Updated in v1.1.0 to accept Config.LocalizationParam for message and title.
+ * @since 2.0.0 - Major changes:
+ * - Methods now return number (toast ID) instead of Observable<Status>
+ * - Added toasts$ ReplaySubject pattern via subscribe method
+ * - Removed addAll method (use show directly)
  */
 export interface ToasterService {
-  /** Show an info toast */
-  info(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options): Promise<Toaster.Status>;
-  /** Show a success toast */
-  success(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options): Promise<Toaster.Status>;
-  /** Show a warning toast */
-  warn(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options): Promise<Toaster.Status>;
-  /** Show an error toast */
-  error(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options): Promise<Toaster.Status>;
-  /** Add multiple messages at once */
-  addAll(messages: Toaster.Message[]): void;
-  /** Clear all toasts or a specific one by status */
-  clear(status?: Toaster.Status): void;
-  /** Remove a specific toast by ID */
-  remove(id: string): void;
+  /**
+   * Creates an info toast with given parameters.
+   * @param message Content of the toast
+   * @param title Title of the toast
+   * @param options Specific style or structural options for individual toast
+   * @returns Toast ID
+   * @since 2.0.0 - Now returns number instead of Promise<Status>
+   */
+  info(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Toaster.ToastOptions>): number;
+  /**
+   * Creates a success toast with given parameters.
+   * @param message Content of the toast
+   * @param title Title of the toast
+   * @param options Specific style or structural options for individual toast
+   * @returns Toast ID
+   * @since 2.0.0 - Now returns number instead of Promise<Status>
+   */
+  success(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Toaster.ToastOptions>): number;
+  /**
+   * Creates a warning toast with given parameters.
+   * @param message Content of the toast
+   * @param title Title of the toast
+   * @param options Specific style or structural options for individual toast
+   * @returns Toast ID
+   * @since 2.0.0 - Now returns number instead of Promise<Status>
+   */
+  warn(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Toaster.ToastOptions>): number;
+  /**
+   * Creates an error toast with given parameters.
+   * @param message Content of the toast
+   * @param title Title of the toast
+   * @param options Specific style or structural options for individual toast
+   * @returns Toast ID
+   * @since 2.0.0 - Now returns number instead of Promise<Status>
+   */
+  error(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Toaster.ToastOptions>): number;
+  /**
+   * Creates a toast with given parameters.
+   * @param message Content of the toast
+   * @param title Title of the toast
+   * @param severity Sets color of the toast. "success", "warning" etc.
+   * @param options Specific style or structural options for individual toast
+   * @returns Toast ID
+   * @since 2.0.0
+   */
+  show(message: Config.LocalizationParam, title?: Config.LocalizationParam, severity?: Toaster.Severity, options?: Partial<Toaster.ToastOptions>): number;
+  /**
+   * Removes the toast with given id.
+   * @param id ID of the toast to be removed.
+   * @since 2.0.0
+   */
+  remove(id: number): void;
+  /**
+   * Removes all open toasts at once.
+   * @param key Optional container key to clear toasts from specific container
+   * @since 2.0.0
+   */
+  clear(key?: string): void;
+  /**
+   * Subscribe to toast updates (mimics RxJS ReplaySubject pattern).
+   * @param subscriber Callback function called with current toasts
+   * @returns Unsubscribe function
+   * @since 2.0.0
+   */
+  subscribe(subscriber: ToastsSubscriber): () => void;
 }
 
 /**
@@ -50,32 +113,23 @@ const ToasterContext = createContext<ToasterContextValue | null>(null);
 
 /**
  * Counter for generating unique toast IDs.
+ * @since 2.0.0 - Changed to number for consistency with Angular
  */
 let toastCounter = 0;
 
 /**
- * Generate a unique ID for toasts.
+ * Generate a unique numeric ID for toasts.
+ * @since 2.0.0 - Returns number instead of string
  */
-function generateId(): string {
+function generateId(): number {
   toastCounter += 1;
-  return `toast-${Date.now()}-${toastCounter}-${Math.random().toString(36).substring(2, 9)}`;
+  return toastCounter;
 }
 
 /**
  * Default toast lifetime in milliseconds.
  */
 const DEFAULT_LIFE = 5000;
-
-/**
- * Helper to resolve LocalizationParam to string.
- * In a real implementation, this would use the localization service.
- */
-function resolveLocalizationParam(param: Config.LocalizationParam | undefined): string | undefined {
-  if (param === undefined) return undefined;
-  if (typeof param === 'string') return param;
-  // LocalizationWithDefault - return the key or defaultValue
-  return param.defaultValue || param.key;
-}
 
 export interface ToasterProviderProps {
   children: ReactNode;
@@ -87,6 +141,11 @@ export interface ToasterProviderProps {
  * This is the React equivalent of Angular's ToasterService.
  * Wrap your app with this provider to enable toast notifications.
  *
+ * @since 2.0.0 - Major changes:
+ * - Methods now return number (toast ID) instead of Promise<Status>
+ * - Added subscribe method for observable pattern
+ * - Severity 'warn' changed to 'warning'
+ *
  * @example
  * ```tsx
  * <ToasterProvider>
@@ -97,38 +156,38 @@ export interface ToasterProviderProps {
  */
 export function ToasterProvider({ children }: ToasterProviderProps): React.ReactElement {
   const [toasts, setToasts] = useState<InternalToast[]>([]);
-  const resolversRef = useRef<Map<string, (status: Toaster.Status) => void>>(new Map());
+  const subscribersRef = useRef<Set<ToastsSubscriber>>(new Set());
 
-  const remove = useCallback((id: string) => {
+  // Notify all subscribers when toasts change
+  useEffect(() => {
+    subscribersRef.current.forEach((subscriber) => {
+      subscriber(toasts);
+    });
+  }, [toasts]);
+
+  const remove = useCallback((id: number) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-    // Resolve with dismiss status when removed
-    const resolver = resolversRef.current.get(id);
-    if (resolver) {
-      resolver(Toaster.Status.dismiss);
-      resolversRef.current.delete(id);
-    }
   }, []);
 
   const show = useCallback(
     (
       message: Config.LocalizationParam,
-      title: Config.LocalizationParam | undefined,
-      severity: Toaster.Severity,
-      options?: Toaster.Options
-    ): Promise<Toaster.Status> => {
-      const id = options?.id?.toString() || generateId();
+      title?: Config.LocalizationParam,
+      severity: Toaster.Severity = 'info',
+      options?: Partial<Toaster.ToastOptions>
+    ): number => {
+      const id = typeof options?.id === 'number' ? options.id : generateId();
       const life = options?.sticky ? undefined : options?.life ?? DEFAULT_LIFE;
-
-      // Resolve localization params to strings
-      const resolvedMessage = resolveLocalizationParam(message) || '';
-      const resolvedTitle = resolveLocalizationParam(title);
 
       const toast: InternalToast = {
         id,
-        message: resolvedMessage,
-        title: resolvedTitle,
+        message,
+        title,
         severity,
-        ...options,
+        options: {
+          ...options,
+          id,
+        },
       };
 
       setToasts((prev) => [...prev, toast]);
@@ -140,55 +199,52 @@ export function ToasterProvider({ children }: ToasterProviderProps): React.React
         }, life);
       }
 
-      // Return a promise that resolves when the toast is dismissed
-      return new Promise<Toaster.Status>((resolve) => {
-        resolversRef.current.set(id, resolve);
-      });
+      return id;
     },
     [remove]
   );
 
   const info = useCallback(
-    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options) => show(message, title, 'info', options),
+    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Toaster.ToastOptions>) =>
+      show(message, title, 'info', options),
     [show]
   );
 
   const success = useCallback(
-    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options) => show(message, title, 'success', options),
+    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Toaster.ToastOptions>) =>
+      show(message, title, 'success', options),
     [show]
   );
 
   const warn = useCallback(
-    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options) => show(message, title, 'warn', options),
+    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Toaster.ToastOptions>) =>
+      show(message, title, 'warning', options),
     [show]
   );
 
   const error = useCallback(
-    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Toaster.Options) => show(message, title, 'error', options),
+    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Toaster.ToastOptions>) =>
+      show(message, title, 'error', options),
     [show]
   );
 
-  const addAll = useCallback(
-    (messages: Toaster.Message[]) => {
-      messages.forEach((msg) => {
-        show(msg.message, msg.title, msg.severity, msg);
-      });
-    },
-    [show]
-  );
-
-  const clear = useCallback((status?: Toaster.Status) => {
+  const clear = useCallback((key?: string) => {
     setToasts((prev) => {
-      prev.forEach((toast) => {
-        const resolver = resolversRef.current.get(toast.id);
-        if (resolver) {
-          resolver(status ?? Toaster.Status.dismiss);
-          resolversRef.current.delete(toast.id);
-        }
-      });
+      if (key) {
+        return prev.filter((toast) => toast.options?.containerKey !== key);
+      }
       return [];
     });
   }, []);
+
+  const subscribe = useCallback((subscriber: ToastsSubscriber): (() => void) => {
+    subscribersRef.current.add(subscriber);
+    // Immediately notify with current toasts (ReplaySubject behavior)
+    subscriber(toasts);
+    return () => {
+      subscribersRef.current.delete(subscriber);
+    };
+  }, [toasts]);
 
   const service = useMemo<ToasterService>(
     () => ({
@@ -196,11 +252,12 @@ export function ToasterProvider({ children }: ToasterProviderProps): React.React
       success,
       warn,
       error,
-      addAll,
-      clear,
+      show,
       remove,
+      clear,
+      subscribe,
     }),
-    [info, success, warn, error, addAll, clear, remove]
+    [info, success, warn, error, show, remove, clear, subscribe]
   );
 
   const value = useMemo<ToasterContextValue>(
@@ -217,6 +274,8 @@ export function ToasterProvider({ children }: ToasterProviderProps): React.React
  * @returns ToasterService with methods to show toast notifications
  * @throws Error if used outside of ToasterProvider
  *
+ * @since 2.0.0 - Service methods now return number (toast ID)
+ *
  * @example
  * ```tsx
  * function MyComponent() {
@@ -225,7 +284,8 @@ export function ToasterProvider({ children }: ToasterProviderProps): React.React
  *   const handleSave = async () => {
  *     try {
  *       await saveData();
- *       toaster.success('Data saved successfully!', 'Success');
+ *       const toastId = toaster.success('Data saved successfully!', 'Success');
+ *       // Can later remove: toaster.remove(toastId);
  *     } catch (error) {
  *       toaster.error('Failed to save data', 'Error');
  *     }

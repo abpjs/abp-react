@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import {
   ConfirmationProvider,
@@ -29,7 +29,10 @@ describe('ConfirmationContext', () => {
       expect(typeof result.current.success).toBe('function');
       expect(typeof result.current.warn).toBe('function');
       expect(typeof result.current.error).toBe('function');
+      expect(typeof result.current.show).toBe('function');
       expect(typeof result.current.clear).toBe('function');
+      expect(typeof result.current.listenToEscape).toBe('function');
+      expect(typeof result.current.subscribe).toBe('function');
     });
 
     it('should show an info confirmation', async () => {
@@ -80,7 +83,8 @@ describe('ConfirmationContext', () => {
         result.current.confirmation.warn('Warning message', 'Warning title');
       });
 
-      expect(result.current.state.confirmation?.severity).toBe('warn');
+      // v2.0.0 - warn() method now uses 'warning' severity
+      expect(result.current.state.confirmation?.severity).toBe('warning');
     });
 
     it('should show an error confirmation', async () => {
@@ -263,6 +267,7 @@ describe('ConfirmationContext', () => {
       expect(result.current.state.confirmation?.message).toBe('Second message');
     });
 
+    // v2.0.0 - Confirmation.Options no longer has yesCopy/cancelCopy
     it('should include custom options', async () => {
       const { result } = renderHook(
         () => ({
@@ -274,15 +279,15 @@ describe('ConfirmationContext', () => {
 
       act(() => {
         result.current.confirmation.warn('Delete this item?', 'Confirm Delete', {
-          yesCopy: 'Delete',
-          cancelCopy: 'Keep',
+          yesText: 'Delete',
+          cancelText: 'Keep',
           hideCancelBtn: false,
           hideYesBtn: false,
         });
       });
 
-      expect(result.current.state.confirmation?.options.yesCopy).toBe('Delete');
-      expect(result.current.state.confirmation?.options.cancelCopy).toBe('Keep');
+      expect(result.current.state.confirmation?.options?.yesText).toBe('Delete');
+      expect(result.current.state.confirmation?.options?.cancelText).toBe('Keep');
     });
 
     it('should support hideCancelBtn option', async () => {
@@ -300,7 +305,7 @@ describe('ConfirmationContext', () => {
         });
       });
 
-      expect(result.current.state.confirmation?.options.hideCancelBtn).toBe(true);
+      expect(result.current.state.confirmation?.options?.hideCancelBtn).toBe(true);
     });
 
     it('should support hideYesBtn option', async () => {
@@ -318,7 +323,304 @@ describe('ConfirmationContext', () => {
         });
       });
 
-      expect(result.current.state.confirmation?.options.hideYesBtn).toBe(true);
+      expect(result.current.state.confirmation?.options?.hideYesBtn).toBe(true);
+    });
+
+    // v2.0.0 - show method
+    describe('show method (v2.0.0)', () => {
+      it('should create confirmation with specified severity', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.confirmation.show('Message', 'Title', 'neutral');
+        });
+
+        expect(result.current.state.confirmation?.severity).toBe('neutral');
+      });
+
+      it('should default to neutral severity if not specified', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.confirmation.show('Message', 'Title');
+        });
+
+        expect(result.current.state.confirmation?.severity).toBe('neutral');
+      });
+    });
+
+    // v2.0.0 - subscribe method
+    describe('subscribe method (v2.0.0)', () => {
+      it('should notify subscriber immediately with current confirmation', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        const subscriber = vi.fn();
+
+        act(() => {
+          result.current.confirmation.info('Test', 'Title');
+        });
+
+        act(() => {
+          result.current.confirmation.subscribe(subscriber);
+        });
+
+        expect(subscriber).toHaveBeenCalledWith(expect.objectContaining({
+          message: 'Test',
+          title: 'Title',
+        }));
+      });
+
+      it('should return unsubscribe function', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        const subscriber = vi.fn();
+        let unsubscribe: () => void;
+
+        act(() => {
+          unsubscribe = result.current.confirmation.subscribe(subscriber);
+        });
+
+        expect(typeof unsubscribe!).toBe('function');
+      });
+
+      it('should stop receiving updates after unsubscribe', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        const subscriber = vi.fn();
+        let unsubscribe: () => void;
+
+        act(() => {
+          unsubscribe = result.current.confirmation.subscribe(subscriber);
+        });
+
+        // Called once on subscribe with null
+        expect(subscriber).toHaveBeenCalledTimes(1);
+        subscriber.mockClear();
+
+        // Unsubscribe
+        act(() => {
+          unsubscribe!();
+        });
+
+        // Show a confirmation - subscriber should NOT be called
+        act(() => {
+          result.current.confirmation.info('New message', 'New title');
+        });
+
+        // Subscriber should not be called after unsubscribe
+        expect(subscriber).not.toHaveBeenCalled();
+      });
+
+      it('should notify subscriber on confirmation changes', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        const subscriber = vi.fn();
+
+        act(() => {
+          result.current.confirmation.subscribe(subscriber);
+        });
+
+        // Called once on subscribe with null
+        expect(subscriber).toHaveBeenCalledWith(null);
+        subscriber.mockClear();
+
+        // Show a confirmation
+        act(() => {
+          result.current.confirmation.info('Test', 'Title');
+        });
+
+        // Wait for the effect to run
+        await waitFor(() => {
+          expect(subscriber).toHaveBeenCalled();
+        });
+      });
+    });
+
+    // v2.0.0 - listenToEscape method
+    describe('listenToEscape method (v2.0.0)', () => {
+      it('should enable escape key listening', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.confirmation.listenToEscape();
+        });
+
+        // Method should not throw
+        expect(true).toBe(true);
+      });
+
+      it('should dismiss confirmation when escape is pressed after listenToEscape', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        let resolvedStatus: Toaster.Status | undefined;
+
+        act(() => {
+          result.current.confirmation.listenToEscape();
+        });
+
+        act(() => {
+          result.current.confirmation.info('Test message', 'Test').then((status) => {
+            resolvedStatus = status;
+          });
+        });
+
+        expect(result.current.state.confirmation).not.toBeNull();
+
+        // Simulate escape key press
+        act(() => {
+          const event = new KeyboardEvent('keydown', { key: 'Escape' });
+          document.dispatchEvent(event);
+        });
+
+        await waitFor(() => {
+          expect(resolvedStatus).toBe(Toaster.Status.dismiss);
+        });
+
+        expect(result.current.state.confirmation).toBeNull();
+      });
+
+      it('should not dismiss when closable is false', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.confirmation.listenToEscape();
+        });
+
+        act(() => {
+          result.current.confirmation.info('Test message', 'Test', { closable: false });
+        });
+
+        expect(result.current.state.confirmation).not.toBeNull();
+
+        // Simulate escape key press
+        act(() => {
+          const event = new KeyboardEvent('keydown', { key: 'Escape' });
+          document.dispatchEvent(event);
+        });
+
+        // Should still be open
+        expect(result.current.state.confirmation).not.toBeNull();
+      });
+
+      it('should not dismiss when escape listener is not enabled', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        // Do NOT call listenToEscape()
+
+        act(() => {
+          result.current.confirmation.info('Test message', 'Test');
+        });
+
+        expect(result.current.state.confirmation).not.toBeNull();
+
+        // Simulate escape key press
+        act(() => {
+          const event = new KeyboardEvent('keydown', { key: 'Escape' });
+          document.dispatchEvent(event);
+        });
+
+        // Should still be open since listenToEscape was not called
+        expect(result.current.state.confirmation).not.toBeNull();
+      });
+    });
+
+    // v2.0.0 - LocalizationParam support
+    describe('LocalizationParam support (v2.0.0)', () => {
+      it('should store LocalizationWithDefault as-is for message', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        const locParam = { key: 'Test::Message', defaultValue: 'Default message' };
+
+        act(() => {
+          result.current.confirmation.info(locParam, 'Test title');
+        });
+
+        expect(result.current.state.confirmation?.message).toEqual(locParam);
+      });
+
+      it('should store LocalizationWithDefault as-is for title', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        const titleParam = { key: 'Test::Title', defaultValue: 'Default title' };
+
+        act(() => {
+          result.current.confirmation.success('Message text', titleParam);
+        });
+
+        expect(result.current.state.confirmation?.title).toEqual(titleParam);
+      });
     });
   });
 

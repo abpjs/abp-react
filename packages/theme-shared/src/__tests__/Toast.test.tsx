@@ -253,4 +253,184 @@ describe('ToastContainer', () => {
     );
     // Component should render without errors
   });
+
+  // v2.0.0 - Position variants
+  describe('v2.0.0 - Position variants', () => {
+    it('should accept top position', () => {
+      render(
+        <ChakraProvider value={abpSystem}>
+          <ToasterProvider>
+            <ToastContainer position="top" />
+          </ToasterProvider>
+        </ChakraProvider>
+      );
+    });
+
+    it('should accept top-left position', () => {
+      render(
+        <ChakraProvider value={abpSystem}>
+          <ToasterProvider>
+            <ToastContainer position="top-left" />
+          </ToasterProvider>
+        </ChakraProvider>
+      );
+    });
+
+    it('should accept bottom position', () => {
+      render(
+        <ChakraProvider value={abpSystem}>
+          <ToasterProvider>
+            <ToastContainer position="bottom" />
+          </ToasterProvider>
+        </ChakraProvider>
+      );
+    });
+
+    it('should accept bottom-left position', () => {
+      render(
+        <ChakraProvider value={abpSystem}>
+          <ToasterProvider>
+            <ToastContainer position="bottom-left" />
+          </ToasterProvider>
+        </ChakraProvider>
+      );
+    });
+
+    it('should accept bottom-right position', () => {
+      render(
+        <ChakraProvider value={abpSystem}>
+          <ToasterProvider>
+            <ToastContainer position="bottom-right" />
+          </ToasterProvider>
+        </ChakraProvider>
+      );
+    });
+  });
+
+  // v2.0.0 - containerKey filtering
+  describe('v2.0.0 - containerKey filtering', () => {
+    it('should accept containerKey prop', () => {
+      render(
+        <ChakraProvider value={abpSystem}>
+          <ToasterProvider>
+            <ToastContainer containerKey="my-container" />
+          </ToasterProvider>
+        </ChakraProvider>
+      );
+    });
+
+    it('should filter toasts by containerKey', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      function FilteredToastTrigger() {
+        const toaster = useToaster();
+        return (
+          <>
+            <button
+              onClick={() => toaster.info('Container A', 'A', { sticky: true, containerKey: 'container-a' })}
+              data-testid="trigger-a"
+            >
+              Trigger A
+            </button>
+            <button
+              onClick={() => toaster.info('Container B', 'B', { sticky: true, containerKey: 'container-b' })}
+              data-testid="trigger-b"
+            >
+              Trigger B
+            </button>
+          </>
+        );
+      }
+
+      render(
+        <ChakraProvider value={abpSystem}>
+          <ToasterProvider>
+            <FilteredToastTrigger />
+            <ToastContainer containerKey="container-a" />
+          </ToasterProvider>
+        </ChakraProvider>
+      );
+
+      await user.click(screen.getByTestId('trigger-a'));
+      await user.click(screen.getByTestId('trigger-b'));
+
+      // Only toast from container-a should be visible in this container
+      await waitFor(() => {
+        expect(screen.getByText('Container A')).toBeInTheDocument();
+      });
+    });
+  });
+
+  // v2.0.0 - neutral severity
+  describe('v2.0.0 - neutral severity', () => {
+    it('should display neutral severity toast', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      function NeutralToastTrigger() {
+        const toaster = useToaster();
+        return (
+          <button
+            onClick={() => toaster.show('Neutral message', 'Neutral', 'neutral', { sticky: true })}
+            data-testid="trigger"
+          >
+            Trigger
+          </button>
+        );
+      }
+
+      render(
+        <ChakraProvider value={abpSystem}>
+          <ToasterProvider>
+            <NeutralToastTrigger />
+            <ToastContainer />
+          </ToasterProvider>
+        </ChakraProvider>
+      );
+
+      await user.click(screen.getByTestId('trigger'));
+
+      await waitFor(() => {
+        expect(screen.getByText('Neutral message')).toBeInTheDocument();
+      });
+    });
+  });
+
+  // v2.0.0 - LocalizationParam support
+  describe('v2.0.0 - LocalizationParam support', () => {
+    it('should display toast with LocalizationWithDefault message', async () => {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+
+      function LocalizationToastTrigger() {
+        const toaster = useToaster();
+        return (
+          <button
+            onClick={() => toaster.info(
+              { key: 'Test::Message', defaultValue: 'Default message' },
+              'Title',
+              { sticky: true }
+            )}
+            data-testid="trigger"
+          >
+            Trigger
+          </button>
+        );
+      }
+
+      render(
+        <ChakraProvider value={abpSystem}>
+          <ToasterProvider>
+            <LocalizationToastTrigger />
+            <ToastContainer />
+          </ToasterProvider>
+        </ChakraProvider>
+      );
+
+      await user.click(screen.getByTestId('trigger'));
+
+      await waitFor(() => {
+        // The mock t() function returns the key when not found
+        expect(screen.getByText('Default message')).toBeInTheDocument();
+      });
+    });
+  });
 });

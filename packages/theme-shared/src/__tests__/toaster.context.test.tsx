@@ -37,9 +37,10 @@ describe('ToasterContext', () => {
       expect(typeof result.current.success).toBe('function');
       expect(typeof result.current.warn).toBe('function');
       expect(typeof result.current.error).toBe('function');
-      expect(typeof result.current.addAll).toBe('function');
+      expect(typeof result.current.show).toBe('function');
       expect(typeof result.current.clear).toBe('function');
       expect(typeof result.current.remove).toBe('function');
+      expect(typeof result.current.subscribe).toBe('function');
     });
 
     it('should add an info toast', async () => {
@@ -92,7 +93,8 @@ describe('ToasterContext', () => {
       });
 
       expect(result.current.toasts).toHaveLength(1);
-      expect(result.current.toasts[0].severity).toBe('warn');
+      // v2.0.0 - warn() method now uses 'warning' severity
+      expect(result.current.toasts[0].severity).toBe('warning');
     });
 
     it('should add an error toast', async () => {
@@ -167,19 +169,22 @@ describe('ToasterContext', () => {
         { wrapper }
       );
 
+      let toast1Id: number;
+      let toast2Id: number;
+
       act(() => {
-        result.current.toaster.info('Message 1', 'Title 1', { id: 'toast-1', sticky: true });
-        result.current.toaster.info('Message 2', 'Title 2', { id: 'toast-2', sticky: true });
+        toast1Id = result.current.toaster.info('Message 1', 'Title 1', { sticky: true });
+        toast2Id = result.current.toaster.info('Message 2', 'Title 2', { sticky: true });
       });
 
       expect(result.current.toasts).toHaveLength(2);
 
       act(() => {
-        result.current.toaster.remove('toast-1');
+        result.current.toaster.remove(toast1Id);
       });
 
       expect(result.current.toasts).toHaveLength(1);
-      expect(result.current.toasts[0].id).toBe('toast-2');
+      expect(result.current.toasts[0].id).toBe(toast2Id);
     });
 
     it('should clear all toasts', async () => {
@@ -206,7 +211,8 @@ describe('ToasterContext', () => {
       expect(result.current.toasts).toHaveLength(0);
     });
 
-    it('should add multiple toasts with addAll', async () => {
+    // v2.0.0 - methods return number instead of Promise<Status>
+    it('should return toast ID when creating a toast (v2.0.0)', async () => {
       const { result } = renderHook(
         () => ({
           toaster: useToaster(),
@@ -215,52 +221,18 @@ describe('ToasterContext', () => {
         { wrapper }
       );
 
-      act(() => {
-        result.current.toaster.addAll([
-          { message: 'Message 1', severity: 'info', sticky: true },
-          { message: 'Message 2', severity: 'success', sticky: true },
-          { message: 'Message 3', severity: 'error', sticky: true },
-        ]);
-      });
-
-      expect(result.current.toasts).toHaveLength(3);
-      expect(result.current.toasts[0].severity).toBe('info');
-      expect(result.current.toasts[1].severity).toBe('success');
-      expect(result.current.toasts[2].severity).toBe('error');
-    });
-
-    it('should resolve promise with dismiss status when toast is removed', async () => {
-      const { result } = renderHook(
-        () => ({
-          toaster: useToaster(),
-          toasts: useToasts(),
-        }),
-        { wrapper }
-      );
-
-      let toastPromise: Promise<Toaster.Status> | undefined;
+      let toastId: number;
 
       act(() => {
-        toastPromise = result.current.toaster.info('Test message', 'Test', {
-          id: 'test-toast',
-          sticky: true,
-        });
+        toastId = result.current.toaster.info('Test message', 'Test', { sticky: true });
       });
 
+      expect(typeof toastId!).toBe('number');
       expect(result.current.toasts).toHaveLength(1);
-
-      act(() => {
-        result.current.toaster.remove('test-toast');
-      });
-
-      expect(result.current.toasts).toHaveLength(0);
-
-      // The promise should resolve with dismiss status
-      const status = await toastPromise;
-      expect(status).toBe(Toaster.Status.dismiss);
+      expect(result.current.toasts[0].id).toBe(toastId!);
     });
 
-    it('should include localization params in toast', async () => {
+    it('should include localization params in toast options', async () => {
       const { result } = renderHook(
         () => ({
           toaster: useToaster(),
@@ -277,13 +249,14 @@ describe('ToasterContext', () => {
         });
       });
 
-      expect(result.current.toasts[0].messageLocalizationParams).toEqual(['param1', 'param2']);
-      expect(result.current.toasts[0].titleLocalizationParams).toEqual(['titleParam']);
+      // v2.0.0 - localization params are in options property
+      expect(result.current.toasts[0].options?.messageLocalizationParams).toEqual(['param1', 'param2']);
+      expect(result.current.toasts[0].options?.titleLocalizationParams).toEqual(['titleParam']);
     });
 
-    // v1.1.0 - LocalizationParam support
-    describe('LocalizationParam support (v1.1.0)', () => {
-      it('should accept LocalizationWithDefault for message', async () => {
+    // v2.0.0 - LocalizationParam is stored as-is, not resolved
+    describe('LocalizationParam support (v2.0.0)', () => {
+      it('should store LocalizationWithDefault as-is for message', async () => {
         const { result } = renderHook(
           () => ({
             toaster: useToaster(),
@@ -292,20 +265,18 @@ describe('ToasterContext', () => {
           { wrapper }
         );
 
+        const locParam = { key: 'Test::Message', defaultValue: 'Default message' };
+
         act(() => {
-          result.current.toaster.info(
-            { key: 'Test::Message', defaultValue: 'Default message' },
-            'Test title',
-            { sticky: true }
-          );
+          result.current.toaster.info(locParam, 'Test title', { sticky: true });
         });
 
         expect(result.current.toasts).toHaveLength(1);
-        // Should resolve to defaultValue since localization service is not available
-        expect(result.current.toasts[0].message).toBe('Default message');
+        // v2.0.0 - LocalizationParam is stored as-is, resolved in component
+        expect(result.current.toasts[0].message).toEqual(locParam);
       });
 
-      it('should accept LocalizationWithDefault for title', async () => {
+      it('should store LocalizationWithDefault as-is for title', async () => {
         const { result } = renderHook(
           () => ({
             toaster: useToaster(),
@@ -314,19 +285,17 @@ describe('ToasterContext', () => {
           { wrapper }
         );
 
+        const titleParam = { key: 'Test::Title', defaultValue: 'Default title' };
+
         act(() => {
-          result.current.toaster.success(
-            'Message text',
-            { key: 'Test::Title', defaultValue: 'Default title' },
-            { sticky: true }
-          );
+          result.current.toaster.success('Message text', titleParam, { sticky: true });
         });
 
         expect(result.current.toasts).toHaveLength(1);
-        expect(result.current.toasts[0].title).toBe('Default title');
+        expect(result.current.toasts[0].title).toEqual(titleParam);
       });
 
-      it('should accept LocalizationWithDefault for both message and title', async () => {
+      it('should store both message and title as LocalizationParam', async () => {
         const { result } = renderHook(
           () => ({
             toaster: useToaster(),
@@ -335,20 +304,19 @@ describe('ToasterContext', () => {
           { wrapper }
         );
 
+        const messageParam = { key: 'Test::Warning', defaultValue: 'Warning message' };
+        const titleParam = { key: 'Test::WarningTitle', defaultValue: 'Warning title' };
+
         act(() => {
-          result.current.toaster.warn(
-            { key: 'Test::Warning', defaultValue: 'Warning message' },
-            { key: 'Test::WarningTitle', defaultValue: 'Warning title' },
-            { sticky: true }
-          );
+          result.current.toaster.warn(messageParam, titleParam, { sticky: true });
         });
 
         expect(result.current.toasts).toHaveLength(1);
-        expect(result.current.toasts[0].message).toBe('Warning message');
-        expect(result.current.toasts[0].title).toBe('Warning title');
+        expect(result.current.toasts[0].message).toEqual(messageParam);
+        expect(result.current.toasts[0].title).toEqual(titleParam);
       });
 
-      it('should use key when defaultValue is not provided', async () => {
+      it('should handle string message and undefined title', async () => {
         const { result } = renderHook(
           () => ({
             toaster: useToaster(),
@@ -358,41 +326,15 @@ describe('ToasterContext', () => {
         );
 
         act(() => {
-          result.current.toaster.error(
-            { key: 'Test::ErrorKey', defaultValue: '' },
-            undefined,
-            { sticky: true }
-          );
+          result.current.toaster.error('Error message', undefined, { sticky: true });
         });
 
         expect(result.current.toasts).toHaveLength(1);
-        // When defaultValue is empty, should fall back to key
-        expect(result.current.toasts[0].message).toBe('Test::ErrorKey');
-      });
-
-      it('should handle undefined title with LocalizationWithDefault message', async () => {
-        const { result } = renderHook(
-          () => ({
-            toaster: useToaster(),
-            toasts: useToasts(),
-          }),
-          { wrapper }
-        );
-
-        act(() => {
-          result.current.toaster.info(
-            { key: 'Test::NoTitle', defaultValue: 'No title message' },
-            undefined,
-            { sticky: true }
-          );
-        });
-
-        expect(result.current.toasts).toHaveLength(1);
-        expect(result.current.toasts[0].message).toBe('No title message');
+        expect(result.current.toasts[0].message).toBe('Error message');
         expect(result.current.toasts[0].title).toBeUndefined();
       });
 
-      it('should work with all severity methods using LocalizationParam', async () => {
+      it('should work with all severity methods', async () => {
         const { result } = renderHook(
           () => ({
             toaster: useToaster(),
@@ -402,10 +344,10 @@ describe('ToasterContext', () => {
         );
 
         act(() => {
-          result.current.toaster.info({ key: 'info', defaultValue: 'Info' }, undefined, { sticky: true });
-          result.current.toaster.success({ key: 'success', defaultValue: 'Success' }, undefined, { sticky: true });
-          result.current.toaster.warn({ key: 'warn', defaultValue: 'Warn' }, undefined, { sticky: true });
-          result.current.toaster.error({ key: 'error', defaultValue: 'Error' }, undefined, { sticky: true });
+          result.current.toaster.info('Info', undefined, { sticky: true });
+          result.current.toaster.success('Success', undefined, { sticky: true });
+          result.current.toaster.warn('Warn', undefined, { sticky: true });
+          result.current.toaster.error('Error', undefined, { sticky: true });
         });
 
         expect(result.current.toasts).toHaveLength(4);
@@ -413,6 +355,192 @@ describe('ToasterContext', () => {
         expect(result.current.toasts[1].message).toBe('Success');
         expect(result.current.toasts[2].message).toBe('Warn');
         expect(result.current.toasts[3].message).toBe('Error');
+      });
+    });
+
+    // v2.0.0 - show method
+    describe('show method (v2.0.0)', () => {
+      it('should create toast with specified severity', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.show('Message', 'Title', 'neutral', { sticky: true });
+        });
+
+        expect(result.current.toasts).toHaveLength(1);
+        expect(result.current.toasts[0].severity).toBe('neutral');
+      });
+
+      it('should default to info severity if not specified', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.show('Message', 'Title', undefined, { sticky: true });
+        });
+
+        expect(result.current.toasts).toHaveLength(1);
+        expect(result.current.toasts[0].severity).toBe('info');
+      });
+    });
+
+    // v2.0.0 - subscribe method
+    describe('subscribe method (v2.0.0)', () => {
+      it('should notify subscriber immediately with current toasts', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        const subscriber = vi.fn();
+
+        act(() => {
+          result.current.toaster.info('Test', undefined, { sticky: true });
+        });
+
+        act(() => {
+          result.current.toaster.subscribe(subscriber);
+        });
+
+        // Should be called immediately with current toasts
+        expect(subscriber).toHaveBeenCalledWith(expect.arrayContaining([
+          expect.objectContaining({ message: 'Test' })
+        ]));
+      });
+
+      it('should return unsubscribe function', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        const subscriber = vi.fn();
+        let unsubscribe: () => void;
+
+        act(() => {
+          unsubscribe = result.current.toaster.subscribe(subscriber);
+        });
+
+        expect(typeof unsubscribe!).toBe('function');
+
+        // Unsubscribe and verify no more calls
+        act(() => {
+          unsubscribe!();
+        });
+
+        subscriber.mockClear();
+
+        act(() => {
+          result.current.toaster.info('New toast', undefined, { sticky: true });
+        });
+
+        // Subscriber should not be called after unsubscribe
+        expect(subscriber).not.toHaveBeenCalled();
+      });
+
+      it('should notify subscriber when toasts change', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        const subscriber = vi.fn();
+
+        act(() => {
+          result.current.toaster.subscribe(subscriber);
+        });
+
+        // Called once on subscribe with empty array
+        expect(subscriber).toHaveBeenCalledWith([]);
+        subscriber.mockClear();
+
+        // Add a toast
+        act(() => {
+          result.current.toaster.info('Test', undefined, { sticky: true });
+        });
+
+        // Wait for the effect to run and notify subscriber
+        await vi.waitFor(() => {
+          expect(subscriber).toHaveBeenCalled();
+        });
+
+        // Should have been called with array containing the toast
+        expect(subscriber).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({ message: 'Test' })
+          ])
+        );
+      });
+    });
+
+    // v2.0.0 - clear with containerKey
+    describe('clear with containerKey (v2.0.0)', () => {
+      it('should clear only toasts with matching containerKey', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.info('Toast 1', undefined, { sticky: true, containerKey: 'container-a' });
+          result.current.toaster.info('Toast 2', undefined, { sticky: true, containerKey: 'container-b' });
+          result.current.toaster.info('Toast 3', undefined, { sticky: true, containerKey: 'container-a' });
+        });
+
+        expect(result.current.toasts).toHaveLength(3);
+
+        act(() => {
+          result.current.toaster.clear('container-a');
+        });
+
+        expect(result.current.toasts).toHaveLength(1);
+        expect(result.current.toasts[0].options?.containerKey).toBe('container-b');
+      });
+
+      it('should clear all toasts when containerKey is not provided', async () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.info('Toast 1', undefined, { sticky: true, containerKey: 'container-a' });
+          result.current.toaster.info('Toast 2', undefined, { sticky: true });
+        });
+
+        expect(result.current.toasts).toHaveLength(2);
+
+        act(() => {
+          result.current.toaster.clear();
+        });
+
+        expect(result.current.toasts).toHaveLength(0);
       });
     });
   });

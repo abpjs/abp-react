@@ -212,25 +212,31 @@ function TestErrorComponentDisplay() {
 
 function TestToaster() {
   const toaster = useToaster()
+  const [lastToastId, setLastToastId] = useState<number | null>(null)
 
   const showSuccessToast = () => {
-    toaster.success('Operation completed successfully!', 'Success')
+    const id = toaster.success('Operation completed successfully!', 'Success')
+    setLastToastId(id)
   }
 
   const showInfoToast = () => {
-    toaster.info('Here is some information for you.', 'Info')
+    const id = toaster.info('Here is some information for you.', 'Info')
+    setLastToastId(id)
   }
 
   const showWarningToast = () => {
-    toaster.warn('Please be careful with this action.', 'Warning')
+    const id = toaster.warn('Please be careful with this action.', 'Warning')
+    setLastToastId(id)
   }
 
   const showErrorToast = () => {
-    toaster.error('Something went wrong!', 'Error')
+    const id = toaster.error('Something went wrong!', 'Error')
+    setLastToastId(id)
   }
 
   const showStickyToast = () => {
-    toaster.info('This toast will stay until you close it.', 'Sticky Toast', { sticky: true })
+    const id = toaster.info('This toast will stay until you close it.', 'Sticky Toast', { sticky: true })
+    setLastToastId(id)
   }
 
   const showMultipleToasts = () => {
@@ -241,18 +247,40 @@ function TestToaster() {
 
   // v1.1.0: LocalizationParam support for message and title
   const showLocalizationParamToast = () => {
-    toaster.success(
+    const id = toaster.success(
       { key: 'AbpUi::Success', defaultValue: 'Operation completed successfully!' },
       { key: 'AbpUi::SuccessTitle', defaultValue: 'Success' }
     )
+    setLastToastId(id)
   }
 
   const showMixedParamToast = () => {
     // Mix of string and LocalizationParam
-    toaster.info(
+    const id = toaster.info(
       { key: 'AbpUi::Info', defaultValue: 'This message uses LocalizationParam' },
       'Plain String Title'
     )
+    setLastToastId(id)
+  }
+
+  // v2.0.0: show() method with severity parameter
+  const showNeutralToast = () => {
+    const id = toaster.show('This is a neutral message.', 'Neutral', 'neutral', { sticky: true })
+    setLastToastId(id)
+  }
+
+  // v2.0.0: remove() method to manually dismiss a toast
+  const removeLastToast = () => {
+    if (lastToastId !== null) {
+      toaster.remove(lastToastId)
+      setLastToastId(null)
+    }
+  }
+
+  // v2.0.0: clear() with optional containerKey
+  const clearAllToasts = () => {
+    toaster.clear()
+    setLastToastId(null)
   }
 
   return (
@@ -268,6 +296,11 @@ function TestToaster() {
           <button onClick={showWarningToast}>Warning Toast</button>
           <button onClick={showErrorToast}>Error Toast</button>
         </div>
+        {lastToastId !== null && (
+          <p style={{ marginTop: '0.5rem', color: '#888', fontSize: '0.85rem' }}>
+            Last toast ID: {lastToastId}
+          </p>
+        )}
       </div>
 
       <div className="test-card">
@@ -289,6 +322,21 @@ function TestToaster() {
           <button onClick={showMixedParamToast}>Mixed (object + string)</button>
         </div>
       </div>
+
+      <div className="test-card">
+        <h3>v2.0.0: New Features</h3>
+        <p>New <code>show()</code> method with severity parameter, <code>remove()</code> to dismiss by ID, <code>neutral</code> severity.</p>
+        <p style={{ fontSize: '0.85rem', color: '#888' }}>
+          Methods now return a numeric toast ID instead of a Promise, enabling manual removal.
+        </p>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+          <button onClick={showNeutralToast}>Neutral Toast (v2.0.0)</button>
+          <button onClick={removeLastToast} disabled={lastToastId === null}>
+            Remove Last Toast
+          </button>
+          <button onClick={clearAllToasts}>Clear All Toasts</button>
+        </div>
+      </div>
     </div>
   )
 }
@@ -296,6 +344,7 @@ function TestToaster() {
 function TestConfirmation() {
   const confirmation = useConfirmation()
   const [confirmResult, setConfirmResult] = useState<string | null>(null)
+  const [escapeEnabled, setEscapeEnabled] = useState(false)
 
   const showConfirmation = async () => {
     setConfirmResult(null)
@@ -306,22 +355,23 @@ function TestConfirmation() {
     setConfirmResult(status === Toaster.Status.confirm ? 'Confirmed!' : status === Toaster.Status.reject ? 'Cancelled' : 'Dismissed')
   }
 
+  // v2.0.0: yesCopy/cancelCopy removed, use yesText/cancelText instead
   const showDeleteConfirmation = async () => {
     setConfirmResult(null)
     const status = await confirmation.error(
       'This action cannot be undone. Are you sure you want to delete this item?',
       'Delete Confirmation',
-      { yesCopy: 'Delete', cancelCopy: 'Keep' }
+      { yesText: 'Delete', cancelText: 'Keep' }
     )
     setConfirmResult(status === Toaster.Status.confirm ? 'Item deleted!' : 'Deletion cancelled')
   }
 
-  // v1.1.0: New cancelText and yesText props (replace deprecated cancelCopy/yesCopy)
+  // v1.1.0: New cancelText and yesText props
   const showV110Confirmation = async () => {
     setConfirmResult(null)
     const status = await confirmation.warn(
-      'This uses the new v1.1.0 cancelText and yesText props.',
-      'v1.1.0 Confirmation',
+      'This uses the yesText and cancelText props.',
+      'Custom Button Text',
       {
         yesText: 'Proceed',
         cancelText: 'Go Back'
@@ -344,12 +394,13 @@ function TestConfirmation() {
     setConfirmResult(status === Toaster.Status.confirm ? 'Yes selected!' : 'No selected')
   }
 
+  // v2.0.0: yesCopy removed, use yesText
   const showInfoConfirmation = async () => {
     setConfirmResult(null)
     const status = await confirmation.info(
       'Your changes have been saved successfully.',
       'Saved',
-      { hideCancelBtn: true, yesCopy: 'OK' }
+      { hideCancelBtn: true, yesText: 'OK' }
     )
     setConfirmResult(status === Toaster.Status.confirm ? 'Acknowledged' : 'Dismissed')
   }
@@ -361,6 +412,29 @@ function TestConfirmation() {
       'Success'
     )
     setConfirmResult(status === Toaster.Status.confirm ? 'Confirmed' : 'Dismissed')
+  }
+
+  // v2.0.0: show() method with severity parameter
+  const showNeutralConfirmation = async () => {
+    setConfirmResult(null)
+    const status = await confirmation.show(
+      'This is a neutral confirmation with no specific severity.',
+      'Neutral Confirmation',
+      'neutral'
+    )
+    setConfirmResult(status === Toaster.Status.confirm ? 'Confirmed!' : 'Dismissed')
+  }
+
+  // v2.0.0: listenToEscape() method
+  const enableEscapeKey = () => {
+    confirmation.listenToEscape()
+    setEscapeEnabled(true)
+  }
+
+  // v2.0.0: clear() method
+  const clearConfirmation = () => {
+    confirmation.clear()
+    setConfirmResult('Cleared programmatically')
   }
 
   return (
@@ -385,17 +459,29 @@ function TestConfirmation() {
 
       <div className="test-card">
         <h3>v1.1.0: cancelText & yesText Props</h3>
-        <p>New props that replace the deprecated <code>cancelCopy</code> and <code>yesCopy</code>.</p>
-        <p style={{ fontSize: '0.85rem', color: '#888' }}>
-          These props also support <code>LocalizationParam</code> objects with <code>key</code> and <code>defaultValue</code>.
-        </p>
+        <p>Props for custom button text. Also support <code>LocalizationParam</code> objects.</p>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
           <button onClick={showV110Confirmation}>yesText/cancelText (strings)</button>
           <button onClick={showLocalizationParamConfirmation}>LocalizationParam objects</button>
         </div>
-        {confirmResult && (
-          <p style={{ marginTop: '0.5rem', color: confirmResult.includes('!') ? '#6f6' : '#f88' }}>
-            Result: {confirmResult}
+      </div>
+
+      <div className="test-card">
+        <h3>v2.0.0: New Features</h3>
+        <p>New <code>show()</code> method, <code>neutral</code> severity, <code>listenToEscape()</code>, <code>clear()</code>.</p>
+        <p style={{ fontSize: '0.85rem', color: '#888' }}>
+          Note: <code>yesCopy</code> and <code>cancelCopy</code> have been removed. Use <code>yesText</code> and <code>cancelText</code>.
+        </p>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+          <button onClick={showNeutralConfirmation}>Neutral Confirmation</button>
+          <button onClick={enableEscapeKey} disabled={escapeEnabled}>
+            {escapeEnabled ? 'Escape Enabled' : 'Enable Escape Key'}
+          </button>
+          <button onClick={clearConfirmation}>Clear (dismiss)</button>
+        </div>
+        {escapeEnabled && (
+          <p style={{ marginTop: '0.5rem', color: '#6f6', fontSize: '0.85rem' }}>
+            Escape key listener enabled. Press Escape to dismiss open confirmations.
           </p>
         )}
       </div>
