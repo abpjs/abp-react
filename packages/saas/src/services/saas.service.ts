@@ -1,6 +1,6 @@
 /**
  * SaaS Service
- * Translated from @volo/abp.ng.saas v0.7.2
+ * Translated from @volo/abp.ng.saas v2.0.0
  *
  * Provides REST API methods for managing tenants, editions,
  * and connection strings in a multi-tenant SaaS application.
@@ -13,7 +13,7 @@ import type { Saas } from '../models';
  * Service for SaaS operations including tenant and edition management.
  * This service wraps all REST API calls for the SaaS module.
  *
- * @since 0.7.2
+ * @since 2.0.0
  */
 export class SaasService {
   constructor(private restService: RestService) {}
@@ -200,6 +200,18 @@ export class SaasService {
     return this.restService.request<null, Saas.UsageStatisticsResponse>({
       method: 'GET',
       url: '/api/saas/editions/statistics/usage-statistic',
+    });
+  }
+
+  /**
+   * Get the latest tenants (for dashboard widget)
+   * @returns Promise with array of latest tenants
+   * @since 2.0.0
+   */
+  async getLatestTenants(): Promise<Saas.Tenant[]> {
+    return this.restService.request<null, Saas.Tenant[]>({
+      method: 'GET',
+      url: '/api/saas/tenants/latest',
     });
   }
 }

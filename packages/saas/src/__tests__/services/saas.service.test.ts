@@ -344,6 +344,32 @@ describe('SaasService', () => {
         expect(result).toEqual(expectedResponse);
       });
     });
+
+    describe('getLatestTenants', () => {
+      it('should fetch latest tenants for dashboard widget', async () => {
+        const expectedResponse: Saas.Tenant[] = [
+          { id: 'tenant-1', name: 'Latest Tenant 1', editionId: 'ed-1', editionName: 'Basic' },
+          { id: 'tenant-2', name: 'Latest Tenant 2', editionId: 'ed-2', editionName: 'Pro' },
+        ];
+        mockRestService.request.mockResolvedValue(expectedResponse);
+
+        const result = await saasService.getLatestTenants();
+
+        expect(mockRestService.request).toHaveBeenCalledWith({
+          method: 'GET',
+          url: '/api/saas/tenants/latest',
+        });
+        expect(result).toEqual(expectedResponse);
+      });
+
+      it('should return empty array when no tenants exist', async () => {
+        mockRestService.request.mockResolvedValue([]);
+
+        const result = await saasService.getLatestTenants();
+
+        expect(result).toEqual([]);
+      });
+    });
   });
 
   describe('Error Handling', () => {
