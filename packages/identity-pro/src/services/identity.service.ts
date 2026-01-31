@@ -10,7 +10,7 @@ import { Identity } from '../models';
  * - User/Role claims management
  *
  * Translated from @volo/abp.ng.identity IdentityService
- * @since 0.7.2
+ * @since 2.0.0
  */
 export class IdentityService {
   private rest: RestService;
