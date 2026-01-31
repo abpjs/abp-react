@@ -370,7 +370,19 @@ describe('config.slice', () => {
         expect(route!.path).toBe('admin');
       });
 
-      it('should find nested route', () => {
+      it('should find route by url (v1.1.0 feature)', () => {
+        const route = selectRoute(undefined, undefined, '/home')(testState);
+        expect(route).toBeDefined();
+        expect(route!.name).toBe('Home');
+      });
+
+      it('should find nested route by url', () => {
+        const route = selectRoute(undefined, undefined, '/admin/users')(testState);
+        expect(route).toBeDefined();
+        expect(route!.name).toBe('Users');
+      });
+
+      it('should find nested route by path', () => {
         const route = selectRoute('users')(testState);
         expect(route).toBeDefined();
         expect(route!.name).toBe('Users');
@@ -378,6 +390,16 @@ describe('config.slice', () => {
 
       it('should return undefined for non-existent route', () => {
         expect(selectRoute('nonexistent')(testState)).toBeUndefined();
+      });
+
+      it('should return undefined for non-existent url', () => {
+        expect(selectRoute(undefined, undefined, '/nonexistent')(testState)).toBeUndefined();
+      });
+
+      it('should prioritize path match when both path and name are provided', () => {
+        const route = selectRoute('home', 'Admin')(testState);
+        expect(route).toBeDefined();
+        expect(route!.name).toBe('Home');
       });
     });
 

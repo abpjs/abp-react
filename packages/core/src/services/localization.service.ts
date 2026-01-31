@@ -1,4 +1,5 @@
 import { RootState } from '../store';
+import { Config } from '../models';
 
 export class LocalizationService {
   constructor(private getState: () => RootState) {}
@@ -12,16 +13,30 @@ export class LocalizationService {
 
   /**
    * Get a localized string by key
-   * @param key The localization key in format "ResourceName::Key" or "::Key" for default resource
+   * @param key The localization key in format "ResourceName::Key" or "::Key" for default resource,
+   *            or a LocalizationWithDefault object
    * @param interpolateParams Parameters to interpolate into the string
+   * @since 1.1.0 - Now accepts Config.LocalizationWithDefault
    */
-  t(key: string, ...interpolateParams: string[]): string {
-    if (!key) key = '';
+  get(
+    key: string | Config.LocalizationWithDefault,
+    ...interpolateParams: string[]
+  ): string {
+    const keyStr = typeof key === 'string' ? key : key.key;
+    const defaultValue = typeof key === 'string' ? keyStr : key.defaultValue;
+
+    if (!keyStr) return defaultValue;
 
     const state = this.getState().config;
-    const keys = key.split('::') as [string, string];
+    const keys = keyStr.split('::');
 
-    if (keys[0] === '') {
+    if (keys.length === 1) {
+      // No resource name specified, use default
+      const defaultResourceName = state.environment.localization?.defaultResourceName;
+      if (defaultResourceName) {
+        keys.unshift(defaultResourceName);
+      }
+    } else if (keys[0] === '') {
       const defaultResourceName = state.environment.localization?.defaultResourceName;
       if (!defaultResourceName) {
         throw new Error(`Please check your environment. May you forget set defaultResourceName?
@@ -44,20 +59,35 @@ export class LocalizationService {
 
     if (copy && interpolateParams && interpolateParams.length) {
       interpolateParams.forEach((param, index) => {
-        copy = copy.replace(`'{${index}}'`, param);
+        copy = copy.replace(new RegExp(`\\{${index}\\}`, 'g'), param);
+        copy = copy.replace(new RegExp(`'\\{${index}\\}'`, 'g'), param);
       });
     }
 
-    return copy || key;
+    return copy || defaultValue;
   }
 
   /**
-   * Alias for t - for developers familiar with ABP Angular
+   * Get a localized string by key (synchronous)
+   * @param key The localization key in format "ResourceName::Key" or "::Key" for default resource,
+   *            or a LocalizationWithDefault object
+   * @param interpolateParams Parameters to interpolate into the string
+   * @since 1.1.0 - Now accepts Config.LocalizationWithDefault
+   */
+  instant(
+    key: string | Config.LocalizationWithDefault,
+    ...interpolateParams: string[]
+  ): string {
+    return this.get(key, ...interpolateParams);
+  }
+
+  /**
+   * Alias for get - shorthand for translation
    * @param key The localization key in format "ResourceName::Key" or "::Key" for default resource
    * @param interpolateParams Parameters to interpolate into the string
    */
-  instant(key: string, ...interpolateParams: string[]): string {
-    return this.t(key, ...interpolateParams);
+  t(key: string | Config.LocalizationWithDefault, ...interpolateParams: string[]): string {
+    return this.get(key, ...interpolateParams);
   }
 
   /**

@@ -211,28 +211,40 @@ export const selectLocalizationValue =
 export const selectApplicationInfo = (state: { config: ConfigState }) =>
   state.config.environment.application;
 
-// Helper function to find a route by path or name recursively
+// Helper function to find a route by path, name, or url recursively
 function findRouteDeep(
   routes: ABP.FullRoute[],
   path?: string,
-  name?: string
+  name?: string,
+  url?: string
 ): ABP.FullRoute | undefined {
   for (const route of routes) {
-    if ((path && route.path === path) || (name && route.name === name)) {
+    if (
+      (path && route.path === path) ||
+      (name && route.name === name) ||
+      (url && route.url === url)
+    ) {
       return route;
     }
     if (route.children && route.children.length) {
-      const found = findRouteDeep(route.children as ABP.FullRoute[], path, name);
+      const found = findRouteDeep(route.children as ABP.FullRoute[], path, name, url);
       if (found) return found;
     }
   }
   return undefined;
 }
 
+/**
+ * Select a route by path, name, or url
+ * @param path - Optional path to match
+ * @param name - Optional name to match
+ * @param url - Optional url to match (added in v1.1.0)
+ * @since 1.1.0
+ */
 export const selectRoute =
-  (path?: string, name?: string) =>
+  (path?: string, name?: string, url?: string) =>
   (state: { config: ConfigState }): ABP.FullRoute | undefined =>
-    findRouteDeep(state.config.routes, path, name);
+    findRouteDeep(state.config.routes, path, name, url);
 
 /**
  * Get all settings, optionally filtered by keyword
