@@ -76,4 +76,56 @@ export namespace Identity {
     password: string;
     roleNames: string[];
   }
+
+  // ========================
+  // Component Interface Types (v2.0.0)
+  // ========================
+
+  /**
+   * Input props for RolesComponent
+   * @since 2.0.0
+   */
+  export interface RolesComponentInputs {
+    /** Callback when a role is created */
+    readonly onRoleCreated?: (role: RoleItem) => void;
+    /** Callback when a role is updated */
+    readonly onRoleUpdated?: (role: RoleItem) => void;
+    /** Callback when a role is deleted */
+    readonly onRoleDeleted?: (id: string) => void;
+  }
+
+  /**
+   * Output callbacks for RolesComponent
+   * @since 2.0.0
+   */
+  export interface RolesComponentOutputs {
+    /** Callback when permission modal visibility changes */
+    readonly onVisiblePermissionChange?: (visible: boolean) => void;
+  }
+
+  /**
+   * Input props for UsersComponent
+   * @since 2.0.0
+   */
+  export interface UsersComponentInputs {
+    /** Callback when a user is created */
+    readonly onUserCreated?: (user: UserItem) => void;
+    /** Callback when a user is updated */
+    readonly onUserUpdated?: (user: UserItem) => void;
+    /** Callback when a user is deleted */
+    readonly onUserDeleted?: (id: string) => void;
+    /** Password validation rules to display */
+    readonly passwordRulesArr?: ('number' | 'small' | 'capital' | 'special')[];
+    /** Required minimum password length */
+    readonly requiredPasswordLength?: number;
+  }
+
+  /**
+   * Output callbacks for UsersComponent
+   * @since 2.0.0
+   */
+  export interface UsersComponentOutputs {
+    /** Callback when permission modal visibility changes */
+    readonly onVisiblePermissionChange?: (visible: boolean) => void;
+  }
 }

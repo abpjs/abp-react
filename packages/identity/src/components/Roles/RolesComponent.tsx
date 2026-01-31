@@ -25,6 +25,11 @@ export interface RolesComponentProps {
   onRoleUpdated?: (role: Identity.RoleItem) => void;
   /** Optional callback when a role is deleted */
   onRoleDeleted?: (id: string) => void;
+  /**
+   * Callback when permission modal visibility changes
+   * @since 2.0.0
+   */
+  onVisiblePermissionChange?: (visible: boolean) => void;
 }
 
 /**
@@ -64,6 +69,7 @@ export function RolesComponent({
   onRoleCreated,
   onRoleUpdated,
   onRoleDeleted,
+  onVisiblePermissionChange,
 }: RolesComponentProps): React.ReactElement {
   const { t } = useLocalization();
   const confirmation = useConfirmation();
@@ -365,7 +371,10 @@ export function RolesComponent({
       {/* Permission Management Modal */}
       <PermissionManagementModal
         visible={isPermissionModalOpen}
-        onVisibleChange={setIsPermissionModalOpen}
+        onVisibleChange={(visible) => {
+          setIsPermissionModalOpen(visible);
+          onVisiblePermissionChange?.(visible);
+        }}
         providerName="R"
         providerKey={permissionProviderKey}
       />
