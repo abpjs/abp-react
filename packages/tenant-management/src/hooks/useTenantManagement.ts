@@ -18,6 +18,12 @@ export interface TenantManagementResult {
 export type SortOrder = 'asc' | 'desc' | '';
 
 /**
+ * Modal content type for tenant management
+ * @since 1.1.0
+ */
+export type ModalContentType = 'saveConnStr' | 'saveTenant';
+
+/**
  * Return type for useTenantManagement hook
  */
 export interface UseTenantManagementReturn {
@@ -39,6 +45,8 @@ export interface UseTenantManagementReturn {
   sortKey: string;
   /** Current sort order @since 1.0.0 */
   sortOrder: SortOrder;
+  /** Whether the save button should be disabled @since 1.1.0 */
+  isDisabledSaveButton: boolean;
   /** Fetch all tenants (with optional params) */
   fetchTenants: (params?: ABP.PageQueryParams) => Promise<TenantManagementResult>;
   /** Fetch a tenant by ID */
@@ -68,6 +76,8 @@ export interface UseTenantManagementReturn {
   setSortKey: (key: string) => void;
   /** Set sort order @since 1.0.0 */
   setSortOrder: (order: SortOrder) => void;
+  /** Handle shared database checkbox change @since 1.1.0 */
+  onSharedDatabaseChange: (value: boolean) => void;
   /** Reset all state */
   reset: () => void;
 }
@@ -315,6 +325,27 @@ export function useTenantManagement(): UseTenantManagementReturn {
   );
 
   /**
+   * Handle shared database checkbox change
+   * Clears connection string when switching to shared database
+   * @since 1.1.0
+   */
+  const onSharedDatabaseChange = useCallback((value: boolean) => {
+    setUseSharedDatabase(value);
+    if (value) {
+      setDefaultConnectionString('');
+    }
+  }, []);
+
+  /**
+   * Compute whether save button should be disabled
+   * Disabled when not using shared database but connection string is empty
+   * @since 1.1.0
+   */
+  const isDisabledSaveButton = useMemo(() => {
+    return !useSharedDatabase && !defaultConnectionString.trim();
+  }, [useSharedDatabase, defaultConnectionString]);
+
+  /**
    * Reset all state
    */
   const reset = useCallback(() => {
@@ -337,6 +368,7 @@ export function useTenantManagement(): UseTenantManagementReturn {
     useSharedDatabase,
     sortKey,
     sortOrder,
+    isDisabledSaveButton,
     fetchTenants,
     fetchTenantById,
     createTenant,
@@ -350,6 +382,7 @@ export function useTenantManagement(): UseTenantManagementReturn {
     setDefaultConnectionString,
     setSortKey,
     setSortOrder,
+    onSharedDatabaseChange,
     reset,
   };
 }
