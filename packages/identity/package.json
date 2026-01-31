@@ -74,7 +74,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/abpjs/abp-react"
+    "url": "https://github.com/abpjs/abp-react",
+    "directory": "packages/identity"
   },
   "homepage": "https://docs.abpjs.io/docs/packages/identity/overview",
   "bugs": {

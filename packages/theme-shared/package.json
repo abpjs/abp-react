@@ -52,7 +52,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/abpjs/abp-react"
+    "url": "https://github.com/abpjs/abp-react",
+    "directory": "packages/theme-shared"
   },
   "homepage": "https://docs.abpjs.io/docs/packages/theme-shared/overview",
   "bugs": {

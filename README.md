@@ -55,6 +55,8 @@ The ABP Framework is an amazing, comprehensive framework for building enterprise
 
 This monorepo contains the following packages:
 
+### Core Packages
+
 | Package | Description |
 |---------|-------------|
 | [`@abpjs/core`](./packages/core) | Core ABP Framework functionality - hooks, services, state management, authentication |
@@ -66,6 +68,16 @@ This monorepo contains the following packages:
 | [`@abpjs/tenant-management`](./packages/tenant-management) | Tenant management components |
 | [`@abpjs/theme-basic`](./packages/theme-basic) | Basic theme layouts and navigation components |
 | [`@abpjs/theme-shared`](./packages/theme-shared) | Shared theme components - toasts, modals, confirmations |
+
+### Pro Packages
+
+| Package | Description |
+|---------|-------------|
+| [`@abpjs/account-pro`](./packages/account-pro) | Account Pro module - enhanced login, register, password reset, two-factor auth |
+| [`@abpjs/audit-logging`](./packages/audit-logging) | Audit logging components - view and search audit logs |
+| [`@abpjs/identity-pro`](./packages/identity-pro) | Identity Pro management - enhanced users, roles, organization units |
+| [`@abpjs/language-management`](./packages/language-management) | Language management - manage languages and localization texts |
+| [`@abpjs/saas`](./packages/saas) | SaaS module - tenants, editions, and subscription management |
 
 ## 🚀 Getting Started
 
@@ -124,19 +136,24 @@ function App() {
 
 ```
 .
-├── packages/          # All packages
-│   ├── core/
-│   ├── account/
+├── packages/              # All packages
+│   ├── core/              # Core functionality
+│   ├── account/           # Account module
+│   ├── account-pro/       # Account Pro module
+│   ├── audit-logging/     # Audit logging
 │   ├── feature-management/
-│   ├── identity/
+│   ├── identity/          # Identity module
+│   ├── identity-pro/      # Identity Pro module
+│   ├── language-management/
 │   ├── permission-management/
+│   ├── saas/              # SaaS module
 │   ├── setting-management/
 │   ├── tenant-management/
 │   ├── theme-basic/
 │   └── theme-shared/
-├── apps/              # Applications
-│   └── testing/      # Test application
-├── package.json       # Root package.json with workspace config
+├── apps/                  # Applications
+│   └── testing/           # Test application
+├── package.json           # Root package.json with workspace config
 ├── pnpm-workspace.yaml
 └── README.md
 ```
@@ -205,12 +222,20 @@ Please see our contributing guidelines (coming soon) for more details.
 
 ## 📚 Documentation
 
+### Core Packages
 - [Core Package Documentation](./packages/core/README.md)
 - [Account Package Documentation](./packages/account/README.md)
 - [Feature Management Package Documentation](./packages/feature-management/README.md)
 - [Identity Package Documentation](./packages/identity/README.md)
 - [Setting Management Package Documentation](./packages/setting-management/README.md)
 - [Theme Basic Usage Guide](./packages/theme-basic/USAGE.md)
+
+### Pro Packages
+- [Account Pro Package Documentation](./packages/account-pro/README.md)
+- [Audit Logging Package Documentation](./packages/audit-logging/README.md)
+- [Identity Pro Package Documentation](./packages/identity-pro/README.md)
+- [Language Management Package Documentation](./packages/language-management/README.md)
+- [SaaS Package Documentation](./packages/saas/README.md)
 
 ## 🔗 Links
 
@@ -219,7 +244,7 @@ Please see our contributing guidelines (coming soon) for more details.
 
 ## ⚠️ Status
 
-**Current Version**: 1.1.0 (matching ABP Framework backend version 1.1.0)
+**Current Version**: 1.0.0 (matching ABP Framework backend version 1.0.0)
 
 This is an active translation project. Frontend features are being added continuously as we work through the ABP Framework frontend packages version by version. All packages are designed to work with the corresponding ABP Framework backend version.
 

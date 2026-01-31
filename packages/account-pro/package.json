@@ -13,7 +13,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
@@ -71,10 +72,18 @@
     "register",
     "password-reset"
   ],
+  "author": "tekthar.com",
+  "license": "LGPL-3.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/AhmedBinTa662/abp-react.git",
+    "url": "https://github.com/abpjs/abp-react",
     "directory": "packages/account-pro"
   },
-  "license": "MIT"
+  "homepage": "https://docs.abpjs.io/docs/packages/account-pro/overview",
+  "bugs": {
+    "url": "https://github.com/abpjs/abp-react/issues"
+  }
 }

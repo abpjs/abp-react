@@ -75,7 +75,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/abpjs/abp-react"
+    "url": "https://github.com/abpjs/abp-react",
+    "directory": "packages/language-management"
   },
   "homepage": "https://docs.abpjs.io/docs/packages/language-management/overview",
   "bugs": {

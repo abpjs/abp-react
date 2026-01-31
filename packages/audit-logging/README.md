@@ -1,35 +1,37 @@
-# @abpjs/setting-management
+# @abpjs/audit-logging
 
-> Setting management UI components for ABP Framework in React
+> Audit logging UI components for ABP Framework in React
 
-[![npm version](https://img.shields.io/npm/v/@abpjs/setting-management.svg)](https://www.npmjs.com/package/@abpjs/setting-management)
+[![npm version](https://img.shields.io/npm/v/@abpjs/audit-logging.svg)](https://www.npmjs.com/package/@abpjs/audit-logging)
 [![License: LGPL-3.0](https://img.shields.io/badge/License-LGPL--3.0-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 
 ## Overview
 
-`@abpjs/setting-management` provides a settings management page layout and tab management for ABP-based React applications. It allows organizing application settings into categorized tabs with a unified UI.
+`@abpjs/audit-logging` provides audit log viewing and management components for ABP-based React applications. It allows administrators to view, search, and filter audit logs with detailed information about user actions.
 
-This package is a React translation of the original `@abp/ng.setting-management` Angular package.
+This package is a React translation of the original `@volo/abp.ng.audit-logging` Angular package.
 
 ## Features
 
-- **Setting Tabs** - Register and manage setting tabs from different modules
-- **Tab Layout** - Responsive sidebar layout with tab navigation
-- **URL Sync** - Automatic tab selection based on current URL
-- **Ordering** - Tabs sorted by configurable order property
+- **Audit Log Viewer** - View and browse audit logs with pagination
+- **Search & Filter** - Filter by date range, user, HTTP method, status code, and more
+- **Detail View** - View detailed information about each audit log entry
+- **Entity Changes** - Track entity property changes
+- **Action Logs** - View individual action details within requests
+- **Responsive Design** - Works on all screen sizes
 - **TypeScript** - Full type safety with comprehensive definitions
 
 ## Installation
 
 ```bash
 # Using npm
-npm install @abpjs/setting-management
+npm install @abpjs/audit-logging
 
 # Using yarn
-yarn add @abpjs/setting-management
+yarn add @abpjs/audit-logging
 
 # Using pnpm
-pnpm add @abpjs/setting-management
+pnpm add @abpjs/audit-logging
 ```
 
 ### Required Dependencies
@@ -37,33 +39,21 @@ pnpm add @abpjs/setting-management
 This package requires the following peer dependencies:
 
 ```bash
-npm install @abpjs/core @abpjs/theme-shared react-router-dom
+npm install @abpjs/core @abpjs/theme-shared @chakra-ui/react @emotion/react react-router-dom
 ```
 
 ## Quick Start
 
-### Using the Setting Layout Component
+### Using the Audit Logs Component
 
 ```tsx
-import { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
-import { SettingLayout, useSettingManagement } from '@abpjs/setting-management';
+import { AuditLogsComponent } from '@abpjs/audit-logging';
 
-function SettingsPage() {
-  const { addSettings } = useSettingManagement();
-
-  useEffect(() => {
-    addSettings([
-      { name: 'Account', order: 1, url: '/settings/account' },
-      { name: 'Identity', order: 2, url: '/settings/identity' },
-      { name: 'Tenant', order: 3, url: '/settings/tenant', requiredPolicy: 'AbpTenantManagement.Tenants' },
-    ]);
-  }, [addSettings]);
-
+function AuditLogsPage() {
   return (
-    <SettingLayout>
-      <Outlet />
-    </SettingLayout>
+    <AuditLogsComponent
+      onAuditLogSelected={(log) => console.log('Selected:', log)}
+    />
   );
 }
 ```
@@ -71,158 +61,195 @@ function SettingsPage() {
 ### Using the Hook
 
 ```tsx
-import { useSettingManagement } from '@abpjs/setting-management';
-
-function SettingsMenu() {
-  const {
-    settings,
-    selected,
-    setSelected,
-    addSetting,
-    removeSetting,
-  } = useSettingManagement();
-
-  return (
-    <nav>
-      {settings.map(tab => (
-        <button
-          key={tab.name}
-          onClick={() => setSelected(tab)}
-          className={selected?.name === tab.name ? 'active' : ''}
-        >
-          {tab.name}
-        </button>
-      ))}
-    </nav>
-  );
-}
-```
-
-### Registering Settings from Other Modules
-
-```tsx
-// In your account module
+import { useAuditLogs } from '@abpjs/audit-logging';
 import { useEffect } from 'react';
-import { useSettingManagement } from '@abpjs/setting-management';
 
-function AccountModule() {
-  const { addSetting } = useSettingManagement();
+function CustomAuditLogsView() {
+  const {
+    auditLogs,
+    totalCount,
+    isLoading,
+    error,
+    fetchAuditLogs,
+    getAuditLogById,
+    selectedAuditLog,
+  } = useAuditLogs();
 
   useEffect(() => {
-    addSetting({
-      name: 'Account',
-      order: 1,
-      url: '/settings/account',
-    });
-  }, [addSetting]);
+    fetchAuditLogs();
+  }, [fetchAuditLogs]);
 
-  return null;
+  return (
+    <div>
+      <h1>Audit Logs ({totalCount})</h1>
+      <ul>
+        {auditLogs.map(log => (
+          <li key={log.id}>
+            {log.httpMethod} {log.url} - {log.httpStatusCode}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 ```
 
 ## Components
 
-### SettingLayout
+### AuditLogsComponent
 
-Layout component for the settings management page with sidebar navigation.
+Complete audit log management component with table, search, filters, and detail modal.
 
 ```tsx
-import { SettingLayout } from '@abpjs/setting-management';
+import { AuditLogsComponent } from '@abpjs/audit-logging';
 
-<SettingLayout
-  className="my-settings"
-  onTabSelect={(tab) => console.log('Selected:', tab.name)}
->
-  {/* Content renders here */}
-</SettingLayout>
+<AuditLogsComponent
+  onAuditLogSelected={(log) => console.log('Selected:', log)}
+/>
 ```
 
 **Props:**
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| `children` | `ReactNode` | No | Content to render in the main area |
-| `className` | `string` | No | Additional CSS class for the container |
-| `onTabSelect` | `(tab: SettingTab) => void` | No | Callback when a tab is selected |
+| `onAuditLogSelected` | `(log: AuditLog) => void` | No | Callback when an audit log is selected |
+
+**Features:**
+- Audit log table with sortable columns
+- Date range filters
+- User name filter
+- HTTP method filter
+- Status code filter
+- URL search
+- Pagination controls
+- Detail modal with full log information
+- Entity changes view
+- Action logs view
 
 ## Hooks
 
-### useSettingManagement
+### useAuditLogs
 
-Hook for managing setting tabs and selection state.
+Hook for fetching and managing audit logs.
 
 ```tsx
-import { useSettingManagement } from '@abpjs/setting-management';
+import { useAuditLogs } from '@abpjs/audit-logging';
 
 const {
-  settings,       // All registered tabs (sorted by order)
-  selected,       // Currently selected tab
-  addSetting,     // Add a single setting tab
-  addSettings,    // Add multiple setting tabs
-  removeSetting,  // Remove a setting tab by name
-  setSelected,    // Set the selected tab
-  selectByName,   // Select a tab by name
-  selectByUrl,    // Select a tab by URL
-  clearSettings,  // Clear all registered settings
-} = useSettingManagement();
+  auditLogs,           // Array of audit logs
+  totalCount,          // Total count for pagination
+  selectedAuditLog,    // Currently selected audit log
+  isLoading,           // Loading state
+  error,               // Error message
+  pageQuery,           // Current pagination/filter params
+  fetchAuditLogs,      // Fetch audit logs with optional params
+  getAuditLogById,     // Get and select an audit log by ID
+  setSelectedAuditLog, // Set the selected audit log
+  setPageQuery,        // Update pagination/filter params
+  reset,               // Reset state
+} = useAuditLogs();
 ```
 
 ## Services
 
-### SettingManagementService
+### AuditLoggingService
 
-Service class for managing setting tabs (singleton pattern).
+Service class for audit logging API operations.
 
 ```tsx
-import { getSettingManagementService } from '@abpjs/setting-management';
+import { AuditLoggingService } from '@abpjs/audit-logging';
+import { useRestService } from '@abpjs/core';
 
-const service = getSettingManagementService();
+function MyComponent() {
+  const restService = useRestService();
+  const service = new AuditLoggingService(restService);
 
-// Add a setting tab
-service.addSetting({
-  name: 'My Settings',
-  order: 10,
-  url: '/settings/my',
-});
+  // Fetch audit logs
+  const logs = await service.getAuditLogs({
+    maxResultCount: 10,
+    skipCount: 0,
+    startTime: '2024-01-01',
+    endTime: '2024-01-31',
+  });
 
-// Get all settings
-const allSettings = service.settings;
-
-// Subscribe to changes
-const unsubscribe = service.subscribe(() => {
-  console.log('Settings changed!');
-});
+  // Get single audit log
+  const log = await service.getAuditLogById(id);
+}
 ```
 
 ## Data Models
 
-### SettingTab
-
-The `SettingTab` interface is re-exported from `@abpjs/theme-shared`:
+### AuditLog
 
 ```typescript
-import type { SettingTab } from '@abpjs/setting-management';
+interface AuditLog {
+  id: string;
+  applicationName: string;
+  userId: string;
+  userName: string;
+  tenantId: string;
+  tenantName: string;
+  impersonatorUserId: string;
+  impersonatorTenantId: string;
+  executionTime: string;
+  executionDuration: number;
+  clientIpAddress: string;
+  clientName: string;
+  clientId: string;
+  correlationId: string;
+  browserInfo: string;
+  httpMethod: string;
+  url: string;
+  exceptions: string;
+  comments: string;
+  httpStatusCode: number;
+  entityChanges: EntityChange[];
+  actions: AuditLogAction[];
+}
+```
 
-interface SettingTab {
-  name: string;           // Display name of the tab
-  order: number;          // Sort order (lower = higher priority)
-  requiredPolicy?: string; // Required permission policy
-  url?: string;           // URL/route for this tab
+### EntityChange
+
+```typescript
+interface EntityChange {
+  id: string;
+  auditLogId: string;
+  tenantId: string;
+  changeTime: string;
+  changeType: number;
+  entityId: string;
+  entityTypeFullName: string;
+  propertyChanges: EntityPropertyChange[];
+}
+```
+
+### AuditLogAction
+
+```typescript
+interface AuditLogAction {
+  id: string;
+  auditLogId: string;
+  tenantId: string;
+  serviceName: string;
+  methodName: string;
+  parameters: string;
+  executionTime: string;
+  executionDuration: number;
 }
 ```
 
 ## Constants
 
-### SETTING_MANAGEMENT_ROUTES
+### AUDIT_LOGGING_ROUTES
 
-Default route configuration for the setting management module:
+Default route configuration for the audit logging module:
 
 ```tsx
-import { SETTING_MANAGEMENT_ROUTES } from '@abpjs/setting-management';
+import { AUDIT_LOGGING_ROUTES } from '@abpjs/audit-logging';
 
 // Use in your router configuration
 const routes = [
-  ...SETTING_MANAGEMENT_ROUTES.routes,
+  ...AUDIT_LOGGING_ROUTES.routes,
   // your other routes
 ];
 ```
@@ -230,49 +257,34 @@ const routes = [
 ## Router Setup Example
 
 ```tsx
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { SettingLayout } from '@abpjs/setting-management';
-import AccountSettings from './AccountSettings';
-import IdentitySettings from './IdentitySettings';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuditLogsComponent } from '@abpjs/audit-logging';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/settings" element={<SettingsPage />}>
-          <Route index element={<Navigate to="account" replace />} />
-          <Route path="account" element={<AccountSettings />} />
-          <Route path="identity" element={<IdentitySettings />} />
-        </Route>
+        <Route path="/audit-logs" element={<AuditLogsComponent />} />
       </Routes>
     </BrowserRouter>
   );
 }
-
-function SettingsPage() {
-  const { addSettings } = useSettingManagement();
-
-  useEffect(() => {
-    addSettings([
-      { name: 'Account', order: 1, url: '/settings/account' },
-      { name: 'Identity', order: 2, url: '/settings/identity' },
-    ]);
-  }, [addSettings]);
-
-  return (
-    <SettingLayout>
-      <Outlet />
-    </SettingLayout>
-  );
-}
 ```
+
+## ABP Permissions
+
+This package respects ABP's audit logging permissions:
+
+| Permission | Description |
+|------------|-------------|
+| `AuditLogging.AuditLogs` | View audit logs |
 
 ## Related Packages
 
 - [@abpjs/core](https://www.npmjs.com/package/@abpjs/core) - Core infrastructure (required)
 - [@abpjs/theme-shared](https://www.npmjs.com/package/@abpjs/theme-shared) - Shared UI components (required)
-- [@abpjs/account](https://www.npmjs.com/package/@abpjs/account) - Account module (provides account settings)
-- [@abpjs/identity](https://www.npmjs.com/package/@abpjs/identity) - Identity management
+- [@abpjs/identity-pro](https://www.npmjs.com/package/@abpjs/identity-pro) - Identity Pro features
+- [@abpjs/saas](https://www.npmjs.com/package/@abpjs/saas) - SaaS module
 
 ## Contributing
 
@@ -284,4 +296,4 @@ LGPL-3.0 - See [LICENSE](https://github.com/abpjs/abp-react/blob/main/LICENSE) f
 
 ---
 
-**[View Full Documentation](https://docs.abpjs.io/docs/packages/setting-management/overview)** | **[Report Issues](https://github.com/abpjs/abp-react/issues)** | **[View Source](https://github.com/abpjs/abp-react/tree/main/packages/setting-management)**
+**[View Full Documentation](https://docs.abpjs.io/docs/packages/audit-logging/overview)** | **[Report Issues](https://github.com/abpjs/abp-react/issues)** | **[View Source](https://github.com/abpjs/abp-react/tree/main/packages/audit-logging)**
