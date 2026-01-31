@@ -53,7 +53,17 @@ export interface UsePermissionManagementReturn {
   getSelectedGroupPermissions: () => PermissionWithMargin[];
   /** Check if a permission is granted */
   isGranted: (permissionName: string) => boolean;
-  /** Check if a permission is granted by a role provider (v0.9.0) */
+  /**
+   * Check if a permission is granted by another provider name
+   * @since 1.1.0 (renamed from isGrantedByRole)
+   */
+  isGrantedByOtherProviderName: (
+    grantedProviders: PermissionManagement.GrantedProvider[],
+    providerName: string
+  ) => boolean;
+  /**
+   * @deprecated Use isGrantedByOtherProviderName instead
+   */
   isGrantedByRole: (grantedProviders: PermissionManagement.GrantedProvider[]) => boolean;
   /** Reset state */
   reset: () => void;
@@ -149,9 +159,20 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
   );
 
   /**
-   * Check if a permission is granted by a role provider (v0.9.0)
+   * Check if a permission is granted by another provider name (v1.1.0)
    * This is useful for showing visual indicators when a permission
-   * comes from a role rather than being directly assigned.
+   * comes from another provider (like a role) rather than being directly assigned.
+   */
+  const isGrantedByOtherProviderName = useCallback(
+    (grantedProviders: PermissionManagement.GrantedProvider[], providerName: string): boolean => {
+      return grantedProviders.some((provider) => provider.providerName !== providerName);
+    },
+    []
+  );
+
+  /**
+   * @deprecated Use isGrantedByOtherProviderName instead
+   * Check if a permission is granted by a role provider
    */
   const isGrantedByRole = useCallback(
     (grantedProviders: PermissionManagement.GrantedProvider[]): boolean => {
@@ -407,6 +428,7 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
     toggleSelectAll,
     getSelectedGroupPermissions,
     isGranted,
+    isGrantedByOtherProviderName,
     isGrantedByRole,
     reset,
   };

@@ -105,11 +105,12 @@ describe('usePermissionManagement', () => {
       expect(typeof result.current.getSelectedGroupPermissions).toBe('function');
       expect(typeof result.current.isGranted).toBe('function');
       expect(typeof result.current.isGrantedByRole).toBe('function');
+      expect(typeof result.current.isGrantedByOtherProviderName).toBe('function');
       expect(typeof result.current.reset).toBe('function');
     });
   });
 
-  describe('isGrantedByRole (v0.9.0 feature)', () => {
+  describe('isGrantedByRole (v0.9.0 feature, deprecated in v1.1.0)', () => {
     it('should return true when permission is granted by role provider', () => {
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -156,6 +157,64 @@ describe('usePermissionManagement', () => {
       ];
 
       expect(result.current.isGrantedByRole(grantedProviders)).toBe(false);
+    });
+  });
+
+  describe('isGrantedByOtherProviderName (v1.1.0 feature)', () => {
+    it('should return true when permission is granted by a different provider', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+        { providerName: 'R', providerKey: 'admin' },
+      ];
+
+      // Current provider is 'U' (user), but permission is granted by 'R' (role)
+      expect(result.current.isGrantedByOtherProviderName(grantedProviders, 'U')).toBe(true);
+    });
+
+    it('should return false when permission is only granted by the same provider', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+        { providerName: 'R', providerKey: 'admin' },
+      ];
+
+      // Current provider is 'R' (role), and permission is granted by 'R' (role)
+      expect(result.current.isGrantedByOtherProviderName(grantedProviders, 'R')).toBe(false);
+    });
+
+    it('should return true when permission is granted by multiple providers including different ones', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+        { providerName: 'R', providerKey: 'admin' },
+        { providerName: 'U', providerKey: 'user123' },
+      ];
+
+      // Current provider is 'U', but permission is also granted by 'R'
+      expect(result.current.isGrantedByOtherProviderName(grantedProviders, 'U')).toBe(true);
+      // Current provider is 'R', but permission is also granted by 'U'
+      expect(result.current.isGrantedByOtherProviderName(grantedProviders, 'R')).toBe(true);
+    });
+
+    it('should return false when grantedProviders is empty', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      expect(result.current.isGrantedByOtherProviderName([], 'R')).toBe(false);
+    });
+
+    it('should work with various provider types', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+        { providerName: 'C', providerKey: 'client123' }, // Client provider
+        { providerName: 'T', providerKey: 'tenant123' }, // Tenant provider
+      ];
+
+      // Current provider is 'R', others are 'C' and 'T'
+      expect(result.current.isGrantedByOtherProviderName(grantedProviders, 'R')).toBe(true);
+      // Current provider is 'C', and 'T' is different
+      expect(result.current.isGrantedByOtherProviderName(grantedProviders, 'C')).toBe(true);
     });
   });
 
