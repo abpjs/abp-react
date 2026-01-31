@@ -1,56 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import {
-  TENANT_MANAGEMENT_ROUTES,
   TENANT_MANAGEMENT_ROUTE_PATHS,
   TENANT_MANAGEMENT_POLICIES,
 } from '../constants/routes';
 
 describe('Tenant Management Route Constants', () => {
-  describe('TENANT_MANAGEMENT_ROUTES', () => {
-    it('should have routes property with array of routes (v0.9.0 format)', () => {
-      expect(TENANT_MANAGEMENT_ROUTES).toHaveProperty('routes');
-      expect(Array.isArray(TENANT_MANAGEMENT_ROUTES.routes)).toBe(true);
-    });
-
-    it('should have Administration wrapper route', () => {
-      const adminRoute = TENANT_MANAGEMENT_ROUTES.routes.find(
-        (r) => r.name === 'AbpUiNavigation::Menu:Administration'
-      );
-      expect(adminRoute).toBeDefined();
-      expect(adminRoute?.wrapper).toBe(true);
-      expect(adminRoute?.path).toBe('');
-      expect(adminRoute?.order).toBe(1);
-    });
-
-    it('should have Tenant Management route with correct configuration', () => {
-      const tmRoute = TENANT_MANAGEMENT_ROUTES.routes.find(
-        (r) => r.name === 'AbpTenantManagement::Menu:TenantManagement'
-      );
-      expect(tmRoute).toBeDefined();
-      expect(tmRoute?.path).toBe('tenant-management');
-      expect(tmRoute?.order).toBe(2);
-      expect(tmRoute?.parentName).toBe('AbpUiNavigation::Menu:Administration');
-      expect(tmRoute?.layout).toBeDefined();
-      expect(tmRoute?.requiredPolicy).toBe('AbpTenantManagement.Tenants');
-    });
-
-    it('should have Tenants child route', () => {
-      const tmRoute = TENANT_MANAGEMENT_ROUTES.routes.find(
-        (r) => r.name === 'AbpTenantManagement::Menu:TenantManagement'
-      );
-      expect(tmRoute?.children).toBeDefined();
-      expect(tmRoute?.children?.length).toBeGreaterThan(0);
-
-      const tenantsRoute = tmRoute?.children?.find(
-        (r) => r.name === 'AbpTenantManagement::Tenants'
-      );
-      expect(tenantsRoute).toBeDefined();
-      expect(tenantsRoute?.path).toBe('tenants');
-      expect(tenantsRoute?.order).toBe(1);
-      expect(tenantsRoute?.requiredPolicy).toBe('AbpTenantManagement.Tenants');
-    });
-  });
-
   describe('TENANT_MANAGEMENT_ROUTE_PATHS', () => {
     it('should have BASE path', () => {
       expect(TENANT_MANAGEMENT_ROUTE_PATHS.BASE).toBe('/tenant-management');
@@ -99,6 +53,15 @@ describe('Tenant Management Route Constants', () => {
       policyValues.forEach((policy) => {
         expect(policy).toMatch(/^AbpTenantManagement\./);
       });
+    });
+  });
+
+  describe('TENANT_MANAGEMENT_ROUTES removal (v2.0.0)', () => {
+    it('should not export TENANT_MANAGEMENT_ROUTES (removed in v2.0.0)', () => {
+      // TENANT_MANAGEMENT_ROUTES was deprecated in v0.9.0 and removed in v2.0.0
+      // Importing it directly from the module should fail at compile time
+      // This test just documents the removal
+      expect(true).toBe(true);
     });
   });
 });

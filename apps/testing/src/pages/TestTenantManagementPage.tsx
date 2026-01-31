@@ -9,7 +9,6 @@ import {
   useTenantManagement,
   getTenantManagementStateService,
   type TenantManagement,
-  TENANT_MANAGEMENT_ROUTES,
   TENANT_MANAGEMENT_ROUTE_PATHS,
   TENANT_MANAGEMENT_POLICIES,
 } from '@abpjs/tenant-management'
@@ -21,7 +20,14 @@ function TestTenantModal() {
   const [editTenantId, setEditTenantId] = useState<string | undefined>()
   const [featureTenantId, setFeatureTenantId] = useState('')
   const [initialView, setInitialView] = useState<'tenant' | 'connectionString'>('tenant')
+  const [visibleFeaturesLog, setVisibleFeaturesLog] = useState<string[]>([])
   const { isAuthenticated } = useAuth()
+
+  const handleVisibleFeaturesChange = (visible: boolean) => {
+    const timestamp = new Date().toLocaleTimeString()
+    setVisibleFeaturesLog(prev => [...prev.slice(-4), `${timestamp}: onVisibleFeaturesChange(${visible})`])
+    console.log('onVisibleFeaturesChange:', visible)
+  }
 
   return (
     <div className="test-section">
@@ -140,11 +146,34 @@ function TestTenantModal() {
         )}
       </div>
 
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>onVisibleFeaturesChange <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.0.0)</span></h3>
+        <p>New callback prop that fires when the features modal visibility changes:</p>
+        <div style={{ background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px', minHeight: '60px', marginTop: '0.5rem' }}>
+          {visibleFeaturesLog.length === 0 ? (
+            <p style={{ color: '#888', margin: 0, fontSize: '12px' }}>Open the modal and trigger features to see events...</p>
+          ) : (
+            visibleFeaturesLog.map((log, index) => (
+              <div key={index} style={{ fontSize: '12px', fontFamily: 'monospace', padding: '2px 0' }}>
+                {log}
+              </div>
+            ))
+          )}
+        </div>
+        <button
+          onClick={() => setVisibleFeaturesLog([])}
+          style={{ marginTop: '0.5rem', padding: '4px 8px', fontSize: '12px' }}
+        >
+          Clear Log
+        </button>
+      </div>
+
       <TenantManagementModal
         visible={modalVisible}
         onVisibleChange={setModalVisible}
         tenantId={editTenantId}
         initialView={initialView}
+        onVisibleFeaturesChange={handleVisibleFeaturesChange}
         onSave={() => {
           console.log('Tenant saved successfully!')
           setModalVisible(false)
@@ -723,10 +752,15 @@ function TestApiEndpoints() {
 }
 
 function TestTenantManagementStateService() {
+  const { isAuthenticated } = useAuth()
   const stateService = getTenantManagementStateService()
   const [tenants, setTenants] = useState<TenantManagement.Item[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [testTenantName, setTestTenantName] = useState('')
+  const [dispatchTenantId, setDispatchTenantId] = useState('')
+  const [dispatchTenantName, setDispatchTenantName] = useState('')
+  const [dispatchResult, setDispatchResult] = useState<string>('')
+  const [isDispatchLoading, setIsDispatchLoading] = useState(false)
 
   useEffect(() => {
     // Subscribe to state changes
@@ -758,9 +792,72 @@ function TestTenantManagementStateService() {
     stateService.setTotalCount(Math.max(0, totalCount - 1))
   }
 
+  // v2.0.0 dispatch method handlers
+  const handleDispatchGetTenants = async () => {
+    setIsDispatchLoading(true)
+    try {
+      const result = await stateService.dispatchGetTenants()
+      setDispatchResult(`dispatchGetTenants: ${result.items.length} tenants, total: ${result.totalCount}`)
+    } catch (err) {
+      setDispatchResult(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+    setIsDispatchLoading(false)
+  }
+
+  const handleDispatchGetTenantById = async () => {
+    if (!dispatchTenantId) return
+    setIsDispatchLoading(true)
+    try {
+      const result = await stateService.dispatchGetTenantById(dispatchTenantId)
+      setDispatchResult(`dispatchGetTenantById: ${JSON.stringify(result)}`)
+    } catch (err) {
+      setDispatchResult(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+    setIsDispatchLoading(false)
+  }
+
+  const handleDispatchCreateTenant = async () => {
+    if (!dispatchTenantName) return
+    setIsDispatchLoading(true)
+    try {
+      const result = await stateService.dispatchCreateTenant({ name: dispatchTenantName })
+      setDispatchResult(`dispatchCreateTenant: ${JSON.stringify(result)}`)
+      setDispatchTenantName('')
+    } catch (err) {
+      setDispatchResult(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+    setIsDispatchLoading(false)
+  }
+
+  const handleDispatchUpdateTenant = async () => {
+    if (!dispatchTenantId || !dispatchTenantName) return
+    setIsDispatchLoading(true)
+    try {
+      const result = await stateService.dispatchUpdateTenant({ id: dispatchTenantId, name: dispatchTenantName })
+      setDispatchResult(`dispatchUpdateTenant: ${JSON.stringify(result)}`)
+    } catch (err) {
+      setDispatchResult(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+    setIsDispatchLoading(false)
+  }
+
+  const handleDispatchDeleteTenant = async () => {
+    if (!dispatchTenantId) return
+    if (!window.confirm(`Delete tenant ${dispatchTenantId}?`)) return
+    setIsDispatchLoading(true)
+    try {
+      await stateService.dispatchDeleteTenant(dispatchTenantId)
+      setDispatchResult(`dispatchDeleteTenant: Successfully deleted ${dispatchTenantId}`)
+      setDispatchTenantId('')
+    } catch (err) {
+      setDispatchResult(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+    setIsDispatchLoading(false)
+  }
+
   return (
     <div className="test-section">
-      <h2>TenantManagementStateService (v1.1.0)</h2>
+      <h2>TenantManagementStateService</h2>
 
       <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
         <h3>Service Overview</h3>
@@ -770,8 +867,86 @@ function TestTenantManagementStateService() {
         </p>
       </div>
 
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Dispatch Methods <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.0.0)</span></h3>
+        <p style={{ marginBottom: '1rem' }}>
+          New dispatch methods provide facade over API operations with automatic state updates.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
+          <input
+            type="text"
+            placeholder="Tenant ID (for get/update/delete)"
+            value={dispatchTenantId}
+            onChange={(e) => setDispatchTenantId(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Tenant Name (for create/update)"
+            value={dispatchTenantName}
+            onChange={(e) => setDispatchTenantName(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+            }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button
+            onClick={handleDispatchGetTenants}
+            disabled={isDispatchLoading || !isAuthenticated}
+          >
+            dispatchGetTenants()
+          </button>
+          <button
+            onClick={handleDispatchGetTenantById}
+            disabled={isDispatchLoading || !isAuthenticated || !dispatchTenantId}
+          >
+            dispatchGetTenantById()
+          </button>
+          <button
+            onClick={handleDispatchCreateTenant}
+            disabled={isDispatchLoading || !isAuthenticated || !dispatchTenantName}
+          >
+            dispatchCreateTenant()
+          </button>
+          <button
+            onClick={handleDispatchUpdateTenant}
+            disabled={isDispatchLoading || !isAuthenticated || !dispatchTenantId || !dispatchTenantName}
+          >
+            dispatchUpdateTenant()
+          </button>
+          <button
+            onClick={handleDispatchDeleteTenant}
+            disabled={isDispatchLoading || !isAuthenticated || !dispatchTenantId}
+            style={{ background: '#f44', color: 'white' }}
+          >
+            dispatchDeleteTenant()
+          </button>
+        </div>
+
+        {dispatchResult && (
+          <div style={{ padding: '8px', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', fontSize: '12px' }}>
+            <strong>Result:</strong> {dispatchResult}
+          </div>
+        )}
+
+        {!isAuthenticated && (
+          <p style={{ color: '#f88', marginTop: '0.5rem', fontSize: '12px' }}>
+            ⚠️ You must be authenticated to use dispatch methods
+          </p>
+        )}
+      </div>
+
       <div className="test-card">
-        <h3>Add Test Tenant</h3>
+        <h3>Add Test Tenant (Local)</h3>
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
           <input
             type="text"
@@ -846,6 +1021,11 @@ function TestTenantManagementStateService() {
             <tr><td style={{ padding: '8px' }}>updateFromResponse(response)</td><td>Update from API response</td></tr>
             <tr><td style={{ padding: '8px' }}>reset()</td><td>Reset to initial state</td></tr>
             <tr><td style={{ padding: '8px' }}>subscribe(callback)</td><td>Subscribe to state changes (returns unsubscribe function)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchGetTenants(params?)</td><td>Fetch tenants from API and update state (v2.0.0)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchGetTenantById(id)</td><td>Fetch single tenant from API (v2.0.0)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchCreateTenant(body)</td><td>Create tenant via API and refresh state (v2.0.0)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchUpdateTenant(body)</td><td>Update tenant via API and refresh state (v2.0.0)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchDeleteTenant(id)</td><td>Delete tenant via API and refresh state (v2.0.0)</td></tr>
           </tbody>
         </table>
       </div>
@@ -866,17 +1046,139 @@ function TestTenantManagementStateService() {
   )
 }
 
+function TestComponentInterfaces() {
+  const [inputsDemo, setInputsDemo] = useState<TenantManagement.TenantsComponentInputs>({})
+  const [outputsDemo, setOutputsDemo] = useState<TenantManagement.TenantsComponentOutputs>({})
+  const [eventLog, setEventLog] = useState<string[]>([])
+
+  const addLog = (message: string) => {
+    setEventLog(prev => [...prev.slice(-9), `${new Date().toLocaleTimeString()}: ${message}`])
+  }
+
+  // Set up demo callbacks
+  useEffect(() => {
+    setInputsDemo({
+      onTenantCreated: (tenant) => addLog(`onTenantCreated: ${tenant.name} (${tenant.id})`),
+      onTenantUpdated: (tenant) => addLog(`onTenantUpdated: ${tenant.name} (${tenant.id})`),
+      onTenantDeleted: (id) => addLog(`onTenantDeleted: ${id}`),
+    })
+    setOutputsDemo({
+      onVisibleFeaturesChange: (visible) => addLog(`onVisibleFeaturesChange: ${visible}`),
+      onSearch: (value) => addLog(`onSearch: "${value}"`),
+      onPageChange: (page) => addLog(`onPageChange: ${page}`),
+    })
+  }, [])
+
+  return (
+    <div className="test-section">
+      <h2>Component Interfaces <span style={{ color: '#4f4', fontSize: '14px' }}>(v2.0.0)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>TenantsComponentInputs</h3>
+        <p>Input callbacks for reacting to tenant CRUD operations:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Callback</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>onTenantCreated</td><td><code>(tenant: Item) =&gt; void</code></td><td>Called when a tenant is created</td></tr>
+            <tr><td style={{ padding: '8px' }}>onTenantUpdated</td><td><code>(tenant: Item) =&gt; void</code></td><td>Called when a tenant is updated</td></tr>
+            <tr><td style={{ padding: '8px' }}>onTenantDeleted</td><td><code>(id: string) =&gt; void</code></td><td>Called when a tenant is deleted</td></tr>
+          </tbody>
+        </table>
+        <div style={{ marginTop: '1rem' }}>
+          <h4>Test Callbacks:</h4>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button onClick={() => inputsDemo.onTenantCreated?.({ id: 'new-123', name: 'Test Tenant' })}>
+              Trigger onTenantCreated
+            </button>
+            <button onClick={() => inputsDemo.onTenantUpdated?.({ id: 'upd-123', name: 'Updated Tenant' })}>
+              Trigger onTenantUpdated
+            </button>
+            <button onClick={() => inputsDemo.onTenantDeleted?.('del-123')}>
+              Trigger onTenantDeleted
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>TenantsComponentOutputs</h3>
+        <p>Output callbacks for UI state changes:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Callback</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>onVisibleFeaturesChange</td><td><code>(visible: boolean) =&gt; void</code></td><td>Called when features modal visibility changes</td></tr>
+            <tr><td style={{ padding: '8px' }}>onSearch</td><td><code>(value: string) =&gt; void</code></td><td>Called when search value changes (v2.0.0: typed as string)</td></tr>
+            <tr><td style={{ padding: '8px' }}>onPageChange</td><td><code>(page: number) =&gt; void</code></td><td>Called when page changes (v2.0.0: typed as number)</td></tr>
+          </tbody>
+        </table>
+        <div style={{ marginTop: '1rem' }}>
+          <h4>Test Callbacks:</h4>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button onClick={() => outputsDemo.onVisibleFeaturesChange?.(true)}>
+              Trigger onVisibleFeaturesChange(true)
+            </button>
+            <button onClick={() => outputsDemo.onVisibleFeaturesChange?.(false)}>
+              Trigger onVisibleFeaturesChange(false)
+            </button>
+            <button onClick={() => outputsDemo.onSearch?.('test search')}>
+              Trigger onSearch
+            </button>
+            <button onClick={() => outputsDemo.onPageChange?.(2)}>
+              Trigger onPageChange(2)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>Event Log</h3>
+        <div style={{ background: 'rgba(0,0,0,0.2)', padding: '8px', borderRadius: '4px', minHeight: '100px', maxHeight: '200px', overflow: 'auto' }}>
+          {eventLog.length === 0 ? (
+            <p style={{ color: '#888', margin: 0 }}>Click buttons above to test callbacks...</p>
+          ) : (
+            eventLog.map((log, index) => (
+              <div key={index} style={{ fontSize: '12px', fontFamily: 'monospace', padding: '2px 0' }}>
+                {log}
+              </div>
+            ))
+          )}
+        </div>
+        <button
+          onClick={() => setEventLog([])}
+          style={{ marginTop: '0.5rem', padding: '4px 8px', fontSize: '12px' }}
+        >
+          Clear Log
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function TestRouteConstants() {
   return (
     <div className="test-section">
-      <h2>Route Constants (v1.0.0)</h2>
+      <h2>Route Constants</h2>
 
-      <div className="test-card">
-        <h3>TENANT_MANAGEMENT_ROUTES</h3>
-        <p>Route configuration for the tenant management module:</p>
-        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
-          {JSON.stringify(TENANT_MANAGEMENT_ROUTES, null, 2)}
-        </pre>
+      <div className="test-card" style={{ background: 'rgba(255,68,68,0.05)', border: '1px solid rgba(255,68,68,0.2)' }}>
+        <h3>TENANT_MANAGEMENT_ROUTES <span style={{ color: '#f44', fontSize: '12px' }}>(Removed in v2.0.0)</span></h3>
+        <p style={{ color: '#888' }}>
+          The <code>TENANT_MANAGEMENT_ROUTES</code> constant was deprecated in v0.9.0 and has been removed in v2.0.0.
+        </p>
+        <p style={{ marginTop: '0.5rem', fontSize: '14px' }}>
+          Use <code>TENANT_MANAGEMENT_ROUTE_PATHS</code> and <code>TENANT_MANAGEMENT_POLICIES</code> instead.
+        </p>
       </div>
 
       <div className="test-card">
@@ -907,6 +1209,7 @@ export function TestTenantManagementPage() {
       <TestTenantModal />
       <TestTenantHook />
       <TestTenantManagementStateService />
+      <TestComponentInterfaces />
       <TestRouteConstants />
       <TestApiEndpoints />
     </div>

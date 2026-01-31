@@ -1,6 +1,6 @@
 /**
  * Tenant Management module type definitions
- * Translated from @abp/ng.tenant-management v1.1.0
+ * Translated from @abp/ng.tenant-management v2.0.0
  */
 
 import type { ABP } from '@abpjs/core';
@@ -50,5 +50,35 @@ export namespace TenantManagement {
   export interface DefaultConnectionStringRequest {
     id: string;
     defaultConnectionString: string;
+  }
+
+  // ========================
+  // Component Interface Types (v2.0.0)
+  // ========================
+
+  /**
+   * Input props for TenantsComponent
+   * @since 2.0.0
+   */
+  export interface TenantsComponentInputs {
+    /** Callback when tenant is created */
+    readonly onTenantCreated?: (tenant: Item) => void;
+    /** Callback when tenant is updated */
+    readonly onTenantUpdated?: (tenant: Item) => void;
+    /** Callback when tenant is deleted */
+    readonly onTenantDeleted?: (id: string) => void;
+  }
+
+  /**
+   * Output callbacks for TenantsComponent
+   * @since 2.0.0
+   */
+  export interface TenantsComponentOutputs {
+    /** Callback when features modal visibility changes */
+    readonly onVisibleFeaturesChange?: (visible: boolean) => void;
+    /** Callback when search is performed */
+    readonly onSearch?: (value: string) => void;
+    /** Callback when page changes */
+    readonly onPageChange?: (page: number) => void;
   }
 }
