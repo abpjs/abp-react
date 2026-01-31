@@ -1,7 +1,7 @@
 /**
  * @abpjs/setting-management
  * ABP Framework Setting Management module for React
- * Translated from @abp/ng.setting-management v1.0.0
+ * Translated from @abp/ng.setting-management v1.1.0
  */
 
 // Models

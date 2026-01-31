@@ -7,9 +7,10 @@ import {
   SettingLayout,
   useSettingManagement,
   getSettingManagementService,
+  getSettingManagementStateService,
   SETTING_MANAGEMENT_ROUTES,
 } from '@abpjs/setting-management'
-import type { SettingTab } from '@abpjs/setting-management'
+import type { SettingTab, SettingManagement } from '@abpjs/setting-management'
 
 // Type annotation helper to avoid 'any' warnings
 const logTabSelect = (tab: SettingTab) => console.log('Tab selected:', tab.name)
@@ -307,9 +308,9 @@ function TestSettingManagementService() {
 
   return (
     <div className="test-section">
-      <h2>SettingManagementService (v1.0.0)</h2>
+      <h2>SettingManagementService</h2>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '1rem' }}>
-        Note: In Angular v1.0.0, this service was removed in favor of using Store directly.
+        Note: In Angular, this service was removed in favor of using Store directly.
         In React, we keep this service as it provides a clean API without requiring a global store.
       </p>
 
@@ -342,16 +343,129 @@ service.subscribe(() => console.log('Changed!'));`}
   )
 }
 
+function TestSettingManagementStateService() {
+  const [stateServiceState, setStateServiceState] = useState<SettingManagement.State>({
+    selectedTab: null,
+  })
+
+  const refreshState = () => {
+    const stateService = getSettingManagementStateService()
+    setStateServiceState(stateService.getState())
+  }
+
+  useEffect(() => {
+    const stateService = getSettingManagementStateService()
+    const unsubscribe = stateService.subscribe(refreshState)
+    refreshState()
+    return unsubscribe
+  }, [])
+
+  const handleSetSelectedTab = () => {
+    const stateService = getSettingManagementStateService()
+    stateService.setSelectedTab({
+      name: 'Test Tab',
+      order: 1,
+      url: '/settings/test',
+    })
+  }
+
+  const handleClearSelectedTab = () => {
+    const stateService = getSettingManagementStateService()
+    stateService.setSelectedTab(null)
+  }
+
+  const handleReset = () => {
+    const stateService = getSettingManagementStateService()
+    stateService.reset()
+  }
+
+  return (
+    <div className="test-section">
+      <h2>SettingManagementStateService (v1.1.0)</h2>
+      <p style={{ fontSize: '14px', color: '#888', marginBottom: '1rem' }}>
+        New in v1.1.0: State service equivalent to Angular's NGXS SettingManagementState.
+        Provides selectors and actions for managing the selected setting tab.
+      </p>
+
+      <div className="test-card">
+        <h3>State Service State</h3>
+        <p>selectedTab: <strong>{stateServiceState.selectedTab?.name || 'null'}</strong></p>
+        {stateServiceState.selectedTab && (
+          <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(100,108,255,0.1)', borderRadius: '4px' }}>
+            <p style={{ fontSize: '12px', margin: 0 }}>name: {stateServiceState.selectedTab.name}</p>
+            <p style={{ fontSize: '12px', margin: 0 }}>order: {stateServiceState.selectedTab.order}</p>
+            <p style={{ fontSize: '12px', margin: 0 }}>url: {stateServiceState.selectedTab.url || '-'}</p>
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>State Service Actions</h3>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button onClick={handleSetSelectedTab}>
+            Set Selected Tab
+          </button>
+          <button onClick={handleClearSelectedTab}>
+            Clear Selected Tab
+          </button>
+          <button onClick={handleReset} style={{ background: '#c44' }}>
+            Reset State
+          </button>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>State Service Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(100,108,255,0.1)' }}><td style={{ padding: '8px' }}>getSelectedTab()</td><td>Get the currently selected tab (selector)</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.1)' }}><td style={{ padding: '8px' }}>setSelectedTab(tab)</td><td>Set the selected tab (action)</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.1)' }}><td style={{ padding: '8px' }}>getState()</td><td>Get the full state object</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.1)' }}><td style={{ padding: '8px' }}>reset()</td><td>Reset state to initial values</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.1)' }}><td style={{ padding: '8px' }}>subscribe(callback)</td><td>Subscribe to state changes</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '8px', borderRadius: '4px', fontSize: '12px' }}>
+{`import { getSettingManagementStateService } from '@abpjs/setting-management';
+
+const stateService = getSettingManagementStateService();
+
+// Get current selected tab
+const selectedTab = stateService.getSelectedTab();
+
+// Set selected tab (equivalent to Angular's SetSelectedSettingTab action)
+stateService.setSelectedTab({ name: 'Account', order: 1 });
+
+// Subscribe to changes
+const unsubscribe = stateService.subscribe(() => {
+  console.log('State changed:', stateService.getState());
+});`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 function TestConstants() {
   return (
     <div className="test-section">
-      <h2>Constants (v1.0.0)</h2>
+      <h2>Constants</h2>
 
       <div className="test-card">
         <h3>SETTING_MANAGEMENT_ROUTES</h3>
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
           Default route configuration for the setting management module.
-          Note: In Angular v1.0.0, route constants were removed. We keep them in React for convenience.
+          Note: In Angular, route constants were removed. We keep them in React for convenience.
         </p>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {JSON.stringify(SETTING_MANAGEMENT_ROUTES, null, 2)}
@@ -385,6 +499,21 @@ function TestModels() {
         </pre>
       </div>
 
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>SettingManagement.State Interface (v1.1.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          New in v1.1.0: State interface for setting management state tracking.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+{`namespace SettingManagement {
+  interface State {
+    /** Currently selected setting tab */
+    selectedTab: SettingTab | null;
+  }
+}`}
+        </pre>
+      </div>
+
       <div className="test-card">
         <h3>UseSettingManagementReturn Interface</h3>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
@@ -409,11 +538,12 @@ export function TestSettingManagementPage() {
   return (
     <div>
       <h1>@abpjs/setting-management Tests</h1>
-      <p>Testing setting management layout, hook, and service.</p>
+      <p>Testing setting management layout, hook, and services.</p>
 
       <TestSettingLayoutComponent />
       <TestSettingManagementHook />
       <TestSettingManagementService />
+      <TestSettingManagementStateService />
       <TestConstants />
       <TestModels />
     </div>
