@@ -152,3 +152,18 @@ describe('LayoutBase', () => {
     expect(toggleButton).toBeInTheDocument();
   });
 });
+
+describe('LAYOUTS constant', () => {
+  it('should have layout components with correct type properties', () => {
+    // Import directly from components to test their type properties
+    // The LAYOUTS export is tested indirectly through the index.test.ts
+    expect(LayoutEmpty.type).toBe('empty');
+  });
+
+  it('should be usable in dynamic layout systems', () => {
+    // LayoutEmpty and other layouts have static type properties
+    // that match ABP's eLayoutType enum values
+    const layoutType = LayoutEmpty.type;
+    expect(['empty', 'account', 'application']).toContain(layoutType);
+  });
+});

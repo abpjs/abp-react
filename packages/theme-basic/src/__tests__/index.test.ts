@@ -1,0 +1,145 @@
+/**
+ * Tests for @abpjs/theme-basic index exports
+ * Verifies all public exports are accessible
+ */
+import { describe, it, expect, vi } from 'vitest';
+
+// Mock @abpjs/core
+vi.mock('@abpjs/core', async () => {
+  return {
+    eLayoutType: {
+      empty: 'empty',
+      account: 'account',
+      application: 'application',
+    },
+    useDirection: vi.fn(() => ({ direction: 'ltr', isRtl: false })),
+    useAuth: vi.fn(() => ({ logout: vi.fn(), isAuthenticated: false })),
+    useConfig: vi.fn(() => ({ routes: [], currentUser: null, localization: {} })),
+    useSession: vi.fn(() => ({ language: 'en-US' })),
+    useLocalization: vi.fn(() => (key: string) => key),
+  };
+});
+
+// Mock @abpjs/theme-shared with proper exports
+vi.mock('@abpjs/theme-shared', async (importOriginal) => {
+  const actual = await importOriginal() as object;
+  return {
+    ...actual,
+    ChangePassword: () => null,
+    Profile: () => null,
+  };
+});
+
+describe('@abpjs/theme-basic exports', () => {
+  it('should export context providers and hooks', async () => {
+    const {
+      LayoutProvider,
+      useLayoutContext,
+      useLayoutService,
+      useNavigationElements,
+      BrandingProvider,
+      useBranding,
+      useLogo,
+    } = await import('../index');
+
+    expect(LayoutProvider).toBeDefined();
+    expect(typeof LayoutProvider).toBe('function');
+
+    expect(useLayoutContext).toBeDefined();
+    expect(typeof useLayoutContext).toBe('function');
+
+    expect(useLayoutService).toBeDefined();
+    expect(typeof useLayoutService).toBe('function');
+
+    expect(useNavigationElements).toBeDefined();
+    expect(typeof useNavigationElements).toBe('function');
+
+    expect(BrandingProvider).toBeDefined();
+    expect(typeof BrandingProvider).toBe('function');
+
+    expect(useBranding).toBeDefined();
+    expect(typeof useBranding).toBe('function');
+
+    expect(useLogo).toBeDefined();
+    expect(typeof useLogo).toBe('function');
+  });
+
+  it('should export layout components', async () => {
+    const {
+      LayoutApplication,
+      LayoutAccount,
+      LayoutEmpty,
+      LayoutBase,
+    } = await import('../index');
+
+    expect(LayoutApplication).toBeDefined();
+    expect(typeof LayoutApplication).toBe('function');
+    expect(LayoutApplication.type).toBe('application');
+
+    expect(LayoutAccount).toBeDefined();
+    expect(typeof LayoutAccount).toBe('function');
+    expect(LayoutAccount.type).toBe('account');
+
+    expect(LayoutEmpty).toBeDefined();
+    expect(typeof LayoutEmpty).toBe('function');
+    expect(LayoutEmpty.type).toBe('empty');
+
+    expect(LayoutBase).toBeDefined();
+    expect(typeof LayoutBase).toBe('function');
+  });
+
+  it('should export ThemeBasicProvider', async () => {
+    const { ThemeBasicProvider } = await import('../index');
+
+    expect(ThemeBasicProvider).toBeDefined();
+    expect(typeof ThemeBasicProvider).toBe('function');
+  });
+
+  it('should export LAYOUTS constant with all layout components', async () => {
+    const { LAYOUTS, LayoutApplication, LayoutAccount, LayoutEmpty } = await import('../index');
+
+    expect(LAYOUTS).toBeDefined();
+    expect(Array.isArray(LAYOUTS)).toBe(true);
+    expect(LAYOUTS).toHaveLength(3);
+    expect(LAYOUTS).toContain(LayoutApplication);
+    expect(LAYOUTS).toContain(LayoutAccount);
+    expect(LAYOUTS).toContain(LayoutEmpty);
+  });
+
+  it('should export ChangePassword and Profile from theme-shared', async () => {
+    const { ChangePassword, Profile } = await import('../index');
+
+    // These are re-exported from @abpjs/theme-shared for backward compatibility
+    expect(ChangePassword).toBeDefined();
+    expect(Profile).toBeDefined();
+  });
+
+  // v2.0.0 - Verify all exports are available
+  describe('v2.0.0 exports', () => {
+    it('should have all v2.0.0 exports available', async () => {
+      // All exports should be available without errors
+      const exports = await import('../index');
+
+      // Core exports
+      expect(exports.LAYOUTS).toBeDefined();
+      expect(exports.ThemeBasicProvider).toBeDefined();
+
+      // Context exports
+      expect(exports.LayoutProvider).toBeDefined();
+      expect(exports.BrandingProvider).toBeDefined();
+
+      // Hook exports
+      expect(exports.useLayoutContext).toBeDefined();
+      expect(exports.useLayoutService).toBeDefined();
+      expect(exports.useNavigationElements).toBeDefined();
+      expect(exports.useBranding).toBeDefined();
+      expect(exports.useLogo).toBeDefined();
+
+      // Component exports
+      expect(exports.LayoutApplication).toBeDefined();
+      expect(exports.LayoutAccount).toBeDefined();
+      expect(exports.LayoutEmpty).toBeDefined();
+      expect(exports.LayoutBase).toBeDefined();
+    });
+  });
+});
