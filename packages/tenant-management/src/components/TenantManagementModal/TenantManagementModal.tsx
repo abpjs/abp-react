@@ -43,6 +43,12 @@ export interface TenantManagementModalProps {
    * Callback fired when tenant is saved successfully
    */
   onSave?: () => void;
+
+  /**
+   * Callback when features modal visibility changes
+   * @since 2.0.0
+   */
+  onVisibleFeaturesChange?: (visible: boolean) => void;
 }
 
 /**
@@ -79,6 +85,7 @@ export function TenantManagementModal({
   tenantId,
   initialView = 'tenant',
   onSave,
+  onVisibleFeaturesChange,
 }: TenantManagementModalProps): React.ReactElement {
   const { t } = useLocalization();
 

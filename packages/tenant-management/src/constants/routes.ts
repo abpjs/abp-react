@@ -1,40 +1,10 @@
-import { ABP, eLayoutType } from '@abpjs/core';
-
 /**
- * Tenant Management module routes configuration (v0.9.0 format).
- * Translated from @abp/ng.tenant-management TENANT_MANAGEMENT_ROUTES.
+ * Tenant Management module route constants
+ * Translated from @abp/ng.tenant-management v2.0.0
  *
- * These routes define the navigation structure for the tenant management module
- * within the ABP Framework application.
- *
- * In v0.9.0, the format changed from `ABP.FullRoute[]` to `{ routes: ABP.FullRoute[] }`
+ * Note: TENANT_MANAGEMENT_ROUTES was deprecated in v0.9.0 and removed in v2.0.0.
+ * Use TENANT_MANAGEMENT_ROUTE_PATHS and TENANT_MANAGEMENT_POLICIES instead.
  */
-export const TENANT_MANAGEMENT_ROUTES: { routes: ABP.FullRoute[] } = {
-  routes: [
-    {
-      name: 'AbpUiNavigation::Menu:Administration',
-      path: '',
-      order: 1,
-      wrapper: true,
-    },
-    {
-      name: 'AbpTenantManagement::Menu:TenantManagement',
-      path: 'tenant-management',
-      order: 2,
-      parentName: 'AbpUiNavigation::Menu:Administration',
-      layout: eLayoutType.application,
-      requiredPolicy: 'AbpTenantManagement.Tenants',
-      children: [
-        {
-          path: 'tenants',
-          name: 'AbpTenantManagement::Tenants',
-          order: 1,
-          requiredPolicy: 'AbpTenantManagement.Tenants',
-        },
-      ],
-    },
-  ],
-};
 
 /**
  * Route paths for the tenant management module.
