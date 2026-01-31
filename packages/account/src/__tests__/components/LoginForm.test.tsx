@@ -50,6 +50,7 @@ vi.mock('../../hooks', () => ({
     error: mockError,
     clearError: mockClearError,
   }),
+  useSelfRegistrationEnabled: () => true,
 }));
 
 // Mock @abpjs/core

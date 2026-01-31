@@ -1,6 +1,85 @@
 /**
  * Account module type definitions
  */
+import type { ReactNode } from 'react';
+
+// ============================================================================
+// Account Namespace - v2.0.0
+// ============================================================================
+
+/**
+ * Account namespace containing component interface types.
+ * Translated from @abp/ng.account v2.0.0 Account namespace.
+ *
+ * These interfaces define the inputs and outputs for account components,
+ * enabling type-safe component customization and extension.
+ *
+ * @since 2.0.0
+ */
+export namespace Account {
+  /**
+   * Inputs for AuthWrapper component
+   */
+  export interface AuthWrapperComponentInputs {
+    /** Main content to render in the auth wrapper */
+    readonly mainContentRef?: ReactNode;
+    /** Optional cancel/secondary content */
+    readonly cancelContentRef?: ReactNode;
+  }
+
+  /**
+   * Outputs for AuthWrapper component
+   */
+  export interface AuthWrapperComponentOutputs {
+    // No outputs currently defined
+  }
+
+  /**
+   * Inputs for TenantBox component
+   */
+  export interface TenantBoxComponentInputs {
+    // No inputs currently defined
+  }
+
+  /**
+   * Outputs for TenantBox component
+   */
+  export interface TenantBoxComponentOutputs {
+    // No outputs currently defined
+  }
+
+  /**
+   * Inputs for PersonalSettings component
+   */
+  export interface PersonalSettingsComponentInputs {
+    // No inputs currently defined
+  }
+
+  /**
+   * Outputs for PersonalSettings component
+   */
+  export interface PersonalSettingsComponentOutputs {
+    // No outputs currently defined
+  }
+
+  /**
+   * Inputs for ChangePassword component
+   */
+  export interface ChangePasswordComponentInputs {
+    // No inputs currently defined
+  }
+
+  /**
+   * Outputs for ChangePassword component
+   */
+  export interface ChangePasswordComponentOutputs {
+    // No outputs currently defined
+  }
+}
+
+// ============================================================================
+// Core Types
+// ============================================================================
 
 /**
  * Account module configuration options

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
@@ -24,11 +24,39 @@ vi.mock('@chakra-ui/react', () => ({
       {children}
     </div>
   ),
+  Text: ({ children, ...props }: any) => (
+    <span data-testid="text" {...props}>{children}</span>
+  ),
+}));
+
+// Mock setting value for local login
+let mockLocalLoginSetting: string | undefined | null = undefined;
+
+// Mock @abpjs/core
+vi.mock('@abpjs/core', () => ({
+  useLocalization: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'AbpAccount::LocalLoginDisabledMessage': 'Local login is disabled. Please use an external login provider.',
+      };
+      return translations[key] || key;
+    },
+  }),
+  useSetting: (key: string) => {
+    if (key === 'Abp.Account.EnableLocalLogin') {
+      return mockLocalLoginSetting;
+    }
+    return undefined;
+  },
 }));
 
 import { AuthWrapper } from '../../components/AuthWrapper/AuthWrapper';
 
 describe('AuthWrapper', () => {
+  beforeEach(() => {
+    mockLocalLoginSetting = undefined; // Reset to default (enabled)
+  });
+
   it('should render children when provided', () => {
     render(
       <AuthWrapper>
@@ -151,5 +179,149 @@ describe('AuthWrapper', () => {
     expect(screen.getByTestId('form')).toBeInTheDocument();
     expect(screen.getByText('Already have an account?')).toBeInTheDocument();
     expect(screen.getByText('Log in')).toBeInTheDocument();
+  });
+
+  // v2.0.0: enableLocalLogin feature tests
+  describe('enableLocalLogin prop (v2.0.0)', () => {
+    it('should render content when enableLocalLogin is true', () => {
+      render(
+        <AuthWrapper enableLocalLogin={true}>
+          <div data-testid="login-content">Login Form</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.getByTestId('login-content')).toBeInTheDocument();
+    });
+
+    it('should show disabled message when enableLocalLogin is false', () => {
+      render(
+        <AuthWrapper enableLocalLogin={false}>
+          <div data-testid="login-content">Login Form</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.queryByTestId('login-content')).not.toBeInTheDocument();
+      expect(screen.getByText('Local login is disabled. Please use an external login provider.')).toBeInTheDocument();
+    });
+
+    it('should not render mainContent when enableLocalLogin is false', () => {
+      render(
+        <AuthWrapper
+          enableLocalLogin={false}
+          mainContent={<div data-testid="main-content">Main</div>}
+          cancelContent={<div data-testid="cancel-content">Cancel</div>}
+        />
+      );
+
+      expect(screen.queryByTestId('main-content')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('cancel-content')).not.toBeInTheDocument();
+    });
+
+    it('should still render wrapper structure when local login is disabled', () => {
+      render(<AuthWrapper enableLocalLogin={false} />);
+
+      expect(screen.getByTestId('flex')).toBeInTheDocument();
+      expect(screen.getByTestId('flex')).toHaveClass('auth-wrapper');
+      expect(screen.getByTestId('container')).toBeInTheDocument();
+    });
+  });
+
+  describe('enableLocalLogin from ABP settings (v2.0.0)', () => {
+    it('should enable local login when setting is undefined', () => {
+      mockLocalLoginSetting = undefined;
+
+      render(
+        <AuthWrapper>
+          <div data-testid="login-content">Login Form</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.getByTestId('login-content')).toBeInTheDocument();
+    });
+
+    it('should enable local login when setting is null', () => {
+      mockLocalLoginSetting = null;
+
+      render(
+        <AuthWrapper>
+          <div data-testid="login-content">Login Form</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.getByTestId('login-content')).toBeInTheDocument();
+    });
+
+    it('should enable local login when setting is "true"', () => {
+      mockLocalLoginSetting = 'true';
+
+      render(
+        <AuthWrapper>
+          <div data-testid="login-content">Login Form</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.getByTestId('login-content')).toBeInTheDocument();
+    });
+
+    it('should enable local login when setting is "True" (case insensitive)', () => {
+      mockLocalLoginSetting = 'True';
+
+      render(
+        <AuthWrapper>
+          <div data-testid="login-content">Login Form</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.getByTestId('login-content')).toBeInTheDocument();
+    });
+
+    it('should disable local login when setting is "false"', () => {
+      mockLocalLoginSetting = 'false';
+
+      render(
+        <AuthWrapper>
+          <div data-testid="login-content">Login Form</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.queryByTestId('login-content')).not.toBeInTheDocument();
+      expect(screen.getByText('Local login is disabled. Please use an external login provider.')).toBeInTheDocument();
+    });
+
+    it('should disable local login when setting is "False" (case insensitive)', () => {
+      mockLocalLoginSetting = 'False';
+
+      render(
+        <AuthWrapper>
+          <div data-testid="login-content">Login Form</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.queryByTestId('login-content')).not.toBeInTheDocument();
+    });
+
+    it('prop should override setting value (prop=true, setting=false)', () => {
+      mockLocalLoginSetting = 'false';
+
+      render(
+        <AuthWrapper enableLocalLogin={true}>
+          <div data-testid="login-content">Login Form</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.getByTestId('login-content')).toBeInTheDocument();
+    });
+
+    it('prop should override setting value (prop=false, setting=true)', () => {
+      mockLocalLoginSetting = 'true';
+
+      render(
+        <AuthWrapper enableLocalLogin={false}>
+          <div data-testid="login-content">Login Form</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.queryByTestId('login-content')).not.toBeInTheDocument();
+    });
   });
 });
