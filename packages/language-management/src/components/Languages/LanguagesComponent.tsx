@@ -19,7 +19,7 @@ import type { LanguageManagement } from '../../models';
 
 /**
  * Props for LanguagesComponent
- * @since 0.7.2
+ * @since 2.0.0
  */
 export interface LanguagesComponentProps {
   /** Optional callback when a language is created */
@@ -55,7 +55,7 @@ const DEFAULT_FORM_STATE: LanguageFormState = {
  * This is the React equivalent of Angular's LanguagesComponent.
  * It displays a table of languages with CRUD operations.
  *
- * @since 0.7.2
+ * @since 2.0.0
  *
  * @example
  * ```tsx

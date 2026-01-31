@@ -20,7 +20,7 @@ import type { LanguageManagement } from '../../models';
 
 /**
  * Props for LanguageTextsComponent
- * @since 0.7.2
+ * @since 2.0.0
  */
 export interface LanguageTextsComponentProps {
   /** Optional callback when a language text is updated */
@@ -54,7 +54,7 @@ const DEFAULT_FILTER_STATE: FilterState = {
  * This is the React equivalent of Angular's LanguageTextsComponent.
  * It displays a table of language texts with editing capabilities.
  *
- * @since 0.7.2
+ * @since 2.0.0
  *
  * @example
  * ```tsx

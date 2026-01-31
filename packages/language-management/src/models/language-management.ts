@@ -1,6 +1,6 @@
 /**
  * Language Management Models
- * Translated from @volo/abp.ng.language-management v0.7.2
+ * Translated from @volo/abp.ng.language-management v2.0.0
  */
 
 import type { ABP } from '@abpjs/core';
