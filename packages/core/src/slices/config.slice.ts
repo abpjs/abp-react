@@ -23,6 +23,45 @@ const initialState: ConfigState = {
   features: { values: {} },
 };
 
+/**
+ * Helper function to find a route by parentName and add a child route
+ * @since 2.0.0
+ */
+function addRouteToParent(
+  routes: ABP.FullRoute[],
+  newRoute: Omit<ABP.Route, 'children'>,
+  parentUrl: string = ''
+): ABP.FullRoute[] {
+  if (!newRoute.parentName) {
+    // Add to root level
+    const fullRoute: ABP.FullRoute = {
+      ...newRoute,
+      url: `/${newRoute.path}`,
+    };
+    return [...routes, fullRoute];
+  }
+
+  return routes.map((route) => {
+    const currentUrl = `${parentUrl}/${route.path}`;
+    if (route.name === newRoute.parentName) {
+      const fullRoute: ABP.FullRoute = {
+        ...newRoute,
+        url: `${currentUrl}/${newRoute.path}`,
+      };
+      return {
+        ...route,
+        children: [...(route.children || []), fullRoute],
+      };
+    } else if (route.children && route.children.length) {
+      return {
+        ...route,
+        children: addRouteToParent(route.children, newRoute, currentUrl),
+      };
+    }
+    return route;
+  });
+}
+
 // Helper function to patch routes recursively
 function patchRouteDeep(
   routes: ABP.FullRoute[],
@@ -81,6 +120,14 @@ const _configSlice = createSlice({
       const { name, newValue } = action.payload;
       state.routes = patchRouteDeep(state.routes, name, newValue);
     },
+    /**
+     * Add a new route dynamically
+     * @see https://github.com/abpframework/abp/pull/2425#issue-355018812
+     * @since 2.0.0
+     */
+    addRoute: (state, action: PayloadAction<Omit<ABP.Route, 'children'>>) => {
+      state.routes = addRouteToParent(state.routes, action.payload);
+    },
     setApplicationConfiguration: (
       state,
       action: PayloadAction<ApplicationConfiguration.Response>
@@ -104,6 +151,8 @@ export const configActions: {
   setRequirements: PayloadActionCreator<Config.Requirements>;
   setRoutes: PayloadActionCreator<ABP.FullRoute[]>;
   patchRoute: PayloadActionCreator<{ name: string; newValue: Partial<ABP.FullRoute> }>;
+  /** @since 2.0.0 */
+  addRoute: PayloadActionCreator<Omit<ABP.Route, 'children'>>;
   setApplicationConfiguration: PayloadActionCreator<ApplicationConfiguration.Response>;
 } = _configSlice.actions as any;
 export const configReducer = _configSlice.reducer;
@@ -307,6 +356,6 @@ export const selectLocalizationString =
   };
 
 /**
- * @deprecated Use selectLocalizationString instead. To be deleted in v2
+ * @deprecated Use selectLocalizationString instead. Scheduled for removal in v3.0.0
  */
 export const selectCopy = selectLocalizationString;

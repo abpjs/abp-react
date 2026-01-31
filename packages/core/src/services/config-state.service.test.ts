@@ -310,10 +310,5 @@ describe('ConfigStateService', () => {
   });
 });
 
-// Test backward compatibility
-describe('ConfigService (deprecated alias)', () => {
-  it('should be exported as ConfigService for backward compatibility', async () => {
-    const { ConfigService } = await import('./config-state.service');
-    expect(ConfigService).toBe((await import('./config-state.service')).ConfigStateService);
-  });
-});
+// Note: ConfigService alias was removed in v2.0.0
+// Use ConfigStateService directly

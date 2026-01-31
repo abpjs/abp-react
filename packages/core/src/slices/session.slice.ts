@@ -5,16 +5,35 @@ export interface SessionState extends Session.State {}
 
 const SESSION_STORAGE_KEY = 'SessionState';
 
+/**
+ * Default session detail values
+ * @since 2.0.0
+ */
+const defaultSessionDetail: Session.SessionDetail = {
+  openedTabCount: 0,
+  lastExitTime: 0,
+  remember: false,
+};
+
 function loadSessionFromStorage(): SessionState {
   try {
     const stored = localStorage.getItem(SESSION_STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Ensure sessionDetail exists for backward compatibility
+      return {
+        ...parsed,
+        sessionDetail: parsed.sessionDetail || { ...defaultSessionDetail },
+      };
     }
   } catch {
     // Ignore parse errors
   }
-  return { language: '', tenant: { id: '', name: '' } };
+  return {
+    language: '',
+    tenant: { id: '', name: '' },
+    sessionDetail: { ...defaultSessionDetail },
+  };
 }
 
 function saveSessionToStorage(state: SessionState): void {
@@ -39,6 +58,38 @@ export const sessionSlice = createSlice({
       state.tenant = action.payload;
       saveSessionToStorage(state);
     },
+    /**
+     * Set the remember flag for session persistence
+     * @since 2.0.0
+     */
+    setRemember: (state, action: PayloadAction<boolean>) => {
+      state.sessionDetail.remember = action.payload;
+      saveSessionToStorage(state);
+    },
+    /**
+     * Modify the opened tab count
+     * @since 2.0.0
+     */
+    modifyOpenedTabCount: (state, action: PayloadAction<'increase' | 'decrease'>) => {
+      if (action.payload === 'increase') {
+        state.sessionDetail.openedTabCount += 1;
+      } else {
+        state.sessionDetail.openedTabCount = Math.max(0, state.sessionDetail.openedTabCount - 1);
+      }
+      // Update lastExitTime when tabs are closed
+      if (action.payload === 'decrease') {
+        state.sessionDetail.lastExitTime = Date.now();
+      }
+      saveSessionToStorage(state);
+    },
+    /**
+     * Set the session detail
+     * @since 2.0.0
+     */
+    setSessionDetail: (state, action: PayloadAction<Partial<Session.SessionDetail>>) => {
+      state.sessionDetail = { ...state.sessionDetail, ...action.payload };
+      saveSessionToStorage(state);
+    },
   },
 });
 
@@ -48,3 +99,10 @@ export const sessionReducer = sessionSlice.reducer;
 // Selectors
 export const selectLanguage = (state: { session: SessionState }) => state.session.language;
 export const selectTenant = (state: { session: SessionState }) => state.session.tenant;
+
+/**
+ * Select session detail
+ * @since 2.0.0
+ */
+export const selectSessionDetail = (state: { session: SessionState }) =>
+  state.session.sessionDetail;
