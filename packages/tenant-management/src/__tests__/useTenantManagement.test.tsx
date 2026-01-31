@@ -69,7 +69,14 @@ describe('useTenantManagement', () => {
       expect(typeof result.current.setDefaultConnectionString).toBe('function');
       expect(typeof result.current.setSortKey).toBe('function');
       expect(typeof result.current.setSortOrder).toBe('function');
+      expect(typeof result.current.onSharedDatabaseChange).toBe('function');
       expect(typeof result.current.reset).toBe('function');
+    });
+
+    it('should return isDisabledSaveButton property (v1.1.0)', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      expect(typeof result.current.isDisabledSaveButton).toBe('boolean');
     });
 
     it('should return initial sorting state (v1.0.0)', () => {
@@ -542,6 +549,160 @@ describe('useTenantManagement', () => {
         result.current.setSortOrder('');
       });
       expect(result.current.sortOrder).toBe('');
+    });
+  });
+
+  describe('isDisabledSaveButton (v1.1.0)', () => {
+    it('should return false when using shared database', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      // Default state - useSharedDatabase is true
+      expect(result.current.useSharedDatabase).toBe(true);
+      expect(result.current.isDisabledSaveButton).toBe(false);
+    });
+
+    it('should return true when not using shared database and connection string is empty', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      act(() => {
+        result.current.setUseSharedDatabase(false);
+        result.current.setDefaultConnectionString('');
+      });
+
+      expect(result.current.isDisabledSaveButton).toBe(true);
+    });
+
+    it('should return true when connection string is only whitespace', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      act(() => {
+        result.current.setUseSharedDatabase(false);
+        result.current.setDefaultConnectionString('   ');
+      });
+
+      expect(result.current.isDisabledSaveButton).toBe(true);
+    });
+
+    it('should return false when not using shared database but connection string is provided', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      act(() => {
+        result.current.setUseSharedDatabase(false);
+        result.current.setDefaultConnectionString('Server=localhost;Database=TenantDb');
+      });
+
+      expect(result.current.isDisabledSaveButton).toBe(false);
+    });
+
+    it('should update when useSharedDatabase changes', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      // Start with dedicated database but no connection string
+      act(() => {
+        result.current.setUseSharedDatabase(false);
+        result.current.setDefaultConnectionString('');
+      });
+      expect(result.current.isDisabledSaveButton).toBe(true);
+
+      // Switch to shared database
+      act(() => {
+        result.current.setUseSharedDatabase(true);
+      });
+      expect(result.current.isDisabledSaveButton).toBe(false);
+    });
+
+    it('should update when connection string changes', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      act(() => {
+        result.current.setUseSharedDatabase(false);
+        result.current.setDefaultConnectionString('');
+      });
+      expect(result.current.isDisabledSaveButton).toBe(true);
+
+      act(() => {
+        result.current.setDefaultConnectionString('Server=test');
+      });
+      expect(result.current.isDisabledSaveButton).toBe(false);
+    });
+  });
+
+  describe('onSharedDatabaseChange (v1.1.0)', () => {
+    it('should set useSharedDatabase to true', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      act(() => {
+        result.current.setUseSharedDatabase(false);
+      });
+      expect(result.current.useSharedDatabase).toBe(false);
+
+      act(() => {
+        result.current.onSharedDatabaseChange(true);
+      });
+      expect(result.current.useSharedDatabase).toBe(true);
+    });
+
+    it('should set useSharedDatabase to false', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      expect(result.current.useSharedDatabase).toBe(true);
+
+      act(() => {
+        result.current.onSharedDatabaseChange(false);
+      });
+      expect(result.current.useSharedDatabase).toBe(false);
+    });
+
+    it('should clear connection string when switching to shared database', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      // Set up dedicated database with connection string
+      act(() => {
+        result.current.setUseSharedDatabase(false);
+        result.current.setDefaultConnectionString('Server=localhost;Database=TenantDb');
+      });
+      expect(result.current.defaultConnectionString).toBe('Server=localhost;Database=TenantDb');
+
+      // Switch to shared database
+      act(() => {
+        result.current.onSharedDatabaseChange(true);
+      });
+
+      expect(result.current.useSharedDatabase).toBe(true);
+      expect(result.current.defaultConnectionString).toBe('');
+    });
+
+    it('should not clear connection string when switching to dedicated database', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      // Set a connection string while using shared database
+      act(() => {
+        result.current.setDefaultConnectionString('Server=localhost');
+      });
+
+      // Switch to dedicated database
+      act(() => {
+        result.current.onSharedDatabaseChange(false);
+      });
+
+      expect(result.current.useSharedDatabase).toBe(false);
+      expect(result.current.defaultConnectionString).toBe('Server=localhost');
+    });
+
+    it('should update isDisabledSaveButton accordingly', () => {
+      const { result } = renderHook(() => useTenantManagement());
+
+      // Set dedicated database without connection string
+      act(() => {
+        result.current.onSharedDatabaseChange(false);
+      });
+      expect(result.current.isDisabledSaveButton).toBe(true);
+
+      // Switch back to shared database
+      act(() => {
+        result.current.onSharedDatabaseChange(true);
+      });
+      expect(result.current.isDisabledSaveButton).toBe(false);
     });
   });
 });

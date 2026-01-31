@@ -7,6 +7,7 @@ import { useAuth } from '@abpjs/core'
 import {
   TenantManagementModal,
   useTenantManagement,
+  getTenantManagementStateService,
   type TenantManagement,
   TENANT_MANAGEMENT_ROUTES,
   TENANT_MANAGEMENT_ROUTE_PATHS,
@@ -175,6 +176,7 @@ function TestTenantHook() {
     useSharedDatabase,
     sortKey,
     sortOrder,
+    isDisabledSaveButton,
     fetchTenants,
     fetchTenantById,
     createTenant,
@@ -184,8 +186,10 @@ function TestTenantHook() {
     updateConnectionString,
     deleteConnectionString,
     setSelectedTenant,
+    setDefaultConnectionString,
     setSortKey,
     setSortOrder,
+    onSharedDatabaseChange,
     reset,
   } = useTenantManagement()
 
@@ -451,6 +455,52 @@ function TestTenantHook() {
         </p>
       </div>
 
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>Connection String State (v1.1.0)</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={useSharedDatabase}
+                onChange={(e) => onSharedDatabaseChange(e.target.checked)}
+              />
+              <span>Use Shared Database</span>
+            </label>
+            <p style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>
+              When checked, clears connection string automatically (onSharedDatabaseChange)
+            </p>
+          </div>
+          <div>
+            <label style={{ display: 'block', marginBottom: '4px' }}>Connection String:</label>
+            <input
+              type="text"
+              placeholder="Enter connection string"
+              value={defaultConnectionString}
+              onChange={(e) => setDefaultConnectionString(e.target.value)}
+              disabled={useSharedDatabase}
+              style={{
+                padding: '8px',
+                borderRadius: '4px',
+                border: '1px solid #333',
+                width: '100%',
+                opacity: useSharedDatabase ? 0.5 : 1,
+              }}
+            />
+          </div>
+          <div style={{ padding: '8px', background: isDisabledSaveButton ? 'rgba(255,68,68,0.1)' : 'rgba(68,255,68,0.1)', borderRadius: '4px' }}>
+            <p style={{ margin: 0 }}>
+              isDisabledSaveButton: <strong style={{ color: isDisabledSaveButton ? '#f44' : '#4f4' }}>{isDisabledSaveButton ? 'true' : 'false'}</strong>
+            </p>
+            <p style={{ fontSize: '12px', color: '#888', margin: '4px 0 0 0' }}>
+              {isDisabledSaveButton
+                ? 'Save button should be disabled (not using shared DB but no connection string)'
+                : 'Save button should be enabled'}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="test-card">
         <h3>Hook State</h3>
         <p>isLoading: {isLoading ? 'true' : 'false'}</p>
@@ -462,6 +512,7 @@ function TestTenantHook() {
         <p>useSharedDatabase: {useSharedDatabase ? 'true' : 'false'}</p>
         <p>sortKey: {sortKey}</p>
         <p>sortOrder: {sortOrder || '(empty)'}</p>
+        <p style={{ background: 'rgba(100,108,255,0.1)', padding: '4px 8px', borderRadius: '4px' }}>isDisabledSaveButton: {isDisabledSaveButton ? 'true' : 'false'} <span style={{ fontSize: '12px', color: '#888' }}>(v1.1.0)</span></p>
         {!isAuthenticated && (
           <p style={{ color: '#f88', marginTop: '0.5rem' }}>
             ⚠️ You must be authenticated to use tenant management features
@@ -541,6 +592,10 @@ function TestTenantHook() {
             <tr><td style={{ padding: '8px' }}>setSelectedTenant</td><td>Set the selected tenant</td></tr>
             <tr><td style={{ padding: '8px' }}>setSortKey</td><td>Set sort key (v1.0.0)</td></tr>
             <tr><td style={{ padding: '8px' }}>setSortOrder</td><td>Set sort order: asc, desc, or empty (v1.0.0)</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.05)' }}><td style={{ padding: '8px' }}>setUseSharedDatabase</td><td>Set whether tenant uses shared database (v1.1.0)</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.05)' }}><td style={{ padding: '8px' }}>setDefaultConnectionString</td><td>Set the connection string (v1.1.0)</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.05)' }}><td style={{ padding: '8px' }}>onSharedDatabaseChange</td><td>Handle shared database toggle - clears connection string when enabled (v1.1.0)</td></tr>
+            <tr style={{ background: 'rgba(100,108,255,0.05)' }}><td style={{ padding: '8px' }}>isDisabledSaveButton</td><td>Computed: true when not using shared DB but connection string is empty (v1.1.0)</td></tr>
             <tr><td style={{ padding: '8px' }}>reset</td><td>Reset all state</td></tr>
           </tbody>
         </table>
@@ -667,6 +722,150 @@ function TestApiEndpoints() {
   )
 }
 
+function TestTenantManagementStateService() {
+  const stateService = getTenantManagementStateService()
+  const [tenants, setTenants] = useState<TenantManagement.Item[]>([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [testTenantName, setTestTenantName] = useState('')
+
+  useEffect(() => {
+    // Subscribe to state changes
+    const unsubscribe = stateService.subscribe(() => {
+      setTenants(stateService.get())
+      setTotalCount(stateService.getTenantsTotalCount())
+    })
+
+    // Get initial state
+    setTenants(stateService.get())
+    setTotalCount(stateService.getTenantsTotalCount())
+
+    return unsubscribe
+  }, [stateService])
+
+  const addTenant = () => {
+    if (!testTenantName.trim()) return
+    const newTenant: TenantManagement.Item = {
+      id: `test-${Date.now()}`,
+      name: testTenantName.trim(),
+    }
+    stateService.setTenants([...tenants, newTenant])
+    stateService.setTotalCount(totalCount + 1)
+    setTestTenantName('')
+  }
+
+  const removeTenant = (id: string) => {
+    stateService.setTenants(tenants.filter(t => t.id !== id))
+    stateService.setTotalCount(Math.max(0, totalCount - 1))
+  }
+
+  return (
+    <div className="test-section">
+      <h2>TenantManagementStateService (v1.1.0)</h2>
+
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>Service Overview</h3>
+        <p>The TenantManagementStateService is a singleton service that manages tenant list state independently of React components.</p>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '8px' }}>
+          This service allows different parts of the application to share and react to tenant list changes.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Add Test Tenant</h3>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <input
+            type="text"
+            placeholder="Tenant name"
+            value={testTenantName}
+            onChange={(e) => setTestTenantName(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+              flex: 1,
+            }}
+          />
+          <button onClick={addTenant} disabled={!testTenantName.trim()}>
+            Add Tenant
+          </button>
+        </div>
+        <p style={{ fontSize: '12px', color: '#888' }}>
+          Adds a tenant to the state service (local only, not persisted to server)
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Current State</h3>
+        <p>Total Count: <strong>{totalCount}</strong></p>
+        <p>Tenants in state: <strong>{tenants.length}</strong></p>
+        {tenants.length > 0 && (
+          <div style={{ marginTop: '1rem', maxHeight: '200px', overflow: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #333' }}>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>ID</th>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>Name</th>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tenants.map((tenant) => (
+                  <tr key={tenant.id} style={{ borderBottom: '1px solid #222' }}>
+                    <td style={{ padding: '8px', fontSize: '12px' }}>{tenant.id}</td>
+                    <td style={{ padding: '8px' }}>{tenant.name}</td>
+                    <td style={{ padding: '8px' }}>
+                      <button
+                        onClick={() => removeTenant(tenant.id)}
+                        style={{ padding: '4px 8px', background: '#f44', color: 'white' }}
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>Service Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>get()</td><td>Get current tenants array</td></tr>
+            <tr><td style={{ padding: '8px' }}>getTenantsTotalCount()</td><td>Get total count of tenants</td></tr>
+            <tr><td style={{ padding: '8px' }}>setTenants(tenants)</td><td>Set tenants array</td></tr>
+            <tr><td style={{ padding: '8px' }}>setTotalCount(count)</td><td>Set total count</td></tr>
+            <tr><td style={{ padding: '8px' }}>updateFromResponse(response)</td><td>Update from API response</td></tr>
+            <tr><td style={{ padding: '8px' }}>reset()</td><td>Reset to initial state</td></tr>
+            <tr><td style={{ padding: '8px' }}>subscribe(callback)</td><td>Subscribe to state changes (returns unsubscribe function)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Reset State</h3>
+        <button
+          onClick={() => stateService.reset()}
+          style={{ background: '#f44', color: 'white' }}
+        >
+          Reset State Service
+        </button>
+        <p style={{ marginTop: '0.5rem', fontSize: '14px', color: '#888' }}>
+          Resets the state service to initial empty state
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function TestRouteConstants() {
   return (
     <div className="test-section">
@@ -707,6 +906,7 @@ export function TestTenantManagementPage() {
 
       <TestTenantModal />
       <TestTenantHook />
+      <TestTenantManagementStateService />
       <TestRouteConstants />
       <TestApiEndpoints />
     </div>
