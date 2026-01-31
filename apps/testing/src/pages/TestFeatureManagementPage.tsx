@@ -8,6 +8,7 @@ import {
   FeatureManagementModal,
   useFeatureManagement,
 } from '@abpjs/feature-management'
+import type { FeatureManagement } from '@abpjs/feature-management'
 
 function TestFeatureModal() {
   const [tenantModalVisible, setTenantModalVisible] = useState(false)
@@ -357,16 +358,97 @@ interface Features {
   )
 }
 
+function TestComponentInterfaces() {
+  // Type demonstration - these interfaces define component props
+  const componentInputs: FeatureManagement.FeatureManagementComponentInputs = {
+    visible: true,
+    providerName: 'T',
+    providerKey: 'tenant-123',
+  }
+
+  const componentOutputs: FeatureManagement.FeatureManagementComponentOutputs = {
+    visibleChange: (visible) => console.log('Visibility changed:', visible),
+  }
+
+  return (
+    <div className="test-section">
+      <h2>Component Interface Types (v2.0.0)</h2>
+
+      <div className="test-card">
+        <h3>FeatureManagementComponentInputs</h3>
+        <p>TypeScript interface for component input props:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`interface FeatureManagementComponentInputs {
+  /** Whether the modal is visible */
+  visible: boolean;
+  /** Provider name (e.g., 'T' for Tenant) */
+  readonly providerName: string;
+  /** Provider key (e.g., tenant ID) */
+  readonly providerKey: string;
+}`}
+        </pre>
+        <h4 style={{ marginTop: '1rem' }}>Current Test Value:</h4>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+          {JSON.stringify(componentInputs, null, 2)}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>FeatureManagementComponentOutputs</h3>
+        <p>TypeScript interface for component output callbacks:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`interface FeatureManagementComponentOutputs {
+  /** Callback when visibility changes */
+  readonly visibleChange?: (visible: boolean) => void;
+}`}
+        </pre>
+        <h4 style={{ marginTop: '1rem' }}>Current Test Value:</h4>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+          {`{ visibleChange: ${componentOutputs.visibleChange ? '(visible) => void' : 'undefined'} }`}
+        </pre>
+        <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#888' }}>
+          In Angular, this uses <code>EventEmitter&lt;boolean&gt;</code>.
+          In React, this is a callback function.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import { FeatureManagement } from '@abpjs/feature-management'
+
+// Type your component props with these interfaces
+type FeatureModalProps =
+  FeatureManagement.FeatureManagementComponentInputs &
+  FeatureManagement.FeatureManagementComponentOutputs;
+
+function MyFeatureModal(props: FeatureModalProps) {
+  const { visible, providerName, providerKey, visibleChange } = props;
+  // ... component implementation
+}`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 export function TestFeatureManagementPage() {
   return (
     <div>
       <h1>@abpjs/feature-management Tests</h1>
       <p>Testing feature management modal and hooks.</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.0.0 - Includes component interface types</p>
 
       <TestFeatureModal />
       <TestFeatureHook />
       <TestApiEndpoints />
       <TestModels />
+
+      {/* v2.0.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #646cff', paddingTop: '1rem' }}>
+        v2.0.0 New Features
+      </h2>
+      <TestComponentInterfaces />
     </div>
   )
 }

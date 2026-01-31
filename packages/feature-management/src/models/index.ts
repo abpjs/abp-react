@@ -1,6 +1,6 @@
 /**
  * Feature Management Models
- * Translated from @abp/ng.feature-management v1.1.0
+ * Translated from @abp/ng.feature-management v2.0.0
  */
 
 export namespace FeatureManagement {
@@ -45,5 +45,36 @@ export namespace FeatureManagement {
   export interface Provider {
     providerName: string;
     providerKey: string;
+  }
+
+  // ============================================================================
+  // Component Interface Types - v2.0.0
+  // ============================================================================
+
+  /**
+   * Inputs for FeatureManagement component
+   *
+   * @since 2.0.0
+   */
+  export interface FeatureManagementComponentInputs {
+    /** Whether the modal is visible */
+    visible: boolean;
+    /** Provider name (e.g., 'T' for Tenant) */
+    readonly providerName: string;
+    /** Provider key (e.g., tenant ID) */
+    readonly providerKey: string;
+  }
+
+  /**
+   * Outputs for FeatureManagement component
+   *
+   * In Angular, this uses EventEmitter<boolean>.
+   * In React, this is a callback function.
+   *
+   * @since 2.0.0
+   */
+  export interface FeatureManagementComponentOutputs {
+    /** Callback when visibility changes */
+    readonly visibleChange?: (visible: boolean) => void;
   }
 }
