@@ -11,6 +11,7 @@ import {
   useUsers,
   useIdentity,
   type Identity,
+  type PasswordRule,
   IDENTITY_ROUTES,
   IDENTITY_ROUTE_PATHS,
   IDENTITY_POLICIES,
@@ -45,11 +46,105 @@ function TestRolesComponent() {
 
 function TestUsersComponent() {
   const { isAuthenticated } = useAuth()
+  const [showPasswordRules, setShowPasswordRules] = useState(true)
+  const [passwordLength, setPasswordLength] = useState(6)
+  const [selectedRules, setSelectedRules] = useState<PasswordRule[]>(['number', 'capital', 'small', 'special'])
+
+  const handleRuleToggle = (rule: PasswordRule) => {
+    setSelectedRules(prev =>
+      prev.includes(rule)
+        ? prev.filter(r => r !== rule)
+        : [...prev, rule]
+    )
+  }
 
   return (
     <div className="test-section">
       <h2>UsersComponent</h2>
       <p>Full users management component with create, edit, delete, role assignment, and permissions.</p>
+
+      {/* v1.1.0 Password Rules Configuration */}
+      <div className="test-card">
+        <h3>Password Rules Configuration (v1.1.0)</h3>
+        <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
+          New in v1.1.0: Configure password validation rules displayed in the user creation/edit modal.
+        </p>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <input
+              type="checkbox"
+              checked={showPasswordRules}
+              onChange={(e) => setShowPasswordRules(e.target.checked)}
+            />
+            Show password rules
+          </label>
+        </div>
+
+        {showPasswordRules && (
+          <>
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+                Required password length: <strong>{passwordLength}</strong>
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="16"
+                value={passwordLength}
+                onChange={(e) => setPasswordLength(Number(e.target.value))}
+                style={{ width: '200px' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem' }}>Password rules:</label>
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedRules.includes('number')}
+                    onChange={() => handleRuleToggle('number')}
+                  />
+                  Require number
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedRules.includes('small')}
+                    onChange={() => handleRuleToggle('small')}
+                  />
+                  Require lowercase
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedRules.includes('capital')}
+                    onChange={() => handleRuleToggle('capital')}
+                  />
+                  Require uppercase
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedRules.includes('special')}
+                    onChange={() => handleRuleToggle('special')}
+                  />
+                  Require special character
+                </label>
+              </div>
+            </div>
+
+            <div style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+              <strong>Props being passed:</strong>
+              <pre style={{ margin: '0.5rem 0 0 0' }}>
+{`passwordRulesArr={${JSON.stringify(selectedRules)}}
+requiredPasswordLength={${passwordLength}}`}
+              </pre>
+            </div>
+          </>
+        )}
+      </div>
 
       {!isAuthenticated ? (
         <div className="test-card">
@@ -63,6 +158,8 @@ function TestUsersComponent() {
             onUserCreated={() => console.log('User created!')}
             onUserUpdated={() => console.log('User updated!')}
             onUserDeleted={() => console.log('User deleted!')}
+            passwordRulesArr={showPasswordRules ? selectedRules : undefined}
+            requiredPasswordLength={showPasswordRules ? passwordLength : undefined}
           />
         </div>
       )}
@@ -1010,6 +1107,47 @@ function TestHookMethods() {
             <tr><td style={{ padding: '8px' }}>reset</td><td>Reset all user state</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <div className="test-card">
+        <h3>UsersComponent Props (v1.1.0)</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Prop</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>onUserCreated</td><td>(user) =&gt; void</td><td>Callback when user is created</td></tr>
+            <tr><td style={{ padding: '8px' }}>onUserUpdated</td><td>(user) =&gt; void</td><td>Callback when user is updated</td></tr>
+            <tr><td style={{ padding: '8px' }}>onUserDeleted</td><td>(id) =&gt; void</td><td>Callback when user is deleted</td></tr>
+            <tr style={{ background: '#1a3a1a' }}>
+              <td style={{ padding: '8px' }}>passwordRulesArr</td>
+              <td>PasswordRule[]</td>
+              <td><strong>v1.1.0:</strong> Password validation rules to display</td>
+            </tr>
+            <tr style={{ background: '#1a3a1a' }}>
+              <td style={{ padding: '8px' }}>requiredPasswordLength</td>
+              <td>number</td>
+              <td><strong>v1.1.0:</strong> Required minimum password length</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>PasswordRule Type (v1.1.0)</h4>
+          <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`type PasswordRule = 'number' | 'small' | 'capital' | 'special';
+
+// Example usage:
+<UsersComponent
+  passwordRulesArr={['number', 'capital', 'small', 'special']}
+  requiredPasswordLength={6}
+/>`}
+          </pre>
+        </div>
       </div>
     </div>
   )

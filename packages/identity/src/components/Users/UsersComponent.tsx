@@ -18,6 +18,12 @@ import { useUsers, useRoles } from '../../hooks';
 import type { Identity } from '../../models';
 
 /**
+ * Password rule type for validation display
+ * @since 1.1.0
+ */
+export type PasswordRule = 'number' | 'small' | 'capital' | 'special';
+
+/**
  * Props for UsersComponent
  */
 export interface UsersComponentProps {
@@ -27,6 +33,16 @@ export interface UsersComponentProps {
   onUserUpdated?: (user: Identity.UserItem) => void;
   /** Optional callback when a user is deleted */
   onUserDeleted?: (id: string) => void;
+  /**
+   * Password validation rules to display
+   * @since 1.1.0
+   */
+  passwordRulesArr?: PasswordRule[];
+  /**
+   * Required minimum password length
+   * @since 1.1.0
+   */
+  requiredPasswordLength?: number;
 }
 
 /**
@@ -74,10 +90,30 @@ const DEFAULT_FORM_STATE: UserFormState = {
  * }
  * ```
  */
+/**
+ * Get password rule label for display
+ */
+function getPasswordRuleLabel(rule: PasswordRule, t: (key: string) => string): string {
+  switch (rule) {
+    case 'number':
+      return t('AbpIdentity::Password:RequireDigit');
+    case 'small':
+      return t('AbpIdentity::Password:RequireLowercase');
+    case 'capital':
+      return t('AbpIdentity::Password:RequireUppercase');
+    case 'special':
+      return t('AbpIdentity::Password:RequireNonAlphanumeric');
+    default:
+      return rule;
+  }
+}
+
 export function UsersComponent({
   onUserCreated,
   onUserUpdated,
   onUserDeleted,
+  passwordRulesArr = [],
+  requiredPasswordLength = 0,
 }: UsersComponentProps): React.ReactElement {
   const { t } = useLocalization();
   const confirmation = useConfirmation();
@@ -498,6 +534,19 @@ export function UsersComponent({
                   maxLength={32}
                   placeholder={selectedUser?.id ? t('AbpIdentity::LeaveBlankToKeepCurrent') : ''}
                 />
+                {/* Password rules display (v1.1.0) */}
+                {(requiredPasswordLength > 0 || passwordRulesArr.length > 0) && (
+                  <Box mt={2} fontSize="sm" color="gray.500">
+                    {requiredPasswordLength > 0 && (
+                      <Text>
+                        {t('AbpIdentity::Password:MinLength', String(requiredPasswordLength))}
+                      </Text>
+                    )}
+                    {passwordRulesArr.map((rule) => (
+                      <Text key={rule}>• {getPasswordRuleLabel(rule, t)}</Text>
+                    ))}
+                  </Box>
+                )}
               </FormField>
 
               <FormField label={t('AbpIdentity::EmailAddress')} required>
