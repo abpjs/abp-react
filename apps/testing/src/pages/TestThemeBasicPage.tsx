@@ -5,8 +5,8 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { selectRoutes, useConfig, useAuth } from '@abpjs/core'
-import { useLayoutService } from '@abpjs/theme-basic'
+import { selectRoutes, useConfig, useAuth, useEnvironment } from '@abpjs/core'
+import { useLayoutService, useNavigationElements, useBranding } from '@abpjs/theme-basic'
 
 function TestLayoutService() {
   const layoutService = useLayoutService()
@@ -211,6 +211,61 @@ function TestCurrentUser() {
   )
 }
 
+// v1.1.0: Test application info from environment (equivalent to Angular's appInfo getter)
+function TestApplicationInfo() {
+  const environment = useEnvironment()
+  const branding = useBranding()
+  const navigationElements = useNavigationElements()
+
+  return (
+    <div className="test-section">
+      <h2>v1.1.0: Application Info & Branding</h2>
+
+      <div className="test-card">
+        <h3>Environment Application Info</h3>
+        <p>Access application info from environment configuration (v1.1.0 feature).</p>
+        <p>This is equivalent to Angular's <code>appInfo</code> getter on ApplicationLayoutComponent.</p>
+        <ul>
+          <li><strong>App Name:</strong> {environment?.application?.name || '(not set)'}</li>
+          <li><strong>Logo URL:</strong> {environment?.application?.logoUrl || '(not set)'}</li>
+        </ul>
+        <details>
+          <summary>Full Environment Config</summary>
+          <pre style={{ maxHeight: '200px', overflow: 'auto', fontSize: '12px' }}>
+            {JSON.stringify(environment, null, 2)}
+          </pre>
+        </details>
+      </div>
+
+      <div className="test-card">
+        <h3>Branding Context (useBranding)</h3>
+        <p>Theme-basic branding configuration set via ThemeBasicProvider.</p>
+        <ul>
+          <li><strong>App Name:</strong> {branding.appName}</li>
+          <li><strong>Logo Link:</strong> {branding.logoLink}</li>
+          <li><strong>Has Logo:</strong> {branding.logo ? 'Yes' : 'No'}</li>
+          <li><strong>Has Logo Icon:</strong> {branding.logoIcon ? 'Yes' : 'No'}</li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>Navigation Elements (useNavigationElements)</h3>
+        <p>Custom navigation elements added via LayoutService.</p>
+        <p>Current count: <strong>{navigationElements.length}</strong></p>
+        {navigationElements.length > 0 && (
+          <ul>
+            {navigationElements.map((el) => (
+              <li key={el.name}>
+                <strong>{el.name}</strong> (order: {el.order ?? 99})
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function TestThemeBasicPage() {
   return (
     <div>
@@ -218,6 +273,7 @@ export function TestThemeBasicPage() {
       <p>Testing layouts, navigation, and layout service.</p>
 
       <TestLayoutService />
+      <TestApplicationInfo />
       <TestLayouts />
       <TestRoutes />
       <TestCurrentUser />
