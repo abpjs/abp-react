@@ -1,6 +1,6 @@
 /**
  * Audit Logging Service
- * Translated from @volo/abp.ng.audit-logging v0.7.2
+ * Translated from @volo/abp.ng.audit-logging v2.0.0
  */
 
 import type { RestService } from '@abpjs/core';

@@ -1,6 +1,7 @@
 /**
  * Test page for @abpjs/audit-logging package
- * Tests: AuditLogsComponent, useAuditLogs hook, service, constants
+ * Tests: AuditLogsComponent, useAuditLogs hook, services, constants
+ * @since 2.0.0
  */
 import { useState } from 'react'
 import {
@@ -10,7 +11,7 @@ import {
   HTTP_METHODS,
   HTTP_STATUS_CODES,
 } from '@abpjs/audit-logging'
-import type { AuditLogging } from '@abpjs/audit-logging'
+import type { AuditLogging, AuditLoggingStateService } from '@abpjs/audit-logging'
 
 function TestAuditLogsComponent() {
   const [showComponent, setShowComponent] = useState(false)
@@ -267,6 +268,117 @@ function MyComponent() {
   )
 }
 
+/**
+ * Test section for AuditLoggingStateService (v2.0.0)
+ */
+function TestAuditLoggingStateServiceSection() {
+  const [stateServiceInfo, setStateServiceInfo] = useState<string>('')
+
+  // Type annotation to verify the type is exported correctly
+  const _typeCheck: AuditLoggingStateService | null = null
+  void _typeCheck // Suppress unused variable warning
+
+  const testStateService = () => {
+    // Show available methods
+    setStateServiceInfo(`AuditLoggingStateService (v2.0.0)
+
+Getter Methods:
+- getResult(): AuditLogging.Response
+- getTotalCount(): number
+- getAverageExecutionStatistics(): Statistics.Data
+- getErrorRateStatistics(): Statistics.Data
+
+Dispatch Methods (v2.0.0):
+- dispatchGetAuditLogs(params?): Promise<AuditLogging.Response>
+- dispatchGetAverageExecutionDurationPerDay(params?): Promise<Statistics.Response>
+- dispatchGetErrorRate(params?): Promise<Statistics.Response>
+
+The state service maintains internal state and provides
+facade methods for dispatching audit logging actions.`)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>AuditLoggingStateService <span style={{ fontSize: '14px', color: '#4ade80' }}>(v2.0.0)</span></h2>
+
+      <div className="test-card">
+        <h3>State Service Overview</h3>
+        <p>
+          The <code>AuditLoggingStateService</code> provides a stateful facade over the audit logging API.
+          It maintains internal state and provides dispatch methods for triggering API calls.
+        </p>
+        <button onClick={testStateService}>
+          Show Methods
+        </button>
+        {stateServiceInfo && (
+          <pre style={{ marginTop: '1rem', padding: '1rem', borderRadius: '4px', overflow: 'auto', whiteSpace: 'pre-wrap' }}>
+            {stateServiceInfo}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>New in v2.0.0: Dispatch Methods</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          The following dispatch methods were added in v2.0.0:
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>dispatchGetAuditLogs</code></td>
+              <td>Fetches audit logs and updates internal state</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>dispatchGetAverageExecutionDurationPerDay</code></td>
+              <td>Fetches average execution stats and updates state</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>dispatchGetErrorRate</code></td>
+              <td>Fetches error rate stats and updates state</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+{`import { AuditLoggingStateService } from '@abpjs/audit-logging';
+import { useRestService } from '@abpjs/core';
+
+function MyComponent() {
+  const restService = useRestService();
+  const stateService = new AuditLoggingStateService(restService);
+
+  // Dispatch methods update internal state
+  await stateService.dispatchGetAuditLogs({ maxResultCount: 10 });
+
+  // Access state via getters
+  const result = stateService.getResult();
+  const totalCount = stateService.getTotalCount();
+
+  // Fetch statistics (v2.0.0)
+  await stateService.dispatchGetAverageExecutionDurationPerDay({
+    startDate: '2024-01-01',  // string type in v2.0.0
+    endDate: '2024-01-31'
+  });
+  const avgStats = stateService.getAverageExecutionStatistics();
+
+  await stateService.dispatchGetErrorRate();
+  const errorStats = stateService.getErrorRateStatistics();
+}`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 function TestConstants() {
   return (
     <div className="test-section">
@@ -460,12 +572,21 @@ function TestStatisticsModels() {
       <h2>Models (Statistics namespace)</h2>
 
       <div className="test-card">
-        <h3>Statistics.Filter Interface</h3>
+        <h3>Statistics.Filter Interface <span style={{ fontSize: '12px', color: '#4ade80' }}>(Updated in v2.0.0)</span></h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Note: In v2.0.0, <code>startDate</code> and <code>endDate</code> changed from <code>Date</code> to <code>string</code> type.
+        </p>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`interface Filter {
-  startDate?: string;
-  endDate?: string;
-}`}
+  startDate?: string;  // v2.0.0: Changed from Date to string
+  endDate?: string;    // v2.0.0: Changed from Date to string
+}
+
+// Example usage:
+const filter: Statistics.Filter = {
+  startDate: '2024-01-01',
+  endDate: '2024-01-31'
+};`}
         </pre>
       </div>
 
@@ -499,11 +620,12 @@ export function TestAuditLoggingPage() {
   return (
     <div>
       <h1>@abpjs/audit-logging Tests</h1>
-      <p>Testing audit logging components, hooks, and service (v0.7.2).</p>
+      <p>Testing audit logging components, hooks, and services (v2.0.0).</p>
 
       <TestAuditLogsComponent />
       <TestUseAuditLogsHook />
       <TestAuditLoggingServiceSection />
+      <TestAuditLoggingStateServiceSection />
       <TestConstants />
       <TestModels />
       <TestStatisticsModels />
