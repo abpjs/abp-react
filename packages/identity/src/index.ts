@@ -2,7 +2,7 @@
  * @abpjs/identity
  *
  * ABP Framework identity components for React.
- * Translated from @abp/ng.identity version 2.1.0.
+ * Translated from @abp/ng.identity version 2.2.0.
  *
  * This package provides:
  * - Identity models (User, Role, etc.)
@@ -11,6 +11,11 @@
  * - React hooks for state management (useRoles, useUsers, useIdentity)
  * - UI components for role and user management
  * - Route path constants for navigation
+ *
+ * Changes in v2.2.0:
+ * - Angular: Added explicit openPermissionsModal(providerKey) method declaration to type files
+ * - React: Already supported via handleOpenPermissions in RolesComponent and UsersComponent
+ * - Dependency updates to @abp/ng.theme.shared v2.2.0
  *
  * Changes in v2.1.0:
  * - Version bump only (dependency updates to @abp/ng.theme.shared v2.1.0)
