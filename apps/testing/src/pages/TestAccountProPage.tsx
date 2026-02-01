@@ -625,8 +625,9 @@ function TestAuthState() {
 export function TestAccountProPage() {
   return (
     <div>
-      <h1>@abpjs/account-pro Tests</h1>
+      <h1>@abpjs/account-pro Tests v2.1.1</h1>
       <p>Testing Pro account features: password reset, profile management, enhanced components.</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.1.1 - Dependency updates only (no new features from v2.0.0)</p>
 
       <div className="test-card" style={{ backgroundColor: '#1a365d', border: '1px solid #2b6cb0' }}>
         <h3 style={{ color: '#90cdf4' }}>Pro Package Features</h3>
