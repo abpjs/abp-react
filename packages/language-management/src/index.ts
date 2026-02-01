@@ -1,7 +1,11 @@
 /**
  * @abpjs/language-management
  * ABP Framework Language Management module for React
- * Translated from @volo/abp.ng.language-management v2.2.0
+ * Translated from @volo/abp.ng.language-management v2.4.0
+ *
+ * Changes in v2.4.0:
+ * - Added apiName property to LanguageManagementService
+ * - Added eLanguageManagementComponents enum
  *
  * Changes in v2.2.0:
  * - Dependency updates to @abp/ng.theme.shared v2.2.0
@@ -14,7 +18,7 @@
  * - No functional code changes
  *
  * @since 2.0.0
- * @updated 2.2.0
+ * @updated 2.4.0
  */
 
 // Models
@@ -22,6 +26,9 @@ export * from './models';
 
 // Constants
 export * from './constants';
+
+// Enums
+export * from './enums';
 
 // Services
 export * from './services';
