@@ -1,3 +1,18 @@
+/**
+ * @abpjs/core
+ * ABP Framework Core module for React
+ * Translated from @abp/ng.core v2.2.0
+ *
+ * Changes in v2.2.0:
+ * - Angular: AuthGuard now uses Injector instead of direct Router injection
+ * - React: No changes needed (already uses useNavigate hook idiomatically)
+ * - Dependency updates to @ngxs/* packages v3.6.2
+ * - Added @angular/localize dependency (Angular-specific, not applicable to React)
+ *
+ * @since 0.7.6
+ * @updated 2.2.0
+ */
+
 // Models
 export * from './models';
 

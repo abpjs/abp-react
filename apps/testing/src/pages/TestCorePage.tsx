@@ -1,6 +1,8 @@
 /**
  * Test page for @abpjs/core package
  * Tests: hooks, services, components, state management
+ * @since 0.7.6
+ * @updated 2.2.0 - Angular DI pattern changes (no React changes needed)
  */
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -1085,8 +1087,11 @@ function TestDateExtensions() {
 export function TestCorePage() {
   return (
     <div>
-      <h1>@abpjs/core Tests (v2.1.0)</h1>
-      <p>Testing core hooks, services, and components.</p>
+      <h1>@abpjs/core Tests (v2.2.0)</h1>
+      <p style={{ marginBottom: '8px' }}>Testing core hooks, services, and components.</p>
+      <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
+        Version 2.2.0 - Angular AuthGuard DI pattern changes (React already uses useNavigate hook idiomatically)
+      </p>
 
       <TestV21Features />
       <TestV2Features />
