@@ -1,7 +1,7 @@
 /**
  * @abpjs/tenant-management
  * ABP Framework Tenant Management module for React
- * Translated from @abp/ng.tenant-management v2.0.0
+ * Translated from @abp/ng.tenant-management v2.1.0
  *
  * Changes in v2.0.0:
  * - Removed TENANT_MANAGEMENT_ROUTES constant (deprecated in v0.9.0)
@@ -15,6 +15,9 @@
  * - Added TenantsComponentOutputs interface
  * - Updated onSearch signature: (value: any) -> (value: string)
  * - Updated onPageChange signature: (data: any) -> (page: number)
+ *
+ * Changes in v2.1.0:
+ * - Version bump only (dependency updates to @abp/ng.theme.shared v2.1.0, @abp/ng.feature-management v2.1.0)
  */
 
 // Models
