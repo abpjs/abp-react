@@ -324,4 +324,77 @@ describe('AuthWrapper', () => {
       expect(screen.queryByTestId('login-content')).not.toBeInTheDocument();
     });
   });
+
+  // v2.4.0: isMultiTenancyEnabled prop tests
+  describe('isMultiTenancyEnabled prop (v2.4.0)', () => {
+    it('should have isMultiTenancyEnabled default to true', () => {
+      // The prop defaults to true, so content should render normally
+      render(
+        <AuthWrapper>
+          <div data-testid="content">Content</div>
+        </AuthWrapper>
+      );
+
+      // Content should be visible when multi-tenancy is enabled (default)
+      expect(screen.getByTestId('content')).toBeInTheDocument();
+    });
+
+    it('should render content when isMultiTenancyEnabled is true', () => {
+      render(
+        <AuthWrapper isMultiTenancyEnabled={true}>
+          <div data-testid="content">Content</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.getByTestId('content')).toBeInTheDocument();
+    });
+
+    it('should render content when isMultiTenancyEnabled is false', () => {
+      // Note: isMultiTenancyEnabled doesn't hide content, it's used by parent
+      // components to decide whether to show TenantBox
+      render(
+        <AuthWrapper isMultiTenancyEnabled={false}>
+          <div data-testid="content">Content</div>
+        </AuthWrapper>
+      );
+
+      // Content should still render - isMultiTenancyEnabled controls TenantBox visibility externally
+      expect(screen.getByTestId('content')).toBeInTheDocument();
+    });
+
+    it('should work with both enableLocalLogin and isMultiTenancyEnabled props', () => {
+      render(
+        <AuthWrapper enableLocalLogin={true} isMultiTenancyEnabled={true}>
+          <div data-testid="content">Content</div>
+        </AuthWrapper>
+      );
+
+      expect(screen.getByTestId('content')).toBeInTheDocument();
+    });
+
+    it('should respect enableLocalLogin=false even when isMultiTenancyEnabled=true', () => {
+      render(
+        <AuthWrapper enableLocalLogin={false} isMultiTenancyEnabled={true}>
+          <div data-testid="content">Content</div>
+        </AuthWrapper>
+      );
+
+      // enableLocalLogin=false should show disabled message
+      expect(screen.queryByTestId('content')).not.toBeInTheDocument();
+      expect(screen.getByText('Local login is disabled. Please use an external login provider.')).toBeInTheDocument();
+    });
+
+    it('should render with all content props and isMultiTenancyEnabled', () => {
+      render(
+        <AuthWrapper
+          isMultiTenancyEnabled={true}
+          mainContent={<div data-testid="main">Main</div>}
+          cancelContent={<div data-testid="cancel">Cancel</div>}
+        />
+      );
+
+      expect(screen.getByTestId('main')).toBeInTheDocument();
+      expect(screen.getByTestId('cancel')).toBeInTheDocument();
+    });
+  });
 });

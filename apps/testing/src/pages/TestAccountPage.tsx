@@ -272,6 +272,18 @@ function TestAccountService() {
       </div>
 
       <div className="test-card">
+        <h3>apiName Property (v2.4.0)</h3>
+        <p>The AccountService exposes the API name used for REST requests:</p>
+        <p>
+          Current apiName: <code style={{ color: '#2ecc71' }}>{accountService.apiName}</code>
+        </p>
+        <p style={{ fontSize: '0.9rem', color: '#888' }}>
+          This property identifies which API configuration to use from your environment settings.
+          Default value is <code>"default"</code>.
+        </p>
+      </div>
+
+      <div className="test-card">
         <h3>Find Tenant Demo</h3>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <input
@@ -343,10 +355,11 @@ function TestAccountPages() {
 function TestAuthWrapper() {
   const [showWrapper, setShowWrapper] = useState(false)
   const [enableLocalLogin, setEnableLocalLogin] = useState(true)
+  const [isMultiTenancyEnabled, setIsMultiTenancyEnabled] = useState(true)
 
   return (
     <div className="test-section">
-      <h2>AuthWrapper Component (v1.1.0, updated v2.0.0)</h2>
+      <h2>AuthWrapper Component (v1.1.0, updated v2.0.0, v2.4.0)</h2>
 
       <div className="test-card">
         <h3>Authentication Layout Wrapper</h3>
@@ -359,10 +372,14 @@ function TestAuthWrapper() {
           <div style={{ marginTop: '1rem', border: '1px solid #333', borderRadius: '8px', overflow: 'hidden' }}>
             <AuthWrapper
               enableLocalLogin={enableLocalLogin}
+              isMultiTenancyEnabled={isMultiTenancyEnabled}
               mainContent={
                 <div style={{ textAlign: 'center' }}>
                   <h3>Main Content Area</h3>
                   <p>Your login form, register form, or other auth content goes here.</p>
+                  {isMultiTenancyEnabled && (
+                    <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Multi-tenancy is enabled</p>
+                  )}
                 </div>
               }
               cancelContent={
@@ -391,6 +408,23 @@ function TestAuthWrapper() {
       </div>
 
       <div className="test-card">
+        <h3>isMultiTenancyEnabled Demo (v2.4.0)</h3>
+        <p>Toggle to control multi-tenancy behavior in the wrapper:</p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <input
+            type="checkbox"
+            checked={isMultiTenancyEnabled}
+            onChange={(e) => setIsMultiTenancyEnabled(e.target.checked)}
+          />
+          Enable Multi-Tenancy
+        </label>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+          Controls whether multi-tenancy features are enabled in the authentication wrapper.
+          Default is <code>true</code>. Set to <code>false</code> for single-tenant applications.
+        </p>
+      </div>
+
+      <div className="test-card">
         <h3>AuthWrapper Props</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -405,6 +439,7 @@ function TestAuthWrapper() {
             <tr><td style={{ padding: '8px' }}>mainContent</td><td>ReactNode</td><td>Main content template</td></tr>
             <tr><td style={{ padding: '8px' }}>cancelContent</td><td>ReactNode</td><td>Footer/cancel content</td></tr>
             <tr style={{ backgroundColor: '#1a1a2e' }}><td style={{ padding: '8px' }}>enableLocalLogin</td><td>boolean</td><td><strong>(v2.0.0)</strong> Override local login enabled state</td></tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}><td style={{ padding: '8px' }}>isMultiTenancyEnabled</td><td>boolean</td><td><strong>(v2.4.0)</strong> Control multi-tenancy (default: true)</td></tr>
           </tbody>
         </table>
       </div>
@@ -787,12 +822,59 @@ function TestAuthState() {
   )
 }
 
+function TestV240Features() {
+  const accountService = useAccountService()
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v2.4.0</h2>
+
+      <div className="test-card">
+        <h3>AuthWrapper: isMultiTenancyEnabled prop</h3>
+        <p>New prop to control multi-tenancy behavior in the authentication wrapper:</p>
+        <pre style={{ fontSize: '12px' }}>{`<AuthWrapper
+  enableLocalLogin={true}
+  isMultiTenancyEnabled={true}  // NEW in v2.4.0
+  mainContent={<LoginForm />}
+/>`}</pre>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+          Defaults to <code>true</code>. Set to <code>false</code> for single-tenant applications.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>AccountService: apiName property</h3>
+        <p>New property exposing the API name used for REST requests:</p>
+        <pre style={{ fontSize: '12px' }}>{`const accountService = useAccountService()
+console.log(accountService.apiName) // "default"`}</pre>
+        <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+          Current value: <code style={{ color: '#2ecc71' }}>{accountService.apiName}</code>
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Dependency Updates</h3>
+        <ul>
+          <li>Updated to @abpjs/core@2.4.0</li>
+          <li>Updated to @abpjs/theme-shared@2.4.0</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 export function TestAccountPage() {
   return (
     <div>
-      <h1>@abpjs/account Tests (v2.2.0)</h1>
+      <h1>@abpjs/account Tests (v2.4.0)</h1>
       <p>Testing login, register, tenant switching, and account-related features.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.2.0 - Dependency updates only (no new features from v2.0.0)</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.4.0 - Added isMultiTenancyEnabled prop and apiName property</p>
+
+      {/* v2.4.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
+        v2.4.0 New Features
+      </h2>
+      <TestV240Features />
 
       <TestAuthState />
       <TestPasswordFlow />
@@ -813,7 +895,7 @@ export function TestAccountPage() {
 
       {/* v2.0.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #646cff', paddingTop: '1rem' }}>
-        v2.0.0 New Features
+        v2.0.0 Features
       </h2>
       <TestSelfRegistration />
       <TestAccountNamespace />
