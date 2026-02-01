@@ -13,6 +13,12 @@ import { Identity } from '../models';
  * @since 2.0.0
  */
 export class IdentityService {
+  /**
+   * The API name used for REST requests.
+   * @since 2.4.0
+   */
+  apiName = 'default';
+
   private rest: RestService;
 
   constructor(rest: RestService) {
@@ -33,6 +39,18 @@ export class IdentityService {
       method: 'GET',
       url: '/api/identity/roles',
       params,
+    });
+  }
+
+  /**
+   * Get all roles without pagination
+   * @since 2.4.0
+   * @returns Promise with all roles response
+   */
+  getAllRoles(): Promise<Identity.RoleResponse> {
+    return this.rest.request<null, Identity.RoleResponse>({
+      method: 'GET',
+      url: '/api/identity/roles/all',
     });
   }
 
