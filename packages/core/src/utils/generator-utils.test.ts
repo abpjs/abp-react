@@ -68,4 +68,60 @@ describe('generator-utils', () => {
       expect(typeof uuid).toBe('function');
     });
   });
+
+  describe('generateHash (v2.4.0)', () => {
+    it('should export generateHash function', async () => {
+      const module = await import('./generator-utils');
+      expect(typeof module.generateHash).toBe('function');
+    });
+
+    it('should return a number', async () => {
+      const { generateHash } = await import('./generator-utils');
+      const result = generateHash('test');
+      expect(typeof result).toBe('number');
+    });
+
+    it('should return consistent hash for same input', async () => {
+      const { generateHash } = await import('./generator-utils');
+      const hash1 = generateHash('hello world');
+      const hash2 = generateHash('hello world');
+      expect(hash1).toBe(hash2);
+    });
+
+    it('should return different hashes for different inputs', async () => {
+      const { generateHash } = await import('./generator-utils');
+      const hash1 = generateHash('hello');
+      const hash2 = generateHash('world');
+      expect(hash1).not.toBe(hash2);
+    });
+
+    it('should return unsigned 32-bit integer', async () => {
+      const { generateHash } = await import('./generator-utils');
+      const result = generateHash('test string');
+      expect(result).toBeGreaterThanOrEqual(0);
+      expect(result).toBeLessThanOrEqual(0xffffffff);
+    });
+
+    it('should handle empty string', async () => {
+      const { generateHash } = await import('./generator-utils');
+      const result = generateHash('');
+      expect(typeof result).toBe('number');
+      expect(result).toBe(5381); // djb2 initial value
+    });
+
+    it('should handle long strings', async () => {
+      const { generateHash } = await import('./generator-utils');
+      const longString = 'a'.repeat(10000);
+      const result = generateHash(longString);
+      expect(typeof result).toBe('number');
+      expect(result).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should handle unicode characters', async () => {
+      const { generateHash } = await import('./generator-utils');
+      const result = generateHash('你好世界');
+      expect(typeof result).toBe('number');
+      expect(result).toBeGreaterThanOrEqual(0);
+    });
+  });
 });

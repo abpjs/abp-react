@@ -1,10 +1,19 @@
 import { ResponseType } from 'axios';
 
 export namespace Rest {
-  export interface Config {
-    skipHandleError?: boolean;
-    observe?: Observe;
-  }
+  /**
+   * Configuration for REST requests
+   * @since 2.4.0 - Added apiName property
+   */
+  export type Config = Partial<{
+    /**
+     * The name of the API to use (as defined in Config.Apis)
+     * @since 2.4.0
+     */
+    apiName: string;
+    skipHandleError: boolean;
+    observe: Observe;
+  }>;
 
   export enum Observe {
     Body = 'body',
