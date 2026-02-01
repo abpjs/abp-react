@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/identity",
-  "version": "2.4.0",
+  "version": "2.7.0",
   "description": "ABP Framework identity components for React - translated from @abp/ng.identity",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

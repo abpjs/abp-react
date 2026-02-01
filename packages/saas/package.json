@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/saas",
-  "version": "2.4.0",
+  "version": "2.7.0",
   "description": "ABP Framework SaaS components for React - translated from @volo/abp.ng.saas",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
