@@ -59,7 +59,7 @@ export namespace Toaster {
 
   /**
    * Status values for toast/confirmation interactions.
-   * @deprecated Status will be removed from toaster model in v2.2. Use Confirmation.Status instead.
+   * @deprecated Status will be removed from toaster model in v3.0. Use Confirmation.Status instead.
    * @since 2.1.0 - Deprecated in favor of Confirmation.Status
    */
   export enum Status {

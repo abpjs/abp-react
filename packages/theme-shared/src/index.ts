@@ -2,10 +2,16 @@
  * @abpjs/theme-shared
  *
  * ABP Framework Theme Shared components for React.
- * Translated from @abp/ng.theme.shared v2.2.0
+ * Translated from @abp/ng.theme.shared v2.4.0
  *
  * This package provides shared UI components, services, and utilities
  * for theme/modal management in ABP Framework React applications.
+ *
+ * Changes in v2.4.0:
+ * - Added THEME_SHARED_APPEND_CONTENT token for content appending
+ * - Updated Toaster.Status deprecation notice (removal now in v3.0 instead of v2.2)
+ * - Dependency updates to @abp/ng.core v2.4.0
+ * - appendScript function deprecated (to be deleted in v2.6)
  *
  * Changes in v2.2.0:
  * - Dependency updates to @abp/ng.core v2.2.0

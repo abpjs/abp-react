@@ -3,8 +3,9 @@
  * Tests: Toaster, Confirmation dialogs, Modal, Error handler, LoaderBar, ErrorComponent
  * @since 0.9.0
  * @updated 2.2.0 - Dependency updates and cleanup (no new features)
+ * @updated 2.4.0 - THEME_SHARED_APPEND_CONTENT token, Toaster.Status deprecation update
  */
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import {
   useToaster,
   useConfirmation,
@@ -15,8 +16,143 @@ import {
   ErrorComponent,
   ChangePassword,
   Profile,
+  // v2.4.0: New append content token and context
+  THEME_SHARED_APPEND_CONTENT,
+  ThemeSharedAppendContentContext,
+  // v2.1.0: Deprecated in favor of Confirmation.Status (removal now in v3.0 per v2.4.0)
+  Toaster,
 } from '@abpjs/theme-shared'
 import { useAbp, useAuth } from '@abpjs/core'
+
+/**
+ * v2.4.0 Features Section
+ * Demonstrates:
+ * - THEME_SHARED_APPEND_CONTENT token
+ * - ThemeSharedAppendContentContext
+ * - Toaster.Status deprecation update (removal in v3.0)
+ */
+function TestV240Features() {
+  const [appendCalled, setAppendCalled] = useState(false)
+  const [customAppendResult, setCustomAppendResult] = useState<string | null>(null)
+
+  // Demonstrate accessing context value (will be undefined without provider)
+  const appendContentFromContext = useContext(ThemeSharedAppendContentContext)
+
+  // Custom append function for demo
+  const customAppendContent = async () => {
+    setCustomAppendResult('Appending content...')
+    await new Promise(resolve => setTimeout(resolve, 500))
+    setCustomAppendResult('Content appended successfully!')
+    setAppendCalled(true)
+  }
+
+  // Demonstrate Toaster.Status deprecation (still works but deprecated)
+  const demonstrateDeprecatedStatus = () => {
+    // These still work but are deprecated in favor of Confirmation.Status
+    const confirmStatus = Toaster.Status.confirm
+    const rejectStatus = Toaster.Status.reject
+    const dismissStatus = Toaster.Status.dismiss
+    return { confirmStatus, rejectStatus, dismissStatus }
+  }
+
+  const deprecatedStatuses = demonstrateDeprecatedStatus()
+
+  return (
+    <div className="test-section">
+      <h2>v2.4.0 New Features</h2>
+
+      <div className="test-card">
+        <h3>THEME_SHARED_APPEND_CONTENT Token</h3>
+        <p>New token for content appending functionality (React equivalent of Angular InjectionToken).</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6cf' }}>THEME_SHARED_APPEND_CONTENT</code> = "{THEME_SHARED_APPEND_CONTENT}"
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
+          This token name matches the Angular InjectionToken for compatibility.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>ThemeSharedAppendContentContext</h3>
+        <p>React Context for providing custom content appending logic.</p>
+        <p style={{ fontSize: '0.85rem', color: '#888' }}>
+          Default value: <code>{appendContentFromContext === undefined ? 'undefined' : 'defined'}</code>
+        </p>
+        <div style={{ marginTop: '0.75rem' }}>
+          <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Demo with custom provider:</p>
+          <ThemeSharedAppendContentContext.Provider value={customAppendContent}>
+            <AppendContentDemo
+              appendCalled={appendCalled}
+              result={customAppendResult}
+            />
+          </ThemeSharedAppendContentContext.Provider>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>Toaster.Status Deprecation Update</h3>
+        <p>
+          <code>Toaster.Status</code> deprecation notice updated: will be removed in <strong>v3.0</strong> (was v2.2).
+        </p>
+        <p style={{ fontSize: '0.85rem', color: '#f88', marginTop: '0.5rem' }}>
+          Use <code>Confirmation.Status</code> instead of <code>Toaster.Status</code>.
+        </p>
+        <div style={{ marginTop: '0.75rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <p style={{ marginBottom: '0.25rem' }}>Deprecated values (still work until v3.0):</p>
+          <code style={{ color: '#fc6' }}>Toaster.Status.confirm</code> = "{deprecatedStatuses.confirmStatus}"<br />
+          <code style={{ color: '#fc6' }}>Toaster.Status.reject</code> = "{deprecatedStatuses.rejectStatus}"<br />
+          <code style={{ color: '#fc6' }}>Toaster.Status.dismiss</code> = "{deprecatedStatuses.dismissStatus}"
+        </div>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#6f6' }}>
+          Migration: Replace <code>Toaster.Status</code> with <code>Confirmation.Status</code>
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>appendScript Deprecation Notice</h3>
+        <p style={{ color: '#f88' }}>
+          The <code>appendScript</code> function is deprecated and will be deleted in v2.6.
+        </p>
+        <p style={{ fontSize: '0.85rem', color: '#888', marginTop: '0.5rem' }}>
+          Use the <code>ThemeSharedAppendContentContext</code> with a custom append function instead.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// Helper component for demonstrating ThemeSharedAppendContentContext usage
+function AppendContentDemo({
+  appendCalled,
+  result,
+}: {
+  appendCalled: boolean
+  result: string | null
+}) {
+  const appendContent = useContext(ThemeSharedAppendContentContext)
+
+  const handleAppend = async () => {
+    if (appendContent) {
+      await appendContent()
+    }
+  }
+
+  return (
+    <div style={{ padding: '0.5rem', border: '1px solid #444', borderRadius: '4px' }}>
+      <p style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+        Context value: <code>{appendContent ? 'function provided' : 'undefined'}</code>
+      </p>
+      <button onClick={handleAppend} disabled={!appendContent}>
+        Call appendContent()
+      </button>
+      {result && (
+        <p style={{ marginTop: '0.5rem', color: appendCalled ? '#6f6' : '#6cf', fontSize: '0.85rem' }}>
+          {result}
+        </p>
+      )}
+    </div>
+  )
+}
 
 function TestLoaderBar() {
   const { restService } = useAbp()
@@ -514,7 +650,7 @@ function TestConfirmation() {
         <h3>v2.1.0: Confirmation.Status Enum</h3>
         <p>Confirmation methods now return <code>Confirmation.Status</code> instead of <code>Toaster.Status</code>.</p>
         <p style={{ fontSize: '0.85rem', color: '#888' }}>
-          <code>Toaster.Status</code> is deprecated and will be removed in v2.2. The values are: <code>confirm</code>, <code>reject</code>, <code>dismiss</code>.
+          <code>Toaster.Status</code> is deprecated and will be removed in v3.0 (updated in v2.4.0). The values are: <code>confirm</code>, <code>reject</code>, <code>dismiss</code>.
         </p>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
           <button onClick={showV210StatusDemo}>Test Confirmation.Status</button>
@@ -812,12 +948,13 @@ function TestProfile() {
 export function TestThemeSharedPage() {
   return (
     <div>
-      <h1>@abpjs/theme-shared Tests (v2.2.0)</h1>
+      <h1>@abpjs/theme-shared Tests (v2.4.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing toast notifications, confirmation dialogs, modals, error handling, and shared components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.2.0 - Dependency updates and removed unused Angular libraries (no functional changes)
+        Version 2.4.0 - THEME_SHARED_APPEND_CONTENT token, Toaster.Status deprecation update (v3.0), appendScript deprecated
       </p>
 
+      <TestV240Features />
       <TestLoaderBar />
       <TestErrorComponentDisplay />
       <TestToaster />
