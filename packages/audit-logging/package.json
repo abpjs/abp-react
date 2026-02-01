@@ -41,7 +41,7 @@
     "@abpjs/theme-shared": "workspace:*"
   },
   "devDependencies": {
-    "@volo/abp.ng.audit-logging": "2.1.1",
+    "@volo/abp.ng.audit-logging": "2.2.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.6.1",
