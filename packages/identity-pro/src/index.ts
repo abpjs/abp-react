@@ -2,7 +2,7 @@
  * @abpjs/identity-pro
  *
  * ABP Framework identity pro components for React.
- * Translated from @volo/abp.ng.identity version 2.1.1.
+ * Translated from @volo/abp.ng.identity version 2.2.0.
  *
  * This package provides:
  * - Identity models (User, Role, ClaimType, etc.)
@@ -18,6 +18,15 @@
  * - ClaimType, ClaimTypeName, ClaimRequest models
  * - useClaims hook for claim operations
  * - IdentityStateService with 17 dispatch methods (v2.0.0)
+ *
+ * Changes in v2.2.0:
+ * - Added unlockUser(id: string) method to IdentityService
+ * - Added unlockUser(id: string) to useUsers hook for unlocking locked out users
+ * - Added openPermissionsModal(providerKey: string) to useUsers and useRoles hooks
+ * - Added permissions modal state management (visiblePermissions, permissionsProviderKey)
+ * - Dependency updates to @abp/ng.permission-management v2.2.0
+ * - Dependency updates to @abp/ng.theme.shared v2.2.0
+ * - Dependency updates to @volo/abp.ng.identity.config v2.2.0
  *
  * Changes in v2.1.1:
  * - Dependency updates to @abp/ng.permission-management v2.1.0
@@ -44,7 +53,7 @@
  *
  * @packageDocumentation
  * @since 2.0.0
- * @updated 2.1.1
+ * @updated 2.2.0
  */
 
 // Models

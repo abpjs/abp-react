@@ -9,6 +9,7 @@ const mockGetUserRoles = vi.fn();
 const mockCreateUser = vi.fn();
 const mockUpdateUser = vi.fn();
 const mockDeleteUser = vi.fn();
+const mockUnlockUser = vi.fn();
 
 vi.mock('../../services', () => ({
   IdentityService: vi.fn().mockImplementation(() => ({
@@ -18,6 +19,7 @@ vi.mock('../../services', () => ({
     createUser: mockCreateUser,
     updateUser: mockUpdateUser,
     deleteUser: mockDeleteUser,
+    unlockUser: mockUnlockUser,
   })),
 }));
 
@@ -35,6 +37,7 @@ describe('useUsers', () => {
     mockCreateUser.mockReset();
     mockUpdateUser.mockReset();
     mockDeleteUser.mockReset();
+    mockUnlockUser.mockReset();
   });
 
   it('should return initial state', () => {
@@ -53,6 +56,9 @@ describe('useUsers', () => {
     });
     expect(result.current.sortKey).toBe('userName');
     expect(result.current.sortOrder).toBe('');
+    // v2.2.0 permissions modal state
+    expect(result.current.visiblePermissions).toBe(false);
+    expect(result.current.permissionsProviderKey).toBe('');
   });
 
   it('should fetch users successfully', async () => {
@@ -408,6 +414,124 @@ describe('useUsers', () => {
       sorting: 'userName',
       skipCount: 0,
       maxResultCount: 10,
+    });
+    // v2.2.0 permissions modal state should also reset
+    expect(result.current.visiblePermissions).toBe(false);
+    expect(result.current.permissionsProviderKey).toBe('');
+  });
+
+  // v2.2.0 Features
+  describe('v2.2.0 - unlockUser', () => {
+    it('should unlock user successfully', async () => {
+      mockUnlockUser.mockResolvedValue(undefined);
+      mockGetUsers.mockResolvedValue({ items: [], totalCount: 0 });
+
+      const { result } = renderHook(() => useUsers());
+
+      await act(async () => {
+        const response = await result.current.unlockUser('user-1');
+        expect(response.success).toBe(true);
+      });
+
+      expect(mockUnlockUser).toHaveBeenCalledWith('user-1');
+      expect(mockGetUsers).toHaveBeenCalled(); // Should refresh list
+    });
+
+    it('should handle unlock user error', async () => {
+      mockUnlockUser.mockRejectedValue(new Error('Failed to unlock user'));
+
+      const { result } = renderHook(() => useUsers());
+
+      await act(async () => {
+        const response = await result.current.unlockUser('user-1');
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Failed to unlock user');
+      });
+
+      expect(result.current.error).toBe('Failed to unlock user');
+    });
+
+    it('should handle unlock user with non-Error rejection', async () => {
+      mockUnlockUser.mockRejectedValue('string error');
+
+      const { result } = renderHook(() => useUsers());
+
+      await act(async () => {
+        const response = await result.current.unlockUser('user-1');
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Failed to unlock user');
+      });
+    });
+  });
+
+  describe('v2.2.0 - openPermissionsModal', () => {
+    it('should open permissions modal with provider key', () => {
+      const { result } = renderHook(() => useUsers());
+
+      act(() => {
+        result.current.openPermissionsModal('user-123');
+      });
+
+      expect(result.current.visiblePermissions).toBe(true);
+      expect(result.current.permissionsProviderKey).toBe('user-123');
+    });
+
+    it('should close permissions modal and clear provider key', () => {
+      const { result } = renderHook(() => useUsers());
+
+      // First open
+      act(() => {
+        result.current.openPermissionsModal('user-123');
+      });
+
+      expect(result.current.visiblePermissions).toBe(true);
+      expect(result.current.permissionsProviderKey).toBe('user-123');
+
+      // Then close
+      act(() => {
+        result.current.onVisiblePermissionsChange(false);
+      });
+
+      expect(result.current.visiblePermissions).toBe(false);
+      expect(result.current.permissionsProviderKey).toBe('');
+    });
+
+    it('should allow changing visibility without clearing provider key when opening', () => {
+      const { result } = renderHook(() => useUsers());
+
+      // Set provider key first via openPermissionsModal
+      act(() => {
+        result.current.openPermissionsModal('user-123');
+      });
+
+      // Close
+      act(() => {
+        result.current.onVisiblePermissionsChange(false);
+      });
+
+      // Open with a new provider key
+      act(() => {
+        result.current.openPermissionsModal('user-456');
+      });
+
+      expect(result.current.visiblePermissions).toBe(true);
+      expect(result.current.permissionsProviderKey).toBe('user-456');
+    });
+
+    it('should keep provider key when setting visibility to true', () => {
+      const { result } = renderHook(() => useUsers());
+
+      act(() => {
+        result.current.openPermissionsModal('user-123');
+      });
+
+      // Setting visibility to true should not clear the key
+      act(() => {
+        result.current.onVisiblePermissionsChange(true);
+      });
+
+      expect(result.current.visiblePermissions).toBe(true);
+      expect(result.current.permissionsProviderKey).toBe('user-123');
     });
   });
 });

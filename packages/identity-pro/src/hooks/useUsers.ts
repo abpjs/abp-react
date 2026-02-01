@@ -34,6 +34,10 @@ export interface UseUsersReturn {
   sortKey: string;
   /** Current sort order @since 1.0.0 */
   sortOrder: SortOrder;
+  /** Whether permissions modal is visible @since 2.2.0 */
+  visiblePermissions: boolean;
+  /** Provider key for permissions modal @since 2.2.0 */
+  permissionsProviderKey: string;
   /** Fetch users with pagination */
   fetchUsers: (params?: ABP.PageQueryParams) => Promise<UserOperationResult>;
   /** Get a user by ID and set it as selected */
@@ -46,6 +50,8 @@ export interface UseUsersReturn {
   updateUser: (id: string, user: Identity.UserSaveRequest) => Promise<UserOperationResult>;
   /** Delete a user */
   deleteUser: (id: string) => Promise<UserOperationResult>;
+  /** Unlock a locked out user @since 2.2.0 */
+  unlockUser: (id: string) => Promise<UserOperationResult>;
   /** Set the selected user */
   setSelectedUser: (user: Identity.UserItem | null) => void;
   /** Set page query parameters */
@@ -54,6 +60,10 @@ export interface UseUsersReturn {
   setSortKey: (key: string) => void;
   /** Set sort order @since 1.0.0 */
   setSortOrder: (order: SortOrder) => void;
+  /** Handle permissions modal visibility change @since 2.2.0 */
+  onVisiblePermissionsChange: (value: boolean) => void;
+  /** Open permissions modal for a user @since 2.2.0 */
+  openPermissionsModal: (providerKey: string) => void;
   /** Reset state */
   reset: () => void;
 }
@@ -120,6 +130,9 @@ export function useUsers(): UseUsersReturn {
   // Sorting state (v1.0.0)
   const [sortKey, setSortKey] = useState<string>('userName');
   const [sortOrder, setSortOrder] = useState<SortOrder>('');
+  // Permissions modal state (v2.2.0)
+  const [visiblePermissions, setVisiblePermissions] = useState<boolean>(false);
+  const [permissionsProviderKey, setPermissionsProviderKey] = useState<string>('');
 
   /**
    * Fetch users with pagination
@@ -263,6 +276,50 @@ export function useUsers(): UseUsersReturn {
   );
 
   /**
+   * Unlock a locked out user
+   * @since 2.2.0
+   */
+  const unlockUser = useCallback(
+    async (id: string): Promise<UserOperationResult> => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        await service.unlockUser(id);
+        // Refresh the list after unlocking
+        await fetchUsers();
+        return { success: true };
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to unlock user';
+        setError(errorMessage);
+        setIsLoading(false);
+        return { success: false, error: errorMessage };
+      }
+    },
+    [service, fetchUsers]
+  );
+
+  /**
+   * Handle permissions modal visibility change
+   * @since 2.2.0
+   */
+  const onVisiblePermissionsChange = useCallback((value: boolean) => {
+    setVisiblePermissions(value);
+    if (!value) {
+      setPermissionsProviderKey('');
+    }
+  }, []);
+
+  /**
+   * Open permissions modal for a user
+   * @since 2.2.0
+   */
+  const openPermissionsModal = useCallback((providerKey: string) => {
+    setPermissionsProviderKey(providerKey);
+    setVisiblePermissions(true);
+  }, []);
+
+  /**
    * Reset all state
    */
   const reset = useCallback(() => {
@@ -273,6 +330,8 @@ export function useUsers(): UseUsersReturn {
     setIsLoading(false);
     setError(null);
     setPageQuery(DEFAULT_PAGE_QUERY);
+    setVisiblePermissions(false);
+    setPermissionsProviderKey('');
   }, []);
 
   return {
@@ -285,16 +344,21 @@ export function useUsers(): UseUsersReturn {
     pageQuery,
     sortKey,
     sortOrder,
+    visiblePermissions,
+    permissionsProviderKey,
     fetchUsers,
     getUserById,
     getUserRoles,
     createUser,
     updateUser,
     deleteUser,
+    unlockUser,
     setSelectedUser,
     setPageQuery,
     setSortKey,
     setSortOrder,
+    onVisiblePermissionsChange,
+    openPermissionsModal,
     reset,
   };
 }

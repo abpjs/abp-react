@@ -339,6 +339,26 @@ describe('IdentityService', () => {
         });
       });
     });
+
+    describe('unlockUser (v2.2.0)', () => {
+      it('should unlock a locked out user', async () => {
+        mockRestService.request.mockResolvedValue(undefined);
+
+        await identityService.unlockUser('user-1');
+
+        expect(mockRestService.request).toHaveBeenCalledWith({
+          method: 'PUT',
+          url: '/api/identity/users/user-1/unlock',
+        });
+      });
+
+      it('should propagate errors when unlocking fails', async () => {
+        const error = new Error('User cannot be unlocked');
+        mockRestService.request.mockRejectedValue(error);
+
+        await expect(identityService.unlockUser('user-1')).rejects.toThrow('User cannot be unlocked');
+      });
+    });
   });
 
   describe('Error Handling', () => {

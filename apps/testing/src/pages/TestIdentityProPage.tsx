@@ -2,7 +2,7 @@
  * Test page for @abpjs/identity-pro package
  * Tests: ClaimsComponent, ClaimModal, useClaims hook, IdentityStateService, and Pro-specific features
  * @since 2.0.0
- * @updated 2.1.1 - Dependency updates (no new features)
+ * @updated 2.2.0 - Added unlockUser, openPermissionsModal for users and roles
  */
 import { useState, useEffect } from 'react'
 import { useAuth } from '@abpjs/core'
@@ -10,6 +10,8 @@ import {
   ClaimsComponent,
   ClaimModal,
   useClaims,
+  useUsers,
+  useRoles,
   type Identity,
   type IdentityStateService,
 } from '@abpjs/identity-pro'
@@ -560,6 +562,255 @@ function TestClaimsHook() {
   )
 }
 
+/**
+ * Test section for v2.2.0 features: unlockUser, openPermissionsModal
+ */
+function TestV220Features() {
+  const { isAuthenticated } = useAuth()
+  const {
+    users,
+    isLoading: usersLoading,
+    visiblePermissions: userVisiblePermissions,
+    permissionsProviderKey: userPermissionsProviderKey,
+    fetchUsers,
+    unlockUser,
+    openPermissionsModal: openUserPermissionsModal,
+    onVisiblePermissionsChange: onUserVisiblePermissionsChange,
+  } = useUsers()
+
+  const {
+    roles,
+    isLoading: rolesLoading,
+    visiblePermissions: roleVisiblePermissions,
+    permissionsProviderKey: rolePermissionsProviderKey,
+    fetchRoles,
+    openPermissionsModal: openRolePermissionsModal,
+    onVisiblePermissionsChange: onRoleVisiblePermissionsChange,
+  } = useRoles()
+
+  const [unlockUserId, setUnlockUserId] = useState('')
+  const [unlockResult, setUnlockResult] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUsers()
+      fetchRoles()
+    }
+  }, [isAuthenticated, fetchUsers, fetchRoles])
+
+  const handleUnlockUser = async () => {
+    if (unlockUserId) {
+      const result = await unlockUser(unlockUserId)
+      if (result.success) {
+        setUnlockResult(`User ${unlockUserId} unlocked successfully!`)
+        setUnlockUserId('')
+      } else {
+        setUnlockResult(`Error: ${result.error}`)
+      }
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v2.2.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      {!isAuthenticated ? (
+        <div className="test-card">
+          <p style={{ color: '#f88' }}>
+            You must be authenticated to use these features
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="test-card">
+            <h3>Unlock User (v2.2.0)</h3>
+            <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+              Unlock a locked out user by their ID. Uses <code>PUT /api/identity/users/:id/unlock</code>
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+              <input
+                type="text"
+                placeholder="Enter User ID to unlock"
+                value={unlockUserId}
+                onChange={(e) => setUnlockUserId(e.target.value)}
+                style={{
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #333',
+                  flex: 1,
+                }}
+              />
+              <button
+                onClick={handleUnlockUser}
+                disabled={!unlockUserId || usersLoading}
+              >
+                {usersLoading ? 'Unlocking...' : 'Unlock User'}
+              </button>
+            </div>
+            {unlockResult && (
+              <p style={{ fontSize: '14px', color: unlockResult.startsWith('Error') ? '#f88' : '#4ade80' }}>
+                {unlockResult}
+              </p>
+            )}
+            {users.length > 0 && (
+              <div style={{ marginTop: '0.5rem' }}>
+                <p style={{ fontSize: '14px', color: '#888' }}>Available users:</p>
+                <div style={{ maxHeight: '150px', overflow: 'auto' }}>
+                  {users.map((user) => (
+                    <div
+                      key={user.id}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '4px 8px',
+                        borderBottom: '1px solid #222',
+                      }}
+                    >
+                      <span>
+                        {user.userName}
+                        {user.isLockedOut && <span style={{ color: '#f88', marginLeft: '8px' }}>(Locked)</span>}
+                      </span>
+                      <button
+                        onClick={() => setUnlockUserId(user.id)}
+                        style={{ padding: '2px 8px', fontSize: '12px' }}
+                        disabled={!user.isLockedOut}
+                      >
+                        Select
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="test-card">
+            <h3>User Permissions Modal (v2.2.0)</h3>
+            <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+              Open permissions modal for a user using <code>openPermissionsModal(providerKey)</code>
+            </p>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <p>visiblePermissions: <code>{userVisiblePermissions ? 'true' : 'false'}</code></p>
+              <p>permissionsProviderKey: <code>{userPermissionsProviderKey || '(empty)'}</code></p>
+            </div>
+            {users.length > 0 ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {users.slice(0, 5).map((user) => (
+                  <button
+                    key={user.id}
+                    onClick={() => openUserPermissionsModal(user.id)}
+                    style={{ padding: '4px 8px', fontSize: '12px' }}
+                  >
+                    {user.userName}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p style={{ fontSize: '14px', color: '#888' }}>No users loaded</p>
+            )}
+            {userVisiblePermissions && (
+              <div style={{ marginTop: '0.5rem', padding: '0.5rem', border: '1px solid #4ade80', borderRadius: '4px' }}>
+                <p style={{ color: '#4ade80' }}>Permissions modal is open for: {userPermissionsProviderKey}</p>
+                <button
+                  onClick={() => onUserVisiblePermissionsChange(false)}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  Close Modal
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="test-card">
+            <h3>Role Permissions Modal (v2.2.0)</h3>
+            <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+              Open permissions modal for a role using <code>openPermissionsModal(providerKey)</code>
+            </p>
+            <div style={{ marginBottom: '0.5rem' }}>
+              <p>visiblePermissions: <code>{roleVisiblePermissions ? 'true' : 'false'}</code></p>
+              <p>permissionsProviderKey: <code>{rolePermissionsProviderKey || '(empty)'}</code></p>
+            </div>
+            {roles.length > 0 ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {roles.map((role) => (
+                  <button
+                    key={role.id}
+                    onClick={() => openRolePermissionsModal(role.id)}
+                    style={{ padding: '4px 8px', fontSize: '12px' }}
+                  >
+                    {role.name}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p style={{ fontSize: '14px', color: '#888' }}>
+                {rolesLoading ? 'Loading roles...' : 'No roles loaded'}
+              </p>
+            )}
+            {roleVisiblePermissions && (
+              <div style={{ marginTop: '0.5rem', padding: '0.5rem', border: '1px solid #4ade80', borderRadius: '4px' }}>
+                <p style={{ color: '#4ade80' }}>Permissions modal is open for: {rolePermissionsProviderKey}</p>
+                <button
+                  onClick={() => onRoleVisiblePermissionsChange(false)}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  Close Modal
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="test-card">
+            <h3>v2.2.0 API Reference</h3>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #333' }}>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>Hook</th>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style={{ borderBottom: '1px solid #222' }}>
+                  <td style={{ padding: '8px' }}><code>unlockUser(id)</code></td>
+                  <td style={{ padding: '8px' }}>useUsers</td>
+                  <td style={{ padding: '8px' }}>Unlock a locked out user</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #222' }}>
+                  <td style={{ padding: '8px' }}><code>openPermissionsModal(providerKey)</code></td>
+                  <td style={{ padding: '8px' }}>useUsers</td>
+                  <td style={{ padding: '8px' }}>Open permissions modal for a user</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #222' }}>
+                  <td style={{ padding: '8px' }}><code>openPermissionsModal(providerKey)</code></td>
+                  <td style={{ padding: '8px' }}>useRoles</td>
+                  <td style={{ padding: '8px' }}>Open permissions modal for a role</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #222' }}>
+                  <td style={{ padding: '8px' }}><code>onVisiblePermissionsChange(value)</code></td>
+                  <td style={{ padding: '8px' }}>useUsers, useRoles</td>
+                  <td style={{ padding: '8px' }}>Handle permissions modal visibility change</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #222' }}>
+                  <td style={{ padding: '8px' }}><code>visiblePermissions</code></td>
+                  <td style={{ padding: '8px' }}>useUsers, useRoles</td>
+                  <td style={{ padding: '8px' }}>State: whether permissions modal is visible</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '8px' }}><code>permissionsProviderKey</code></td>
+                  <td style={{ padding: '8px' }}>useUsers, useRoles</td>
+                  <td style={{ padding: '8px' }}>State: current provider key for permissions</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function TestProApiEndpoints() {
   return (
     <div className="test-section">
@@ -902,15 +1153,16 @@ function TestProHookMethods() {
 export function TestIdentityProPage() {
   return (
     <div>
-      <h1>@abpjs/identity-pro Tests (v2.1.1)</h1>
+      <h1>@abpjs/identity-pro Tests (v2.2.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing identity pro components, hooks, and services for claim type management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.1.1 - Dependency updates (no functional changes from v2.0.0)
+        Version 2.2.0 - Added unlockUser, openPermissionsModal for users and roles
       </p>
       <p style={{ color: '#6f6', fontSize: '14px' }}>
-        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods
+        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods, user unlock, permissions modal
       </p>
 
+      <TestV220Features />
       <TestClaimsComponent />
       <TestClaimModal />
       <TestClaimsHook />
