@@ -142,4 +142,34 @@ describe('@abpjs/theme-basic exports', () => {
       expect(exports.LayoutBase).toBeDefined();
     });
   });
+
+  // v2.1.0 - Verify backward compatibility and no breaking changes
+  describe('v2.1.0 exports', () => {
+    it('should maintain all v2.0.0 exports in v2.1.0', async () => {
+      // v2.1.0 changes were internal (Angular: OAuthService -> AuthService)
+      // React already uses useAuth from @abpjs/core, so no changes needed
+      // This test verifies backward compatibility
+      const exports = await import('../index');
+
+      // All v2.0.0 exports should still be available
+      expect(exports.LAYOUTS).toBeDefined();
+      expect(exports.LAYOUTS).toHaveLength(3);
+
+      // Layout components should have correct type properties
+      expect(exports.LayoutApplication.type).toBe('application');
+      expect(exports.LayoutAccount.type).toBe('account');
+      expect(exports.LayoutEmpty.type).toBe('empty');
+    });
+
+    it('should export LayoutApplication that uses useAuth internally', async () => {
+      // In Angular v2.1.0, OAuthService was replaced with AuthService
+      // Our React implementation already uses useAuth from @abpjs/core
+      // This test verifies LayoutApplication is exported correctly
+      const { LayoutApplication } = await import('../index');
+
+      expect(LayoutApplication).toBeDefined();
+      expect(typeof LayoutApplication).toBe('function');
+      expect(LayoutApplication.type).toBe('application');
+    });
+  });
 });

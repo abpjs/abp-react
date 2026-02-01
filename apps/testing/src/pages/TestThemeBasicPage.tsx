@@ -269,11 +269,26 @@ function TestApplicationInfo() {
 function TestVersionInfo() {
   return (
     <div className="test-section">
-      <h2>v2.0.0: Version Info</h2>
+      <h2>Version Info</h2>
+
+      <div className="test-card">
+        <h3>What's New in v2.1.0</h3>
+        <p>Version 2.1.0 includes internal improvements with no breaking changes for React users.</p>
+        <ul>
+          <li><strong>Angular Change:</strong> <code>OAuthService</code> replaced with <code>AuthService</code></li>
+          <li><strong>React Status:</strong> Already using <code>useAuth</code> from <code>@abpjs/core</code> - no changes needed</li>
+          <li><strong>Angular Change:</strong> Added styles for loading, modal-backdrop, confirmation dialogs</li>
+          <li><strong>React Status:</strong> Chakra UI handles all styling - no changes needed</li>
+        </ul>
+        <p style={{ color: '#888', fontSize: '14px', marginTop: '8px' }}>
+          The LayoutApplication component continues to use <code>useAuth()</code> for authentication,
+          which provides <code>logout</code>, <code>isAuthenticated</code>, and user information.
+        </p>
+      </div>
 
       <div className="test-card">
         <h3>What's New in v2.0.0</h3>
-        <p>Version 2.0.0 is a minor update with no functional changes for React users.</p>
+        <p>Version 2.0.0 was a minor update with no functional changes for React users.</p>
         <ul>
           <li><strong>Removed:</strong> Legacy <code>.abp-confirm</code> CSS styles (Angular Bootstrap-specific)</li>
           <li><strong>Updated:</strong> Dependency on <code>@abpjs/theme-shared</code> to v2.0.0</li>
@@ -304,7 +319,7 @@ function TestVersionInfo() {
 export function TestThemeBasicPage() {
   return (
     <div>
-      <h1>@abpjs/theme-basic Tests</h1>
+      <h1>@abpjs/theme-basic Tests (v2.1.0)</h1>
       <p>Testing layouts, navigation, and layout service.</p>
 
       <TestVersionInfo />
