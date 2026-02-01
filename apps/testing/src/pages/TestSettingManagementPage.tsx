@@ -537,8 +537,9 @@ function TestModels() {
 export function TestSettingManagementPage() {
   return (
     <div>
-      <h1>@abpjs/setting-management Tests</h1>
+      <h1>@abpjs/setting-management Tests v2.1.0</h1>
       <p>Testing setting management layout, hook, and services.</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.1.0 - Dependency updates only (no new features from v2.0.0)</p>
 
       <TestSettingLayoutComponent />
       <TestSettingManagementHook />
