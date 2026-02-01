@@ -9,7 +9,7 @@ import React, {
   type ReactNode,
 } from 'react';
 import type { Config } from '@abpjs/core';
-import { Confirmation, Toaster } from '../models';
+import { Confirmation } from '../models';
 
 /**
  * Subscriber callback type for confirmation$ observable pattern
@@ -23,6 +23,8 @@ type ConfirmationSubscriber = (data: Confirmation.DialogData | null) => void;
  * - No longer extends AbstractToaster
  * - Added confirmation$ ReplaySubject pattern via subscribe method
  * - Now accepts Config.LocalizationParam for message and title
+ *
+ * @since 2.1.0 - Changed from Toaster.Status to Confirmation.Status
  */
 export interface ConfirmationService {
   /**
@@ -32,7 +34,7 @@ export interface ConfirmationService {
    * @param options Confirmation options
    * @returns Promise resolving to user's response status
    */
-  info(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Toaster.Status>;
+  info(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
   /**
    * Show a success confirmation
    * @param message Message content (supports localization)
@@ -40,7 +42,7 @@ export interface ConfirmationService {
    * @param options Confirmation options
    * @returns Promise resolving to user's response status
    */
-  success(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Toaster.Status>;
+  success(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
   /**
    * Show a warning confirmation
    * @param message Message content (supports localization)
@@ -48,7 +50,7 @@ export interface ConfirmationService {
    * @param options Confirmation options
    * @returns Promise resolving to user's response status
    */
-  warn(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Toaster.Status>;
+  warn(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
   /**
    * Show an error confirmation
    * @param message Message content (supports localization)
@@ -56,7 +58,7 @@ export interface ConfirmationService {
    * @param options Confirmation options
    * @returns Promise resolving to user's response status
    */
-  error(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Toaster.Status>;
+  error(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
   /**
    * Show a confirmation with specified severity
    * @param message Message content (supports localization)
@@ -65,13 +67,15 @@ export interface ConfirmationService {
    * @param options Confirmation options
    * @returns Promise resolving to user's response status
    * @since 2.0.0
+   * @since 2.1.0 - Uses Confirmation.Severity instead of Toaster.Severity
    */
-  show(message: Config.LocalizationParam, title?: Config.LocalizationParam, severity?: Confirmation.Severity, options?: Partial<Confirmation.Options>): Promise<Toaster.Status>;
+  show(message: Config.LocalizationParam, title?: Config.LocalizationParam, severity?: Confirmation.Severity, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
   /**
    * Clear the current confirmation
    * @param status Optional status to resolve with (default: dismiss)
+   * @since 2.1.0 - Uses Confirmation.Status instead of Toaster.Status
    */
-  clear(status?: Toaster.Status): void;
+  clear(status?: Confirmation.Status): void;
   /**
    * Listen for escape key to dismiss confirmation
    * @since 2.0.0
@@ -88,13 +92,14 @@ export interface ConfirmationService {
 
 /**
  * Context value containing the service and current confirmation.
+ * @since 2.1.0 - respond uses Confirmation.Status instead of Toaster.Status
  */
 export interface ConfirmationContextValue {
   service: ConfirmationService;
   /** Current confirmation dialog data */
   confirmation: Confirmation.DialogData | null;
   /** Respond to the current confirmation */
-  respond: (status: Toaster.Status) => void;
+  respond: (status: Confirmation.Status) => void;
 }
 
 const ConfirmationContext = createContext<ConfirmationContextValue | null>(null);
@@ -122,6 +127,8 @@ export interface ConfirmationProviderProps {
  * - Added listenToEscape method
  * - Uses Confirmation.DialogData structure
  *
+ * @since 2.1.0 - Uses Confirmation.Status instead of Toaster.Status
+ *
  * @example
  * ```tsx
  * <ConfirmationProvider>
@@ -132,7 +139,7 @@ export interface ConfirmationProviderProps {
  */
 export function ConfirmationProvider({ children }: ConfirmationProviderProps): React.ReactElement {
   const [confirmation, setConfirmation] = useState<Confirmation.DialogData | null>(null);
-  const resolverRef = useRef<((status: Toaster.Status) => void) | null>(null);
+  const resolverRef = useRef<((status: Confirmation.Status) => void) | null>(null);
   const subscribersRef = useRef<Set<ConfirmationSubscriber>>(new Set());
   const escapeListenerRef = useRef<boolean>(false);
 
@@ -143,7 +150,7 @@ export function ConfirmationProvider({ children }: ConfirmationProviderProps): R
     });
   }, [confirmation]);
 
-  const respond = useCallback((status: Toaster.Status) => {
+  const respond = useCallback((status: Confirmation.Status) => {
     if (resolverRef.current) {
       resolverRef.current(status);
       resolverRef.current = null;
@@ -157,7 +164,7 @@ export function ConfirmationProvider({ children }: ConfirmationProviderProps): R
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && confirmation && confirmation.options?.closable !== false) {
-        respond(Toaster.Status.dismiss);
+        respond(Confirmation.Status.dismiss);
       }
     };
 
@@ -173,10 +180,10 @@ export function ConfirmationProvider({ children }: ConfirmationProviderProps): R
       title?: Config.LocalizationParam,
       severity: Confirmation.Severity = 'neutral',
       options: Partial<Confirmation.Options> = {}
-    ): Promise<Toaster.Status> => {
+    ): Promise<Confirmation.Status> => {
       // If there's already a confirmation, dismiss it first
       if (resolverRef.current) {
-        resolverRef.current(Toaster.Status.dismiss);
+        resolverRef.current(Confirmation.Status.dismiss);
       }
 
       const id = options.id?.toString() || generateId();
@@ -193,7 +200,7 @@ export function ConfirmationProvider({ children }: ConfirmationProviderProps): R
 
       setConfirmation(dialogData);
 
-      return new Promise<Toaster.Status>((resolve) => {
+      return new Promise<Confirmation.Status>((resolve) => {
         resolverRef.current = resolve;
       });
     },
@@ -225,8 +232,8 @@ export function ConfirmationProvider({ children }: ConfirmationProviderProps): R
   );
 
   const clear = useCallback(
-    (status?: Toaster.Status) => {
-      respond(status ?? Toaster.Status.dismiss);
+    (status?: Confirmation.Status) => {
+      respond(status ?? Confirmation.Status.dismiss);
     },
     [respond]
   );
@@ -273,6 +280,7 @@ export function ConfirmationProvider({ children }: ConfirmationProviderProps): R
  * @throws Error if used outside of ConfirmationProvider
  *
  * @since 2.0.0 - Service now accepts Config.LocalizationParam
+ * @since 2.1.0 - Uses Confirmation.Status instead of Toaster.Status
  *
  * @example
  * ```tsx
@@ -286,7 +294,7 @@ export function ConfirmationProvider({ children }: ConfirmationProviderProps): R
  *       { yesText: 'Delete', cancelText: 'Cancel' }
  *     );
  *
- *     if (status === Toaster.Status.confirm) {
+ *     if (status === Confirmation.Status.confirm) {
  *       await deleteItem();
  *     }
  *   };
@@ -308,6 +316,7 @@ export function useConfirmation(): ConfirmationService {
  * This is typically used by the ConfirmationDialog component.
  *
  * @returns Current confirmation data and respond function
+ * @since 2.1.0 - respond uses Confirmation.Status
  */
 export function useConfirmationState(): Pick<ConfirmationContextValue, 'confirmation' | 'respond'> {
   const context = useContext(ConfirmationContext);

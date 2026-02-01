@@ -7,6 +7,8 @@
  * - Added DialogData interface
  * - Added Severity type
  * - Removed deprecated cancelCopy/yesCopy
+ *
+ * @since 2.1.0 - Added Status enum (confirmation-specific, replaces Toaster.Status usage)
  */
 import type { Config } from '@abpjs/core';
 
@@ -54,4 +56,14 @@ export namespace Confirmation {
    * @since 2.0.0
    */
   export type Severity = 'neutral' | 'success' | 'info' | 'warning' | 'error';
+
+  /**
+   * Status values for confirmation dialog responses.
+   * @since 2.1.0 - Moved from Toaster.Status to be confirmation-specific
+   */
+  export enum Status {
+    confirm = 'confirm',
+    reject = 'reject',
+    dismiss = 'dismiss',
+  }
 }

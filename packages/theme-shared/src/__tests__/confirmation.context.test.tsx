@@ -7,7 +7,7 @@ import {
   useConfirmationState,
   useConfirmationContext,
 } from '../contexts/confirmation.context';
-import { Toaster } from '../models';
+import { Confirmation, Toaster } from '../models';
 
 describe('ConfirmationContext', () => {
   const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -103,7 +103,8 @@ describe('ConfirmationContext', () => {
       expect(result.current.state.confirmation?.severity).toBe('error');
     });
 
-    it('should resolve promise with confirm status when confirmed', async () => {
+    // v2.1.0 - Uses Confirmation.Status instead of Toaster.Status
+    it('should resolve promise with confirm status when confirmed (v2.1.0)', async () => {
       const { result } = renderHook(
         () => ({
           confirmation: useConfirmation(),
@@ -112,7 +113,7 @@ describe('ConfirmationContext', () => {
         { wrapper }
       );
 
-      let resolvedStatus: Toaster.Status | undefined;
+      let resolvedStatus: Confirmation.Status | undefined;
 
       act(() => {
         result.current.confirmation.warn('Are you sure?', 'Confirm').then((status) => {
@@ -121,17 +122,17 @@ describe('ConfirmationContext', () => {
       });
 
       act(() => {
-        result.current.state.respond(Toaster.Status.confirm);
+        result.current.state.respond(Confirmation.Status.confirm);
       });
 
       await waitFor(() => {
-        expect(resolvedStatus).toBe(Toaster.Status.confirm);
+        expect(resolvedStatus).toBe(Confirmation.Status.confirm);
       });
 
       expect(result.current.state.confirmation).toBeNull();
     });
 
-    it('should resolve promise with reject status when rejected', async () => {
+    it('should resolve promise with reject status when rejected (v2.1.0)', async () => {
       const { result } = renderHook(
         () => ({
           confirmation: useConfirmation(),
@@ -140,7 +141,7 @@ describe('ConfirmationContext', () => {
         { wrapper }
       );
 
-      let resolvedStatus: Toaster.Status | undefined;
+      let resolvedStatus: Confirmation.Status | undefined;
 
       act(() => {
         result.current.confirmation.warn('Are you sure?', 'Confirm').then((status) => {
@@ -149,15 +150,15 @@ describe('ConfirmationContext', () => {
       });
 
       act(() => {
-        result.current.state.respond(Toaster.Status.reject);
+        result.current.state.respond(Confirmation.Status.reject);
       });
 
       await waitFor(() => {
-        expect(resolvedStatus).toBe(Toaster.Status.reject);
+        expect(resolvedStatus).toBe(Confirmation.Status.reject);
       });
     });
 
-    it('should resolve promise with dismiss status when dismissed', async () => {
+    it('should resolve promise with dismiss status when dismissed (v2.1.0)', async () => {
       const { result } = renderHook(
         () => ({
           confirmation: useConfirmation(),
@@ -166,7 +167,7 @@ describe('ConfirmationContext', () => {
         { wrapper }
       );
 
-      let resolvedStatus: Toaster.Status | undefined;
+      let resolvedStatus: Confirmation.Status | undefined;
 
       act(() => {
         result.current.confirmation.warn('Are you sure?', 'Confirm').then((status) => {
@@ -175,15 +176,15 @@ describe('ConfirmationContext', () => {
       });
 
       act(() => {
-        result.current.state.respond(Toaster.Status.dismiss);
+        result.current.state.respond(Confirmation.Status.dismiss);
       });
 
       await waitFor(() => {
-        expect(resolvedStatus).toBe(Toaster.Status.dismiss);
+        expect(resolvedStatus).toBe(Confirmation.Status.dismiss);
       });
     });
 
-    it('should clear confirmation with dismiss status', async () => {
+    it('should clear confirmation with dismiss status (v2.1.0)', async () => {
       const { result } = renderHook(
         () => ({
           confirmation: useConfirmation(),
@@ -192,7 +193,7 @@ describe('ConfirmationContext', () => {
         { wrapper }
       );
 
-      let resolvedStatus: Toaster.Status | undefined;
+      let resolvedStatus: Confirmation.Status | undefined;
 
       act(() => {
         result.current.confirmation.info('Test message', 'Test').then((status) => {
@@ -207,13 +208,13 @@ describe('ConfirmationContext', () => {
       });
 
       await waitFor(() => {
-        expect(resolvedStatus).toBe(Toaster.Status.dismiss);
+        expect(resolvedStatus).toBe(Confirmation.Status.dismiss);
       });
 
       expect(result.current.state.confirmation).toBeNull();
     });
 
-    it('should clear confirmation with custom status', async () => {
+    it('should clear confirmation with custom status (v2.1.0)', async () => {
       const { result } = renderHook(
         () => ({
           confirmation: useConfirmation(),
@@ -222,7 +223,7 @@ describe('ConfirmationContext', () => {
         { wrapper }
       );
 
-      let resolvedStatus: Toaster.Status | undefined;
+      let resolvedStatus: Confirmation.Status | undefined;
 
       act(() => {
         result.current.confirmation.info('Test message', 'Test').then((status) => {
@@ -231,15 +232,15 @@ describe('ConfirmationContext', () => {
       });
 
       act(() => {
-        result.current.confirmation.clear(Toaster.Status.reject);
+        result.current.confirmation.clear(Confirmation.Status.reject);
       });
 
       await waitFor(() => {
-        expect(resolvedStatus).toBe(Toaster.Status.reject);
+        expect(resolvedStatus).toBe(Confirmation.Status.reject);
       });
     });
 
-    it('should dismiss previous confirmation when showing a new one', async () => {
+    it('should dismiss previous confirmation when showing a new one (v2.1.0)', async () => {
       const { result } = renderHook(
         () => ({
           confirmation: useConfirmation(),
@@ -248,7 +249,7 @@ describe('ConfirmationContext', () => {
         { wrapper }
       );
 
-      let firstStatus: Toaster.Status | undefined;
+      let firstStatus: Confirmation.Status | undefined;
 
       act(() => {
         result.current.confirmation.info('First message', 'First').then((status) => {
@@ -261,7 +262,7 @@ describe('ConfirmationContext', () => {
       });
 
       await waitFor(() => {
-        expect(firstStatus).toBe(Toaster.Status.dismiss);
+        expect(firstStatus).toBe(Confirmation.Status.dismiss);
       });
 
       expect(result.current.state.confirmation?.message).toBe('Second message');
@@ -491,7 +492,7 @@ describe('ConfirmationContext', () => {
         expect(true).toBe(true);
       });
 
-      it('should dismiss confirmation when escape is pressed after listenToEscape', async () => {
+      it('should dismiss confirmation when escape is pressed after listenToEscape (v2.1.0)', async () => {
         const { result } = renderHook(
           () => ({
             confirmation: useConfirmation(),
@@ -500,7 +501,7 @@ describe('ConfirmationContext', () => {
           { wrapper }
         );
 
-        let resolvedStatus: Toaster.Status | undefined;
+        let resolvedStatus: Confirmation.Status | undefined;
 
         act(() => {
           result.current.confirmation.listenToEscape();
@@ -521,7 +522,7 @@ describe('ConfirmationContext', () => {
         });
 
         await waitFor(() => {
-          expect(resolvedStatus).toBe(Toaster.Status.dismiss);
+          expect(resolvedStatus).toBe(Confirmation.Status.dismiss);
         });
 
         expect(result.current.state.confirmation).toBeNull();

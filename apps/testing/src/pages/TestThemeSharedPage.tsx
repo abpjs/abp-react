@@ -8,7 +8,7 @@ import {
   useConfirmation,
   useErrorHandler,
   Modal,
-  Toaster,
+  Confirmation,
   LoaderBar,
   ErrorComponent,
   ChangePassword,
@@ -346,13 +346,14 @@ function TestConfirmation() {
   const [confirmResult, setConfirmResult] = useState<string | null>(null)
   const [escapeEnabled, setEscapeEnabled] = useState(false)
 
+  // v2.1.0: Now uses Confirmation.Status instead of Toaster.Status
   const showConfirmation = async () => {
     setConfirmResult(null)
     const status = await confirmation.warn(
       'Are you sure you want to proceed with this action?',
       'Confirm Action'
     )
-    setConfirmResult(status === Toaster.Status.confirm ? 'Confirmed!' : status === Toaster.Status.reject ? 'Cancelled' : 'Dismissed')
+    setConfirmResult(status === Confirmation.Status.confirm ? 'Confirmed!' : status === Confirmation.Status.reject ? 'Cancelled' : 'Dismissed')
   }
 
   // v2.0.0: yesCopy/cancelCopy removed, use yesText/cancelText instead
@@ -363,7 +364,7 @@ function TestConfirmation() {
       'Delete Confirmation',
       { yesText: 'Delete', cancelText: 'Keep' }
     )
-    setConfirmResult(status === Toaster.Status.confirm ? 'Item deleted!' : 'Deletion cancelled')
+    setConfirmResult(status === Confirmation.Status.confirm ? 'Item deleted!' : 'Deletion cancelled')
   }
 
   // v1.1.0: New cancelText and yesText props
@@ -377,7 +378,7 @@ function TestConfirmation() {
         cancelText: 'Go Back'
       }
     )
-    setConfirmResult(status === Toaster.Status.confirm ? 'Proceeded!' : 'Went back')
+    setConfirmResult(status === Confirmation.Status.confirm ? 'Proceeded!' : 'Went back')
   }
 
   // v1.1.0: LocalizationParam support for cancelText/yesText
@@ -391,7 +392,7 @@ function TestConfirmation() {
         cancelText: { key: 'AbpUi::No', defaultValue: 'No (Default)' }
       }
     )
-    setConfirmResult(status === Toaster.Status.confirm ? 'Yes selected!' : 'No selected')
+    setConfirmResult(status === Confirmation.Status.confirm ? 'Yes selected!' : 'No selected')
   }
 
   // v2.0.0: yesCopy removed, use yesText
@@ -402,7 +403,7 @@ function TestConfirmation() {
       'Saved',
       { hideCancelBtn: true, yesText: 'OK' }
     )
-    setConfirmResult(status === Toaster.Status.confirm ? 'Acknowledged' : 'Dismissed')
+    setConfirmResult(status === Confirmation.Status.confirm ? 'Acknowledged' : 'Dismissed')
   }
 
   const showSuccessConfirmation = async () => {
@@ -411,7 +412,7 @@ function TestConfirmation() {
       'Your operation was completed successfully!',
       'Success'
     )
-    setConfirmResult(status === Toaster.Status.confirm ? 'Confirmed' : 'Dismissed')
+    setConfirmResult(status === Confirmation.Status.confirm ? 'Confirmed' : 'Dismissed')
   }
 
   // v2.0.0: show() method with severity parameter
@@ -422,7 +423,7 @@ function TestConfirmation() {
       'Neutral Confirmation',
       'neutral'
     )
-    setConfirmResult(status === Toaster.Status.confirm ? 'Confirmed!' : 'Dismissed')
+    setConfirmResult(status === Confirmation.Status.confirm ? 'Confirmed!' : 'Dismissed')
   }
 
   // v2.0.0: listenToEscape() method
@@ -435,6 +436,27 @@ function TestConfirmation() {
   const clearConfirmation = () => {
     confirmation.clear()
     setConfirmResult('Cleared programmatically')
+  }
+
+  // v2.1.0: Demonstrate all three Status values
+  const showV210StatusDemo = async () => {
+    setConfirmResult(null)
+    const status = await confirmation.warn(
+      'This demo shows all Confirmation.Status values. Click Yes, Cancel, or click outside/press Escape.',
+      'v2.1.0 Status Demo'
+    )
+    // Demonstrate the new Confirmation.Status enum
+    switch (status) {
+      case Confirmation.Status.confirm:
+        setConfirmResult('Status: Confirmation.Status.confirm')
+        break
+      case Confirmation.Status.reject:
+        setConfirmResult('Status: Confirmation.Status.reject')
+        break
+      case Confirmation.Status.dismiss:
+        setConfirmResult('Status: Confirmation.Status.dismiss')
+        break
+    }
   }
 
   return (
@@ -451,7 +473,7 @@ function TestConfirmation() {
           <button onClick={showSuccessConfirmation}>Success Confirmation</button>
         </div>
         {confirmResult && (
-          <p style={{ marginTop: '0.5rem', color: confirmResult.includes('!') ? '#6f6' : '#f88' }}>
+          <p style={{ marginTop: '0.5rem', color: confirmResult.includes('!') || confirmResult.includes('confirm') ? '#6f6' : '#f88' }}>
             Result: {confirmResult}
           </p>
         )}
@@ -484,6 +506,22 @@ function TestConfirmation() {
             Escape key listener enabled. Press Escape to dismiss open confirmations.
           </p>
         )}
+      </div>
+
+      <div className="test-card">
+        <h3>v2.1.0: Confirmation.Status Enum</h3>
+        <p>Confirmation methods now return <code>Confirmation.Status</code> instead of <code>Toaster.Status</code>.</p>
+        <p style={{ fontSize: '0.85rem', color: '#888' }}>
+          <code>Toaster.Status</code> is deprecated and will be removed in v2.2. The values are: <code>confirm</code>, <code>reject</code>, <code>dismiss</code>.
+        </p>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
+          <button onClick={showV210StatusDemo}>Test Confirmation.Status</button>
+        </div>
+        <div style={{ marginTop: '0.75rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6cf' }}>Confirmation.Status.confirm</code> - User clicked Yes/OK<br />
+          <code style={{ color: '#fc6' }}>Confirmation.Status.reject</code> - User clicked Cancel/No<br />
+          <code style={{ color: '#888' }}>Confirmation.Status.dismiss</code> - User dismissed (Escape/overlay)
+        </div>
       </div>
     </div>
   )
@@ -772,7 +810,7 @@ function TestProfile() {
 export function TestThemeSharedPage() {
   return (
     <div>
-      <h1>@abpjs/theme-shared Tests</h1>
+      <h1>@abpjs/theme-shared Tests (v2.1.0)</h1>
       <p>Testing toast notifications, confirmation dialogs, modals, error handling, and shared components.</p>
 
       <TestLoaderBar />
