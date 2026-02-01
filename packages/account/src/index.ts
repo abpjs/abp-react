@@ -1,9 +1,13 @@
 /**
  * @abpjs/account
  * ABP Framework Account module for React
- * Translated from @abp/ng.account v2.1.0
+ * Translated from @abp/ng.account v2.2.0
  *
- * @version 2.1.0
+ * Changes in v2.2.0:
+ * - Dependency updates to @abp/ng.theme.shared v2.2.0 and @abp/ng.account.config v2.2.0
+ * - No functional code changes
+ *
+ * @version 2.2.0
  * @since 2.0.0 - Added Account namespace with component interface types
  * @since 2.0.0 - Added isSelfRegistrationEnabled support in Login/Register components
  * @since 2.0.0 - Added enableLocalLogin support in AuthWrapper component
