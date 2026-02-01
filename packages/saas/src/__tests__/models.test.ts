@@ -125,9 +125,34 @@ describe('Saas Models', () => {
 
       expect(request.editionId).toBe('ed-1');
     });
+
+    it('should have adminEmailAddress and adminPassword as required fields (v2.4.0)', () => {
+      // This test verifies the v2.4.0 change where adminEmailAddress and adminPassword
+      // are now required fields in CreateTenantRequest
+      const request: Saas.CreateTenantRequest = {
+        adminEmailAddress: 'test@example.com',
+        adminPassword: 'Password123!',
+        name: 'Test Tenant',
+      };
+
+      // All required fields must be present
+      expect(request.adminEmailAddress).toBeDefined();
+      expect(request.adminPassword).toBeDefined();
+      expect(request.name).toBeDefined();
+    });
+
+    it('should accept various email formats', () => {
+      const request: Saas.CreateTenantRequest = {
+        adminEmailAddress: 'admin+test@sub.domain.com',
+        adminPassword: 'SecureP@ss1',
+        name: 'Email Test Tenant',
+      };
+
+      expect(request.adminEmailAddress).toBe('admin+test@sub.domain.com');
+    });
   });
 
-  describe('UpdateTenantRequest interface', () => {
+  describe('UpdateTenantRequest type (v2.4.0)', () => {
     it('should require id and name', () => {
       const request: Saas.UpdateTenantRequest = {
         id: 'tenant-123',
@@ -148,6 +173,39 @@ describe('Saas Models', () => {
 
       expect(request.editionId).toBe('ed-2');
       expect(request.concurrencyStamp).toBe('stamp-abc');
+    });
+
+    it('should be based on Tenant interface without editionName (v2.4.0)', () => {
+      // v2.4.0 changed UpdateTenantRequest to Omit<Tenant, 'editionName'>
+      // This means it should have all Tenant fields except editionName
+      const request: Saas.UpdateTenantRequest = {
+        id: 'tenant-123',
+        name: 'Test Tenant',
+        editionId: 'ed-1',
+        concurrencyStamp: 'stamp-xyz',
+      };
+
+      // Should have id (required in Tenant)
+      expect(request.id).toBeDefined();
+      // Should have name (required in Tenant)
+      expect(request.name).toBeDefined();
+      // Should allow editionId (optional in Tenant)
+      expect(request.editionId).toBe('ed-1');
+      // Should allow concurrencyStamp (optional in Tenant)
+      expect(request.concurrencyStamp).toBe('stamp-xyz');
+      // editionName should not be present (omitted)
+      expect('editionName' in request).toBe(false);
+    });
+
+    it('should not have adminEmailAddress or adminPassword (different from CreateTenantRequest)', () => {
+      // UpdateTenantRequest is Omit<Tenant, 'editionName'>, which doesn't include admin credentials
+      const request: Saas.UpdateTenantRequest = {
+        id: 'tenant-123',
+        name: 'Test Tenant',
+      };
+
+      expect(request).not.toHaveProperty('adminEmailAddress');
+      expect(request).not.toHaveProperty('adminPassword');
     });
   });
 

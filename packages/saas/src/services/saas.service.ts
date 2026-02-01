@@ -14,8 +14,15 @@ import type { Saas } from '../models';
  * This service wraps all REST API calls for the SaaS module.
  *
  * @since 2.0.0
+ * @updated 2.4.0 - Added apiName property
  */
 export class SaasService {
+  /**
+   * API name for multi-API configurations
+   * @since 2.4.0
+   */
+  apiName = 'default';
+
   constructor(private restService: RestService) {}
 
   // ==================== Tenant Operations ====================

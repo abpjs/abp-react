@@ -89,6 +89,8 @@ export function TenantsComponent({
   // Form state for tenant
   const [tenantName, setTenantName] = useState('');
   const [tenantEditionId, setTenantEditionId] = useState('');
+  const [adminEmailAddress, setAdminEmailAddress] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
 
   // Form state for connection string
   const [connStringUseShared, setConnStringUseShared] = useState(true);
@@ -125,6 +127,8 @@ export function TenantsComponent({
     setSelectedTenant(null);
     setTenantName('');
     setTenantEditionId('');
+    setAdminEmailAddress('');
+    setAdminPassword('');
     setModalType('tenant');
     setModalVisible(true);
   }, [setSelectedTenant]);
@@ -210,6 +214,8 @@ export function TenantsComponent({
       } else {
         // Create
         const result = await createTenant({
+          adminEmailAddress,
+          adminPassword,
           name: tenantName,
           editionId: tenantEditionId || undefined,
         });
@@ -230,6 +236,8 @@ export function TenantsComponent({
   }, [
     tenantName,
     tenantEditionId,
+    adminEmailAddress,
+    adminPassword,
     selectedTenant,
     updateTenant,
     createTenant,
@@ -461,6 +469,27 @@ export function TenantsComponent({
                   </NativeSelectField>
                 </NativeSelectRoot>
               </FormField>
+            )}
+            {/* Admin credentials only shown when creating new tenant */}
+            {!selectedTenant && (
+              <>
+                <FormField label={t('Saas::AdminEmailAddress')} required>
+                  <Input
+                    type="email"
+                    value={adminEmailAddress}
+                    onChange={(e) => setAdminEmailAddress(e.target.value)}
+                    placeholder={t('Saas::AdminEmailAddress')}
+                  />
+                </FormField>
+                <FormField label={t('Saas::AdminPassword')} required>
+                  <Input
+                    type="password"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder={t('Saas::AdminPassword')}
+                  />
+                </FormField>
+              </>
             )}
           </VStack>
         )}
