@@ -1,6 +1,8 @@
 /**
  * Test page for @abpjs/saas package
  * Tests: TenantsComponent, EditionsComponent, useTenants, useEditions hooks
+ * @since 2.0.0
+ * @updated 2.1.1 - Dependency updates (no new features)
  */
 import { useState, useEffect } from 'react'
 import { useAuth } from '@abpjs/core'
@@ -818,8 +820,11 @@ function TestApiEndpoints() {
 export function TestSaasPage() {
   return (
     <div>
-      <h1>@abpjs/saas Tests</h1>
-      <p>Testing SaaS module for tenant and edition management (v2.0.0).</p>
+      <h1>@abpjs/saas Tests (v2.1.1)</h1>
+      <p style={{ marginBottom: '8px' }}>Testing SaaS module for tenant and edition management.</p>
+      <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
+        Version 2.1.1 - Dependency updates (no functional changes from v2.0.0)
+      </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components for multi-tenant SaaS applications with tenant management,
         edition management, and connection string management.
