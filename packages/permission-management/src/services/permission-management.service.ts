@@ -3,10 +3,16 @@ import { PermissionManagement } from '../models';
 
 /**
  * Service for permission management API calls
- * Translated from @abp/ng.permission-management v0.7.6
+ * Translated from @abp/ng.permission-management v2.4.0
  */
 export class PermissionManagementService {
   private rest: RestService;
+
+  /**
+   * The API name used for REST requests.
+   * @since 2.4.0
+   */
+  apiName = 'default';
 
   constructor(rest: RestService) {
     this.rest = rest;

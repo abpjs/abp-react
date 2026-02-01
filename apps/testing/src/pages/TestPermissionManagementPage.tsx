@@ -593,6 +593,88 @@ function TestComponentInterfaces() {
   )
 }
 
+function TestV240Features() {
+  const [apiNameDemo, setApiNameDemo] = useState('default')
+
+  return (
+    <div className="test-section">
+      <h2>v2.4.0 Features</h2>
+
+      <div className="test-card">
+        <h3>apiName Property</h3>
+        <p>New in v2.4.0: <code>PermissionManagementService</code> now has an <code>apiName</code> property.</p>
+        <p>This property specifies which API configuration to use for REST requests (defaults to "default").</p>
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>Interactive Demo</h4>
+          <p>Simulate changing the apiName property:</p>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
+            <input
+              type="text"
+              value={apiNameDemo}
+              onChange={(e) => setApiNameDemo(e.target.value)}
+              placeholder="Enter API name"
+              style={{
+                padding: '8px',
+                borderRadius: '4px',
+                border: '1px solid #333',
+                flex: 1
+              }}
+            />
+            <button onClick={() => setApiNameDemo('default')}>Reset to Default</button>
+          </div>
+          <p>Current apiName: <code style={{ background: 'rgba(100,108,255,0.2)', padding: '2px 6px', borderRadius: '3px' }}>{apiNameDemo}</code></p>
+        </div>
+
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px',
+          marginTop: '1rem'
+        }}>
+{`// v2.4.0: apiName property on PermissionManagementService
+const service = new PermissionManagementService(restService);
+console.log(service.apiName); // "default"
+
+// Change to use a different API configuration
+service.apiName = "${apiNameDemo}";`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>PermissionManagementService Class</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Property/Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Version</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(100,255,100,0.1)' }}>
+              <td style={{ padding: '8px' }}><code>apiName</code></td>
+              <td>string (default: "default")</td>
+              <td>v2.4.0 (NEW)</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>getPermissions()</code></td>
+              <td>Promise&lt;Response&gt;</td>
+              <td>v0.7.6</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>updatePermissions()</code></td>
+              <td>Promise&lt;void&gt;</td>
+              <td>v0.7.6</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestApiEndpoints() {
   return (
     <div className="test-section">
@@ -637,10 +719,11 @@ function TestApiEndpoints() {
 export function TestPermissionManagementPage() {
   return (
     <div>
-      <h1>@abpjs/permission-management Tests v2.2.0</h1>
+      <h1>@abpjs/permission-management Tests v2.4.0</h1>
       <p>Testing permission management modal, hooks, and state service.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.2.0 - Dependency updates only (no new features from v2.0.0)</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.4.0 - Added apiName property to PermissionManagementService</p>
 
+      <TestV240Features />
       <TestPermissionModal />
       <TestPermissionHook />
       <TestPermissionManagementStateService />

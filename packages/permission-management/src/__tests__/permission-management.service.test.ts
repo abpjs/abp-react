@@ -16,6 +16,21 @@ describe('PermissionManagementService', () => {
     service = new PermissionManagementService(mockRestService as any);
   });
 
+  describe('apiName property (v2.4.0)', () => {
+    it('should have apiName property with default value "default"', () => {
+      expect(service.apiName).toBe('default');
+    });
+
+    it('should allow apiName to be modified', () => {
+      service.apiName = 'customApi';
+      expect(service.apiName).toBe('customApi');
+    });
+
+    it('should have apiName as a string type', () => {
+      expect(typeof service.apiName).toBe('string');
+    });
+  });
+
   describe('getPermissions', () => {
     it('should call rest.request with correct parameters', async () => {
       const mockResponse: PermissionManagement.Response = {
