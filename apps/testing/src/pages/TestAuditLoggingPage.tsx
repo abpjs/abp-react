@@ -2,6 +2,7 @@
  * Test page for @abpjs/audit-logging package
  * Tests: AuditLogsComponent, useAuditLogs hook, services, constants
  * @since 2.0.0
+ * @updated 2.1.1 - Type safety improvements (React already uses Set<number>)
  */
 import { useState } from 'react'
 import {
@@ -619,8 +620,12 @@ const filter: Statistics.Filter = {
 export function TestAuditLoggingPage() {
   return (
     <div>
-      <h1>@abpjs/audit-logging Tests</h1>
-      <p>Testing audit logging components, hooks, and services (v2.0.0).</p>
+      <h1>@abpjs/audit-logging Tests (v2.1.1)</h1>
+      <p style={{ marginBottom: '8px' }}>Testing audit logging components, hooks, and services.</p>
+      <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
+        Version 2.1.1 - Type safety improvements for collapsed state tracking
+        (Angular: any[] → boolean[], React: already uses Set&lt;number&gt;)
+      </p>
 
       <TestAuditLogsComponent />
       <TestUseAuditLogsHook />
