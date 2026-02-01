@@ -1,6 +1,6 @@
 /**
  * @abpjs/account-pro Models
- * Translated from @volo/abp.ng.account v2.0.0
+ * Translated from @volo/abp.ng.account v2.4.0
  */
 
 /**
@@ -416,43 +416,51 @@ export interface UpdateProfileRequest {
 /**
  * Profile information response
  * @since 0.7.2 (Pro feature)
+ * @since 2.4.0 Added phoneNumberConfirmed field
  */
 export interface ProfileResponse {
   /**
    * Username
    */
   userName: string;
-  
+
   /**
    * Email address
    */
   email: string;
-  
+
   /**
    * Name
    */
   name?: string;
-  
+
   /**
    * Surname
    */
   surname?: string;
-  
+
   /**
    * Phone number
    */
   phoneNumber?: string;
-  
+
   /**
    * Whether the email is confirmed
    */
   isEmailConfirmed?: boolean;
-  
+
   /**
    * Whether the phone is confirmed
+   * @deprecated Use phoneNumberConfirmed instead
    */
   isPhoneNumberConfirmed?: boolean;
-  
+
+  /**
+   * Whether the phone number is confirmed
+   * @since 2.4.0
+   */
+  phoneNumberConfirmed?: boolean;
+
   /**
    * Whether two-factor authentication is enabled
    */

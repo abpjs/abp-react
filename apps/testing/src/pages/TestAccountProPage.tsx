@@ -303,7 +303,12 @@ function TestAccountProService() {
           <li><code>changePassword(data)</code> - Change current user password</li>
           <li><code>getProfile()</code> - Get current user profile</li>
           <li><code>updateProfile(data)</code> - Update user profile</li>
+          <li style={{ color: '#4f4' }}><code>sendPhoneNumberConfirmationToken()</code> - Send SMS confirmation token (v2.4.0)</li>
+          <li style={{ color: '#4f4' }}><code>confirmPhoneNumber(token)</code> - Confirm phone with token (v2.4.0)</li>
         </ul>
+        <p style={{ marginTop: '0.5rem' }}>
+          <span style={{ color: '#4f4' }}>apiName:</span> <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{accountService.apiName}</code>
+        </p>
       </div>
 
       <div className="test-card">
@@ -580,6 +585,163 @@ function TestAccountProRoutes() {
   )
 }
 
+function TestV240Features() {
+  const accountService = useAccountProService()
+  const toaster = useToaster()
+  const [confirmToken, setConfirmToken] = useState('')
+  const [isSending, setIsSending] = useState(false)
+  const [isConfirming, setIsConfirming] = useState(false)
+
+  const handleSendToken = async () => {
+    setIsSending(true)
+    try {
+      await accountService.sendPhoneNumberConfirmationToken()
+      toaster.success('Phone confirmation token sent!', 'Success')
+    } catch (err: any) {
+      toaster.error(err.message || 'Failed to send token', 'Error')
+    } finally {
+      setIsSending(false)
+    }
+  }
+
+  const handleConfirmPhone = async () => {
+    if (!confirmToken.trim()) {
+      toaster.error('Please enter a token', 'Error')
+      return
+    }
+    setIsConfirming(true)
+    try {
+      await accountService.confirmPhoneNumber(confirmToken)
+      toaster.success('Phone number confirmed!', 'Success')
+      setConfirmToken('')
+    } catch (err: any) {
+      toaster.error(err.message || 'Failed to confirm phone number', 'Error')
+    } finally {
+      setIsConfirming(false)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v2.4.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>apiName Property <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.4.0)</span></h3>
+        <p>AccountProService now has an <code>apiName</code> property for REST request configuration:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`// Default API name
+const service = useAccountProService();
+console.log(service.apiName); // 'default'
+
+// Can be customized if needed
+service.apiName = 'custom-api';`}
+        </pre>
+        <p style={{ marginTop: '0.5rem' }}>
+          Current apiName: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{accountService.apiName}</code>
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Phone Number Confirmation <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.4.0)</span></h3>
+        <p>New methods for phone number verification flow:</p>
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>1. Send Confirmation Token</h4>
+          <p style={{ fontSize: '12px', color: '#888' }}>Sends an SMS with a confirmation token to the user's phone number.</p>
+          <button onClick={handleSendToken} disabled={isSending} style={{ marginTop: '0.5rem' }}>
+            {isSending ? 'Sending...' : 'Send Phone Confirmation Token'}
+          </button>
+        </div>
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>2. Confirm Phone Number</h4>
+          <p style={{ fontSize: '12px', color: '#888' }}>Verifies the phone number using the received token.</p>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
+            <input
+              type="text"
+              placeholder="Enter confirmation token"
+              value={confirmToken}
+              onChange={(e) => setConfirmToken(e.target.value)}
+              style={{ padding: '8px', flex: 1, maxWidth: '200px' }}
+            />
+            <button onClick={handleConfirmPhone} disabled={isConfirming}>
+              {isConfirming ? 'Confirming...' : 'Confirm Phone'}
+            </button>
+          </div>
+        </div>
+
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`// Phone number confirmation flow
+const service = useAccountProService();
+
+// Step 1: Send token to user's phone
+await service.sendPhoneNumberConfirmationToken();
+
+// Step 2: User receives SMS and enters token
+const token = '123456';
+await service.confirmPhoneNumber(token);`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>ProfileResponse Changes <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.4.0)</span></h3>
+        <p>ProfileResponse now includes a <code>phoneNumberConfirmed</code> field:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`interface ProfileResponse {
+  userName: string;
+  email: string;
+  name?: string;
+  surname?: string;
+  phoneNumber?: string;
+  isEmailConfirmed?: boolean;
+  isPhoneNumberConfirmed?: boolean; // @deprecated
+  phoneNumberConfirmed?: boolean;   // NEW in v2.4.0
+  isTwoFactorEnabled?: boolean;
+}`}
+        </pre>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          Note: <code>isPhoneNumberConfirmed</code> is deprecated in favor of <code>phoneNumberConfirmed</code>.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.4.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>apiName</td>
+              <td>string</td>
+              <td>REST API name (default: 'default')</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>sendPhoneNumberConfirmationToken()</td>
+              <td>Promise&lt;void&gt;</td>
+              <td>Send SMS confirmation token</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>confirmPhoneNumber(token)</td>
+              <td>Promise&lt;void&gt;</td>
+              <td>Confirm phone with token</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ProfileResponse.phoneNumberConfirmed</td>
+              <td>boolean</td>
+              <td>Phone confirmation status</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestAuthState() {
   const auth = useAuth()
   const config = useConfig()
@@ -625,9 +787,9 @@ function TestAuthState() {
 export function TestAccountProPage() {
   return (
     <div>
-      <h1>@abpjs/account-pro Tests v2.2.0</h1>
+      <h1>@abpjs/account-pro Tests v2.4.0</h1>
       <p>Testing Pro account features: password reset, profile management, enhanced components.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.2.0 - Dependency updates only (no new features from v2.1.1)</p>
+      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 2.4.0 - Added apiName property, phone number confirmation methods</p>
 
       <div className="test-card" style={{ backgroundColor: '#1a365d', border: '1px solid #2b6cb0' }}>
         <h3 style={{ color: '#90cdf4' }}>Pro Package Features</h3>
@@ -637,9 +799,11 @@ export function TestAccountProPage() {
           <li>Personal Settings / Profile management</li>
           <li>Enhanced Login with forgot password link</li>
           <li style={{ color: '#90cdf4' }}>v2.0.0: enableLocalLogin option, isSelfRegistrationEnabled prop, Account namespace interfaces</li>
+          <li style={{ color: '#4f4' }}>v2.4.0: apiName property, sendPhoneNumberConfirmationToken(), confirmPhoneNumber(), phoneNumberConfirmed field</li>
         </ul>
       </div>
 
+      <TestV240Features />
       <TestAuthState />
       <TestPasswordFlow />
       <TestAccountProService />

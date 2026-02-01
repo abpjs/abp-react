@@ -1,7 +1,15 @@
 /**
  * @abpjs/account-pro
  * ABP Framework Account Pro module for React
- * Translated from @volo/abp.ng.account v2.2.0
+ * Translated from @volo/abp.ng.account v2.4.0
+ *
+ * Changes in v2.4.0:
+ * - Added apiName property to AccountProService (defaults to 'default')
+ * - Added sendPhoneNumberConfirmationToken() method to AccountProService
+ * - Added confirmPhoneNumber(token: string) method to AccountProService
+ * - Added phoneNumberConfirmed field to ProfileResponse type
+ * - Services are now exported from public API (already done in React)
+ * - Dependency updates to @abp/ng.theme.shared ~2.4.0, @volo/abp.commercial.ng.ui ^2.4.0
  *
  * Changes in v2.2.0:
  * - Version bump only (dependency updates to @abp/ng.theme.shared v2.2.0)
