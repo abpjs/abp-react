@@ -1,6 +1,6 @@
 /**
  * Tests for AuditLoggingService
- * @abpjs/audit-logging v0.7.2
+ * @abpjs/audit-logging v2.4.0
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuditLoggingService } from '../services';
@@ -14,6 +14,28 @@ describe('AuditLoggingService', () => {
     mockRequest = vi.fn();
     const mockRestService = { request: mockRequest };
     service = new AuditLoggingService(mockRestService as any);
+  });
+
+  describe('apiName (v2.4.0)', () => {
+    it('should have apiName property set to default', () => {
+      expect(service.apiName).toBe('default');
+    });
+
+    it('should allow apiName to be modified', () => {
+      service.apiName = 'custom-api';
+      expect(service.apiName).toBe('custom-api');
+    });
+
+    it('should persist apiName across method calls', () => {
+      service.apiName = 'audit-api';
+      expect(service.apiName).toBe('audit-api');
+
+      // apiName should still be the same after creating another instance
+      const mockRestService2 = { request: vi.fn() };
+      const service2 = new AuditLoggingService(mockRestService2 as any);
+      expect(service2.apiName).toBe('default'); // New instance has default
+      expect(service.apiName).toBe('audit-api'); // Original instance unchanged
+    });
   });
 
   describe('getAuditLogs', () => {
