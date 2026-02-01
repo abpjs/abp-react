@@ -44,6 +44,10 @@ export interface UseEditionsReturn {
   sortOrder: SortOrder;
   /** Usage statistics for editions */
   usageStatistics: Record<string, number>;
+  /** Whether features modal is visible @since 2.2.0 */
+  visibleFeatures: boolean;
+  /** Provider key for features modal @since 2.2.0 */
+  featuresProviderKey: string;
   /** Fetch all editions with optional pagination/filtering */
   fetchEditions: (params?: Saas.EditionsQueryParams) => Promise<EditionOperationResult<Saas.EditionsResponse>>;
   /** Get an edition by ID and set it as selected */
@@ -62,6 +66,10 @@ export interface UseEditionsReturn {
   setSortKey: (key: string) => void;
   /** Set sort order */
   setSortOrder: (order: SortOrder) => void;
+  /** Handle features modal visibility change @since 2.2.0 */
+  onVisibleFeaturesChange: (value: boolean) => void;
+  /** Open features modal for an edition @since 2.2.0 */
+  openFeaturesModal: (providerKey: string) => void;
   /** Reset state */
   reset: () => void;
 }
@@ -114,6 +122,9 @@ export function useEditions(): UseEditionsReturn {
   const [sortKey, setSortKey] = useState<string>('displayName');
   const [sortOrder, setSortOrder] = useState<SortOrder>('');
   const [usageStatistics, setUsageStatistics] = useState<Record<string, number>>({});
+  // Features modal state (v2.2.0)
+  const [visibleFeatures, setVisibleFeatures] = useState<boolean>(false);
+  const [featuresProviderKey, setFeaturesProviderKey] = useState<string>('');
 
   /**
    * Fetch all editions with optional pagination/filtering
@@ -249,6 +260,26 @@ export function useEditions(): UseEditionsReturn {
   );
 
   /**
+   * Handle features modal visibility change
+   * @since 2.2.0
+   */
+  const onVisibleFeaturesChange = useCallback((value: boolean) => {
+    setVisibleFeatures(value);
+    if (!value) {
+      setFeaturesProviderKey('');
+    }
+  }, []);
+
+  /**
+   * Open features modal for an edition
+   * @since 2.2.0
+   */
+  const openFeaturesModal = useCallback((providerKey: string) => {
+    setFeaturesProviderKey(providerKey);
+    setVisibleFeatures(true);
+  }, []);
+
+  /**
    * Reset all state to initial values
    */
   const reset = useCallback(() => {
@@ -260,6 +291,8 @@ export function useEditions(): UseEditionsReturn {
     setSortKey('displayName');
     setSortOrder('');
     setUsageStatistics({});
+    setVisibleFeatures(false);
+    setFeaturesProviderKey('');
   }, []);
 
   return {
@@ -271,6 +304,8 @@ export function useEditions(): UseEditionsReturn {
     sortKey,
     sortOrder,
     usageStatistics,
+    visibleFeatures,
+    featuresProviderKey,
     fetchEditions,
     getEditionById,
     createEdition,
@@ -280,6 +315,8 @@ export function useEditions(): UseEditionsReturn {
     setSelectedEdition,
     setSortKey,
     setSortOrder,
+    onVisibleFeaturesChange,
+    openFeaturesModal,
     reset,
   };
 }

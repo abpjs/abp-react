@@ -46,6 +46,10 @@ export interface UseTenantsReturn {
   defaultConnectionString: string;
   /** Whether the tenant uses shared database */
   useSharedDatabase: boolean;
+  /** Whether features modal is visible @since 2.2.0 */
+  visibleFeatures: boolean;
+  /** Provider key for features modal @since 2.2.0 */
+  featuresProviderKey: string;
   /** Fetch all tenants with optional pagination/filtering */
   fetchTenants: (params?: Saas.TenantsQueryParams) => Promise<TenantOperationResult<Saas.TenantsResponse>>;
   /** Get a tenant by ID and set it as selected */
@@ -68,6 +72,10 @@ export interface UseTenantsReturn {
   setSortKey: (key: string) => void;
   /** Set sort order */
   setSortOrder: (order: SortOrder) => void;
+  /** Handle features modal visibility change @since 2.2.0 */
+  onVisibleFeaturesChange: (value: boolean) => void;
+  /** Open features modal for a tenant @since 2.2.0 */
+  openFeaturesModal: (providerKey: string) => void;
   /** Reset state */
   reset: () => void;
 }
@@ -121,6 +129,9 @@ export function useTenants(): UseTenantsReturn {
   const [sortOrder, setSortOrder] = useState<SortOrder>('');
   const [defaultConnectionString, setDefaultConnectionString] = useState<string>('');
   const [useSharedDatabase, setUseSharedDatabase] = useState<boolean>(true);
+  // Features modal state (v2.2.0)
+  const [visibleFeatures, setVisibleFeatures] = useState<boolean>(false);
+  const [featuresProviderKey, setFeaturesProviderKey] = useState<string>('');
 
   /**
    * Fetch all tenants with optional pagination/filtering
@@ -305,6 +316,26 @@ export function useTenants(): UseTenantsReturn {
   );
 
   /**
+   * Handle features modal visibility change
+   * @since 2.2.0
+   */
+  const onVisibleFeaturesChange = useCallback((value: boolean) => {
+    setVisibleFeatures(value);
+    if (!value) {
+      setFeaturesProviderKey('');
+    }
+  }, []);
+
+  /**
+   * Open features modal for a tenant
+   * @since 2.2.0
+   */
+  const openFeaturesModal = useCallback((providerKey: string) => {
+    setFeaturesProviderKey(providerKey);
+    setVisibleFeatures(true);
+  }, []);
+
+  /**
    * Reset all state to initial values
    */
   const reset = useCallback(() => {
@@ -317,6 +348,8 @@ export function useTenants(): UseTenantsReturn {
     setSortOrder('');
     setDefaultConnectionString('');
     setUseSharedDatabase(true);
+    setVisibleFeatures(false);
+    setFeaturesProviderKey('');
   }, []);
 
   return {
@@ -329,6 +362,8 @@ export function useTenants(): UseTenantsReturn {
     sortOrder,
     defaultConnectionString,
     useSharedDatabase,
+    visibleFeatures,
+    featuresProviderKey,
     fetchTenants,
     getTenantById,
     createTenant,
@@ -340,6 +375,8 @@ export function useTenants(): UseTenantsReturn {
     setSelectedTenant,
     setSortKey,
     setSortOrder,
+    onVisibleFeaturesChange,
+    openFeaturesModal,
     reset,
   };
 }

@@ -48,6 +48,9 @@ describe('useEditions', () => {
     expect(result.current.sortKey).toBe('displayName');
     expect(result.current.sortOrder).toBe('');
     expect(result.current.usageStatistics).toEqual({});
+    // v2.2.0 features modal state
+    expect(result.current.visibleFeatures).toBe(false);
+    expect(result.current.featuresProviderKey).toBe('');
   });
 
   describe('fetchEditions', () => {
@@ -330,6 +333,14 @@ describe('useEditions', () => {
         result.current.setSortOrder('desc');
       });
 
+      // Open features modal
+      act(() => {
+        result.current.openFeaturesModal('E:ed-1');
+      });
+
+      expect(result.current.visibleFeatures).toBe(true);
+      expect(result.current.featuresProviderKey).toBe('E:ed-1');
+
       // Then reset
       act(() => {
         result.current.reset();
@@ -343,6 +354,105 @@ describe('useEditions', () => {
       expect(result.current.sortKey).toBe('displayName');
       expect(result.current.sortOrder).toBe('');
       expect(result.current.usageStatistics).toEqual({});
+      // v2.2.0 features modal state
+      expect(result.current.visibleFeatures).toBe(false);
+      expect(result.current.featuresProviderKey).toBe('');
+    });
+  });
+
+  describe('v2.2.0 - Features Modal', () => {
+    it('should open features modal with provider key', () => {
+      const { result } = renderHook(() => useEditions());
+
+      act(() => {
+        result.current.openFeaturesModal('E:ed-1');
+      });
+
+      expect(result.current.visibleFeatures).toBe(true);
+      expect(result.current.featuresProviderKey).toBe('E:ed-1');
+    });
+
+    it('should close features modal and clear provider key', () => {
+      const { result } = renderHook(() => useEditions());
+
+      // Open modal first
+      act(() => {
+        result.current.openFeaturesModal('E:ed-1');
+      });
+
+      expect(result.current.visibleFeatures).toBe(true);
+      expect(result.current.featuresProviderKey).toBe('E:ed-1');
+
+      // Close modal
+      act(() => {
+        result.current.onVisibleFeaturesChange(false);
+      });
+
+      expect(result.current.visibleFeatures).toBe(false);
+      expect(result.current.featuresProviderKey).toBe('');
+    });
+
+    it('should set visibleFeatures to true without clearing provider key', () => {
+      const { result } = renderHook(() => useEditions());
+
+      // Open modal first
+      act(() => {
+        result.current.openFeaturesModal('E:ed-1');
+      });
+
+      // Call with true (should not clear provider key)
+      act(() => {
+        result.current.onVisibleFeaturesChange(true);
+      });
+
+      expect(result.current.visibleFeatures).toBe(true);
+      expect(result.current.featuresProviderKey).toBe('E:ed-1');
+    });
+
+    it('should handle multiple modal open/close cycles', () => {
+      const { result } = renderHook(() => useEditions());
+
+      // First cycle
+      act(() => {
+        result.current.openFeaturesModal('E:ed-1');
+      });
+      expect(result.current.featuresProviderKey).toBe('E:ed-1');
+
+      act(() => {
+        result.current.onVisibleFeaturesChange(false);
+      });
+      expect(result.current.featuresProviderKey).toBe('');
+
+      // Second cycle with different key
+      act(() => {
+        result.current.openFeaturesModal('E:ed-2');
+      });
+      expect(result.current.visibleFeatures).toBe(true);
+      expect(result.current.featuresProviderKey).toBe('E:ed-2');
+
+      act(() => {
+        result.current.onVisibleFeaturesChange(false);
+      });
+      expect(result.current.visibleFeatures).toBe(false);
+      expect(result.current.featuresProviderKey).toBe('');
+    });
+
+    it('should allow changing provider key while modal is open', () => {
+      const { result } = renderHook(() => useEditions());
+
+      act(() => {
+        result.current.openFeaturesModal('E:ed-1');
+      });
+
+      expect(result.current.featuresProviderKey).toBe('E:ed-1');
+
+      // Open with different key (simulating switching editions)
+      act(() => {
+        result.current.openFeaturesModal('E:ed-2');
+      });
+
+      expect(result.current.visibleFeatures).toBe(true);
+      expect(result.current.featuresProviderKey).toBe('E:ed-2');
     });
   });
 });
