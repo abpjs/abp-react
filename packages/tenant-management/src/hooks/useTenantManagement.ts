@@ -78,6 +78,14 @@ export interface UseTenantManagementReturn {
   setSortOrder: (order: SortOrder) => void;
   /** Handle shared database checkbox change @since 1.1.0 */
   onSharedDatabaseChange: (value: boolean) => void;
+  /** Whether the features modal is visible @since 2.2.0 */
+  visibleFeatures: boolean;
+  /** Provider key for the features modal (tenant ID) @since 2.2.0 */
+  featuresProviderKey: string;
+  /** Callback when features modal visibility changes @since 2.2.0 */
+  onVisibleFeaturesChange: (value: boolean) => void;
+  /** Open the features modal for a tenant @since 2.2.0 */
+  openFeaturesModal: (providerKey: string) => void;
   /** Reset all state */
   reset: () => void;
 }
@@ -129,6 +137,9 @@ export function useTenantManagement(): UseTenantManagementReturn {
   // Sorting state (v1.0.0)
   const [sortKey, setSortKey] = useState<string>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('');
+  // Features modal state (v2.2.0)
+  const [visibleFeatures, setVisibleFeatures] = useState<boolean>(false);
+  const [featuresProviderKey, setFeaturesProviderKey] = useState<string>('');
 
   /**
    * Fetch all tenants (with optional params in v0.9.0)
@@ -337,6 +348,26 @@ export function useTenantManagement(): UseTenantManagementReturn {
   }, []);
 
   /**
+   * Handle features modal visibility change
+   * @since 2.2.0
+   */
+  const onVisibleFeaturesChange = useCallback((value: boolean) => {
+    setVisibleFeatures(value);
+    if (!value) {
+      setFeaturesProviderKey('');
+    }
+  }, []);
+
+  /**
+   * Open the features modal for a specific tenant
+   * @since 2.2.0
+   */
+  const openFeaturesModal = useCallback((providerKey: string) => {
+    setFeaturesProviderKey(providerKey);
+    setVisibleFeatures(true);
+  }, []);
+
+  /**
    * Compute whether save button should be disabled
    * Disabled when not using shared database but connection string is empty
    * @since 1.1.0
@@ -356,6 +387,8 @@ export function useTenantManagement(): UseTenantManagementReturn {
     setError(null);
     setDefaultConnectionString('');
     setUseSharedDatabase(true);
+    setVisibleFeatures(false);
+    setFeaturesProviderKey('');
   }, []);
 
   return {
@@ -369,6 +402,8 @@ export function useTenantManagement(): UseTenantManagementReturn {
     sortKey,
     sortOrder,
     isDisabledSaveButton,
+    visibleFeatures,
+    featuresProviderKey,
     fetchTenants,
     fetchTenantById,
     createTenant,
@@ -383,6 +418,8 @@ export function useTenantManagement(): UseTenantManagementReturn {
     setSortKey,
     setSortOrder,
     onSharedDatabaseChange,
+    onVisibleFeaturesChange,
+    openFeaturesModal,
     reset,
   };
 }

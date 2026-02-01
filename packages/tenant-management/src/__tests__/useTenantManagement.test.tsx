@@ -705,4 +705,278 @@ describe('useTenantManagement', () => {
       expect(result.current.isDisabledSaveButton).toBe(false);
     });
   });
+
+  describe('features modal (v2.2.0)', () => {
+    describe('initial state', () => {
+      it('should return visibleFeatures as false initially', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        expect(result.current.visibleFeatures).toBe(false);
+      });
+
+      it('should return featuresProviderKey as empty string initially', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        expect(result.current.featuresProviderKey).toBe('');
+      });
+
+      it('should provide openFeaturesModal method', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        expect(typeof result.current.openFeaturesModal).toBe('function');
+      });
+
+      it('should provide onVisibleFeaturesChange method', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        expect(typeof result.current.onVisibleFeaturesChange).toBe('function');
+      });
+    });
+
+    describe('openFeaturesModal', () => {
+      it('should set visibleFeatures to true when called', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        act(() => {
+          result.current.openFeaturesModal('tenant-123');
+        });
+
+        expect(result.current.visibleFeatures).toBe(true);
+      });
+
+      it('should set featuresProviderKey to the provided tenant ID', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        act(() => {
+          result.current.openFeaturesModal('tenant-456');
+        });
+
+        expect(result.current.featuresProviderKey).toBe('tenant-456');
+      });
+
+      it('should update both visibleFeatures and featuresProviderKey together', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        act(() => {
+          result.current.openFeaturesModal('my-tenant-id');
+        });
+
+        expect(result.current.visibleFeatures).toBe(true);
+        expect(result.current.featuresProviderKey).toBe('my-tenant-id');
+      });
+
+      it('should allow opening modal for different tenants', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        // Open for first tenant
+        act(() => {
+          result.current.openFeaturesModal('tenant-1');
+        });
+        expect(result.current.featuresProviderKey).toBe('tenant-1');
+
+        // Close modal
+        act(() => {
+          result.current.onVisibleFeaturesChange(false);
+        });
+
+        // Open for second tenant
+        act(() => {
+          result.current.openFeaturesModal('tenant-2');
+        });
+        expect(result.current.featuresProviderKey).toBe('tenant-2');
+        expect(result.current.visibleFeatures).toBe(true);
+      });
+    });
+
+    describe('onVisibleFeaturesChange', () => {
+      it('should set visibleFeatures to true', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        act(() => {
+          result.current.onVisibleFeaturesChange(true);
+        });
+
+        expect(result.current.visibleFeatures).toBe(true);
+      });
+
+      it('should set visibleFeatures to false', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        // First open the modal
+        act(() => {
+          result.current.openFeaturesModal('tenant-123');
+        });
+        expect(result.current.visibleFeatures).toBe(true);
+
+        // Then close it
+        act(() => {
+          result.current.onVisibleFeaturesChange(false);
+        });
+
+        expect(result.current.visibleFeatures).toBe(false);
+      });
+
+      it('should clear featuresProviderKey when closing modal', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        // Open modal with provider key
+        act(() => {
+          result.current.openFeaturesModal('tenant-123');
+        });
+        expect(result.current.featuresProviderKey).toBe('tenant-123');
+
+        // Close modal
+        act(() => {
+          result.current.onVisibleFeaturesChange(false);
+        });
+
+        expect(result.current.featuresProviderKey).toBe('');
+      });
+
+      it('should not clear featuresProviderKey when opening modal via onVisibleFeaturesChange', () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        // Set provider key first via openFeaturesModal
+        act(() => {
+          result.current.openFeaturesModal('tenant-123');
+        });
+
+        // Close modal
+        act(() => {
+          result.current.onVisibleFeaturesChange(false);
+        });
+        expect(result.current.featuresProviderKey).toBe('');
+
+        // If we just set visible to true without provider key, it should work
+        act(() => {
+          result.current.onVisibleFeaturesChange(true);
+        });
+
+        expect(result.current.visibleFeatures).toBe(true);
+        expect(result.current.featuresProviderKey).toBe('');
+      });
+    });
+
+    describe('reset with features modal state', () => {
+      it('should reset visibleFeatures to false', async () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        // Open features modal
+        act(() => {
+          result.current.openFeaturesModal('tenant-123');
+        });
+        expect(result.current.visibleFeatures).toBe(true);
+
+        // Reset
+        act(() => {
+          result.current.reset();
+        });
+
+        expect(result.current.visibleFeatures).toBe(false);
+      });
+
+      it('should reset featuresProviderKey to empty string', async () => {
+        const { result } = renderHook(() => useTenantManagement());
+
+        // Open features modal
+        act(() => {
+          result.current.openFeaturesModal('tenant-123');
+        });
+        expect(result.current.featuresProviderKey).toBe('tenant-123');
+
+        // Reset
+        act(() => {
+          result.current.reset();
+        });
+
+        expect(result.current.featuresProviderKey).toBe('');
+      });
+
+      it('should reset all state including features modal state', async () => {
+        mockGetAll.mockResolvedValue({
+          items: [{ id: '1', name: 'Tenant' }],
+          totalCount: 1,
+        });
+
+        const { result } = renderHook(() => useTenantManagement());
+
+        // Populate state
+        await act(async () => {
+          await result.current.fetchTenants();
+          result.current.setSelectedTenant({ id: '1', name: 'Tenant' });
+          result.current.openFeaturesModal('tenant-1');
+        });
+
+        // Verify state is populated
+        expect(result.current.tenants.length).toBe(1);
+        expect(result.current.visibleFeatures).toBe(true);
+        expect(result.current.featuresProviderKey).toBe('tenant-1');
+
+        // Reset
+        act(() => {
+          result.current.reset();
+        });
+
+        // Verify all state is reset
+        expect(result.current.tenants).toEqual([]);
+        expect(result.current.visibleFeatures).toBe(false);
+        expect(result.current.featuresProviderKey).toBe('');
+      });
+    });
+
+    describe('integration with other operations', () => {
+      it('should maintain features modal state during tenant operations', async () => {
+        mockGetAll.mockResolvedValue({
+          items: [{ id: '1', name: 'Tenant' }],
+          totalCount: 1,
+        });
+
+        const { result } = renderHook(() => useTenantManagement());
+
+        // Open features modal
+        act(() => {
+          result.current.openFeaturesModal('tenant-123');
+        });
+
+        // Fetch tenants (should not affect features modal state)
+        await act(async () => {
+          await result.current.fetchTenants();
+        });
+
+        // Features modal state should be maintained
+        expect(result.current.visibleFeatures).toBe(true);
+        expect(result.current.featuresProviderKey).toBe('tenant-123');
+      });
+
+      it('should allow features modal to be opened while other state is populated', async () => {
+        mockGetAll.mockResolvedValue({
+          items: [{ id: '1', name: 'Tenant 1' }, { id: '2', name: 'Tenant 2' }],
+          totalCount: 2,
+        });
+
+        const { result } = renderHook(() => useTenantManagement());
+
+        // Populate tenants
+        await act(async () => {
+          await result.current.fetchTenants();
+        });
+
+        // Select a tenant
+        act(() => {
+          result.current.setSelectedTenant({ id: '1', name: 'Tenant 1' });
+        });
+
+        // Open features modal for the same tenant
+        act(() => {
+          result.current.openFeaturesModal('1');
+        });
+
+        // All state should coexist
+        expect(result.current.tenants.length).toBe(2);
+        expect(result.current.selectedTenant?.id).toBe('1');
+        expect(result.current.visibleFeatures).toBe(true);
+        expect(result.current.featuresProviderKey).toBe('1');
+      });
+    });
+  });
 });

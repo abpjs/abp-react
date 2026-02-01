@@ -206,6 +206,8 @@ function TestTenantHook() {
     sortKey,
     sortOrder,
     isDisabledSaveButton,
+    visibleFeatures,
+    featuresProviderKey,
     fetchTenants,
     fetchTenantById,
     createTenant,
@@ -219,14 +221,14 @@ function TestTenantHook() {
     setSortKey,
     setSortOrder,
     onSharedDatabaseChange,
+    onVisibleFeaturesChange,
+    openFeaturesModal,
     reset,
   } = useTenantManagement()
 
   const [testTenantId, setTestTenantId] = useState('')
   const [testTenantName, setTestTenantName] = useState('')
   const [testConnectionString, setTestConnectionString] = useState('')
-  const [featureModalVisible, setFeatureModalVisible] = useState(false)
-  const [featureTenantId, setFeatureTenantId] = useState('')
 
   // Fetch tenants on mount (only if authenticated)
   useEffect(() => {
@@ -530,6 +532,45 @@ function TestTenantHook() {
         </div>
       </div>
 
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Features Modal via Hook <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.2.0)</span></h3>
+        <p>New in v2.2.0: Open the feature management modal directly from the hook:</p>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
+          <input
+            type="text"
+            placeholder="Enter Tenant ID for Features"
+            value={testTenantId}
+            onChange={(e) => setTestTenantId(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+              flex: 1
+            }}
+          />
+          <button
+            onClick={() => openFeaturesModal(testTenantId)}
+            disabled={!testTenantId || !isAuthenticated}
+            style={{ background: '#4f4', color: '#000' }}
+          >
+            openFeaturesModal()
+          </button>
+        </div>
+        <div style={{ padding: '8px', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+          <p style={{ margin: 0 }}>visibleFeatures: <strong>{visibleFeatures ? 'true' : 'false'}</strong></p>
+          <p style={{ margin: '4px 0 0 0' }}>featuresProviderKey: <strong>{featuresProviderKey || '(empty)'}</strong></p>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <button
+            onClick={() => onVisibleFeaturesChange(false)}
+            disabled={!visibleFeatures}
+            style={{ padding: '4px 8px', fontSize: '12px' }}
+          >
+            Close Modal (onVisibleFeaturesChange)
+          </button>
+        </div>
+      </div>
+
       <div className="test-card">
         <h3>Hook State</h3>
         <p>isLoading: {isLoading ? 'true' : 'false'}</p>
@@ -542,6 +583,8 @@ function TestTenantHook() {
         <p>sortKey: {sortKey}</p>
         <p>sortOrder: {sortOrder || '(empty)'}</p>
         <p style={{ background: 'rgba(100,108,255,0.1)', padding: '4px 8px', borderRadius: '4px' }}>isDisabledSaveButton: {isDisabledSaveButton ? 'true' : 'false'} <span style={{ fontSize: '12px', color: '#888' }}>(v1.1.0)</span></p>
+        <p style={{ background: 'rgba(68,255,68,0.1)', padding: '4px 8px', borderRadius: '4px', marginTop: '4px' }}>visibleFeatures: {visibleFeatures ? 'true' : 'false'} <span style={{ fontSize: '12px', color: '#888' }}>(v2.2.0)</span></p>
+        <p style={{ background: 'rgba(68,255,68,0.1)', padding: '4px 8px', borderRadius: '4px', marginTop: '4px' }}>featuresProviderKey: {featuresProviderKey || '(empty)'} <span style={{ fontSize: '12px', color: '#888' }}>(v2.2.0)</span></p>
         {!isAuthenticated && (
           <p style={{ color: '#f88', marginTop: '0.5rem' }}>
             ⚠️ You must be authenticated to use tenant management features
@@ -583,11 +626,8 @@ function TestTenantHook() {
                         Fetch
                       </button>
                       <button
-                        onClick={() => {
-                          setFeatureTenantId(tenant.id)
-                          setFeatureModalVisible(true)
-                        }}
-                        style={{ padding: '4px 8px', background: '#646cff' }}
+                        onClick={() => openFeaturesModal(tenant.id)}
+                        style={{ padding: '4px 8px', background: '#4f4', color: '#000' }}
                       >
                         Features
                       </button>
@@ -625,6 +665,10 @@ function TestTenantHook() {
             <tr style={{ background: 'rgba(100,108,255,0.05)' }}><td style={{ padding: '8px' }}>setDefaultConnectionString</td><td>Set the connection string (v1.1.0)</td></tr>
             <tr style={{ background: 'rgba(100,108,255,0.05)' }}><td style={{ padding: '8px' }}>onSharedDatabaseChange</td><td>Handle shared database toggle - clears connection string when enabled (v1.1.0)</td></tr>
             <tr style={{ background: 'rgba(100,108,255,0.05)' }}><td style={{ padding: '8px' }}>isDisabledSaveButton</td><td>Computed: true when not using shared DB but connection string is empty (v1.1.0)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>visibleFeatures</td><td>Whether the features modal is visible (v2.2.0)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>featuresProviderKey</td><td>Provider key (tenant ID) for features modal (v2.2.0)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>openFeaturesModal</td><td>Open features modal for a tenant (v2.2.0)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>onVisibleFeaturesChange</td><td>Callback when features modal visibility changes (v2.2.0)</td></tr>
             <tr><td style={{ padding: '8px' }}>reset</td><td>Reset all state</td></tr>
           </tbody>
         </table>
@@ -642,9 +686,9 @@ function TestTenantHook() {
 
       <FeatureManagementModal
         providerName="T"
-        providerKey={featureTenantId}
-        visible={featureModalVisible}
-        onVisibleChange={setFeatureModalVisible}
+        providerKey={featuresProviderKey}
+        visible={visibleFeatures}
+        onVisibleChange={onVisibleFeaturesChange}
         onSave={() => {
           console.log('Tenant features saved from hook section!')
         }}
@@ -1203,9 +1247,9 @@ function TestRouteConstants() {
 export function TestTenantManagementPage() {
   return (
     <div>
-      <h1>@abpjs/tenant-management Tests v2.1.0</h1>
+      <h1>@abpjs/tenant-management Tests v2.2.0</h1>
       <p>Testing tenant management modal and hooks for creating, updating, and managing tenants.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.1.0 - Dependency updates only (no new features from v2.0.0)</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.2.0 - Added openFeaturesModal to useTenantManagement hook</p>
 
       <TestTenantModal />
       <TestTenantHook />
