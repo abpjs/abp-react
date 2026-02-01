@@ -8,7 +8,7 @@ import {
 } from '@chakra-ui/react';
 import { useLocalization, type Config } from '@abpjs/core';
 import { useConfirmationState } from '../../contexts/confirmation.context';
-import { Confirmation, Toaster } from '../../models';
+import { Confirmation } from '../../models';
 import {
   CheckCircle,
   Info,
@@ -92,6 +92,7 @@ export interface ConfirmationDialogProps {
  * In Chakra v3, we use Dialog with role="alertdialog" instead of AlertDialog.
  *
  * @since 2.0.0 - Updated to use Confirmation.DialogData structure
+ * @since 2.1.0 - Uses Confirmation.Status instead of Toaster.Status
  *
  * @example
  * ```tsx
@@ -134,15 +135,15 @@ export function ConfirmationDialog({ className }: ConfirmationDialogProps): Reac
   const cancelCopy = cancelKey ? t(cancelKey) : t('AbpUi::Cancel');
 
   const handleConfirm = () => {
-    respond(Toaster.Status.confirm);
+    respond(Confirmation.Status.confirm);
   };
 
   const handleCancel = () => {
-    respond(Toaster.Status.reject);
+    respond(Confirmation.Status.reject);
   };
 
   const handleDismiss = () => {
-    respond(Toaster.Status.dismiss);
+    respond(Confirmation.Status.dismiss);
   };
 
   const handleOpenChange = (details: { open: boolean }) => {
