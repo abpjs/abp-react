@@ -15,6 +15,38 @@ describe('SaasService', () => {
     saasService = new SaasService(mockRestService as any);
   });
 
+  describe('apiName property (v2.4.0)', () => {
+    it('should have apiName property with default value', () => {
+      expect(saasService.apiName).toBeDefined();
+      expect(saasService.apiName).toBe('default');
+    });
+
+    it('should have apiName as a string type', () => {
+      expect(typeof saasService.apiName).toBe('string');
+    });
+
+    it('should allow apiName to be modified', () => {
+      saasService.apiName = 'custom-api';
+      expect(saasService.apiName).toBe('custom-api');
+    });
+
+    it('should be accessible on new instance', () => {
+      const newService = new SaasService(mockRestService as any);
+      expect(newService.apiName).toBe('default');
+    });
+
+    it('should have independent apiName per instance', () => {
+      const service1 = new SaasService(mockRestService as any);
+      const service2 = new SaasService(mockRestService as any);
+
+      service1.apiName = 'api-1';
+      service2.apiName = 'api-2';
+
+      expect(service1.apiName).toBe('api-1');
+      expect(service2.apiName).toBe('api-2');
+    });
+  });
+
   describe('Tenant Operations', () => {
     describe('getTenants', () => {
       it('should call request with correct parameters', async () => {

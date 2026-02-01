@@ -1,7 +1,13 @@
 /**
  * @abpjs/saas
  * ABP Framework SaaS module for React
- * Translated from @volo/abp.ng.saas v2.2.0
+ * Translated from @volo/abp.ng.saas v2.4.0
+ *
+ * Changes in v2.4.0:
+ * - Added apiName property to SaasService
+ * - Added eSaasComponents enum
+ * - Updated CreateTenantRequest: adminEmailAddress and adminPassword are now required
+ * - Updated UpdateTenantRequest: now uses Omit<Tenant, 'editionName'> pattern
  *
  * Changes in v2.2.0:
  * - Added openFeaturesModal(providerKey: string) to useEditions hook
@@ -18,7 +24,7 @@
  * - No functional code changes
  *
  * @since 2.0.0
- * @updated 2.2.0
+ * @updated 2.4.0
  */
 
 // Models
@@ -26,6 +32,9 @@ export * from './models';
 
 // Constants
 export * from './constants';
+
+// Enums
+export * from './enums';
 
 // Services
 export * from './services';

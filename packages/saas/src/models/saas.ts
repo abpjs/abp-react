@@ -1,6 +1,8 @@
 /**
  * SaaS Models
- * Translated from @volo/abp.ng.saas v2.0.0
+ * Translated from @volo/abp.ng.saas v2.4.0
+ *
+ * @updated 2.4.0 - Updated CreateTenantRequest and UpdateTenantRequest types
  */
 
 import type { ABP } from '@abpjs/core';
@@ -57,23 +59,20 @@ export namespace Saas {
 
   /**
    * Create tenant request
+   * @updated 2.4.0 - adminEmailAddress and adminPassword are now required
    */
   export interface CreateTenantRequest {
+    adminEmailAddress: string;
+    adminPassword: string;
     name: string;
     editionId?: string;
-    adminEmailAddress?: string;
-    adminPassword?: string;
   }
 
   /**
    * Update tenant request
+   * @updated 2.4.0 - Now uses Omit<Tenant, 'editionName'> pattern
    */
-  export interface UpdateTenantRequest {
-    id?: string;
-    name: string;
-    editionId?: string;
-    concurrencyStamp?: string;
-  }
+  export type UpdateTenantRequest = Omit<Tenant, 'editionName'>;
 
   /**
    * Create edition request

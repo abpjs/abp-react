@@ -4,9 +4,10 @@
  * @since 2.0.0
  * @updated 2.1.1 - Dependency updates (no new features)
  * @updated 2.2.0 - Added openFeaturesModal for editions and tenants
+ * @updated 2.4.0 - Added apiName property, eSaasComponents enum, updated CreateTenantRequest/UpdateTenantRequest
  */
 import { useState, useEffect } from 'react'
-import { useAuth } from '@abpjs/core'
+import { useAuth, useRestService } from '@abpjs/core'
 import {
   TenantsComponent,
   EditionsComponent,
@@ -14,6 +15,8 @@ import {
   useEditions,
   SAAS_ROUTES,
   SaasStateService,
+  SaasService,
+  eSaasComponents,
   type Saas,
 } from '@abpjs/saas'
 import { FeatureManagementModal } from '@abpjs/feature-management'
@@ -864,6 +867,144 @@ function EditionsWithFeatures() {
   )
 }
 
+/**
+ * Test section for v2.4.0 features: apiName property, eSaasComponents enum, model changes
+ */
+function TestV240Features() {
+  const restService = useRestService()
+  const [service] = useState(() => new SaasService(restService))
+
+  return (
+    <div className="test-section">
+      <h2>v2.4.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      <div className="test-card">
+        <h3>apiName Property (v2.4.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          The <code>SaasService</code> now has an <code>apiName</code> property that defaults to <code>'default'</code>.
+          This is used for API routing in multi-API configurations.
+        </p>
+        <div style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #333' }}>
+          <p><strong>SaasService.apiName:</strong> <code>{service.apiName}</code></p>
+        </div>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage
+import { SaasService } from '@abpjs/saas';
+
+const service = new SaasService(restService);
+console.log(service.apiName); // 'default'`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>eSaasComponents Enum (v2.4.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New enum for component identifiers used in component registration and routing.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Editions</code></td>
+              <td style={{ padding: '8px' }}><code>{eSaasComponents.Editions}</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Tenants</code></td>
+              <td style={{ padding: '8px' }}><code>{eSaasComponents.Tenants}</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Component registration
+import { eSaasComponents } from '@abpjs/saas';
+
+const componentRegistry = {};
+componentRegistry[eSaasComponents.Editions] = EditionsComponent;
+componentRegistry[eSaasComponents.Tenants] = TenantsComponent;`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Model Changes (v2.4.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Breaking changes to tenant request types:
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>CreateTenantRequest</code></td>
+              <td style={{ padding: '8px' }}><code>adminEmailAddress</code> and <code>adminPassword</code> are now <strong>required</strong></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>UpdateTenantRequest</code></td>
+              <td style={{ padding: '8px' }}>Now uses <code>Omit&lt;Tenant, 'editionName'&gt;</code> pattern</td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// CreateTenantRequest v2.4.0 (breaking change)
+interface CreateTenantRequest {
+  adminEmailAddress: string;  // Required
+  adminPassword: string;      // Required
+  name: string;
+  editionId?: string;
+}
+
+// UpdateTenantRequest v2.4.0
+type UpdateTenantRequest = Omit<Tenant, 'editionName'>;
+// { id: string; name: string; editionId?: string; concurrencyStamp?: string; }`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.4.0 API Reference</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>apiName</code></td>
+              <td style={{ padding: '8px' }}>Property</td>
+              <td style={{ padding: '8px' }}>API name for multi-API configurations (default: 'default')</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eSaasComponents</code></td>
+              <td style={{ padding: '8px' }}>Enum</td>
+              <td style={{ padding: '8px' }}>Component identifiers (Editions, Tenants)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>CreateTenantRequest</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+              <td style={{ padding: '8px' }}>Admin credentials now required</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>UpdateTenantRequest</code></td>
+              <td style={{ padding: '8px' }}>Type</td>
+              <td style={{ padding: '8px' }}>Now excludes editionName from Tenant</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestApiEndpoints() {
   return (
     <div className="test-section">
@@ -980,16 +1121,17 @@ function TestApiEndpoints() {
 export function TestSaasPage() {
   return (
     <div>
-      <h1>@abpjs/saas Tests (v2.2.0)</h1>
+      <h1>@abpjs/saas Tests (v2.4.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing SaaS module for tenant and edition management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.2.0 - Added openFeaturesModal for editions and tenants
+        Version 2.4.0 - Added apiName property, eSaasComponents enum, updated CreateTenantRequest/UpdateTenantRequest
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components for multi-tenant SaaS applications with tenant management,
         edition management, and connection string management.
       </p>
 
+      <TestV240Features />
       <TestV220FeaturesSection />
       <TestTenantsComponent />
       <TestEditionsComponent />
