@@ -1,6 +1,8 @@
 /**
  * Test page for @abpjs/theme-basic package
  * Tests: Layouts, Navigation, LayoutService
+ * @since 0.9.0
+ * @updated 2.4.0 - InitialService change (no React impact - uses Chakra UI)
  */
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
@@ -272,6 +274,26 @@ function TestVersionInfo() {
       <h2>Version Info</h2>
 
       <div className="test-card">
+        <h3>What's New in v2.4.0</h3>
+        <p>Version 2.4.0 includes internal Angular changes with no impact on React users.</p>
+        <ul>
+          <li><strong>Angular Change:</strong> <code>InitialService</code> now uses <code>DomInsertionService</code> instead of <code>LazyLoadService</code></li>
+          <li><strong>Angular Change:</strong> <code>appendStyle()</code> now returns <code>void</code> instead of <code>Observable&lt;void&gt;</code></li>
+          <li><strong>React Status:</strong> No equivalent service needed - Chakra UI handles all styling via CSS-in-JS</li>
+          <li><strong>Updated:</strong> Dependency on <code>@abpjs/theme-shared</code> to v2.4.0</li>
+        </ul>
+        <p style={{ color: '#888', fontSize: '14px', marginTop: '8px' }}>
+          The Angular <code>InitialService</code> is responsible for dynamically appending stylesheets at runtime.
+          In React, this is handled declaratively through <code>ThemeBasicProvider</code> and Chakra UI's theme system.
+        </p>
+        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#1a2e1a', borderRadius: '4px', border: '1px solid #2e4a2e' }}>
+          <p style={{ color: '#6f6', margin: 0, fontSize: '14px' }}>
+            <strong>No code changes required</strong> - React uses <code>defaultThemeBasicConfig</code> and <code>defineConfig()</code> for theming.
+          </p>
+        </div>
+      </div>
+
+      <div className="test-card">
         <h3>What's New in v2.2.0</h3>
         <p>Version 2.2.0 is a dependency update with no functional changes for React users.</p>
         <ul>
@@ -333,7 +355,7 @@ function TestVersionInfo() {
 export function TestThemeBasicPage() {
   return (
     <div>
-      <h1>@abpjs/theme-basic Tests (v2.2.0)</h1>
+      <h1>@abpjs/theme-basic Tests (v2.4.0)</h1>
       <p>Testing layouts, navigation, and layout service.</p>
 
       <TestVersionInfo />
