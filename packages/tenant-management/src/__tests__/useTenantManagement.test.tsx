@@ -225,7 +225,11 @@ describe('useTenantManagement', () => {
 
   describe('createTenant', () => {
     it('should create tenant and refresh list', async () => {
-      const newTenant: TenantManagement.AddRequest = { name: 'New Tenant' };
+      const newTenant: TenantManagement.AddRequest = {
+        name: 'New Tenant',
+        adminEmailAddress: 'admin@newtenant.com',
+        adminPassword: 'Password123!',
+      };
       mockCreate.mockResolvedValue({ id: '456', name: 'New Tenant' });
       mockGetAll.mockResolvedValue({
         items: [{ id: '456', name: 'New Tenant' }],
@@ -249,7 +253,11 @@ describe('useTenantManagement', () => {
       const { result } = renderHook(() => useTenantManagement());
 
       await act(async () => {
-        const response = await result.current.createTenant({ name: '' });
+        const response = await result.current.createTenant({
+          name: '',
+          adminEmailAddress: 'admin@test.com',
+          adminPassword: 'Password123!',
+        });
         expect(response.success).toBe(false);
         expect(response.error).toBe('Validation failed');
       });

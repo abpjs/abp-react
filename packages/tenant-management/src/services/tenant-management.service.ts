@@ -3,10 +3,16 @@ import { TenantManagement } from '../models';
 
 /**
  * Service for tenant management API calls
- * Translated from @abp/ng.tenant-management v1.0.0
+ * Translated from @abp/ng.tenant-management v2.4.0
  */
 export class TenantManagementService {
   private rest: RestService;
+
+  /**
+   * The API name used for REST requests.
+   * @since 2.4.0
+   */
+  apiName = 'default';
 
   constructor(rest: RestService) {
     this.rest = rest;

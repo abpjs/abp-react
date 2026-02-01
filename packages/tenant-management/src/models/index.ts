@@ -1,6 +1,6 @@
 /**
  * Tenant Management module type definitions
- * Translated from @abp/ng.tenant-management v2.0.0
+ * Translated from @abp/ng.tenant-management v2.4.0
  */
 
 import type { ABP } from '@abpjs/core';
@@ -32,16 +32,26 @@ export namespace TenantManagement {
 
   /**
    * Request payload for creating a new tenant
+   * @since 2.4.0 Added adminEmailAddress and adminPassword fields
    */
   export interface AddRequest {
+    /** Admin email address for the new tenant */
+    adminEmailAddress: string;
+    /** Admin password for the new tenant */
+    adminPassword: string;
+    /** Tenant name */
     name: string;
   }
 
   /**
    * Request payload for updating an existing tenant
+   * @since 2.4.0 No longer extends AddRequest (only id and name needed for update)
    */
-  export interface UpdateRequest extends AddRequest {
+  export interface UpdateRequest {
+    /** Tenant ID */
     id: string;
+    /** Tenant name */
+    name: string;
   }
 
   /**

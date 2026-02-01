@@ -228,6 +228,8 @@ function TestTenantHook() {
 
   const [testTenantId, setTestTenantId] = useState('')
   const [testTenantName, setTestTenantName] = useState('')
+  const [testAdminEmail, setTestAdminEmail] = useState('')
+  const [testAdminPassword, setTestAdminPassword] = useState('')
   const [testConnectionString, setTestConnectionString] = useState('')
 
   // Fetch tenants on mount (only if authenticated)
@@ -279,9 +281,9 @@ function TestTenantHook() {
         </div>
       </div>
 
-      <div className="test-card">
-        <h3>Create Tenant</h3>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+      <div className="test-card" style={{ background: 'rgba(100,255,100,0.05)', border: '1px solid rgba(100,255,100,0.2)' }}>
+        <h3>Create Tenant <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.4.0 - requires admin credentials)</span></h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.5rem' }}>
           <input
             type="text"
             placeholder="Tenant Name"
@@ -290,25 +292,55 @@ function TestTenantHook() {
             style={{
               padding: '8px',
               borderRadius: '4px',
-              border: '1px solid #333',
-              flex: 1
+              border: '1px solid #333'
+            }}
+          />
+          <input
+            type="email"
+            placeholder="Admin Email Address (v2.4.0)"
+            value={testAdminEmail}
+            onChange={(e) => setTestAdminEmail(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333'
+            }}
+          />
+          <input
+            type="password"
+            placeholder="Admin Password (v2.4.0)"
+            value={testAdminPassword}
+            onChange={(e) => setTestAdminPassword(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333'
             }}
           />
           <button
             onClick={async () => {
-              if (testTenantName) {
-                const result = await createTenant({ name: testTenantName })
+              if (testTenantName && testAdminEmail && testAdminPassword) {
+                const result = await createTenant({
+                  name: testTenantName,
+                  adminEmailAddress: testAdminEmail,
+                  adminPassword: testAdminPassword,
+                })
                 if (result.success) {
                   setTestTenantName('')
+                  setTestAdminEmail('')
+                  setTestAdminPassword('')
                   fetchTenants() // Refresh list
                 }
               }
             }}
-            disabled={!testTenantName || isLoading}
+            disabled={!testTenantName || !testAdminEmail || !testAdminPassword || isLoading}
           >
             Create Tenant
           </button>
         </div>
+        <p style={{ fontSize: '12px', color: '#888' }}>
+          v2.4.0: Admin email and password are now required when creating a new tenant.
+        </p>
       </div>
 
       <div className="test-card">
@@ -760,15 +792,17 @@ function TestApiEndpoints() {
       <div className="test-card">
         <h3>Request/Response Formats</h3>
         <div style={{ marginBottom: '1rem' }}>
-          <h4>Create Tenant Request:</h4>
+          <h4>Create Tenant Request <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.4.0 - requires admin credentials)</span>:</h4>
           <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`{
-  "name": "string"
+  "name": "string",
+  "adminEmailAddress": "string",  // NEW in v2.4.0
+  "adminPassword": "string"       // NEW in v2.4.0
 }`}
           </pre>
         </div>
         <div style={{ marginBottom: '1rem' }}>
-          <h4>Update Tenant Request:</h4>
+          <h4>Update Tenant Request <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.4.0 - no longer requires admin credentials)</span>:</h4>
           <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`{
   "id": "string",
@@ -803,6 +837,8 @@ function TestTenantManagementStateService() {
   const [testTenantName, setTestTenantName] = useState('')
   const [dispatchTenantId, setDispatchTenantId] = useState('')
   const [dispatchTenantName, setDispatchTenantName] = useState('')
+  const [dispatchAdminEmail, setDispatchAdminEmail] = useState('')
+  const [dispatchAdminPassword, setDispatchAdminPassword] = useState('')
   const [dispatchResult, setDispatchResult] = useState<string>('')
   const [isDispatchLoading, setIsDispatchLoading] = useState(false)
 
@@ -861,12 +897,18 @@ function TestTenantManagementStateService() {
   }
 
   const handleDispatchCreateTenant = async () => {
-    if (!dispatchTenantName) return
+    if (!dispatchTenantName || !dispatchAdminEmail || !dispatchAdminPassword) return
     setIsDispatchLoading(true)
     try {
-      const result = await stateService.dispatchCreateTenant({ name: dispatchTenantName })
+      const result = await stateService.dispatchCreateTenant({
+        name: dispatchTenantName,
+        adminEmailAddress: dispatchAdminEmail,
+        adminPassword: dispatchAdminPassword,
+      })
       setDispatchResult(`dispatchCreateTenant: ${JSON.stringify(result)}`)
       setDispatchTenantName('')
+      setDispatchAdminEmail('')
+      setDispatchAdminPassword('')
     } catch (err) {
       setDispatchResult(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
@@ -940,6 +982,28 @@ function TestTenantManagementStateService() {
               border: '1px solid #333',
             }}
           />
+          <input
+            type="email"
+            placeholder="Admin Email (for create - v2.4.0)"
+            value={dispatchAdminEmail}
+            onChange={(e) => setDispatchAdminEmail(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+            }}
+          />
+          <input
+            type="password"
+            placeholder="Admin Password (for create - v2.4.0)"
+            value={dispatchAdminPassword}
+            onChange={(e) => setDispatchAdminPassword(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+            }}
+          />
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
@@ -957,7 +1021,7 @@ function TestTenantManagementStateService() {
           </button>
           <button
             onClick={handleDispatchCreateTenant}
-            disabled={isDispatchLoading || !isAuthenticated || !dispatchTenantName}
+            disabled={isDispatchLoading || !isAuthenticated || !dispatchTenantName || !dispatchAdminEmail || !dispatchAdminPassword}
           >
             dispatchCreateTenant()
           </button>
@@ -1244,13 +1308,203 @@ function TestRouteConstants() {
   )
 }
 
+function TestV240Features() {
+  const [apiNameDemo, setApiNameDemo] = useState('default')
+
+  return (
+    <div className="test-section">
+      <h2>v2.4.0 Features</h2>
+
+      <div className="test-card" style={{ background: 'rgba(100,255,100,0.05)', border: '1px solid rgba(100,255,100,0.2)' }}>
+        <h3>apiName Property</h3>
+        <p>New in v2.4.0: <code>TenantManagementService</code> now has an <code>apiName</code> property.</p>
+        <p>This property specifies which API configuration to use for REST requests (defaults to "default").</p>
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>Interactive Demo</h4>
+          <p>Simulate changing the apiName property:</p>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
+            <input
+              type="text"
+              value={apiNameDemo}
+              onChange={(e) => setApiNameDemo(e.target.value)}
+              placeholder="Enter API name"
+              style={{
+                padding: '8px',
+                borderRadius: '4px',
+                border: '1px solid #333',
+                flex: 1
+              }}
+            />
+            <button onClick={() => setApiNameDemo('default')}>Reset to Default</button>
+          </div>
+          <p>Current apiName: <code style={{ background: 'rgba(100,255,100,0.2)', padding: '2px 6px', borderRadius: '3px' }}>{apiNameDemo}</code></p>
+        </div>
+
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px',
+          marginTop: '1rem'
+        }}>
+{`// v2.4.0: apiName property on TenantManagementService
+const service = new TenantManagementService(restService);
+console.log(service.apiName); // "default"
+
+// Change to use a different API configuration
+service.apiName = "${apiNameDemo}";`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(100,255,100,0.05)', border: '1px solid rgba(100,255,100,0.2)' }}>
+        <h3>AddRequest Changes (v2.4.0)</h3>
+        <p>The <code>AddRequest</code> interface now requires admin credentials when creating a tenant:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Field</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>name</code></td>
+              <td>string</td>
+              <td>Required (existing)</td>
+            </tr>
+            <tr style={{ background: 'rgba(100,255,100,0.1)' }}>
+              <td style={{ padding: '8px' }}><code>adminEmailAddress</code></td>
+              <td>string</td>
+              <td><strong>NEW in v2.4.0</strong></td>
+            </tr>
+            <tr style={{ background: 'rgba(100,255,100,0.1)' }}>
+              <td style={{ padding: '8px' }}><code>adminPassword</code></td>
+              <td>string</td>
+              <td><strong>NEW in v2.4.0</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px',
+          marginTop: '1rem'
+        }}>
+{`// v2.4.0: AddRequest now requires admin credentials
+const request: TenantManagement.AddRequest = {
+  name: "New Tenant",
+  adminEmailAddress: "admin@newtenant.com",
+  adminPassword: "SecurePassword123!"
+};
+
+await tenantService.create(request);`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(100,255,100,0.05)', border: '1px solid rgba(100,255,100,0.2)' }}>
+        <h3>UpdateRequest Changes (v2.4.0)</h3>
+        <p>The <code>UpdateRequest</code> interface <strong>no longer extends AddRequest</strong>. It now only contains:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Field</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>id</code></td>
+              <td>string</td>
+              <td>Required - Tenant ID</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>name</code></td>
+              <td>string</td>
+              <td>Required - New tenant name</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ marginTop: '1rem', color: '#888', fontSize: '12px' }}>
+          Note: Admin credentials are NOT needed when updating a tenant (only when creating).
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>TenantManagementService Class Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Property/Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Version</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(100,255,100,0.1)' }}>
+              <td style={{ padding: '8px' }}><code>apiName</code></td>
+              <td>string (default: "default")</td>
+              <td>v2.4.0 (NEW)</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>getAll(params?)</code></td>
+              <td>Promise&lt;Response&gt;</td>
+              <td>v0.7.6</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>getById(id)</code></td>
+              <td>Promise&lt;Item&gt;</td>
+              <td>v0.7.6</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>create(body)</code></td>
+              <td>Promise&lt;Item&gt;</td>
+              <td>v0.7.6 (body changed in v2.4.0)</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>update(body)</code></td>
+              <td>Promise&lt;Item&gt;</td>
+              <td>v0.7.6 (body changed in v2.4.0)</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>delete(id)</code></td>
+              <td>Promise&lt;void&gt;</td>
+              <td>v0.7.6</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>getDefaultConnectionString(id)</code></td>
+              <td>Promise&lt;string&gt;</td>
+              <td>v0.7.6</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>updateDefaultConnectionString(payload)</code></td>
+              <td>Promise&lt;void&gt;</td>
+              <td>v0.7.6</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>deleteDefaultConnectionString(id)</code></td>
+              <td>Promise&lt;void&gt;</td>
+              <td>v0.7.6</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 export function TestTenantManagementPage() {
   return (
     <div>
-      <h1>@abpjs/tenant-management Tests v2.2.0</h1>
+      <h1>@abpjs/tenant-management Tests v2.4.0</h1>
       <p>Testing tenant management modal and hooks for creating, updating, and managing tenants.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.2.0 - Added openFeaturesModal to useTenantManagement hook</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.4.0 - Added apiName property, AddRequest now requires admin credentials</p>
 
+      <TestV240Features />
       <TestTenantModal />
       <TestTenantHook />
       <TestTenantManagementStateService />

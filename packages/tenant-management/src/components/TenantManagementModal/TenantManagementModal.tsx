@@ -108,6 +108,10 @@ export function TenantManagementModal({
   const [currentView, setCurrentView] = useState<ModalView>(initialView);
   const [tenantName, setTenantName] = useState('');
   const [tenantNameError, setTenantNameError] = useState<string | null>(null);
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminEmailError, setAdminEmailError] = useState<string | null>(null);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [adminPasswordError, setAdminPasswordError] = useState<string | null>(null);
   const [localConnectionString, setLocalConnectionString] = useState('');
   const [localUseSharedDatabase, setLocalUseSharedDatabase] = useState(true);
 
@@ -148,6 +152,10 @@ export function TenantManagementModal({
       reset();
       setTenantName('');
       setTenantNameError(null);
+      setAdminEmail('');
+      setAdminEmailError(null);
+      setAdminPassword('');
+      setAdminPasswordError(null);
       setLocalConnectionString('');
       setLocalUseSharedDatabase(true);
     }
@@ -192,6 +200,50 @@ export function TenantManagementModal({
   );
 
   /**
+   * Validate admin email (required only for new tenants)
+   * @since 2.4.0
+   */
+  const validateAdminEmail = useCallback(
+    (email: string): boolean => {
+      if (!email || email.trim().length === 0) {
+        setAdminEmailError(t('AbpValidation::ThisFieldIsRequired'));
+        return false;
+      }
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setAdminEmailError(t('AbpValidation::ThisFieldIsNotAValidEmailAddress'));
+        return false;
+      }
+      setAdminEmailError(null);
+      return true;
+    },
+    [t]
+  );
+
+  /**
+   * Validate admin password (required only for new tenants)
+   * @since 2.4.0
+   */
+  const validateAdminPassword = useCallback(
+    (password: string): boolean => {
+      if (!password || password.length === 0) {
+        setAdminPasswordError(t('AbpValidation::ThisFieldIsRequired'));
+        return false;
+      }
+      if (password.length < 6) {
+        setAdminPasswordError(
+          t('AbpValidation::ThisFieldMustBeAStringWithAMinimumLengthOf{0}', '6')
+        );
+        return false;
+      }
+      setAdminPasswordError(null);
+      return true;
+    },
+    [t]
+  );
+
+  /**
    * Handle form submission for tenant
    */
   const handleTenantSubmit = useCallback(async () => {
@@ -203,7 +255,17 @@ export function TenantManagementModal({
     if (isEditing && tenantId) {
       result = await updateTenant({ id: tenantId, name: tenantName.trim() });
     } else {
-      result = await createTenant({ name: tenantName.trim() });
+      // For new tenants, validate admin email and password (v2.4.0)
+      const emailValid = validateAdminEmail(adminEmail);
+      const passwordValid = validateAdminPassword(adminPassword);
+      if (!emailValid || !passwordValid) {
+        return;
+      }
+      result = await createTenant({
+        name: tenantName.trim(),
+        adminEmailAddress: adminEmail.trim(),
+        adminPassword: adminPassword,
+      });
     }
 
     if (result.success) {
@@ -212,9 +274,13 @@ export function TenantManagementModal({
     }
   }, [
     tenantName,
+    adminEmail,
+    adminPassword,
     isEditing,
     tenantId,
     validateTenantName,
+    validateAdminEmail,
+    validateAdminPassword,
     createTenant,
     updateTenant,
     onSave,
@@ -270,6 +336,36 @@ export function TenantManagementModal({
   );
 
   /**
+   * Handle admin email change
+   * @since 2.4.0
+   */
+  const handleAdminEmailChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setAdminEmail(value);
+      if (adminEmailError) {
+        validateAdminEmail(value);
+      }
+    },
+    [adminEmailError, validateAdminEmail]
+  );
+
+  /**
+   * Handle admin password change
+   * @since 2.4.0
+   */
+  const handleAdminPasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setAdminPassword(value);
+      if (adminPasswordError) {
+        validateAdminPassword(value);
+      }
+    },
+    [adminPasswordError, validateAdminPassword]
+  );
+
+  /**
    * Handle use shared database toggle
    */
   const handleUseSharedDatabaseChange = useCallback(() => {
@@ -309,6 +405,43 @@ export function TenantManagementModal({
           maxLength={256}
         />
       </FormField>
+
+      {/* Admin credentials - only shown for new tenants (v2.4.0) */}
+      {!isEditing && (
+        <>
+          <FormField
+            label={t('AbpTenantManagement::DisplayName:AdminEmailAddress')}
+            htmlFor="admin-email"
+            invalid={!!adminEmailError}
+            errorText={adminEmailError || undefined}
+            required
+          >
+            <Input
+              id="admin-email"
+              type="email"
+              value={adminEmail}
+              onChange={handleAdminEmailChange}
+              placeholder={t('AbpTenantManagement::DisplayName:AdminEmailAddress')}
+            />
+          </FormField>
+
+          <FormField
+            label={t('AbpTenantManagement::DisplayName:AdminPassword')}
+            htmlFor="admin-password"
+            invalid={!!adminPasswordError}
+            errorText={adminPasswordError || undefined}
+            required
+          >
+            <Input
+              id="admin-password"
+              type="password"
+              value={adminPassword}
+              onChange={handleAdminPasswordChange}
+              placeholder={t('AbpTenantManagement::DisplayName:AdminPassword')}
+            />
+          </FormField>
+        </>
+      )}
     </VStack>
   );
 

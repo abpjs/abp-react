@@ -200,12 +200,40 @@ describe('TenantManagement models', () => {
   });
 
   describe('TenantManagement.AddRequest', () => {
-    it('should define AddRequest with name', () => {
+    it('should define AddRequest with name, adminEmailAddress, and adminPassword (v2.4.0)', () => {
       const request: TenantManagement.AddRequest = {
         name: 'New Tenant Name',
+        adminEmailAddress: 'admin@newtenant.com',
+        adminPassword: 'Password123!',
       };
 
       expect(request.name).toBe('New Tenant Name');
+      expect(request.adminEmailAddress).toBe('admin@newtenant.com');
+      expect(request.adminPassword).toBe('Password123!');
+    });
+
+    it('should require all three fields for AddRequest (v2.4.0)', () => {
+      // This test documents that all fields are required
+      const request: TenantManagement.AddRequest = {
+        name: 'Tenant',
+        adminEmailAddress: 'admin@example.com',
+        adminPassword: 'SecurePass123',
+      };
+
+      // All fields must be present
+      expect(Object.keys(request)).toContain('name');
+      expect(Object.keys(request)).toContain('adminEmailAddress');
+      expect(Object.keys(request)).toContain('adminPassword');
+    });
+
+    it('should support various email formats in adminEmailAddress', () => {
+      const request: TenantManagement.AddRequest = {
+        name: 'Test Tenant',
+        adminEmailAddress: 'user.name+tag@subdomain.example.org',
+        adminPassword: 'Password123!',
+      };
+
+      expect(request.adminEmailAddress).toBe('user.name+tag@subdomain.example.org');
     });
   });
 
@@ -218,6 +246,20 @@ describe('TenantManagement models', () => {
 
       expect(request.id).toBe('tenant-id');
       expect(request.name).toBe('Updated Tenant Name');
+    });
+
+    it('should only require id and name for UpdateRequest (v2.4.0 - no longer extends AddRequest)', () => {
+      // v2.4.0 change: UpdateRequest no longer extends AddRequest
+      // It only has id and name fields
+      const request: TenantManagement.UpdateRequest = {
+        id: 'tenant-123',
+        name: 'Renamed Tenant',
+      };
+
+      // UpdateRequest should only have id and name (no adminEmailAddress or adminPassword)
+      expect(Object.keys(request)).toHaveLength(2);
+      expect(Object.keys(request)).toContain('id');
+      expect(Object.keys(request)).toContain('name');
     });
   });
 
