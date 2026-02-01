@@ -1203,8 +1203,9 @@ function TestRouteConstants() {
 export function TestTenantManagementPage() {
   return (
     <div>
-      <h1>@abpjs/tenant-management Tests</h1>
+      <h1>@abpjs/tenant-management Tests v2.1.0</h1>
       <p>Testing tenant management modal and hooks for creating, updating, and managing tenants.</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.1.0 - Dependency updates only (no new features from v2.0.0)</p>
 
       <TestTenantModal />
       <TestTenantHook />
