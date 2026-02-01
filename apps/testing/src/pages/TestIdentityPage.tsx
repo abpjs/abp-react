@@ -8,8 +8,8 @@
  * - Component interface types (Identity.RolesComponentInputs, etc.)
  * - IDENTITY_ROUTES removed (use IDENTITY_ROUTE_PATHS instead)
  */
-import { useState, useEffect } from 'react'
-import { useAuth, type ABP } from '@abpjs/core'
+import { useState, useEffect, useMemo } from 'react'
+import { useAuth, useRestService, type ABP } from '@abpjs/core'
 import {
   RolesComponent,
   UsersComponent,
@@ -18,6 +18,7 @@ import {
   useIdentity,
   IDENTITY_ROUTE_PATHS,
   IDENTITY_POLICIES,
+  IdentityService,
 } from '@abpjs/identity'
 import type { Identity, PasswordRule } from '@abpjs/identity'
 
@@ -1405,12 +1406,133 @@ function MyRolesWrapper(props: RolesComponentProps) {
   )
 }
 
+function TestV240Features() {
+  const restService = useRestService()
+  const identityService = useMemo(() => new IdentityService(restService), [restService])
+  const { isAuthenticated } = useAuth()
+  const [allRoles, setAllRoles] = useState<Identity.RoleItem[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleFetchAllRoles = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await identityService.getAllRoles()
+      setAllRoles(response.items)
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch all roles')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v2.4.0</h2>
+
+      <div className="test-card">
+        <h3>IdentityService: apiName property</h3>
+        <p>New property exposing the API name used for REST requests:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { IdentityService } from '@abpjs/identity'
+
+const service = new IdentityService(restService)
+console.log(service.apiName) // "default"`}</pre>
+        <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+          Current value: <code style={{ color: '#2ecc71' }}>{identityService.apiName}</code>
+        </p>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+          This property identifies which API configuration to use from your environment settings.
+          Default value is <code>"default"</code>.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>IdentityService: getAllRoles() method</h3>
+        <p>New method to fetch all roles without pagination:</p>
+        <pre style={{ fontSize: '12px' }}>{`// Fetch all roles in a single request
+const response = await identityService.getAllRoles()
+console.log(response.items) // All roles
+console.log(response.totalCount) // Total count`}</pre>
+
+        <div style={{ marginTop: '1rem' }}>
+          <button
+            onClick={handleFetchAllRoles}
+            disabled={isLoading || !isAuthenticated}
+          >
+            {isLoading ? 'Loading...' : 'Fetch All Roles'}
+          </button>
+          {!isAuthenticated && (
+            <span style={{ marginLeft: '0.5rem', color: '#f88', fontSize: '12px' }}>
+              (Login required)
+            </span>
+          )}
+        </div>
+
+        {error && (
+          <p style={{ color: '#f88', marginTop: '0.5rem', fontSize: '14px' }}>
+            Error: {error}
+          </p>
+        )}
+
+        {allRoles.length > 0 && (
+          <div style={{ marginTop: '0.5rem' }}>
+            <p style={{ fontSize: '14px' }}>
+              Fetched <strong>{allRoles.length}</strong> roles:
+            </p>
+            <ul style={{ fontSize: '12px', margin: '0.25rem 0', paddingLeft: '1.5rem' }}>
+              {allRoles.slice(0, 5).map(role => (
+                <li key={role.id}>{role.name} {role.isDefault && '(Default)'}</li>
+              ))}
+              {allRoles.length > 5 && <li>... and {allRoles.length - 5} more</li>}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>API Endpoint</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Endpoint</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>GET</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/roles/all</code></td>
+              <td><strong>(v2.4.0)</strong> Fetch all roles without pagination</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Dependency Updates</h3>
+        <ul>
+          <li>Updated to @abpjs/theme-shared@2.4.0</li>
+          <li>Updated to @abpjs/permission-management@2.4.0</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 export function TestIdentityPage() {
   return (
     <div>
-      <h1>@abpjs/identity Tests v2.2.0</h1>
+      <h1>@abpjs/identity Tests v2.4.0</h1>
       <p>Testing identity management components and hooks for role and user management.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.2.0 - Angular added openPermissionsModal type declarations (React already supported)</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.4.0 - Added apiName property and getAllRoles() method to IdentityService</p>
+
+      {/* v2.4.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
+        v2.4.0 New Features
+      </h2>
+      <TestV240Features />
 
       <TestRolesComponent />
       <TestUsersComponent />

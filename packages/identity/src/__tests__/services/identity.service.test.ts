@@ -15,6 +15,21 @@ describe('IdentityService', () => {
     identityService = new IdentityService(mockRestService as any);
   });
 
+  describe('apiName property (v2.4.0)', () => {
+    it('should have apiName property with default value "default"', () => {
+      expect(identityService.apiName).toBe('default');
+    });
+
+    it('should allow apiName to be modified', () => {
+      identityService.apiName = 'customApi';
+      expect(identityService.apiName).toBe('customApi');
+    });
+
+    it('should have apiName as a string type', () => {
+      expect(typeof identityService.apiName).toBe('string');
+    });
+  });
+
   describe('Role Operations', () => {
     describe('getRoles', () => {
       it('should call request with correct parameters', async () => {
@@ -47,6 +62,51 @@ describe('IdentityService', () => {
           url: '/api/identity/roles',
           params,
         });
+      });
+    });
+
+    describe('getAllRoles (v2.4.0)', () => {
+      it('should call request with correct parameters', async () => {
+        const expectedResponse: Identity.RoleResponse = {
+          items: [
+            { id: 'role-1', name: 'Admin', isDefault: false, isPublic: true, isStatic: false, concurrencyStamp: 'stamp1' },
+            { id: 'role-2', name: 'User', isDefault: true, isPublic: true, isStatic: false, concurrencyStamp: 'stamp2' },
+            { id: 'role-3', name: 'Moderator', isDefault: false, isPublic: true, isStatic: false, concurrencyStamp: 'stamp3' },
+          ],
+          totalCount: 3,
+        };
+        mockRestService.request.mockResolvedValue(expectedResponse);
+
+        const result = await identityService.getAllRoles();
+
+        expect(mockRestService.request).toHaveBeenCalledWith({
+          method: 'GET',
+          url: '/api/identity/roles/all',
+        });
+        expect(result).toEqual(expectedResponse);
+      });
+
+      it('should return all roles without pagination', async () => {
+        const expectedResponse: Identity.RoleResponse = {
+          items: [
+            { id: 'role-1', name: 'Admin', isDefault: false, isPublic: true, isStatic: false, concurrencyStamp: 'stamp1' },
+            { id: 'role-2', name: 'User', isDefault: true, isPublic: true, isStatic: false, concurrencyStamp: 'stamp2' },
+          ],
+          totalCount: 2,
+        };
+        mockRestService.request.mockResolvedValue(expectedResponse);
+
+        const result = await identityService.getAllRoles();
+
+        expect(result.items).toHaveLength(2);
+        expect(result.totalCount).toBe(2);
+      });
+
+      it('should propagate errors from request', async () => {
+        const error = new Error('Failed to fetch all roles');
+        mockRestService.request.mockRejectedValue(error);
+
+        await expect(identityService.getAllRoles()).rejects.toThrow('Failed to fetch all roles');
       });
     });
 
