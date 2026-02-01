@@ -1,13 +1,16 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ConfigStateService } from './config-state.service';
-import { ConfigState } from '../slices/config.slice';
+import { ConfigState, configActions } from '../slices/config.slice';
 import { RootState } from '../store';
+import { Config } from '../models';
 
 describe('ConfigStateService', () => {
   let service: ConfigStateService;
   let mockState: RootState;
+  let mockDispatch: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    mockDispatch = vi.fn();
     mockState = {
       config: {
         environment: {
@@ -85,7 +88,7 @@ describe('ConfigStateService', () => {
       },
     };
 
-    service = new ConfigStateService(() => mockState);
+    service = new ConfigStateService(() => mockState, mockDispatch);
   });
 
   describe('getAll', () => {
@@ -306,6 +309,100 @@ describe('ConfigStateService', () => {
       // Test { '0' } format (alternative quoted placeholder style)
       mockState.config.localization.values.TestResource.AltGreeting = "Hello { '0' }!";
       expect(service.getLocalization('TestResource::AltGreeting', 'World')).toBe('Hello World!');
+    });
+  });
+
+  describe('dispatchSetEnvironment', () => {
+    it('should dispatch setEnvironment action with the provided environment', () => {
+      const newEnvironment: Config.Environment = {
+        production: true,
+        oAuthConfig: {
+          client_id: 'test-client',
+          authority: 'https://auth.example.com',
+          redirect_uri: 'https://app.example.com/callback',
+        },
+        apis: {
+          default: { url: 'https://api.example.com' },
+        },
+        application: { name: 'New App' },
+      };
+
+      service.dispatchSetEnvironment(newEnvironment);
+
+      expect(mockDispatch).toHaveBeenCalledTimes(1);
+      expect(mockDispatch).toHaveBeenCalledWith(configActions.setEnvironment(newEnvironment));
+    });
+
+    it('should throw error when dispatch is not configured', () => {
+      const serviceWithoutDispatch = new ConfigStateService(() => mockState);
+
+      const newEnvironment: Config.Environment = {
+        production: true,
+        oAuthConfig: {} as any,
+        apis: {},
+      };
+
+      expect(() => serviceWithoutDispatch.dispatchSetEnvironment(newEnvironment)).toThrow(
+        'Dispatch not configured. ConfigStateService requires dispatch for dispatchSetEnvironment.'
+      );
+    });
+
+    it('should dispatch with minimal environment configuration', () => {
+      const minimalEnvironment: Config.Environment = {
+        production: false,
+        oAuthConfig: {
+          client_id: 'minimal-client',
+          authority: 'https://auth.test.com',
+          redirect_uri: 'https://test.com/callback',
+        },
+        apis: {},
+      };
+
+      service.dispatchSetEnvironment(minimalEnvironment);
+
+      expect(mockDispatch).toHaveBeenCalledWith(configActions.setEnvironment(minimalEnvironment));
+    });
+
+    it('should dispatch with environment containing localization settings', () => {
+      const envWithLocalization: Config.Environment = {
+        production: true,
+        oAuthConfig: {
+          client_id: 'test',
+          authority: 'https://auth.example.com',
+          redirect_uri: 'https://app.example.com/callback',
+        },
+        apis: {
+          default: { url: 'https://api.example.com' },
+        },
+        localization: {
+          defaultResourceName: 'MyResource',
+        },
+      };
+
+      service.dispatchSetEnvironment(envWithLocalization);
+
+      expect(mockDispatch).toHaveBeenCalledWith(configActions.setEnvironment(envWithLocalization));
+    });
+
+    it('should allow multiple consecutive dispatches', () => {
+      const env1: Config.Environment = {
+        production: false,
+        oAuthConfig: {} as any,
+        apis: { default: { url: 'https://api1.example.com' } },
+      };
+
+      const env2: Config.Environment = {
+        production: true,
+        oAuthConfig: {} as any,
+        apis: { default: { url: 'https://api2.example.com' } },
+      };
+
+      service.dispatchSetEnvironment(env1);
+      service.dispatchSetEnvironment(env2);
+
+      expect(mockDispatch).toHaveBeenCalledTimes(2);
+      expect(mockDispatch).toHaveBeenNthCalledWith(1, configActions.setEnvironment(env1));
+      expect(mockDispatch).toHaveBeenNthCalledWith(2, configActions.setEnvironment(env2));
     });
   });
 });

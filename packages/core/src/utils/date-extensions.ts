@@ -2,6 +2,7 @@
  * Date extensions for ABP React
  * Adds toLocalISOString method to Date prototype
  * @since 1.1.0
+ * @updated 2.1.0 - Made toLocalISOString optional to match Angular API
  */
 
 declare global {
@@ -11,8 +12,9 @@ declare global {
      * Unlike toISOString() which always returns UTC, this method
      * returns the date/time adjusted for the local timezone offset.
      * @since 1.1.0
+     * @since 2.1.0 - Made optional to match Angular API
      */
-    toLocalISOString(): string;
+    toLocalISOString?: () => string;
   }
 }
 

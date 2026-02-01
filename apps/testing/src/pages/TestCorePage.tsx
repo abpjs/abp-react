@@ -877,48 +877,192 @@ function TestV2Features() {
   )
 }
 
+function TestV21Features() {
+  const { store } = useAbp()
+  const dispatch = useDispatch()
+  const [dispatchResults, setDispatchResults] = useState<string[]>([])
+  const config = useConfig()
+
+  const testDispatchSetEnvironment = () => {
+    const results: string[] = []
+    const configService = new ConfigStateService(() => store.getState(), dispatch)
+
+    // Get current environment
+    const currentEnv = config.environment
+    results.push(`Current environment:`)
+    results.push(`  - production: ${currentEnv?.production}`)
+    results.push(`  - application name: ${currentEnv?.application?.name || 'N/A'}`)
+    results.push(`  - default API: ${currentEnv?.apis?.default?.url || 'N/A'}`)
+    results.push(``)
+
+    // Test dispatchSetEnvironment
+    try {
+      const newEnvironment = {
+        ...currentEnv,
+        application: {
+          name: `Updated App (${new Date().toLocaleTimeString()})`,
+          logoUrl: currentEnv?.application?.logoUrl,
+        },
+        production: currentEnv?.production ?? false,
+        oAuthConfig: currentEnv?.oAuthConfig ?? {} as any,
+        apis: currentEnv?.apis ?? {},
+      }
+
+      configService.dispatchSetEnvironment(newEnvironment)
+      results.push(`✓ dispatchSetEnvironment() called successfully`)
+      results.push(`  - New application name: ${newEnvironment.application.name}`)
+      results.push(``)
+      results.push(`Note: Refresh this section to see updated values.`)
+    } catch (err) {
+      results.push(`✗ Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
+    }
+
+    setDispatchResults(results)
+  }
+
+  const testDispatchWithoutDispatch = () => {
+    const results: string[] = []
+
+    // Create service WITHOUT dispatch to test error handling
+    const configServiceWithoutDispatch = new ConfigStateService(() => store.getState())
+
+    try {
+      configServiceWithoutDispatch.dispatchSetEnvironment({
+        production: false,
+        oAuthConfig: {} as any,
+        apis: {},
+      })
+      results.push(`✗ Expected an error but none was thrown`)
+    } catch (err) {
+      results.push(`✓ Error caught as expected:`)
+      results.push(`  "${err instanceof Error ? err.message : 'Unknown error'}"`)
+    }
+
+    setDispatchResults(results)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v2.1.0 Features</h2>
+
+      <div className="test-card" style={{ background: 'rgba(0,200,100,0.05)', border: '1px solid rgba(0,200,100,0.2)' }}>
+        <h3>ConfigStateService.dispatchSetEnvironment() (v2.1.0)</h3>
+        <p>New dispatch method to update environment configuration directly from ConfigStateService.</p>
+
+        <div style={{ marginBottom: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+          <p><strong>Current Application Name:</strong> {config.environment?.application?.name || 'N/A'}</p>
+          <p><strong>Production Mode:</strong> {config.environment?.production ? 'Yes' : 'No'}</p>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button onClick={testDispatchSetEnvironment}>
+            Test dispatchSetEnvironment()
+          </button>
+          <button onClick={testDispatchWithoutDispatch} style={{ background: '#f64' }}>
+            Test Error Handling
+          </button>
+        </div>
+
+        {dispatchResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '250px',
+            overflow: 'auto',
+          }}>
+            {dispatchResults.join('\n')}
+          </pre>
+        )}
+
+        <p style={{ marginTop: '1rem', fontSize: '12px', color: '#888' }}>
+          Usage: <code>new ConfigStateService(getState, dispatch).dispatchSetEnvironment(env)</code>
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(0,200,100,0.05)', border: '1px solid rgba(0,200,100,0.2)' }}>
+        <h3>Date.toLocalISOString Optional Type (v2.1.0)</h3>
+        <p>The <code>toLocalISOString</code> method type is now optional to match Angular API.</p>
+
+        <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+          <p><strong>Type Declaration Change:</strong></p>
+          <pre style={{ margin: '0.5rem 0', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`// Before (v2.0.0)
+interface Date {
+  toLocalISOString(): string;
+}
+
+// After (v2.1.0)
+interface Date {
+  toLocalISOString?: () => string;
+}`}
+          </pre>
+          <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+            Use optional chaining <code>date.toLocalISOString?.()</code> or type guard for type-safe access.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function TestDateExtensions() {
   const [results, setResults] = useState<string[]>([])
 
   const testDateExtension = () => {
     const results: string[] = []
 
-    // Test toLocalISOString
+    // Test toLocalISOString - now optional in v2.1.0
     const date = new Date('2024-06-15T14:30:00Z')
-    const localISO = date.toLocalISOString()
-    const standardISO = date.toISOString()
 
-    results.push(`✓ Date.toLocalISOString() (v1.1.0)`)
-    results.push(`  - Input: new Date('2024-06-15T14:30:00Z')`)
-    results.push(`  - toISOString(): ${standardISO}`)
-    results.push(`  - toLocalISOString(): ${localISO}`)
+    // v2.1.0: toLocalISOString is now optional, use optional chaining or type guard
+    if (date.toLocalISOString) {
+      const localISO = date.toLocalISOString()
+      const standardISO = date.toISOString()
 
-    // Test with current date
-    const now = new Date()
-    results.push(``)
-    results.push(`✓ Current date:`)
-    results.push(`  - toISOString(): ${now.toISOString()}`)
-    results.push(`  - toLocalISOString(): ${now.toLocalISOString()}`)
+      results.push(`✓ Date.toLocalISOString() (v1.1.0, optional in v2.1.0)`)
+      results.push(`  - Input: new Date('2024-06-15T14:30:00Z')`)
+      results.push(`  - toISOString(): ${standardISO}`)
+      results.push(`  - toLocalISOString(): ${localISO}`)
 
-    // Explain the difference
-    const tzOffset = -now.getTimezoneOffset()
-    const tzHours = Math.floor(Math.abs(tzOffset) / 60)
-    const tzMins = Math.abs(tzOffset) % 60
-    const tzSign = tzOffset >= 0 ? '+' : '-'
-    results.push(``)
-    results.push(`Timezone offset: UTC${tzSign}${String(tzHours).padStart(2, '0')}:${String(tzMins).padStart(2, '0')}`)
-    results.push(`Note: toLocalISOString() returns time in local timezone without 'Z' suffix`)
+      // Test with current date
+      const now = new Date()
+      results.push(``)
+      results.push(`✓ Current date:`)
+      results.push(`  - toISOString(): ${now.toISOString()}`)
+      results.push(`  - toLocalISOString(): ${now.toLocalISOString?.() || 'N/A'}`)
+
+      // Explain the difference
+      const tzOffset = -now.getTimezoneOffset()
+      const tzHours = Math.floor(Math.abs(tzOffset) / 60)
+      const tzMins = Math.abs(tzOffset) % 60
+      const tzSign = tzOffset >= 0 ? '+' : '-'
+      results.push(``)
+      results.push(`Timezone offset: UTC${tzSign}${String(tzHours).padStart(2, '0')}:${String(tzMins).padStart(2, '0')}`)
+      results.push(`Note: toLocalISOString() returns time in local timezone without 'Z' suffix`)
+
+      // v2.1.0: Optional type info
+      results.push(``)
+      results.push(`v2.1.0 Change: toLocalISOString is now optional in type declaration`)
+      results.push(`  - Use optional chaining: date.toLocalISOString?.()`)
+      results.push(`  - Or type guard: if (date.toLocalISOString) { ... }`)
+    } else {
+      results.push(`✗ toLocalISOString not available on this Date instance`)
+    }
 
     setResults(results)
   }
 
   return (
     <div className="test-section">
-      <h2>Date Extensions Tests (v1.1.0)</h2>
+      <h2>Date Extensions Tests (v1.1.0, updated v2.1.0)</h2>
 
       <div className="test-card">
         <h3>Date.prototype.toLocalISOString()</h3>
-        <p>New method added to Date prototype that returns ISO string in local timezone.</p>
+        <p>Method added to Date prototype that returns ISO string in local timezone.</p>
+        <p style={{ fontSize: '12px', color: '#888' }}>
+          v2.1.0: Type declaration is now optional to match Angular API.
+        </p>
         <button onClick={testDateExtension}>Run Date Tests</button>
 
         {results.length > 0 && (
@@ -941,9 +1085,10 @@ function TestDateExtensions() {
 export function TestCorePage() {
   return (
     <div>
-      <h1>@abpjs/core Tests</h1>
+      <h1>@abpjs/core Tests (v2.1.0)</h1>
       <p>Testing core hooks, services, and components.</p>
 
+      <TestV21Features />
       <TestV2Features />
       <TestStateServices />
       <TestDateExtensions />
