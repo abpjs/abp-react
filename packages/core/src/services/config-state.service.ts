@@ -1,6 +1,7 @@
 import { RootState } from '../store';
-import { ConfigState } from '../slices/config.slice';
+import { ConfigState, configActions } from '../slices/config.slice';
 import { Config, ABP } from '../models';
+import type { Dispatch } from '@reduxjs/toolkit';
 
 /**
  * ConfigStateService provides access to configuration state.
@@ -8,7 +9,10 @@ import { Config, ABP } from '../models';
  * @since 1.1.0
  */
 export class ConfigStateService {
-  constructor(private getState: () => RootState) {}
+  constructor(
+    private getState: () => RootState,
+    private dispatch?: Dispatch
+  ) {}
 
   getAll(): ConfigState {
     return this.getState().config;
@@ -211,5 +215,21 @@ export class ConfigStateService {
     };
 
     return parseOr();
+  }
+
+  // ========================
+  // Dispatch Methods
+  // ========================
+
+  /**
+   * Dispatch action to set the environment configuration
+   * @param environment - The environment configuration to set
+   * @since 2.1.0
+   */
+  dispatchSetEnvironment(environment: Config.Environment): void {
+    if (!this.dispatch) {
+      throw new Error('Dispatch not configured. ConfigStateService requires dispatch for dispatchSetEnvironment.');
+    }
+    this.dispatch(configActions.setEnvironment(environment));
   }
 }
