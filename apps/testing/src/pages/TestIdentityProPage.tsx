@@ -3,15 +3,18 @@
  * Tests: ClaimsComponent, ClaimModal, useClaims hook, IdentityStateService, and Pro-specific features
  * @since 2.0.0
  * @updated 2.2.0 - Added unlockUser, openPermissionsModal for users and roles
+ * @updated 2.4.0 - Added apiName property, getAllRoles method, eIdentityComponents enum
  */
 import { useState, useEffect } from 'react'
-import { useAuth } from '@abpjs/core'
+import { useAuth, useRestService } from '@abpjs/core'
 import {
   ClaimsComponent,
   ClaimModal,
   useClaims,
   useUsers,
   useRoles,
+  IdentityService,
+  eIdentityComponents,
   type Identity,
   type IdentityStateService,
 } from '@abpjs/identity-pro'
@@ -811,6 +814,170 @@ function TestV220Features() {
   )
 }
 
+/**
+ * Test section for v2.4.0 features: apiName property, getAllRoles method, eIdentityComponents enum
+ */
+function TestV240Features() {
+  const { isAuthenticated } = useAuth()
+  const restService = useRestService()
+  const [identityService] = useState(() => new IdentityService(restService))
+  const [allRoles, setAllRoles] = useState<Identity.RoleItem[]>([])
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false)
+  const [rolesError, setRolesError] = useState<string | null>(null)
+
+  const handleGetAllRoles = async () => {
+    setIsLoadingRoles(true)
+    setRolesError(null)
+    try {
+      const response = await identityService.getAllRoles()
+      setAllRoles(response.items || [])
+    } catch (err) {
+      setRolesError(err instanceof Error ? err.message : 'Failed to fetch roles')
+    } finally {
+      setIsLoadingRoles(false)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v2.4.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      <div className="test-card">
+        <h3>apiName Property (v2.4.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          The <code>IdentityService</code> now has an <code>apiName</code> property that defaults to <code>'default'</code>.
+          This is used for API routing in multi-API configurations.
+        </p>
+        <div style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #333' }}>
+          <p><strong>IdentityService.apiName:</strong> <code>{identityService.apiName}</code></p>
+        </div>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage
+const service = new IdentityService(restService);
+console.log(service.apiName); // 'default'`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>getAllRoles() Method (v2.4.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New method to fetch all roles without pagination. Uses <code>GET /api/identity/roles/all</code>
+        </p>
+        {!isAuthenticated ? (
+          <p style={{ color: '#f88' }}>You must be authenticated to test this feature</p>
+        ) : (
+          <>
+            <button onClick={handleGetAllRoles} disabled={isLoadingRoles}>
+              {isLoadingRoles ? 'Loading...' : 'Get All Roles'}
+            </button>
+            {rolesError && (
+              <p style={{ color: '#f88', marginTop: '0.5rem' }}>{rolesError}</p>
+            )}
+            {allRoles.length > 0 && (
+              <div style={{ marginTop: '0.5rem' }}>
+                <p style={{ fontSize: '14px', color: '#888' }}>All Roles ({allRoles.length}):</p>
+                <div style={{ maxHeight: '150px', overflow: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #333' }}>
+                        <th style={{ textAlign: 'left', padding: '4px 8px' }}>Name</th>
+                        <th style={{ textAlign: 'left', padding: '4px 8px' }}>Default</th>
+                        <th style={{ textAlign: 'left', padding: '4px 8px' }}>Public</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {allRoles.map((role) => (
+                        <tr key={role.id} style={{ borderBottom: '1px solid #222' }}>
+                          <td style={{ padding: '4px 8px' }}>{role.name}</td>
+                          <td style={{ padding: '4px 8px' }}>{role.isDefault ? 'Yes' : 'No'}</td>
+                          <td style={{ padding: '4px 8px' }}>{role.isPublic ? 'Yes' : 'No'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage
+const response = await identityService.getAllRoles();
+console.log(response.items); // All roles without pagination`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>eIdentityComponents Enum (v2.4.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New enum for component identifiers used in component registration and routing.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Claims</code></td>
+              <td style={{ padding: '8px' }}><code>{eIdentityComponents.Claims}</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Roles</code></td>
+              <td style={{ padding: '8px' }}><code>{eIdentityComponents.Roles}</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Users</code></td>
+              <td style={{ padding: '8px' }}><code>{eIdentityComponents.Users}</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Component registration
+import { eIdentityComponents } from '@abpjs/identity-pro';
+
+const componentRegistry = {};
+componentRegistry[eIdentityComponents.Claims] = ClaimsComponent;
+componentRegistry[eIdentityComponents.Roles] = RolesComponent;
+componentRegistry[eIdentityComponents.Users] = UsersComponent;`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.4.0 API Reference</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>apiName</code></td>
+              <td style={{ padding: '8px' }}>Property</td>
+              <td style={{ padding: '8px' }}>API name for multi-API configurations (default: 'default')</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>getAllRoles()</code></td>
+              <td style={{ padding: '8px' }}>Method</td>
+              <td style={{ padding: '8px' }}>Fetch all roles without pagination</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eIdentityComponents</code></td>
+              <td style={{ padding: '8px' }}>Enum</td>
+              <td style={{ padding: '8px' }}>Component identifiers (Claims, Roles, Users)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestProApiEndpoints() {
   return (
     <div className="test-section">
@@ -1153,15 +1320,16 @@ function TestProHookMethods() {
 export function TestIdentityProPage() {
   return (
     <div>
-      <h1>@abpjs/identity-pro Tests (v2.2.0)</h1>
+      <h1>@abpjs/identity-pro Tests (v2.4.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing identity pro components, hooks, and services for claim type management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.2.0 - Added unlockUser, openPermissionsModal for users and roles
+        Version 2.4.0 - Added apiName property, getAllRoles method, eIdentityComponents enum
       </p>
       <p style={{ color: '#6f6', fontSize: '14px' }}>
-        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods, user unlock, permissions modal
+        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods, user unlock, permissions modal, getAllRoles, component identifiers
       </p>
 
+      <TestV240Features />
       <TestV220Features />
       <TestClaimsComponent />
       <TestClaimModal />
