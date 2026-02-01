@@ -3,6 +3,7 @@
  * Tests: TenantsComponent, EditionsComponent, useTenants, useEditions hooks
  * @since 2.0.0
  * @updated 2.1.1 - Dependency updates (no new features)
+ * @updated 2.2.0 - Added openFeaturesModal for editions and tenants
  */
 import { useState, useEffect } from 'react'
 import { useAuth } from '@abpjs/core'
@@ -130,6 +131,9 @@ function TestTenantsHook() {
     useSharedDatabase,
     sortKey,
     sortOrder,
+    // v2.2.0 features modal state
+    visibleFeatures,
+    featuresProviderKey,
     fetchTenants,
     getTenantById,
     createTenant,
@@ -138,6 +142,9 @@ function TestTenantsHook() {
     deleteDefaultConnectionString,
     setSelectedTenant,
     reset,
+    // v2.2.0 features modal methods
+    openFeaturesModal,
+    onVisibleFeaturesChange,
   } = useTenants()
 
   const [testTenantId, setTestTenantId] = useState('')
@@ -310,6 +317,8 @@ function TestTenantsHook() {
         <p>useSharedDatabase: {useSharedDatabase ? 'true' : 'false'}</p>
         <p>sortKey: {sortKey}</p>
         <p>sortOrder: {sortOrder || '(empty)'}</p>
+        <p>visibleFeatures (v2.2.0): {visibleFeatures ? 'true' : 'false'}</p>
+        <p>featuresProviderKey (v2.2.0): {featuresProviderKey || '(empty)'}</p>
         {!isAuthenticated && (
           <p style={{ color: '#f88', marginTop: '0.5rem' }}>
             ⚠️ You must be authenticated to use SaaS features
@@ -348,9 +357,16 @@ function TestTenantsHook() {
                           setTestTenantId(tenant.id)
                           getTenantById(tenant.id)
                         }}
-                        style={{ padding: '4px 8px' }}
+                        style={{ marginRight: '0.5rem', padding: '4px 8px' }}
                       >
                         Fetch
+                      </button>
+                      <button
+                        onClick={() => openFeaturesModal(`T:${tenant.id}`)}
+                        style={{ padding: '4px 8px', background: '#4a9' }}
+                        title="v2.2.0 - Open features modal"
+                      >
+                        Features
                       </button>
                     </td>
                   </tr>
@@ -367,6 +383,17 @@ function TestTenantsHook() {
           Reset All State
         </button>
       </div>
+
+      {/* v2.2.0 Features Modal */}
+      <FeatureManagementModal
+        providerName="T"
+        providerKey={featuresProviderKey.replace('T:', '')}
+        visible={visibleFeatures}
+        onVisibleChange={onVisibleFeaturesChange}
+        onSave={() => {
+          console.log('Tenant features saved!')
+        }}
+      />
     </div>
   )
 }
@@ -380,12 +407,18 @@ function TestEditionsHook() {
     isLoading,
     error,
     usageStatistics,
+    // v2.2.0 features modal state
+    visibleFeatures,
+    featuresProviderKey,
     fetchEditions,
     getEditionById,
     createEdition,
     fetchUsageStatistics,
     setSelectedEdition,
     reset,
+    // v2.2.0 features modal methods
+    openFeaturesModal,
+    onVisibleFeaturesChange,
   } = useEditions()
 
   const [, setTestEditionId] = useState('')
@@ -456,6 +489,8 @@ function TestEditionsHook() {
         <p>totalCount: {totalCount}</p>
         <p>selectedEdition: {selectedEdition ? `${selectedEdition.displayName} (${selectedEdition.id})` : 'none'}</p>
         <p>usageStatistics: {JSON.stringify(usageStatistics)}</p>
+        <p>visibleFeatures (v2.2.0): {visibleFeatures ? 'true' : 'false'}</p>
+        <p>featuresProviderKey (v2.2.0): {featuresProviderKey || '(empty)'}</p>
         {!isAuthenticated && (
           <p style={{ color: '#f88', marginTop: '0.5rem' }}>
             ⚠️ You must be authenticated to use SaaS features
@@ -492,9 +527,16 @@ function TestEditionsHook() {
                           setTestEditionId(edition.id)
                           getEditionById(edition.id)
                         }}
-                        style={{ padding: '4px 8px' }}
+                        style={{ marginRight: '0.5rem', padding: '4px 8px' }}
                       >
                         Fetch
+                      </button>
+                      <button
+                        onClick={() => openFeaturesModal(`E:${edition.id}`)}
+                        style={{ padding: '4px 8px', background: '#4a9' }}
+                        title="v2.2.0 - Open features modal"
+                      >
+                        Features
                       </button>
                     </td>
                   </tr>
@@ -511,6 +553,17 @@ function TestEditionsHook() {
           Reset All State
         </button>
       </div>
+
+      {/* v2.2.0 Features Modal */}
+      <FeatureManagementModal
+        providerName="E"
+        providerKey={featuresProviderKey.replace('E:', '')}
+        visible={visibleFeatures}
+        onVisibleChange={onVisibleFeaturesChange}
+        onSave={() => {
+          console.log('Edition features saved!')
+        }}
+      />
     </div>
   )
 }
@@ -704,6 +757,113 @@ function MyComponent() {
   )
 }
 
+function TestV220FeaturesSection() {
+  return (
+    <div className="test-section">
+      <h2>v2.2.0 New Features</h2>
+
+      <div className="test-card">
+        <h3>openFeaturesModal for Editions and Tenants</h3>
+        <p>
+          Version 2.2.0 adds the <code>openFeaturesModal(providerKey)</code> method to both
+          <code> useEditions</code> and <code>useTenants</code> hooks, enabling programmatic
+          control of the feature management modal.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>New Hook State (useEditions &amp; useTenants)</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Property</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>visibleFeatures</code></td>
+              <td style={{ padding: '8px' }}>boolean</td>
+              <td>Whether the features modal is visible</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>featuresProviderKey</code></td>
+              <td style={{ padding: '8px' }}>string</td>
+              <td>The provider key for the current features modal (e.g., "E:edition-id" or "T:tenant-id")</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>New Hook Methods (useEditions &amp; useTenants)</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Signature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>openFeaturesModal</code></td>
+              <td style={{ padding: '8px' }}>(providerKey: string) =&gt; void</td>
+              <td>Opens the features modal with the specified provider key</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>onVisibleFeaturesChange</code></td>
+              <td style={{ padding: '8px' }}>(visible: boolean) =&gt; void</td>
+              <td>Handler for modal visibility changes (clears providerKey when closed)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+{`import { useEditions, useTenants } from '@abpjs/saas';
+import { FeatureManagementModal } from '@abpjs/feature-management';
+
+function EditionsWithFeatures() {
+  const {
+    editions,
+    visibleFeatures,
+    featuresProviderKey,
+    openFeaturesModal,
+    onVisibleFeaturesChange,
+  } = useEditions();
+
+  return (
+    <>
+      {editions.map(edition => (
+        <button
+          key={edition.id}
+          onClick={() => openFeaturesModal(\`E:\${edition.id}\`)}
+        >
+          Manage Features for {edition.displayName}
+        </button>
+      ))}
+
+      <FeatureManagementModal
+        providerName="E"
+        providerKey={featuresProviderKey.replace('E:', '')}
+        visible={visibleFeatures}
+        onVisibleChange={onVisibleFeaturesChange}
+      />
+    </>
+  );
+}
+
+// Same pattern works for useTenants with providerName="T"`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 function TestApiEndpoints() {
   return (
     <div className="test-section">
@@ -820,16 +980,17 @@ function TestApiEndpoints() {
 export function TestSaasPage() {
   return (
     <div>
-      <h1>@abpjs/saas Tests (v2.1.1)</h1>
+      <h1>@abpjs/saas Tests (v2.2.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing SaaS module for tenant and edition management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.1.1 - Dependency updates (no functional changes from v2.0.0)
+        Version 2.2.0 - Added openFeaturesModal for editions and tenants
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components for multi-tenant SaaS applications with tenant management,
         edition management, and connection string management.
       </p>
 
+      <TestV220FeaturesSection />
       <TestTenantsComponent />
       <TestEditionsComponent />
       <TestTenantsHook />
