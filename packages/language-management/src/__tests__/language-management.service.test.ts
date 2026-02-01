@@ -1,6 +1,6 @@
 /**
  * Tests for LanguageManagementService
- * @abpjs/language-management v0.7.2
+ * @abpjs/language-management v2.4.0
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { RestService } from '@abpjs/core';
@@ -21,6 +21,27 @@ describe('LanguageManagementService', () => {
   beforeEach(() => {
     mockRestService = createMockRestService();
     service = new LanguageManagementService(mockRestService);
+  });
+
+  describe('apiName property (v2.4.0)', () => {
+    it('should have apiName property with default value', () => {
+      expect(service.apiName).toBeDefined();
+      expect(service.apiName).toBe('default');
+    });
+
+    it('should have apiName as a string type', () => {
+      expect(typeof service.apiName).toBe('string');
+    });
+
+    it('should allow apiName to be modified', () => {
+      service.apiName = 'custom-api';
+      expect(service.apiName).toBe('custom-api');
+    });
+
+    it('should be accessible on new instance', () => {
+      const newService = new LanguageManagementService(mockRestService);
+      expect(newService.apiName).toBe('default');
+    });
   });
 
   describe('Language Operations', () => {

@@ -13,9 +13,16 @@ import { LanguageManagement } from '../models';
  * Handles languages, cultures, resources, and language texts CRUD operations.
  *
  * @since 2.0.0
+ * @updated 2.4.0 - Added apiName property
  */
 export class LanguageManagementService {
   private rest: RestService;
+
+  /**
+   * API name for multi-API configurations
+   * @since 2.4.0
+   */
+  apiName = 'default';
 
   constructor(rest: RestService) {
     this.rest = rest;

@@ -3,8 +3,10 @@
  * Tests: LanguagesComponent, LanguageTextsComponent, hooks, service
  * @since 2.0.0
  * @updated 2.2.0 - Dependency updates (no new features)
+ * @updated 2.4.0 - Added apiName property, eLanguageManagementComponents enum
  */
 import { useState } from 'react'
+import { useRestService } from '@abpjs/core'
 import {
   LanguagesComponent,
   LanguageTextsComponent,
@@ -12,12 +14,104 @@ import {
   useLanguageTexts,
   LANGUAGE_MANAGEMENT_ROUTES,
   LanguageManagementStateService,
+  LanguageManagementService,
+  eLanguageManagementComponents,
 } from '@abpjs/language-management'
 import type { LanguageManagement } from '@abpjs/language-management'
 
 // Type annotation to ensure LanguageManagementStateService is used
 const _stateServiceType: typeof LanguageManagementStateService | null = null
 void _stateServiceType
+
+/**
+ * Test section for v2.4.0 features: apiName property, eLanguageManagementComponents enum
+ */
+function TestV240Features() {
+  const restService = useRestService()
+  const [service] = useState(() => new LanguageManagementService(restService))
+
+  return (
+    <div className="test-section">
+      <h2>v2.4.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      <div className="test-card">
+        <h3>apiName Property (v2.4.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          The <code>LanguageManagementService</code> now has an <code>apiName</code> property that defaults to <code>'default'</code>.
+          This is used for API routing in multi-API configurations.
+        </p>
+        <div style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #333' }}>
+          <p><strong>LanguageManagementService.apiName:</strong> <code>{service.apiName}</code></p>
+        </div>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage
+import { LanguageManagementService } from '@abpjs/language-management';
+
+const service = new LanguageManagementService(restService);
+console.log(service.apiName); // 'default'`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>eLanguageManagementComponents Enum (v2.4.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New enum for component identifiers used in component registration and routing.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Languages</code></td>
+              <td style={{ padding: '8px' }}><code>{eLanguageManagementComponents.Languages}</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageTexts</code></td>
+              <td style={{ padding: '8px' }}><code>{eLanguageManagementComponents.LanguageTexts}</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Component registration
+import { eLanguageManagementComponents } from '@abpjs/language-management';
+
+const componentRegistry = {};
+componentRegistry[eLanguageManagementComponents.Languages] = LanguagesComponent;
+componentRegistry[eLanguageManagementComponents.LanguageTexts] = LanguageTextsComponent;`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.4.0 API Reference</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>apiName</code></td>
+              <td style={{ padding: '8px' }}>Property</td>
+              <td style={{ padding: '8px' }}>API name for multi-API configurations (default: 'default')</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eLanguageManagementComponents</code></td>
+              <td style={{ padding: '8px' }}>Enum</td>
+              <td style={{ padding: '8px' }}>Component identifiers (Languages, LanguageTexts)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
 function TestLanguagesComponent() {
   const [showComponent, setShowComponent] = useState(false)
@@ -609,12 +703,13 @@ function TestModels() {
 export function TestLanguageManagementPage() {
   return (
     <div>
-      <h1>@abpjs/language-management Tests (v2.2.0)</h1>
+      <h1>@abpjs/language-management Tests (v2.4.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing language management components, hooks, and services.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.2.0 - Dependency updates (no functional changes from v2.0.0)
+        Version 2.4.0 - Added apiName property, eLanguageManagementComponents enum
       </p>
 
+      <TestV240Features />
       <TestLanguagesComponent />
       <TestLanguageTextsComponent />
       <TestUseLanguagesHook />

@@ -1,6 +1,6 @@
 /**
  * Tests for module exports
- * @abpjs/language-management v0.7.2
+ * @abpjs/language-management v2.4.0
  */
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 
@@ -78,6 +78,20 @@ describe('Module exports', () => {
     });
   });
 
+  describe('Enums exports (v2.4.0)', () => {
+    it('should export eLanguageManagementComponents from enums', async () => {
+      const { eLanguageManagementComponents } = await import('../enums');
+      expect(eLanguageManagementComponents).toBeDefined();
+      expect(typeof eLanguageManagementComponents).toBe('object');
+    });
+
+    it('should have correct enum values', async () => {
+      const { eLanguageManagementComponents } = await import('../enums');
+      expect(eLanguageManagementComponents.Languages).toBe('LanguageManagement.LanguagesComponent');
+      expect(eLanguageManagementComponents.LanguageTexts).toBe('LanguageManagement.LanguageTextsComponent');
+    });
+  });
+
   describe('Hooks exports', () => {
     it('should export useLanguages from hooks', async () => {
       const { useLanguages } = await import('../hooks');
@@ -140,6 +154,20 @@ describe('Module exports', () => {
       const { LanguageTextsComponent } = await import('../index');
       expect(LanguageTextsComponent).toBeDefined();
       expect(typeof LanguageTextsComponent).toBe('function');
+    });
+
+    it('should export eLanguageManagementComponents from index (v2.4.0)', async () => {
+      const { eLanguageManagementComponents } = await import('../index');
+      expect(eLanguageManagementComponents).toBeDefined();
+      expect(eLanguageManagementComponents.Languages).toBe('LanguageManagement.LanguagesComponent');
+      expect(eLanguageManagementComponents.LanguageTexts).toBe('LanguageManagement.LanguageTextsComponent');
+    });
+
+    it('should export LanguageManagementService with apiName property (v2.4.0)', async () => {
+      const { LanguageManagementService } = await import('../index');
+      const mockRestService = { request: vi.fn() };
+      const service = new LanguageManagementService(mockRestService as never);
+      expect(service.apiName).toBe('default');
     });
   });
 });
