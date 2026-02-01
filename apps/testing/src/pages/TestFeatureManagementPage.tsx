@@ -2,11 +2,12 @@
  * Test page for @abpjs/feature-management package
  * Tests: FeatureManagementModal, useFeatureManagement hook
  */
-import { useState } from 'react'
-import { useAuth } from '@abpjs/core'
+import { useState, useMemo } from 'react'
+import { useAuth, useRestService } from '@abpjs/core'
 import {
   FeatureManagementModal,
   useFeatureManagement,
+  FeatureManagementService,
 } from '@abpjs/feature-management'
 import type { FeatureManagement } from '@abpjs/feature-management'
 
@@ -432,12 +433,52 @@ function MyFeatureModal(props: FeatureModalProps) {
   )
 }
 
+function TestV240Features() {
+  const restService = useRestService()
+  const service = useMemo(() => new FeatureManagementService(restService), [restService])
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v2.4.0</h2>
+
+      <div className="test-card">
+        <h3>FeatureManagementService: apiName property</h3>
+        <p>New property exposing the API name used for REST requests:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { FeatureManagementService } from '@abpjs/feature-management'
+
+const service = new FeatureManagementService(restService)
+console.log(service.apiName) // "default"`}</pre>
+        <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+          Current value: <code style={{ color: '#2ecc71' }}>{service.apiName}</code>
+        </p>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+          This property identifies which API configuration to use from your environment settings.
+          Default value is <code>"default"</code>.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Dependency Updates</h3>
+        <ul>
+          <li>Updated to @abpjs/theme-shared@2.4.0</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 export function TestFeatureManagementPage() {
   return (
     <div>
-      <h1>@abpjs/feature-management Tests (v2.2.0)</h1>
+      <h1>@abpjs/feature-management Tests (v2.4.0)</h1>
       <p>Testing feature management modal and hooks.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.2.0 - Dependency updates only (no new features from v2.0.0)</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.4.0 - Added apiName property to FeatureManagementService</p>
+
+      {/* v2.4.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
+        v2.4.0 New Features
+      </h2>
+      <TestV240Features />
 
       <TestFeatureModal />
       <TestFeatureHook />
@@ -446,7 +487,7 @@ export function TestFeatureManagementPage() {
 
       {/* v2.0.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #646cff', paddingTop: '1rem' }}>
-        v2.0.0 New Features
+        v2.0.0 Features
       </h2>
       <TestComponentInterfaces />
     </div>

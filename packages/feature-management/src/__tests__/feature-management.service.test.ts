@@ -44,6 +44,21 @@ describe('FeatureManagementService', () => {
     service = new FeatureManagementService(mockRestService);
   });
 
+  describe('apiName property (v2.4.0)', () => {
+    it('should have apiName property with default value "default"', () => {
+      expect(service.apiName).toBe('default');
+    });
+
+    it('should allow apiName to be modified', () => {
+      service.apiName = 'customApi';
+      expect(service.apiName).toBe('customApi');
+    });
+
+    it('should have apiName as a string type', () => {
+      expect(typeof service.apiName).toBe('string');
+    });
+  });
+
   describe('getFeatures', () => {
     it('should call rest service with correct parameters', async () => {
       (mockRestService.request as ReturnType<typeof vi.fn>).mockResolvedValue(mockFeaturesResponse);
