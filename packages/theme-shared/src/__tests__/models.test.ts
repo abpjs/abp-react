@@ -9,7 +9,8 @@ import type {
 
 describe('Toaster namespace', () => {
   // v2.1.0 - Toaster.Status is deprecated, use Confirmation.Status instead
-  describe('Status enum (deprecated in v2.1.0)', () => {
+  // v2.4.0 - Deprecation notice updated: will be removed in v3.0 (was v2.2)
+  describe('Status enum (deprecated in v2.1.0, removal in v3.0)', () => {
     it('should have confirm status', () => {
       expect(Toaster.Status.confirm).toBe('confirm');
     });
@@ -31,9 +32,10 @@ describe('Toaster namespace', () => {
   });
 
   describe('Types', () => {
+    // v2.0.0 - Changed 'warn' to 'warning', added 'neutral'
     it('should allow valid severity types', () => {
-      const severities: Toaster.Severity[] = ['success', 'info', 'warn', 'error'];
-      expect(severities).toHaveLength(4);
+      const severities: Toaster.Severity[] = ['neutral', 'success', 'info', 'warning', 'error'];
+      expect(severities).toHaveLength(5);
     });
 
     it('should accept valid Options', () => {

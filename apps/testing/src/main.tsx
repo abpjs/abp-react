@@ -39,7 +39,12 @@ interface AppConfig {
   apis: {
     [key: string]: {
       url: string
-      rootNamespace: string
+      rootNamespace?: string
+    }
+    // Required default API configuration (v2.4.0)
+    default: {
+      url: string
+      rootNamespace?: string
     }
   }
 }

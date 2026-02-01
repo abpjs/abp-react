@@ -48,13 +48,11 @@ import {
   CONTENT_STRATEGY,
   CROSS_ORIGIN_STRATEGY,
   CONTENT_SECURITY_STRATEGY,
-  DomInsertionService,
   getDomInsertionService,
   // v2.4.0 Utils
   generateHash,
   isUndefinedOrEmptyString,
   noop,
-  fromLazyLoad,
   LazyLoadService,
 } from '@abpjs/core'
 import { useDispatch } from 'react-redux'
@@ -1258,7 +1256,7 @@ function TestV21Features() {
         },
         production: currentEnv?.production ?? false,
         oAuthConfig: currentEnv?.oAuthConfig ?? {} as any,
-        apis: currentEnv?.apis ?? {},
+        apis: currentEnv?.apis ?? { default: { url: '' } },
       }
 
       configService.dispatchSetEnvironment(newEnvironment)
@@ -1283,7 +1281,7 @@ function TestV21Features() {
       configServiceWithoutDispatch.dispatchSetEnvironment({
         production: false,
         oAuthConfig: {} as any,
-        apis: {},
+        apis: { default: { url: '' } },
       })
       results.push(`✗ Expected an error but none was thrown`)
     } catch (err) {
