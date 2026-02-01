@@ -69,7 +69,7 @@
     "react-icons": "^5.0.0"
   },
   "devDependencies": {
-    "@abp/ng.account": "2.2.0",
+    "@abp/ng.account": "2.4.0",
     "@reduxjs/toolkit": "^2.0.0",
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^14.2.0",

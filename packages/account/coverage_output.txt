@@ -1,0 +1,29 @@
+
+> @abpjs/account@2.4.0 test D:\Tekthar\abp react\abp-react\packages\account
+> vitest run "--" "--coverage"
+
+
+[7m[1m[36m RUN [39m[22m[27m [36mv1.6.1[39m [90mD:/Tekthar/abp react/abp-react/packages/account[39m
+
+ [32m✓[39m src/__tests__/models/index.test.ts [2m ([22m[2m20 tests[22m[2m)[22m[90m 4[2mms[22m[39m
+ [32m✓[39m src/__tests__/routes/routes.test.ts [2m ([22m[2m4 tests[22m[2m)[22m[90m 2[2mms[22m[39m
+ [32m✓[39m src/__tests__/services/account.service.test.ts [2m ([22m[2m11 tests[22m[2m)[22m[90m 16[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useAccountService.test.tsx [2m ([22m[2m4 tests[22m[2m)[22m[90m 29[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/useSelfRegistration.test.tsx [2m ([22m[2m11 tests[22m[2m)[22m[90m 47[2mms[22m[39m
+ [32m✓[39m src/__tests__/hooks/usePasswordFlow.test.tsx [2m ([22m[2m11 tests[22m[2m)[22m[90m 72[2mms[22m[39m
+ [32m✓[39m src/__tests__/providers/AccountProvider.test.tsx [2m ([22m[2m9 tests[22m[2m)[22m[90m 85[2mms[22m[39m
+ [32m✓[39m src/__tests__/pages/LoginPage.test.tsx [2m ([22m[2m8 tests[22m[2m)[22m[90m 56[2mms[22m[39m
+ [32m✓[39m src/__tests__/pages/RegisterPage.test.tsx [2m ([22m[2m8 tests[22m[2m)[22m[90m 72[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/AuthWrapper.test.tsx [2m ([22m[2m28 tests[22m[2m)[22m[90m 146[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/ManageProfile.test.tsx [2m ([22m[2m16 tests[22m[2m)[22m[33m 453[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/PersonalSettingsForm.test.tsx [2m ([22m[2m17 tests[22m[2m)[22m[33m 1188[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/TenantBox.test.tsx [2m ([22m[2m12 tests[22m[2m)[22m[33m 2158[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/LoginForm.test.tsx [2m ([22m[2m13 tests[22m[2m)[22m[33m 2262[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/RegisterForm.test.tsx [2m ([22m[2m13 tests[22m[2m)[22m[33m 5140[2mms[22m[39m
+ [32m✓[39m src/__tests__/components/ChangePasswordForm.test.tsx [2m ([22m[2m17 tests[22m[2m)[22m[33m 10379[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m16 passed[39m[22m[90m (16)[39m
+[2m      Tests [22m [1m[32m202 passed[39m[22m[90m (202)[39m
+[2m   Start at [22m 00:48:20
+[2m   Duration [22m 12.50s[2m (transform 1.26s, setup 2.40s, collect 7.84s, tests 22.11s, environment 14.18s, prepare 3.46s)[22m
+

@@ -17,6 +17,22 @@ describe('AccountService', () => {
     accountService = new AccountService(mockRestService as any);
   });
 
+  // v2.4.0: apiName property tests
+  describe('apiName property (v2.4.0)', () => {
+    it('should have apiName property with default value "default"', () => {
+      expect(accountService.apiName).toBe('default');
+    });
+
+    it('should allow apiName to be modified', () => {
+      accountService.apiName = 'custom-api';
+      expect(accountService.apiName).toBe('custom-api');
+    });
+
+    it('should have apiName as a string type', () => {
+      expect(typeof accountService.apiName).toBe('string');
+    });
+  });
+
   describe('findTenant', () => {
     it('should call rest.get with correct URL', async () => {
       const tenantName = 'test-tenant';

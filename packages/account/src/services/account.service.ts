@@ -8,8 +8,17 @@ import type { RegisterRequest, RegisterResponse, TenantIdResponse } from '../mod
  * Provides methods for tenant lookup and user registration.
  *
  * @since 0.9.0
+ * @since 2.4.0 - Added apiName property
  */
 export class AccountService {
+  /**
+   * The API name used for REST requests.
+   * This corresponds to the key in the environment.apis configuration.
+   *
+   * @since 2.4.0
+   */
+  apiName = 'default';
+
   constructor(private rest: RestService) {}
 
   /**

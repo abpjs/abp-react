@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode } from 'react';
 import { Box, Container, Stack, Flex, Text } from '@chakra-ui/react';
 import { useLocalization, useSetting } from '@abpjs/core';
 
@@ -35,6 +35,19 @@ export interface AuthWrapperProps {
    * @default true (from ABP settings or if not configured)
    */
   enableLocalLogin?: boolean;
+
+  /**
+   * Whether multi-tenancy is enabled.
+   * When true, the tenant box will be displayed (if rendered).
+   * This corresponds to Angular's isMultiTenancyEnabled$ observable.
+   *
+   * In ABP, this is read from ConfigState.getDeep('multiTenancy.isEnabled').
+   * This prop allows overriding the default behavior.
+   *
+   * @since 2.4.0
+   * @default true (multi-tenancy enabled by default)
+   */
+  isMultiTenancyEnabled?: boolean;
 }
 
 /**
@@ -49,12 +62,14 @@ export interface AuthWrapperProps {
  *
  * @since 1.1.0
  * @since 2.0.0 - Added enableLocalLogin prop to control local login visibility
+ * @since 2.4.0 - Added isMultiTenancyEnabled prop (equivalent to Angular's isMultiTenancyEnabled$)
  *
  * @example
  * ```tsx
  * <AuthWrapper
  *   mainContent={<LoginForm />}
  *   cancelContent={<Link to="/register">Create account</Link>}
+ *   isMultiTenancyEnabled={true}
  * />
  * ```
  */
@@ -63,6 +78,7 @@ export function AuthWrapper({
   mainContent,
   cancelContent,
   enableLocalLogin,
+  isMultiTenancyEnabled = true,
 }: AuthWrapperProps) {
   const { t } = useLocalization();
 
