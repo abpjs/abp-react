@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/theme-shared",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "ABP Framework Theme Shared components for React - translated from @abp/ng.theme.shared",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
