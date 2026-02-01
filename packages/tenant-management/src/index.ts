@@ -1,7 +1,12 @@
 /**
  * @abpjs/tenant-management
  * ABP Framework Tenant Management module for React
- * Translated from @abp/ng.tenant-management v2.2.0
+ * Translated from @abp/ng.tenant-management v2.4.0
+ *
+ * Changes in v2.4.0:
+ * - Added apiName property to TenantManagementService (defaults to 'default')
+ * - Added adminEmailAddress and adminPassword fields to AddRequest interface
+ * - UpdateRequest no longer extends AddRequest (now only has id and name)
  *
  * Changes in v2.2.0:
  * - Added openFeaturesModal(providerKey: string) to useTenantManagement hook

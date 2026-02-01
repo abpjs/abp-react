@@ -131,7 +131,11 @@ describe('TenantManagementService', () => {
 
   describe('create', () => {
     it('should call rest.request with correct body', async () => {
-      const newTenant: TenantManagement.AddRequest = { name: 'New Tenant' };
+      const newTenant: TenantManagement.AddRequest = {
+        name: 'New Tenant',
+        adminEmailAddress: 'admin@newtenant.com',
+        adminPassword: 'Password123!',
+      };
       const createdTenant: TenantManagement.Item = { id: '456', name: 'New Tenant' };
       mockRestService.request.mockResolvedValue(createdTenant);
 
@@ -148,7 +152,11 @@ describe('TenantManagementService', () => {
     it('should handle validation error', async () => {
       mockRestService.request.mockRejectedValue(new Error('Validation failed'));
 
-      await expect(service.create({ name: '' })).rejects.toThrow('Validation failed');
+      await expect(service.create({
+        name: '',
+        adminEmailAddress: 'admin@test.com',
+        adminPassword: 'Password123!',
+      })).rejects.toThrow('Validation failed');
     });
   });
 
@@ -263,6 +271,21 @@ describe('TenantManagementService', () => {
       await expect(service.deleteDefaultConnectionString('123')).rejects.toThrow(
         'Cannot delete connection string'
       );
+    });
+  });
+
+  describe('apiName property (v2.4.0)', () => {
+    it('should have apiName property with default value "default"', () => {
+      expect(service.apiName).toBe('default');
+    });
+
+    it('should allow apiName to be modified', () => {
+      service.apiName = 'customApi';
+      expect(service.apiName).toBe('customApi');
+    });
+
+    it('should have apiName as a string type', () => {
+      expect(typeof service.apiName).toBe('string');
     });
   });
 });

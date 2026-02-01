@@ -442,10 +442,16 @@ describe('TenantManagementStateService', () => {
   });
 
   describe('dispatchCreateTenant (v2.0.0)', () => {
+    const validAddRequest: TenantManagement.AddRequest = {
+      name: 'New Tenant',
+      adminEmailAddress: 'admin@newtenant.com',
+      adminPassword: 'Password123!',
+    };
+
     it('should throw error when TenantManagementService is not provided', async () => {
       const stateService = new TenantManagementStateService();
 
-      await expect(stateService.dispatchCreateTenant({ name: 'New Tenant' })).rejects.toThrow(
+      await expect(stateService.dispatchCreateTenant(validAddRequest)).rejects.toThrow(
         'TenantManagementService is required for dispatchCreateTenant. Pass it to the constructor.'
       );
     });
@@ -471,9 +477,9 @@ describe('TenantManagementStateService', () => {
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
-      const result = await stateService.dispatchCreateTenant({ name: 'New Tenant' });
+      const result = await stateService.dispatchCreateTenant(validAddRequest);
 
-      expect(mockTenantService.create).toHaveBeenCalledWith({ name: 'New Tenant' });
+      expect(mockTenantService.create).toHaveBeenCalledWith(validAddRequest);
       expect(mockTenantService.getAll).toHaveBeenCalled();
       expect(result).toEqual(createdTenant);
       expect(stateService.get()).toHaveLength(3);
@@ -490,7 +496,7 @@ describe('TenantManagementStateService', () => {
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
-      await expect(stateService.dispatchCreateTenant({ name: 'New Tenant' })).rejects.toThrow('Creation failed');
+      await expect(stateService.dispatchCreateTenant(validAddRequest)).rejects.toThrow('Creation failed');
       expect(mockTenantService.getAll).not.toHaveBeenCalled();
     });
   });
