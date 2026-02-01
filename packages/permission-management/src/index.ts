@@ -1,7 +1,11 @@
 /**
  * @abpjs/permission-management
  * ABP Framework Permission Management module for React
- * Translated from @abp/ng.permission-management v2.2.0
+ * Translated from @abp/ng.permission-management v2.4.0
+ *
+ * Changes in v2.4.0:
+ * - Added apiName property to PermissionManagementService
+ * - Dependency updates to @abp/ng.theme.shared v2.4.0
  *
  * Changes in v2.2.0:
  * - Dependency updates to @abp/ng.theme.shared v2.2.0
