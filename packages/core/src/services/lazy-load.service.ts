@@ -1,8 +1,15 @@
 import { uuid } from '../utils';
+import { LoadingStrategy } from '../strategies/loading.strategy';
 
 type LoadedLibraries = Record<string, Promise<void> | undefined>;
 
 export class LazyLoadService {
+  /**
+   * Set of loaded resources (tracked by path)
+   * @since 2.4.0
+   */
+  readonly loaded: Set<unknown> = new Set();
+
   private loadedLibraries: LoadedLibraries = {};
 
   /**
@@ -59,15 +66,93 @@ export class LazyLoadService {
   }
 
   /**
+   * Load a resource using a LoadingStrategy
+   * @param strategy - The loading strategy to use
+   * @param retryTimes - Number of retry attempts (default: 2)
+   * @param retryDelay - Delay between retries in ms (default: 1000)
+   * @since 2.4.0
+   */
+  load(strategy: LoadingStrategy, retryTimes?: number, retryDelay?: number): Promise<Event>;
+
+  /**
    * Load one or more URLs
    * @param urlOrUrls - Single URL string, array of URLs, or null for inline content
    * @param type - Type of resource to load ('script' or 'style')
    * @param content - Inline content (for inline scripts/styles)
    * @param targetQuery - Query selector for the target element
    * @param position - Position relative to target element
+   * @deprecated Use other overload that requires a strategy as first param
    * @since 1.0.0 - Now accepts string[] for urlOrUrls parameter
    */
   load(
+    urlOrUrls: string | string[] | null,
+    type: 'script' | 'style',
+    content?: string,
+    targetQuery?: string,
+    position?: InsertPosition
+  ): Promise<void> | undefined;
+
+  load(
+    strategyOrUrls: LoadingStrategy | string | string[] | null,
+    typeOrRetryTimes?: 'script' | 'style' | number,
+    contentOrRetryDelay?: string | number,
+    targetQuery: string = 'body',
+    position: InsertPosition = 'afterend'
+  ): Promise<Event> | Promise<void> | undefined {
+    // New strategy-based overload
+    if (strategyOrUrls instanceof LoadingStrategy) {
+      const strategy = strategyOrUrls;
+      const retryTimes = (typeOrRetryTimes as number) ?? 2;
+      const retryDelay = (contentOrRetryDelay as number) ?? 1000;
+
+      // Check if already loaded
+      if (this.loaded.has(strategy.path)) {
+        return Promise.resolve(new Event('load'));
+      }
+
+      return this.loadWithRetry(strategy, retryTimes, retryDelay);
+    }
+
+    // Legacy overload
+    const urlOrUrls = strategyOrUrls;
+    const type = typeOrRetryTimes as 'script' | 'style';
+    const content = (contentOrRetryDelay as string) ?? '';
+
+    return this.loadLegacy(urlOrUrls, type, content, targetQuery, position);
+  }
+
+  /**
+   * Load with retry logic
+   * @internal
+   */
+  private async loadWithRetry(
+    strategy: LoadingStrategy,
+    retryTimes: number,
+    retryDelay: number
+  ): Promise<Event> {
+    let lastError: unknown;
+
+    for (let attempt = 0; attempt <= retryTimes; attempt++) {
+      try {
+        const event = await strategy.createStream<Event>();
+        this.loaded.add(strategy.path);
+        return event;
+      } catch (error) {
+        lastError = error;
+        if (attempt < retryTimes) {
+          await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        }
+      }
+    }
+
+    throw lastError;
+  }
+
+  /**
+   * Legacy load implementation
+   * @internal
+   */
+  private loadLegacy(
     urlOrUrls: string | string[] | null,
     type: 'script' | 'style',
     content: string = '',
@@ -87,6 +172,14 @@ export class LazyLoadService {
 
     // Handle single URL or null
     return this.loadSingle(urlOrUrls, type, content, targetQuery, position);
+  }
+
+  /**
+   * Check if a path has already been loaded
+   * @since 2.4.0
+   */
+  isLoaded(path: string): boolean {
+    return this.loaded.has(path) || path in this.loadedLibraries;
   }
 
   loadScript(

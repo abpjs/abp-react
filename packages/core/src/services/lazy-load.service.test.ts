@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { LazyLoadService } from './lazy-load.service';
+import { ScriptLoadingStrategy, LOADING_STRATEGY } from '../strategies/loading.strategy';
 
 describe('LazyLoadService', () => {
   let service: LazyLoadService;
@@ -189,6 +190,114 @@ describe('LazyLoadService', () => {
 
       createdElements.forEach((el) => (el as any).onload?.());
       await promise;
+    });
+  });
+
+  describe('load with LoadingStrategy (v2.4.0)', () => {
+    it('should have loaded set', () => {
+      expect(service.loaded).toBeDefined();
+      expect(service.loaded).toBeInstanceOf(Set);
+    });
+
+    it('should track loaded paths in loaded set', async () => {
+      const strategy = LOADING_STRATEGY.AppendAnonymousScriptToHead(
+        'https://example.com/tracked.js'
+      );
+
+      // Mock createStream to resolve immediately
+      vi.spyOn(strategy, 'createStream').mockResolvedValue(new Event('load'));
+
+      await service.load(strategy);
+
+      expect(service.loaded.has('https://example.com/tracked.js')).toBe(true);
+    });
+
+    it('should return cached result for already loaded path', async () => {
+      const strategy = LOADING_STRATEGY.AppendAnonymousScriptToHead(
+        'https://example.com/cached-strategy.js'
+      );
+
+      const createStreamSpy = vi.spyOn(strategy, 'createStream').mockResolvedValue(new Event('load'));
+
+      // First load
+      await service.load(strategy);
+      expect(createStreamSpy).toHaveBeenCalledTimes(1);
+
+      // Second load should return cached
+      const strategy2 = LOADING_STRATEGY.AppendAnonymousScriptToHead(
+        'https://example.com/cached-strategy.js'
+      );
+
+      const result = await service.load(strategy2);
+      expect(result.type).toBe('load');
+      // createStream should not be called again for same path
+    });
+
+    it('should retry on failure', async () => {
+      const strategy = LOADING_STRATEGY.AppendAnonymousScriptToHead(
+        'https://example.com/retry.js'
+      );
+
+      let attempts = 0;
+      vi.spyOn(strategy, 'createStream').mockImplementation(() => {
+        attempts++;
+        if (attempts < 3) {
+          return Promise.reject(new Error('Network error'));
+        }
+        return Promise.resolve(new Event('load'));
+      });
+
+      const result = await service.load(strategy, 3, 10);
+      expect(result.type).toBe('load');
+      expect(attempts).toBe(3);
+    });
+
+    it('should throw after all retries fail', async () => {
+      const strategy = LOADING_STRATEGY.AppendAnonymousScriptToHead(
+        'https://example.com/fail.js'
+      );
+
+      vi.spyOn(strategy, 'createStream').mockRejectedValue(new Error('Always fails'));
+
+      await expect(service.load(strategy, 2, 10)).rejects.toThrow('Always fails');
+    });
+
+    it('should use default retry values', async () => {
+      const strategy = LOADING_STRATEGY.AppendAnonymousScriptToHead(
+        'https://example.com/default-retry.js'
+      );
+
+      vi.spyOn(strategy, 'createStream').mockResolvedValue(new Event('load'));
+
+      // Call without retry parameters to use defaults
+      const result = await service.load(strategy);
+      expect(result.type).toBe('load');
+    });
+  });
+
+  describe('isLoaded (v2.4.0)', () => {
+    it('should return false for unloaded path', () => {
+      expect(service.isLoaded('https://example.com/notloaded.js')).toBe(false);
+    });
+
+    it('should return true for loaded path via strategy', async () => {
+      const strategy = LOADING_STRATEGY.AppendAnonymousScriptToHead(
+        'https://example.com/isloaded-test.js'
+      );
+
+      vi.spyOn(strategy, 'createStream').mockResolvedValue(new Event('load'));
+
+      await service.load(strategy);
+
+      expect(service.isLoaded('https://example.com/isloaded-test.js')).toBe(true);
+    });
+
+    it('should return true for loaded path via legacy method', async () => {
+      const promise = service.load('https://example.com/legacy-loaded.js', 'script');
+      (createdElements[0] as any).onload?.();
+      await promise;
+
+      expect(service.isLoaded('legacy-loaded.js')).toBe(true);
     });
   });
 });

@@ -14,6 +14,11 @@ export namespace Config {
   export interface Environment {
     application?: Application;
     production: boolean;
+    /**
+     * Hot Module Replacement flag
+     * @since 2.4.0
+     */
+    hmr?: boolean;
     oAuthConfig: UserManagerSettings;
     apis: Apis;
     localization?: {
@@ -21,11 +26,18 @@ export namespace Config {
     };
   }
 
+  /**
+   * API configuration with URL and optional additional properties
+   * @since 2.4.0
+   */
+  export interface ApiConfig {
+    url: string;
+    [key: string]: string;
+  }
+
   export interface Apis {
-    [key: string]: {
-      url: string;
-      [key: string]: string;
-    };
+    [key: string]: ApiConfig;
+    default: ApiConfig;
   }
 
   export interface Requirements {

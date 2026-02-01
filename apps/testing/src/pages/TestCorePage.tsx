@@ -3,6 +3,7 @@
  * Tests: hooks, services, components, state management
  * @since 0.7.6
  * @updated 2.2.0 - Angular DI pattern changes (no React changes needed)
+ * @updated 2.4.0 - Added DTOs, strategies, DomInsertionService, utility functions
  */
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -34,6 +35,28 @@ import {
   eLayoutType,
 } from '@abpjs/core'
 import type { ABP, ReplaceableComponents } from '@abpjs/core'
+import {
+  // v2.4.0 DTOs
+  ListResultDto,
+  PagedResultDto,
+  EntityDto,
+  AuditedEntityDto,
+  FullAuditedEntityDto,
+  // v2.4.0 Strategies
+  DOM_STRATEGY,
+  LOADING_STRATEGY,
+  CONTENT_STRATEGY,
+  CROSS_ORIGIN_STRATEGY,
+  CONTENT_SECURITY_STRATEGY,
+  DomInsertionService,
+  getDomInsertionService,
+  // v2.4.0 Utils
+  generateHash,
+  isUndefinedOrEmptyString,
+  noop,
+  fromLazyLoad,
+  LazyLoadService,
+} from '@abpjs/core'
 import { useDispatch } from 'react-redux'
 
 // Localization response type
@@ -879,6 +902,334 @@ function TestV2Features() {
   )
 }
 
+function TestV24Features() {
+  const [dtoResults, setDtoResults] = useState<string[]>([])
+  const [strategyResults, setStrategyResults] = useState<string[]>([])
+  const [utilResults, setUtilResults] = useState<string[]>([])
+  const [lazyLoadResults, setLazyLoadResults] = useState<string[]>([])
+
+  const testDTOs = () => {
+    const results: string[] = []
+
+    // Test ListResultDto
+    const listResult = new ListResultDto({ items: [1, 2, 3] })
+    results.push(`✓ ListResultDto: items=[${listResult.items?.join(', ')}]`)
+
+    // Test PagedResultDto
+    const pagedResult = new PagedResultDto({ items: ['a', 'b'], totalCount: 100 })
+    results.push(`✓ PagedResultDto: items=${pagedResult.items?.length}, totalCount=${pagedResult.totalCount}`)
+
+    // Test EntityDto
+    const entity = new EntityDto({ id: 'entity-123' })
+    results.push(`✓ EntityDto: id="${entity.id}"`)
+
+    // Test AuditedEntityDto
+    const audited = new AuditedEntityDto({
+      id: 'audited-456',
+      creationTime: new Date().toISOString(),
+      creatorId: 'user-1',
+      lastModificationTime: new Date().toISOString(),
+      lastModifierId: 'user-2',
+    })
+    results.push(`✓ AuditedEntityDto: id="${audited.id}"`)
+    results.push(`  - creatorId: ${audited.creatorId}`)
+    results.push(`  - lastModifierId: ${audited.lastModifierId}`)
+
+    // Test FullAuditedEntityDto
+    const fullAudited = new FullAuditedEntityDto({
+      id: 'full-789',
+      isDeleted: false,
+      deleterId: undefined,
+    })
+    results.push(`✓ FullAuditedEntityDto: id="${fullAudited.id}", isDeleted=${fullAudited.isDeleted}`)
+
+    setDtoResults(results)
+  }
+
+  const testStrategies = () => {
+    const results: string[] = []
+
+    // Test DOM_STRATEGY
+    const appendToHead = DOM_STRATEGY.AppendToHead()
+    results.push(`✓ DOM_STRATEGY.AppendToHead()`)
+    results.push(`  - target: ${appendToHead.target === document.head ? 'document.head' : 'other'}`)
+    results.push(`  - position: ${appendToHead.position}`)
+
+    const appendToBody = DOM_STRATEGY.AppendToBody()
+    results.push(`✓ DOM_STRATEGY.AppendToBody()`)
+    results.push(`  - target: ${appendToBody.target === document.body ? 'document.body' : 'other'}`)
+
+    const prependToHead = DOM_STRATEGY.PrependToHead()
+    results.push(`✓ DOM_STRATEGY.PrependToHead()`)
+    results.push(`  - position: ${prependToHead.position}`)
+
+    // Test CROSS_ORIGIN_STRATEGY
+    const anonymousCors = CROSS_ORIGIN_STRATEGY.Anonymous('sha384-test')
+    results.push(`✓ CROSS_ORIGIN_STRATEGY.Anonymous('sha384-test')`)
+    results.push(`  - crossorigin: ${anonymousCors.crossorigin}`)
+    results.push(`  - integrity: ${anonymousCors.integrity}`)
+
+    // Test CONTENT_SECURITY_STRATEGY
+    const looseCSP = CONTENT_SECURITY_STRATEGY.Loose('nonce-abc123')
+    results.push(`✓ CONTENT_SECURITY_STRATEGY.Loose('nonce-abc123')`)
+    results.push(`  - nonce: ${looseCSP.nonce}`)
+
+    const noCSP = CONTENT_SECURITY_STRATEGY.None()
+    results.push(`✓ CONTENT_SECURITY_STRATEGY.None()`)
+    results.push(`  - nonce: ${noCSP.nonce ?? 'undefined'}`)
+
+    // Test LOADING_STRATEGY (without actually loading)
+    const scriptStrategy = LOADING_STRATEGY.AppendAnonymousScriptToHead('https://example.com/lib.js')
+    results.push(`✓ LOADING_STRATEGY.AppendAnonymousScriptToHead()`)
+    results.push(`  - path: ${scriptStrategy.path}`)
+
+    // Test CONTENT_STRATEGY
+    const styleStrategy = CONTENT_STRATEGY.AppendStyleToHead('.test { color: red; }')
+    results.push(`✓ CONTENT_STRATEGY.AppendStyleToHead()`)
+    results.push(`  - content length: ${styleStrategy.content.length} chars`)
+
+    // Test DomInsertionService
+    const domService = getDomInsertionService()
+    results.push(`✓ getDomInsertionService()`)
+    results.push(`  - inserted count: ${domService.inserted.size}`)
+    results.push(`  - instance is singleton: ${domService === getDomInsertionService()}`)
+
+    setStrategyResults(results)
+  }
+
+  const testUtilFunctions = () => {
+    const results: string[] = []
+
+    // Test generateHash
+    const hash1 = generateHash('hello world')
+    const hash2 = generateHash('hello world')
+    const hash3 = generateHash('different string')
+    results.push(`✓ generateHash('hello world'): ${hash1}`)
+    results.push(`  - consistent: ${hash1 === hash2}`)
+    results.push(`  - different input: ${hash3} (different: ${hash1 !== hash3})`)
+
+    // Test isUndefinedOrEmptyString
+    results.push(`✓ isUndefinedOrEmptyString():`)
+    results.push(`  - undefined: ${isUndefinedOrEmptyString(undefined)}`)
+    results.push(`  - '': ${isUndefinedOrEmptyString('')}`)
+    results.push(`  - 'text': ${isUndefinedOrEmptyString('text')}`)
+    results.push(`  - null: ${isUndefinedOrEmptyString(null)}`)
+    results.push(`  - 0: ${isUndefinedOrEmptyString(0)}`)
+
+    // Test noop
+    const noopFn = noop()
+    results.push(`✓ noop():`)
+    results.push(`  - returns function: ${typeof noopFn === 'function'}`)
+    results.push(`  - function returns: ${noopFn()}`)
+
+    setUtilResults(results)
+  }
+
+  const testLazyLoadService = () => {
+    const results: string[] = []
+
+    const lazyLoadService = new LazyLoadService()
+
+    // Test loaded set
+    results.push(`✓ LazyLoadService:`)
+    results.push(`  - loaded set available: ${lazyLoadService.loaded instanceof Set}`)
+    results.push(`  - loaded count: ${lazyLoadService.loaded.size}`)
+
+    // Test isLoaded
+    results.push(`  - isLoaded('nonexistent.js'): ${lazyLoadService.isLoaded('nonexistent.js')}`)
+
+    // Test strategy-based loading (without actually loading)
+    const strategy = LOADING_STRATEGY.AppendAnonymousScriptToHead('https://example.com/test.js')
+    results.push(``)
+    results.push(`✓ LoadingStrategy-based loading:`)
+    results.push(`  - Strategy path: ${strategy.path}`)
+    results.push(`  - Note: Use lazyLoadService.load(strategy) to load`)
+
+    setLazyLoadResults(results)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v2.4.0 Features</h2>
+
+      <div className="test-card" style={{ background: 'rgba(255,165,0,0.05)', border: '1px solid rgba(255,165,0,0.2)' }}>
+        <h3>Standard DTOs (v2.4.0)</h3>
+        <p>New DTO classes for consistent data transfer patterns.</p>
+
+        <button onClick={testDTOs} style={{ marginBottom: '1rem' }}>
+          Test DTO Classes
+        </button>
+
+        {dtoResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '250px',
+            overflow: 'auto',
+          }}>
+            {dtoResults.join('\n')}
+          </pre>
+        )}
+
+        <div style={{ marginTop: '1rem' }}>
+          <strong>Available DTOs:</strong>
+          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem', fontSize: '14px' }}>
+            <li><code>ListResultDto&lt;T&gt;</code> - Generic list result</li>
+            <li><code>PagedResultDto&lt;T&gt;</code> - Paged result with totalCount</li>
+            <li><code>EntityDto&lt;TKey&gt;</code> - Basic entity with ID</li>
+            <li><code>CreationAuditedEntityDto</code> - With creation audit</li>
+            <li><code>AuditedEntityDto</code> - With modification audit</li>
+            <li><code>FullAuditedEntityDto</code> - With soft delete audit</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(255,165,0,0.05)', border: '1px solid rgba(255,165,0,0.2)' }}>
+        <h3>Strategies (v2.4.0)</h3>
+        <p>New strategies for DOM manipulation and resource loading.</p>
+
+        <button onClick={testStrategies} style={{ marginBottom: '1rem' }}>
+          Test Strategies
+        </button>
+
+        {strategyResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '300px',
+            overflow: 'auto',
+          }}>
+            {strategyResults.join('\n')}
+          </pre>
+        )}
+
+        <div style={{ marginTop: '1rem' }}>
+          <strong>Available Strategy Factories:</strong>
+          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem', fontSize: '14px' }}>
+            <li><code>DOM_STRATEGY</code> - AppendToHead, AppendToBody, PrependToHead, etc.</li>
+            <li><code>LOADING_STRATEGY</code> - Load external scripts/styles</li>
+            <li><code>CONTENT_STRATEGY</code> - Insert inline scripts/styles</li>
+            <li><code>CROSS_ORIGIN_STRATEGY</code> - CORS configuration</li>
+            <li><code>CONTENT_SECURITY_STRATEGY</code> - CSP nonce handling</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(255,165,0,0.05)', border: '1px solid rgba(255,165,0,0.2)' }}>
+        <h3>Utility Functions (v2.4.0)</h3>
+        <p>New utility functions for common operations.</p>
+
+        <button onClick={testUtilFunctions} style={{ marginBottom: '1rem' }}>
+          Test Utility Functions
+        </button>
+
+        {utilResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '200px',
+            overflow: 'auto',
+          }}>
+            {utilResults.join('\n')}
+          </pre>
+        )}
+
+        <div style={{ marginTop: '1rem' }}>
+          <strong>New Functions:</strong>
+          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem', fontSize: '14px' }}>
+            <li><code>generateHash(value)</code> - Generate hash from string</li>
+            <li><code>isUndefinedOrEmptyString(value)</code> - Check undefined or empty</li>
+            <li><code>noop()</code> - No-operation function</li>
+            <li><code>fromLazyLoad(element, dom, cors)</code> - Promise-based lazy loading</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(255,165,0,0.05)', border: '1px solid rgba(255,165,0,0.2)' }}>
+        <h3>LazyLoadService Updates (v2.4.0)</h3>
+        <p>Enhanced LazyLoadService with strategy-based loading and retry support.</p>
+
+        <button onClick={testLazyLoadService} style={{ marginBottom: '1rem' }}>
+          Test LazyLoadService
+        </button>
+
+        {lazyLoadResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '200px',
+            overflow: 'auto',
+          }}>
+            {lazyLoadResults.join('\n')}
+          </pre>
+        )}
+
+        <div style={{ marginTop: '1rem' }}>
+          <strong>New Features:</strong>
+          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem', fontSize: '14px' }}>
+            <li><code>loaded</code> - Set of loaded resources</li>
+            <li><code>load(strategy, retryTimes?, retryDelay?)</code> - Strategy-based loading with retry</li>
+            <li><code>isLoaded(path)</code> - Check if a path has been loaded</li>
+          </ul>
+        </div>
+
+        <div style={{ marginTop: '1rem', padding: '0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+          <strong>Usage Example:</strong>
+          <pre style={{ margin: '0.5rem 0', fontSize: '12px' }}>
+{`const lazyLoad = new LazyLoadService();
+const strategy = LOADING_STRATEGY.AppendAnonymousScriptToHead(
+  'https://cdn.example.com/lib.js',
+  'sha384-...'  // optional integrity
+);
+
+// Load with retry (default: 2 retries, 1000ms delay)
+await lazyLoad.load(strategy);
+
+// Or with custom retry settings
+await lazyLoad.load(strategy, 3, 500);`}
+          </pre>
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(255,165,0,0.05)', border: '1px solid rgba(255,165,0,0.2)' }}>
+        <h3>Config Model Changes (v2.4.0)</h3>
+        <p>Updates to configuration types.</p>
+
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Change</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Config.Environment.hmr?</code></td>
+              <td style={{ padding: '8px' }}>New optional HMR flag</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Config.ApiConfig</code></td>
+              <td style={{ padding: '8px' }}>New interface for API configuration</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Rest.Config.apiName?</code></td>
+              <td style={{ padding: '8px' }}>Specify which API to use in requests</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ABP.Root.requirements?</code></td>
+              <td style={{ padding: '8px' }}>Now optional (deprecated, removed in v3.0)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestV21Features() {
   const { store } = useAbp()
   const dispatch = useDispatch()
@@ -1087,12 +1438,13 @@ function TestDateExtensions() {
 export function TestCorePage() {
   return (
     <div>
-      <h1>@abpjs/core Tests (v2.2.0)</h1>
+      <h1>@abpjs/core Tests (v2.4.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing core hooks, services, and components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.2.0 - Angular AuthGuard DI pattern changes (React already uses useNavigate hook idiomatically)
+        Version 2.4.0 - Added DTOs, strategies, DomInsertionService, utility functions
       </p>
 
+      <TestV24Features />
       <TestV21Features />
       <TestV2Features />
       <TestStateServices />
