@@ -272,6 +272,20 @@ function TestVersionInfo() {
       <h2>Version Info</h2>
 
       <div className="test-card">
+        <h3>What's New in v2.2.0</h3>
+        <p>Version 2.2.0 is a dependency update with no functional changes for React users.</p>
+        <ul>
+          <li><strong>Angular Change:</strong> Added <code>.ui-table .pagination-wrapper</code> styles</li>
+          <li><strong>React Status:</strong> Chakra UI handles table pagination styling - no changes needed</li>
+          <li><strong>Updated:</strong> Dependency on <code>@abpjs/theme-shared</code> to v2.2.0</li>
+        </ul>
+        <p style={{ color: '#888', fontSize: '14px', marginTop: '8px' }}>
+          The new Angular styles are for PrimeNG table pagination. React uses Chakra UI's
+          built-in table components, so these styles don't affect the React implementation.
+        </p>
+      </div>
+
+      <div className="test-card">
         <h3>What's New in v2.1.0</h3>
         <p>Version 2.1.0 includes internal improvements with no breaking changes for React users.</p>
         <ul>
@@ -319,7 +333,7 @@ function TestVersionInfo() {
 export function TestThemeBasicPage() {
   return (
     <div>
-      <h1>@abpjs/theme-basic Tests (v2.1.0)</h1>
+      <h1>@abpjs/theme-basic Tests (v2.2.0)</h1>
       <p>Testing layouts, navigation, and layout service.</p>
 
       <TestVersionInfo />

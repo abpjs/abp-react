@@ -2,11 +2,16 @@
  * @abpjs/theme-basic
  *
  * ABP Framework Theme Basic components for React.
- * Translated from @abp/ng.theme.basic v2.1.0
+ * Translated from @abp/ng.theme.basic v2.2.0
  *
  * This package provides the basic theme layout components for ABP React applications.
  *
- * @version 2.1.0
+ * Changes in v2.2.0:
+ * - Angular: Added .ui-table .pagination-wrapper styles (handled by Chakra UI in React)
+ * - Dependency update to @abp/ng.theme.shared v2.2.0
+ * - No functional code changes
+ *
+ * @version 2.2.0
  * @since 2.0.0 - Removed legacy .abp-confirm styles (no impact on React - we use Chakra UI)
  * @since 2.1.0 - Angular: OAuthService replaced with AuthService (already using useAuth in React)
  *              - Angular: Added styles for loading, modal-backdrop, confirmation (handled by Chakra UI)
