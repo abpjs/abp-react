@@ -1,7 +1,11 @@
 /**
  * @abpjs/permission-management
  * ABP Framework Permission Management module for React
- * Translated from @abp/ng.permission-management v2.1.0
+ * Translated from @abp/ng.permission-management v2.2.0
+ *
+ * Changes in v2.2.0:
+ * - Dependency updates to @abp/ng.theme.shared v2.2.0
+ * - No functional code changes
  *
  * Changes in v1.1.0:
  * - Added hideBadges prop to PermissionManagementModal
