@@ -1,7 +1,10 @@
 /**
  * @abpjs/setting-management
  * ABP Framework Setting Management module for React
- * Translated from @abp/ng.setting-management v2.2.0
+ * Translated from @abp/ng.setting-management v2.4.0
+ *
+ * Changes in v2.4.0:
+ * - Version bump only (dependency updates)
  *
  * Changes in v2.2.0:
  * - Angular: Removed Router dependency from SettingManagementComponent constructor
