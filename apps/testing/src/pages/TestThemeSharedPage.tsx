@@ -1,6 +1,8 @@
 /**
  * Test page for @abpjs/theme-shared package
  * Tests: Toaster, Confirmation dialogs, Modal, Error handler, LoaderBar, ErrorComponent
+ * @since 0.9.0
+ * @updated 2.2.0 - Dependency updates and cleanup (no new features)
  */
 import { useState } from 'react'
 import {
@@ -810,8 +812,11 @@ function TestProfile() {
 export function TestThemeSharedPage() {
   return (
     <div>
-      <h1>@abpjs/theme-shared Tests (v2.1.0)</h1>
-      <p>Testing toast notifications, confirmation dialogs, modals, error handling, and shared components.</p>
+      <h1>@abpjs/theme-shared Tests (v2.2.0)</h1>
+      <p style={{ marginBottom: '8px' }}>Testing toast notifications, confirmation dialogs, modals, error handling, and shared components.</p>
+      <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
+        Version 2.2.0 - Dependency updates and removed unused Angular libraries (no functional changes)
+      </p>
 
       <TestLoaderBar />
       <TestErrorComponentDisplay />

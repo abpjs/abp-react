@@ -2,10 +2,21 @@
  * @abpjs/theme-shared
  *
  * ABP Framework Theme Shared components for React.
- * Translated from @abp/ng.theme.shared v2.0.0
+ * Translated from @abp/ng.theme.shared v2.2.0
  *
  * This package provides shared UI components, services, and utilities
  * for theme/modal management in ABP Framework React applications.
+ *
+ * Changes in v2.2.0:
+ * - Dependency updates to @abp/ng.core v2.2.0
+ * - Dependency updates to @fortawesome/fontawesome-free v5.12.1
+ * - Dependency updates to @ng-bootstrap/ng-bootstrap v5.3.0
+ * - Dependency updates to bootstrap v4.4.1, chart.js v2.9.3
+ * - Removed unused Angular-specific dependencies (primeng, primeicons, font-awesome, @angular/cdk)
+ * - No functional code changes
+ *
+ * Changes in v2.1.0:
+ * - Dependency updates only (no functional changes)
  *
  * New in v2.0.0:
  * - ToasterService: Methods now return number (toast ID) instead of Promise<Status>
