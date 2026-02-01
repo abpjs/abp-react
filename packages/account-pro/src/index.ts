@@ -1,7 +1,10 @@
 /**
  * @abpjs/account-pro
  * ABP Framework Account Pro module for React
- * Translated from @volo/abp.ng.account v2.1.1
+ * Translated from @volo/abp.ng.account v2.2.0
+ *
+ * Changes in v2.2.0:
+ * - Version bump only (dependency updates to @abp/ng.theme.shared v2.2.0)
  *
  * Changes in v2.1.1:
  * - Version bump only (dependency updates to @abp/ng.theme.shared v2.1.0)
