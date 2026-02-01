@@ -2,6 +2,7 @@
  * Test page for @abpjs/identity-pro package
  * Tests: ClaimsComponent, ClaimModal, useClaims hook, IdentityStateService, and Pro-specific features
  * @since 2.0.0
+ * @updated 2.1.1 - Dependency updates (no new features)
  */
 import { useState, useEffect } from 'react'
 import { useAuth } from '@abpjs/core'
@@ -901,10 +902,13 @@ function TestProHookMethods() {
 export function TestIdentityProPage() {
   return (
     <div>
-      <h1>@abpjs/identity-pro Tests</h1>
-      <p>Testing identity pro components, hooks, and services for claim type management (v2.0.0).</p>
+      <h1>@abpjs/identity-pro Tests (v2.1.1)</h1>
+      <p style={{ marginBottom: '8px' }}>Testing identity pro components, hooks, and services for claim type management.</p>
+      <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
+        Version 2.1.1 - Dependency updates (no functional changes from v2.0.0)
+      </p>
       <p style={{ color: '#6f6', fontSize: '14px' }}>
-        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods (v2.0.0)
+        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods
       </p>
 
       <TestClaimsComponent />
