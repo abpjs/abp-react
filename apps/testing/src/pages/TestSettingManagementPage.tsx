@@ -537,9 +537,9 @@ function TestModels() {
 export function TestSettingManagementPage() {
   return (
     <div>
-      <h1>@abpjs/setting-management Tests v2.2.0</h1>
+      <h1>@abpjs/setting-management Tests v2.4.0</h1>
       <p>Testing setting management layout, hook, and services.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.2.0 - Angular removed Router from constructor; React already uses hooks idiomatically</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.4.0 - Dependency updates only (no new features)</p>
 
       <TestSettingLayoutComponent />
       <TestSettingManagementHook />
