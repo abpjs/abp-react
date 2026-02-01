@@ -1,7 +1,10 @@
 /**
  * @abpjs/audit-logging
  * ABP Framework Audit Logging module for React
- * Translated from @volo/abp.ng.audit-logging v2.1.1
+ * Translated from @volo/abp.ng.audit-logging v2.2.0
+ *
+ * Changes in v2.2.0:
+ * - Version bump only (dependency updates to @abp/ng.theme.shared v2.2.0)
  *
  * Changes in v2.1.1:
  * - Angular: Improved type safety for collapseActionStates/collapseChangeStates (any[] -> boolean[])
