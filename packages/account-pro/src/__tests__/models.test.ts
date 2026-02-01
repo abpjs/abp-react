@@ -222,6 +222,38 @@ describe('Models', () => {
       expect(response.name).toBe('Test');
       expect(response.isTwoFactorEnabled).toBe(true);
     });
+
+    it('should support phoneNumberConfirmed field (v2.4.0)', () => {
+      const response: ProfileResponse = {
+        userName: 'testuser',
+        email: 'test@example.com',
+        phoneNumber: '+1234567890',
+        phoneNumberConfirmed: true,
+      };
+      expect(response.phoneNumberConfirmed).toBe(true);
+    });
+
+    it('should allow both isPhoneNumberConfirmed and phoneNumberConfirmed (v2.4.0)', () => {
+      const response: ProfileResponse = {
+        userName: 'testuser',
+        email: 'test@example.com',
+        phoneNumber: '+1234567890',
+        isPhoneNumberConfirmed: true, // deprecated
+        phoneNumberConfirmed: true, // new field
+      };
+      expect(response.isPhoneNumberConfirmed).toBe(true);
+      expect(response.phoneNumberConfirmed).toBe(true);
+    });
+
+    it('should handle unconfirmed phone number (v2.4.0)', () => {
+      const response: ProfileResponse = {
+        userName: 'testuser',
+        email: 'test@example.com',
+        phoneNumber: '+1234567890',
+        phoneNumberConfirmed: false,
+      };
+      expect(response.phoneNumberConfirmed).toBe(false);
+    });
   });
 
   describe('PasswordFlowResult', () => {

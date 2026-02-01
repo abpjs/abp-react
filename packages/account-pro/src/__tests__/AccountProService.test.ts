@@ -16,6 +16,17 @@ describe('AccountProService', () => {
     service = new AccountProService(mockRest);
   });
 
+  describe('apiName (v2.4.0)', () => {
+    it('should have apiName property set to default', () => {
+      expect(service.apiName).toBe('default');
+    });
+
+    it('should allow apiName to be modified', () => {
+      service.apiName = 'custom-api';
+      expect(service.apiName).toBe('custom-api');
+    });
+  });
+
   describe('findTenant', () => {
     it('should call GET with correct URL', async () => {
       const mockResponse = { success: true, tenantId: '123' };
@@ -122,6 +133,76 @@ describe('AccountProService', () => {
 
       expect(mockRest.put).toHaveBeenCalledWith('/api/identity/my-profile', body, { skipHandleError: true });
       expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('sendPhoneNumberConfirmationToken (v2.4.0)', () => {
+    it('should call POST with correct URL', async () => {
+      (mockRest.post as any).mockResolvedValue(undefined);
+
+      await service.sendPhoneNumberConfirmationToken();
+
+      expect(mockRest.post).toHaveBeenCalledWith(
+        '/api/account/send-phone-number-confirmation-token',
+        undefined,
+        { skipHandleError: true }
+      );
+    });
+
+    it('should handle successful response', async () => {
+      (mockRest.post as any).mockResolvedValue(undefined);
+
+      const result = await service.sendPhoneNumberConfirmationToken();
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should propagate errors', async () => {
+      const error = new Error('Failed to send token');
+      (mockRest.post as any).mockRejectedValue(error);
+
+      await expect(service.sendPhoneNumberConfirmationToken()).rejects.toThrow('Failed to send token');
+    });
+  });
+
+  describe('confirmPhoneNumber (v2.4.0)', () => {
+    it('should call POST with correct URL and token', async () => {
+      (mockRest.post as any).mockResolvedValue(undefined);
+
+      await service.confirmPhoneNumber('123456');
+
+      expect(mockRest.post).toHaveBeenCalledWith(
+        '/api/account/confirm-phone-number',
+        { token: '123456' },
+        { skipHandleError: true }
+      );
+    });
+
+    it('should handle successful confirmation', async () => {
+      (mockRest.post as any).mockResolvedValue(undefined);
+
+      const result = await service.confirmPhoneNumber('valid-token');
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should propagate errors for invalid token', async () => {
+      const error = new Error('Invalid token');
+      (mockRest.post as any).mockRejectedValue(error);
+
+      await expect(service.confirmPhoneNumber('invalid-token')).rejects.toThrow('Invalid token');
+    });
+
+    it('should handle empty token', async () => {
+      (mockRest.post as any).mockResolvedValue(undefined);
+
+      await service.confirmPhoneNumber('');
+
+      expect(mockRest.post).toHaveBeenCalledWith(
+        '/api/account/confirm-phone-number',
+        { token: '' },
+        { skipHandleError: true }
+      );
     });
   });
 });

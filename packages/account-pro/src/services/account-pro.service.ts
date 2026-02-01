@@ -19,6 +19,12 @@ import type {
  * @since 0.7.2
  */
 export class AccountProService {
+  /**
+   * The API name used for REST requests.
+   * @since 2.4.0
+   */
+  apiName = 'default';
+
   constructor(private rest: RestService) {}
 
   /**
@@ -113,6 +119,35 @@ export class AccountProService {
     return this.rest.put<UpdateProfileRequest, ProfileResponse>(
       '/api/identity/my-profile',
       body,
+      { skipHandleError: true }
+    );
+  }
+
+  /**
+   * Send phone number confirmation token to the user's phone
+   * @since 2.4.0 (Pro feature)
+   *
+   * @returns Promise resolving when the token is sent
+   */
+  sendPhoneNumberConfirmationToken(): Promise<void> {
+    return this.rest.post<void, void>(
+      '/api/account/send-phone-number-confirmation-token',
+      undefined,
+      { skipHandleError: true }
+    );
+  }
+
+  /**
+   * Confirm phone number with token
+   * @since 2.4.0 (Pro feature)
+   *
+   * @param token - The confirmation token received via SMS
+   * @returns Promise resolving when the phone number is confirmed
+   */
+  confirmPhoneNumber(token: string): Promise<void> {
+    return this.rest.post<{ token: string }, void>(
+      '/api/account/confirm-phone-number',
+      { token },
       { skipHandleError: true }
     );
   }
