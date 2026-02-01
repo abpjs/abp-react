@@ -2,7 +2,7 @@
  * Test page for @abpjs/language-management package
  * Tests: LanguagesComponent, LanguageTextsComponent, hooks, service
  * @since 2.0.0
- * @updated 2.1.1 - Dependency updates (no new features)
+ * @updated 2.2.0 - Dependency updates (no new features)
  */
 import { useState } from 'react'
 import {
@@ -609,10 +609,10 @@ function TestModels() {
 export function TestLanguageManagementPage() {
   return (
     <div>
-      <h1>@abpjs/language-management Tests (v2.1.1)</h1>
+      <h1>@abpjs/language-management Tests (v2.2.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing language management components, hooks, and services.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.1.1 - Dependency updates (no functional changes from v2.0.0)
+        Version 2.2.0 - Dependency updates (no functional changes from v2.0.0)
       </p>
 
       <TestLanguagesComponent />
