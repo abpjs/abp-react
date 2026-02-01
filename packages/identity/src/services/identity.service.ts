@@ -5,10 +5,16 @@ import { Identity } from '../models';
  * Service for managing identity-related API operations.
  * Handles roles and users CRUD operations.
  *
- * Translated from @abp/ng.identity IdentityService
+ * Translated from @abp/ng.identity IdentityService v2.4.0
  */
 export class IdentityService {
   private rest: RestService;
+
+  /**
+   * The API name used for REST requests.
+   * @since 2.4.0
+   */
+  apiName = 'default';
 
   constructor(rest: RestService) {
     this.rest = rest;
@@ -28,6 +34,19 @@ export class IdentityService {
       method: 'GET',
       url: '/api/identity/roles',
       params,
+    });
+  }
+
+  /**
+   * Get all roles without pagination.
+   * Fetches all roles in a single request.
+   * @since 2.4.0
+   * @returns Promise with all roles
+   */
+  getAllRoles(): Promise<Identity.RoleResponse> {
+    return this.rest.request<null, Identity.RoleResponse>({
+      method: 'GET',
+      url: '/api/identity/roles/all',
     });
   }
 
