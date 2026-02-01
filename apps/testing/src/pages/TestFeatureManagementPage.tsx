@@ -435,9 +435,9 @@ function MyFeatureModal(props: FeatureModalProps) {
 export function TestFeatureManagementPage() {
   return (
     <div>
-      <h1>@abpjs/feature-management Tests (v2.1.0)</h1>
+      <h1>@abpjs/feature-management Tests (v2.2.0)</h1>
       <p>Testing feature management modal and hooks.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.1.0 - Dependency updates only (no new features from v2.0.0)</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.2.0 - Dependency updates only (no new features from v2.0.0)</p>
 
       <TestFeatureModal />
       <TestFeatureHook />
