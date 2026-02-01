@@ -172,4 +172,60 @@ describe('@abpjs/theme-basic exports', () => {
       expect(LayoutApplication.type).toBe('application');
     });
   });
+
+  // v2.4.0 - Verify backward compatibility
+  // Angular changes: InitialService now uses DomInsertionService instead of LazyLoadService
+  // This doesn't affect React translation as we use Chakra UI for styling
+  describe('v2.4.0 exports', () => {
+    it('should maintain all exports in v2.4.0', async () => {
+      // v2.4.0 Angular changes were internal to InitialService (style loading)
+      // React uses Chakra UI CSS-in-JS, so no InitialService equivalent needed
+      // This test verifies all exports remain available
+      const exports = await import('../index');
+
+      // Core exports
+      expect(exports.LAYOUTS).toBeDefined();
+      expect(exports.LAYOUTS).toHaveLength(3);
+      expect(exports.ThemeBasicProvider).toBeDefined();
+
+      // All layout components should be available
+      expect(exports.LayoutApplication).toBeDefined();
+      expect(exports.LayoutAccount).toBeDefined();
+      expect(exports.LayoutEmpty).toBeDefined();
+      expect(exports.LayoutBase).toBeDefined();
+
+      // Context providers
+      expect(exports.LayoutProvider).toBeDefined();
+      expect(exports.BrandingProvider).toBeDefined();
+
+      // Hooks
+      expect(exports.useLayoutContext).toBeDefined();
+      expect(exports.useLayoutService).toBeDefined();
+      expect(exports.useNavigationElements).toBeDefined();
+      expect(exports.useBranding).toBeDefined();
+      expect(exports.useLogo).toBeDefined();
+    });
+
+    it('should export ThemeBasicProvider with Chakra UI styling (no InitialService needed)', async () => {
+      // In Angular v2.4.0, InitialService changed from LazyLoadService to DomInsertionService
+      // Our React implementation uses Chakra UI's CSS-in-JS approach via ThemeBasicProvider
+      // No separate InitialService is needed - styles are handled declaratively
+      const { ThemeBasicProvider, defaultThemeBasicConfig } = await import('../index');
+
+      expect(ThemeBasicProvider).toBeDefined();
+      expect(typeof ThemeBasicProvider).toBe('function');
+
+      // defaultThemeBasicConfig provides the theme tokens (equivalent to Angular's style appending)
+      expect(defaultThemeBasicConfig).toBeDefined();
+    });
+
+    it('should export defineConfig for custom theme configuration', async () => {
+      // Chakra UI's defineConfig is re-exported for creating custom themes
+      // This replaces the need for Angular's dynamic style appending
+      const { defineConfig } = await import('../index');
+
+      expect(defineConfig).toBeDefined();
+      expect(typeof defineConfig).toBe('function');
+    });
+  });
 });
