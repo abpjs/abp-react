@@ -35,6 +35,10 @@ export interface UseRolesReturn {
   sortKey: string;
   /** Current sort order @since 1.0.0 */
   sortOrder: SortOrder;
+  /** Whether permissions modal is visible @since 2.2.0 */
+  visiblePermissions: boolean;
+  /** Provider key for permissions modal @since 2.2.0 */
+  permissionsProviderKey: string;
   /** Fetch all roles with optional pagination/filtering */
   fetchRoles: (params?: ABP.PageQueryParams) => Promise<RoleOperationResult>;
   /** Get a role by ID and set it as selected */
@@ -51,6 +55,10 @@ export interface UseRolesReturn {
   setSortKey: (key: string) => void;
   /** Set sort order @since 1.0.0 */
   setSortOrder: (order: SortOrder) => void;
+  /** Handle permissions modal visibility change @since 2.2.0 */
+  onVisiblePermissionsChange: (value: boolean) => void;
+  /** Open permissions modal for a role @since 2.2.0 */
+  openPermissionsModal: (providerKey: string) => void;
   /** Reset state */
   reset: () => void;
 }
@@ -108,6 +116,9 @@ export function useRoles(): UseRolesReturn {
   // Sorting state (v1.0.0)
   const [sortKey, setSortKey] = useState<string>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('');
+  // Permissions modal state (v2.2.0)
+  const [visiblePermissions, setVisiblePermissions] = useState<boolean>(false);
+  const [permissionsProviderKey, setPermissionsProviderKey] = useState<string>('');
 
   /**
    * Fetch all roles with optional pagination/filtering (v0.9.0)
@@ -224,6 +235,26 @@ export function useRoles(): UseRolesReturn {
   );
 
   /**
+   * Handle permissions modal visibility change
+   * @since 2.2.0
+   */
+  const onVisiblePermissionsChange = useCallback((value: boolean) => {
+    setVisiblePermissions(value);
+    if (!value) {
+      setPermissionsProviderKey('');
+    }
+  }, []);
+
+  /**
+   * Open permissions modal for a role
+   * @since 2.2.0
+   */
+  const openPermissionsModal = useCallback((providerKey: string) => {
+    setPermissionsProviderKey(providerKey);
+    setVisiblePermissions(true);
+  }, []);
+
+  /**
    * Reset all state
    */
   const reset = useCallback(() => {
@@ -232,6 +263,8 @@ export function useRoles(): UseRolesReturn {
     setSelectedRole(null);
     setIsLoading(false);
     setError(null);
+    setVisiblePermissions(false);
+    setPermissionsProviderKey('');
   }, []);
 
   return {
@@ -242,6 +275,8 @@ export function useRoles(): UseRolesReturn {
     error,
     sortKey,
     sortOrder,
+    visiblePermissions,
+    permissionsProviderKey,
     fetchRoles,
     getRoleById,
     createRole,
@@ -250,6 +285,8 @@ export function useRoles(): UseRolesReturn {
     setSelectedRole,
     setSortKey,
     setSortOrder,
+    onVisiblePermissionsChange,
+    openPermissionsModal,
     reset,
   };
 }

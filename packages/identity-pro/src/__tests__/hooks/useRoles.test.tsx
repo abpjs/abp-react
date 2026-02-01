@@ -44,6 +44,9 @@ describe('useRoles', () => {
     expect(result.current.error).toBeNull();
     expect(result.current.sortKey).toBe('name');
     expect(result.current.sortOrder).toBe('');
+    // v2.2.0 permissions modal state
+    expect(result.current.visiblePermissions).toBe(false);
+    expect(result.current.permissionsProviderKey).toBe('');
   });
 
   it('should fetch roles successfully', async () => {
@@ -256,5 +259,80 @@ describe('useRoles', () => {
     expect(result.current.selectedRole).toBeNull();
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeNull();
+    // v2.2.0 permissions modal state should also reset
+    expect(result.current.visiblePermissions).toBe(false);
+    expect(result.current.permissionsProviderKey).toBe('');
+  });
+
+  // v2.2.0 Features
+  describe('v2.2.0 - openPermissionsModal', () => {
+    it('should open permissions modal with provider key', () => {
+      const { result } = renderHook(() => useRoles());
+
+      act(() => {
+        result.current.openPermissionsModal('role-123');
+      });
+
+      expect(result.current.visiblePermissions).toBe(true);
+      expect(result.current.permissionsProviderKey).toBe('role-123');
+    });
+
+    it('should close permissions modal and clear provider key', () => {
+      const { result } = renderHook(() => useRoles());
+
+      // First open
+      act(() => {
+        result.current.openPermissionsModal('role-123');
+      });
+
+      expect(result.current.visiblePermissions).toBe(true);
+      expect(result.current.permissionsProviderKey).toBe('role-123');
+
+      // Then close
+      act(() => {
+        result.current.onVisiblePermissionsChange(false);
+      });
+
+      expect(result.current.visiblePermissions).toBe(false);
+      expect(result.current.permissionsProviderKey).toBe('');
+    });
+
+    it('should allow changing visibility without clearing provider key when opening', () => {
+      const { result } = renderHook(() => useRoles());
+
+      // Set provider key first via openPermissionsModal
+      act(() => {
+        result.current.openPermissionsModal('role-123');
+      });
+
+      // Close
+      act(() => {
+        result.current.onVisiblePermissionsChange(false);
+      });
+
+      // Open with a new provider key
+      act(() => {
+        result.current.openPermissionsModal('role-456');
+      });
+
+      expect(result.current.visiblePermissions).toBe(true);
+      expect(result.current.permissionsProviderKey).toBe('role-456');
+    });
+
+    it('should keep provider key when setting visibility to true', () => {
+      const { result } = renderHook(() => useRoles());
+
+      act(() => {
+        result.current.openPermissionsModal('role-123');
+      });
+
+      // Setting visibility to true should not clear the key
+      act(() => {
+        result.current.onVisiblePermissionsChange(true);
+      });
+
+      expect(result.current.visiblePermissions).toBe(true);
+      expect(result.current.permissionsProviderKey).toBe('role-123');
+    });
   });
 });

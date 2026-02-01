@@ -141,6 +141,19 @@ export class IdentityService {
   }
 
   /**
+   * Unlock a locked out user
+   * @since 2.2.0
+   * @param id - The user ID to unlock
+   * @returns Promise resolving when complete
+   */
+  unlockUser(id: string): Promise<void> {
+    return this.rest.request<null, void>({
+      method: 'PUT',
+      url: `/api/identity/users/${id}/unlock`,
+    });
+  }
+
+  /**
    * Create a new user
    * @param body - The user data to create
    * @returns Promise with the created user
