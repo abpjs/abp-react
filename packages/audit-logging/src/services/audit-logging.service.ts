@@ -1,6 +1,6 @@
 /**
  * Audit Logging Service
- * Translated from @volo/abp.ng.audit-logging v2.0.0
+ * Translated from @volo/abp.ng.audit-logging v2.4.0
  */
 
 import type { RestService } from '@abpjs/core';
@@ -11,6 +11,12 @@ import type { AuditLogging, Statistics } from '../models';
  * This service wraps the REST API calls for audit logging operations.
  */
 export class AuditLoggingService {
+  /**
+   * The API name used for REST requests.
+   * @since 2.4.0
+   */
+  apiName = 'default';
+
   constructor(private restService: RestService) {}
 
   /**

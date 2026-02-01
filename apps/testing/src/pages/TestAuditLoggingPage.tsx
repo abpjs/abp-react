@@ -1,8 +1,9 @@
 /**
  * Test page for @abpjs/audit-logging package
- * Tests: AuditLogsComponent, useAuditLogs hook, services, constants
+ * Tests: AuditLogsComponent, useAuditLogs hook, services, constants, enums
  * @since 2.0.0
  * @updated 2.2.0 - Dependency updates only (no new features)
+ * @updated 2.4.0 - Added apiName property, eAuditLoggingComponents enum
  */
 import { useState } from 'react'
 import {
@@ -11,6 +12,8 @@ import {
   AUDIT_LOGGING_ROUTES,
   HTTP_METHODS,
   HTTP_STATUS_CODES,
+  eAuditLoggingComponents,
+  AuditLoggingService,
 } from '@abpjs/audit-logging'
 import type { AuditLogging, AuditLoggingStateService } from '@abpjs/audit-logging'
 
@@ -216,11 +219,99 @@ function TestUseAuditLogsHook() {
   )
 }
 
+function TestV240Features() {
+  // Create a mock service to demonstrate apiName
+  const mockRestService = { request: async () => ({}) }
+  const service = new AuditLoggingService(mockRestService as any)
+
+  return (
+    <div className="test-section">
+      <h2>v2.4.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>apiName Property <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.4.0)</span></h3>
+        <p>AuditLoggingService now has an <code>apiName</code> property for REST request configuration:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`// Default API name
+const service = new AuditLoggingService(restService);
+console.log(service.apiName); // 'default'
+
+// Can be customized if needed
+service.apiName = 'custom-api';`}
+        </pre>
+        <p style={{ marginTop: '0.5rem' }}>
+          Current apiName: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{service.apiName}</code>
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eAuditLoggingComponents Enum <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.4.0)</span></h3>
+        <p>New enum for component identifiers, useful for component registration and identification:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import { eAuditLoggingComponents } from '@abpjs/audit-logging';
+
+// Component identifiers
+console.log(eAuditLoggingComponents.AuditLogs);
+// Output: 'AuditLogging.AuditLogsComponent'
+
+// Usage in component registration
+const componentRegistry = {
+  [eAuditLoggingComponents.AuditLogs]: AuditLogsComponent
+};`}
+        </pre>
+        <p style={{ marginTop: '0.5rem' }}>
+          Available components:
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Enum Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}><code>AuditLogs</code></td>
+              <td style={{ padding: '8px' }}><code>{eAuditLoggingComponents.AuditLogs}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.4.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>apiName</td>
+              <td>string</td>
+              <td>REST API name (default: 'default')</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAuditLoggingComponents</td>
+              <td>enum</td>
+              <td>Component identifiers for registration</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestAuditLoggingServiceSection() {
   const [serviceInfo, setServiceInfo] = useState<string>('')
 
   const testService = () => {
     setServiceInfo(`Service instantiated. Methods available:
+- apiName (v2.4.0): string property for REST API name
 - getAuditLogs(params)
 - getAuditLogById(id)
 - getAverageExecutionDurationPerDayStatistics(params)
@@ -253,6 +344,9 @@ import { useRestService } from '@abpjs/core';
 function MyComponent() {
   const restService = useRestService();
   const service = new AuditLoggingService(restService);
+
+  // v2.4.0: Access apiName property
+  console.log(service.apiName); // 'default'
 
   // Use service methods
   const logs = await service.getAuditLogs({
@@ -620,12 +714,13 @@ const filter: Statistics.Filter = {
 export function TestAuditLoggingPage() {
   return (
     <div>
-      <h1>@abpjs/audit-logging Tests (v2.2.0)</h1>
-      <p style={{ marginBottom: '8px' }}>Testing audit logging components, hooks, and services.</p>
-      <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.2.0 - Dependency updates only (no new features from v2.1.1)
+      <h1>@abpjs/audit-logging Tests (v2.4.0)</h1>
+      <p style={{ marginBottom: '8px' }}>Testing audit logging components, hooks, services, and enums.</p>
+      <p style={{ fontSize: '14px', color: '#4f4', marginBottom: '16px' }}>
+        Version 2.4.0 - Added apiName property, eAuditLoggingComponents enum
       </p>
 
+      <TestV240Features />
       <TestAuditLogsComponent />
       <TestUseAuditLogsHook />
       <TestAuditLoggingServiceSection />
