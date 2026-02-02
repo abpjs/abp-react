@@ -89,6 +89,15 @@ export namespace Identity {
     roleNames: string[];
   }
 
+  /**
+   * Request payload for changing a user's password (admin action)
+   * @since 2.7.0
+   */
+  export interface ChangePasswordRequest {
+    /** The new password to set */
+    newPassword: string;
+  }
+
   // ========================
   // Pro Features: Claims
   // ========================
