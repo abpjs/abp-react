@@ -9,6 +9,8 @@ import {
   getSettingManagementService,
   getSettingManagementStateService,
   SETTING_MANAGEMENT_ROUTES,
+  eSettingManagementComponents,
+  eSettingManagementRouteNames,
 } from '@abpjs/setting-management'
 import type { SettingTab, SettingManagement } from '@abpjs/setting-management'
 
@@ -534,13 +536,102 @@ function TestModels() {
   )
 }
 
+function TestV270Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v2.7.0</h2>
+
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>eSettingManagementComponents Enum</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Component keys for the Setting Management module. Used for component replacement/customization.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>
+                <code>SettingManagement</code>
+              </td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+                  {eSettingManagementComponents.SettingManagement}
+                </code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>eSettingManagementRouteNames Enum</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Route name keys for the Setting Management module. Used for route localization and identification.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value (Localization Key)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>
+                <code>Settings</code>
+              </td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+                  {eSettingManagementRouteNames.Settings}
+                </code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Examples</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import {
+  eSettingManagementComponents,
+  eSettingManagementRouteNames
+} from '@abpjs/setting-management';
+
+// Component replacement key
+const componentKey = eSettingManagementComponents.SettingManagement;
+// => 'SettingManagement.SettingManagementComponent'
+
+// Route localization key
+const routeKey = eSettingManagementRouteNames.Settings;
+// => 'AbpSettingManagement::Settings'
+
+// Use in component registry
+const componentRegistry = {
+  [eSettingManagementComponents.SettingManagement]: MyCustomSettingLayout,
+};
+
+// Use for localization
+const localizedName = localize(eSettingManagementRouteNames.Settings);`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 export function TestSettingManagementPage() {
   return (
     <div>
-      <h1>@abpjs/setting-management Tests v2.4.0</h1>
+      <h1>@abpjs/setting-management Tests v2.7.0</h1>
       <p>Testing setting management layout, hook, and services.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.4.0 - Dependency updates only (no new features)</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.7.0 - Added component and route name enums</p>
 
+      <TestV270Features />
       <TestSettingLayoutComponent />
       <TestSettingManagementHook />
       <TestSettingManagementService />
