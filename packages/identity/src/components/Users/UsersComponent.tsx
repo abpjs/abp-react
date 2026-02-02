@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useLocalization, ABP } from '@abpjs/core';
 import { Modal, useConfirmation, Toaster, Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
 import { PermissionManagementModal } from '@abpjs/permission-management';
+import { eIdentityComponents } from '../../enums';
 import {
   Box,
   Flex,
@@ -620,5 +621,12 @@ export function UsersComponent({
     </Box>
   );
 }
+
+/**
+ * Component key for UsersComponent in the component replacement system.
+ * This can be used to replace the UsersComponent with a custom implementation.
+ * @since 2.7.0
+ */
+UsersComponent.componentKey = eIdentityComponents.Users;
 
 export default UsersComponent;

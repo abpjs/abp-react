@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useLocalization } from '@abpjs/core';
 import { Modal, useConfirmation, Toaster, Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
 import { PermissionManagementModal } from '@abpjs/permission-management';
+import { eIdentityComponents } from '../../enums';
 import {
   Box,
   Flex,
@@ -381,5 +382,12 @@ export function RolesComponent({
     </Box>
   );
 }
+
+/**
+ * Component key for RolesComponent in the component replacement system.
+ * This can be used to replace the RolesComponent with a custom implementation.
+ * @since 2.7.0
+ */
+RolesComponent.componentKey = eIdentityComponents.Roles;
 
 export default RolesComponent;

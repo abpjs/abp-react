@@ -758,4 +758,27 @@ describe('UsersComponent', () => {
       });
     });
   });
+
+  /**
+   * v2.7.0: Component key tests
+   */
+  describe('v2.7.0 - componentKey static property', () => {
+    it('should have componentKey static property', () => {
+      expect(UsersComponent.componentKey).toBeDefined();
+    });
+
+    it('should have componentKey matching eIdentityComponents.Users', () => {
+      expect(UsersComponent.componentKey).toBe('Identity.UsersComponent');
+    });
+
+    it('should have componentKey as a string', () => {
+      expect(typeof UsersComponent.componentKey).toBe('string');
+    });
+
+    it('should have componentKey usable for component replacement', () => {
+      // The componentKey should be a valid replacement key
+      const key = UsersComponent.componentKey;
+      expect(key).toMatch(/^Identity\.\w+Component$/);
+    });
+  });
 });
