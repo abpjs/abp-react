@@ -1,7 +1,13 @@
 /**
  * @abpjs/language-management
  * ABP Framework Language Management module for React
- * Translated from @volo/abp.ng.language-management v2.4.0
+ * Translated from @volo/abp.ng.language-management v2.7.0
+ *
+ * Changes in v2.7.0:
+ * - Changed eLanguageManagementComponents from enum to const object
+ * - Added LanguageManagementComponentKey type
+ * - Added eLanguageManagementRouteNames const object (Administration, Languages, LanguageTexts)
+ * - Added LanguageManagementRouteNameKey type
  *
  * Changes in v2.4.0:
  * - Added apiName property to LanguageManagementService
@@ -18,7 +24,7 @@
  * - No functional code changes
  *
  * @since 2.0.0
- * @updated 2.4.0
+ * @updated 2.7.0
  */
 
 // Models
