@@ -4,6 +4,7 @@
  * @since 2.0.0
  * @updated 2.2.0 - Dependency updates (no new features)
  * @updated 2.4.0 - Added apiName property, eLanguageManagementComponents enum
+ * @updated 2.7.0 - Added eLanguageManagementRouteNames, LanguageManagementComponentKey/RouteNameKey types
  */
 import { useState } from 'react'
 import { useRestService } from '@abpjs/core'
@@ -16,6 +17,9 @@ import {
   LanguageManagementStateService,
   LanguageManagementService,
   eLanguageManagementComponents,
+  eLanguageManagementRouteNames,
+  type LanguageManagementComponentKey,
+  type LanguageManagementRouteNameKey,
 } from '@abpjs/language-management'
 import type { LanguageManagement } from '@abpjs/language-management'
 
@@ -105,6 +109,190 @@ componentRegistry[eLanguageManagementComponents.LanguageTexts] = LanguageTextsCo
               <td style={{ padding: '8px' }}><code>eLanguageManagementComponents</code></td>
               <td style={{ padding: '8px' }}>Enum</td>
               <td style={{ padding: '8px' }}>Component identifiers (Languages, LanguageTexts)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Test section for v2.7.0 features: eLanguageManagementRouteNames, LanguageManagementComponentKey/RouteNameKey types
+ */
+function TestV270Features() {
+  // Demo type-safe component lookup with LanguageManagementComponentKey
+  const getComponentDisplay = (key: LanguageManagementComponentKey): string => {
+    const displays: Record<LanguageManagementComponentKey, string> = {
+      'LanguageManagement.LanguagesComponent': 'Languages Management',
+      'LanguageManagement.LanguageTextsComponent': 'Language Texts Management',
+    }
+    return displays[key]
+  }
+
+  // Demo type-safe route lookup with LanguageManagementRouteNameKey
+  const getRouteDisplay = (key: LanguageManagementRouteNameKey): string => {
+    const displays: Record<LanguageManagementRouteNameKey, string> = {
+      'AbpUiNavigation::Menu:Administration': 'Administration Menu',
+      'LanguageManagement::Menu:Languages': 'Languages Page',
+      'LanguageManagement::LanguageTexts': 'Language Texts Page',
+    }
+    return displays[key]
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v2.7.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      <div className="test-card">
+        <h3>eLanguageManagementRouteNames Const Object (v2.7.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New const object for route name localization keys used in navigation configuration.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Display</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eLanguageManagementRouteNames).map(([key, value]) => (
+              <tr key={key} style={{ borderBottom: '1px solid #222' }}>
+                <td style={{ padding: '8px' }}><code>{key}</code></td>
+                <td style={{ padding: '8px', fontSize: '12px' }}><code>{value}</code></td>
+                <td style={{ padding: '8px', fontSize: '12px' }}>{getRouteDisplay(value as LanguageManagementRouteNameKey)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Navigation configuration
+import { eLanguageManagementRouteNames } from '@abpjs/language-management';
+
+const routes = [
+  { name: eLanguageManagementRouteNames.Languages, path: '/language-management/languages' },
+  { name: eLanguageManagementRouteNames.LanguageTexts, path: '/language-management/language-texts' },
+];`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Type-Safe Keys (v2.7.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New TypeScript types for type-safe component and route key usage.
+        </p>
+        <div style={{ marginBottom: '1rem' }}>
+          <h4 style={{ fontSize: '14px', marginBottom: '0.5rem' }}>LanguageManagementComponentKey</h4>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {Object.values(eLanguageManagementComponents).map((key) => (
+              <div
+                key={key}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #4ade80',
+                  fontSize: '12px',
+                }}
+              >
+                {key} = {getComponentDisplay(key as LanguageManagementComponentKey)}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h4 style={{ fontSize: '14px', marginBottom: '0.5rem' }}>LanguageManagementRouteNameKey</h4>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {Object.values(eLanguageManagementRouteNames).map((key) => (
+              <div
+                key={key}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #60a5fa',
+                  fontSize: '11px',
+                }}
+              >
+                {key.split('::')[1]}
+              </div>
+            ))}
+          </div>
+        </div>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Type-safe lookups
+import {
+  eLanguageManagementComponents,
+  eLanguageManagementRouteNames,
+  LanguageManagementComponentKey,
+  LanguageManagementRouteNameKey,
+} from '@abpjs/language-management';
+
+// Component key type ensures only valid keys
+const key: LanguageManagementComponentKey = eLanguageManagementComponents.Languages;
+const components: Record<LanguageManagementComponentKey, React.FC> = { ... };
+
+// Route name key type for localization
+const routeKey: LanguageManagementRouteNameKey = eLanguageManagementRouteNames.Languages;
+const routes: Record<LanguageManagementRouteNameKey, string> = { ... };`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>eLanguageManagementComponents (Updated in v2.7.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Changed from enum to const object for better tree-shaking support.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Languages</code></td>
+              <td style={{ padding: '8px' }}><code>{eLanguageManagementComponents.Languages}</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageTexts</code></td>
+              <td style={{ padding: '8px' }}><code>{eLanguageManagementComponents.LanguageTexts}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.7.0 API Reference</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eLanguageManagementRouteNames</code></td>
+              <td style={{ padding: '8px' }}>Const Object</td>
+              <td style={{ padding: '8px' }}>Route name localization keys (Administration, Languages, LanguageTexts)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageManagementComponentKey</code></td>
+              <td style={{ padding: '8px' }}>Type</td>
+              <td style={{ padding: '8px' }}>Union type of all component key values</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageManagementRouteNameKey</code></td>
+              <td style={{ padding: '8px' }}>Type</td>
+              <td style={{ padding: '8px' }}>Union type of all route name key values</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>eLanguageManagementComponents</code></td>
+              <td style={{ padding: '8px' }}>Const Object</td>
+              <td style={{ padding: '8px' }}>Changed from enum to const object for better tree-shaking</td>
             </tr>
           </tbody>
         </table>
@@ -703,12 +891,13 @@ function TestModels() {
 export function TestLanguageManagementPage() {
   return (
     <div>
-      <h1>@abpjs/language-management Tests (v2.4.0)</h1>
+      <h1>@abpjs/language-management Tests (v2.7.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing language management components, hooks, and services.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.4.0 - Added apiName property, eLanguageManagementComponents enum
+        Version 2.7.0 - Added eLanguageManagementRouteNames, LanguageManagementComponentKey/RouteNameKey types
       </p>
 
+      <TestV270Features />
       <TestV240Features />
       <TestLanguagesComponent />
       <TestLanguageTextsComponent />
