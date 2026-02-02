@@ -19,6 +19,8 @@ import {
   IDENTITY_ROUTE_PATHS,
   IDENTITY_POLICIES,
   IdentityService,
+  eIdentityComponents,
+  eIdentityRouteNames,
 } from '@abpjs/identity'
 import type { Identity, PasswordRule } from '@abpjs/identity'
 
@@ -1406,6 +1408,114 @@ function MyRolesWrapper(props: RolesComponentProps) {
   )
 }
 
+function TestV270Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v2.7.0</h2>
+
+      <div className="test-card">
+        <h3>eIdentityComponents Enum</h3>
+        <p>New enum for component replacement keys:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { eIdentityComponents } from '@abpjs/identity'
+
+// Component replacement keys
+const rolesKey = eIdentityComponents.Roles    // "Identity.RolesComponent"
+const usersKey = eIdentityComponents.Users    // "Identity.UsersComponent"`}</pre>
+        <h4 style={{ marginTop: '1rem' }}>Enum Values:</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>Roles</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eIdentityComponents.Roles}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>Users</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eIdentityComponents.Users}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>eIdentityRouteNames Enum</h3>
+        <p>New enum for route name constants (used for navigation menus and breadcrumbs):</p>
+        <pre style={{ fontSize: '12px' }}>{`import { eIdentityRouteNames } from '@abpjs/identity'
+
+// Route names for localization
+const admin = eIdentityRouteNames.Administration
+const identity = eIdentityRouteNames.IdentityManagement
+const roles = eIdentityRouteNames.Roles
+const users = eIdentityRouteNames.Users`}</pre>
+        <h4 style={{ marginTop: '1rem' }}>Enum Values:</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>Administration</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eIdentityRouteNames.Administration}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>IdentityManagement</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eIdentityRouteNames.IdentityManagement}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>Roles</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eIdentityRouteNames.Roles}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>Users</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eIdentityRouteNames.Users}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Component Keys (Static Properties)</h3>
+        <p>Components now have <code>componentKey</code> static properties for the component replacement system:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { RolesComponent, UsersComponent } from '@abpjs/identity'
+
+// Access component keys directly from components
+console.log(RolesComponent.componentKey) // "Identity.RolesComponent"
+console.log(UsersComponent.componentKey) // "Identity.UsersComponent"`}</pre>
+        <h4 style={{ marginTop: '1rem' }}>Current Values:</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Component</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>componentKey</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>RolesComponent</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{RolesComponent.componentKey}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>UsersComponent</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{UsersComponent.componentKey}</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '1rem' }}>
+          Use these keys to replace the default components with custom implementations.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function TestV240Features() {
   const restService = useRestService()
   const identityService = useMemo(() => new IdentityService(restService), [restService])
@@ -1524,13 +1634,19 @@ console.log(response.totalCount) // Total count`}</pre>
 export function TestIdentityPage() {
   return (
     <div>
-      <h1>@abpjs/identity Tests v2.4.0</h1>
+      <h1>@abpjs/identity Tests v2.7.0</h1>
       <p>Testing identity management components and hooks for role and user management.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.4.0 - Added apiName property and getAllRoles() method to IdentityService</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.7.0 - Added eIdentityComponents, eIdentityRouteNames enums and componentKey static properties</p>
 
-      {/* v2.4.0 Features - Highlighted at top */}
+      {/* v2.7.0 Features - Highlighted at top */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
-        v2.4.0 New Features
+        v2.7.0 New Features
+      </h2>
+      <TestV270Features />
+
+      {/* v2.4.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #3498db', paddingTop: '1rem' }}>
+        v2.4.0 Features
       </h2>
       <TestV240Features />
 

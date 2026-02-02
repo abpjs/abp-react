@@ -555,4 +555,27 @@ describe('RolesComponent', () => {
       });
     });
   });
+
+  /**
+   * v2.7.0: Component key tests
+   */
+  describe('v2.7.0 - componentKey static property', () => {
+    it('should have componentKey static property', () => {
+      expect(RolesComponent.componentKey).toBeDefined();
+    });
+
+    it('should have componentKey matching eIdentityComponents.Roles', () => {
+      expect(RolesComponent.componentKey).toBe('Identity.RolesComponent');
+    });
+
+    it('should have componentKey as a string', () => {
+      expect(typeof RolesComponent.componentKey).toBe('string');
+    });
+
+    it('should have componentKey usable for component replacement', () => {
+      // The componentKey should be a valid replacement key
+      const key = RolesComponent.componentKey;
+      expect(key).toMatch(/^Identity\.\w+Component$/);
+    });
+  });
 });
