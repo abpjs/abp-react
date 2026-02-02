@@ -8,6 +8,7 @@ import { Box, Heading, Input, Link, HStack, Show } from '@chakra-ui/react';
 import { TenantBox } from '../TenantBox';
 import { usePasswordFlow, useSelfRegistrationEnabled } from '../../hooks';
 import type { LoginFormData } from '../../models';
+import { eAccountComponents } from '../../enums';
 import {
   Card,
   Container,
@@ -74,6 +75,7 @@ export interface LoginFormProps {
  * It handles user authentication using OAuth password flow.
  *
  * @since 2.0.0 - Added isSelfRegistrationEnabled check from ABP settings
+ * @since 2.7.0 - Added authWrapperKey static property for component replacement system
  *
  * @example
  * ```tsx
@@ -235,5 +237,11 @@ export function LoginForm({
     </Flex>
   );
 }
+
+/**
+ * Component key for AuthWrapper used in LoginForm
+ * @since 2.7.0
+ */
+LoginForm.authWrapperKey = eAccountComponents.AuthWrapper;
 
 export default LoginForm;

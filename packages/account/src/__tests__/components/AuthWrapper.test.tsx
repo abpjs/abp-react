@@ -325,6 +325,17 @@ describe('AuthWrapper', () => {
     });
   });
 
+  // v2.7.0: Component key tests
+  describe('tenantBoxKey static property (v2.7.0)', () => {
+    it('should have tenantBoxKey static property', () => {
+      expect(AuthWrapper.tenantBoxKey).toBeDefined();
+    });
+
+    it('should have tenantBoxKey matching eAccountComponents.TenantBox', () => {
+      expect(AuthWrapper.tenantBoxKey).toBe('Account.TenantBoxComponent');
+    });
+  });
+
   // v2.4.0: isMultiTenancyEnabled prop tests
   describe('isMultiTenancyEnabled prop (v2.4.0)', () => {
     it('should have isMultiTenancyEnabled default to true', () => {

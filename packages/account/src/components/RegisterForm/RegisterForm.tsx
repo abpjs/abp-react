@@ -9,6 +9,7 @@ import { Box, Heading, Input, Link, HStack, Show } from '@chakra-ui/react';
 import { TenantBox } from '../TenantBox';
 import { useAccountService, useSelfRegistrationEnabled } from '../../hooks';
 import type { RegisterFormData, RegisterRequest } from '../../models';
+import { eAccountComponents } from '../../enums';
 import {
   Card,
   Container,
@@ -109,6 +110,7 @@ export interface RegisterFormProps {
  *
  * @since 0.9.0 - Now uses AccountService for registration
  * @since 2.0.0 - Added isSelfRegistrationEnabled check from ABP settings
+ * @since 2.7.0 - Added authWrapperKey static property for component replacement system
  *
  * @example
  * ```tsx
@@ -331,5 +333,11 @@ export function RegisterForm({
     </Flex>
   );
 }
+
+/**
+ * Component key for AuthWrapper used in RegisterForm
+ * @since 2.7.0
+ */
+RegisterForm.authWrapperKey = eAccountComponents.AuthWrapper;
 
 export default RegisterForm;

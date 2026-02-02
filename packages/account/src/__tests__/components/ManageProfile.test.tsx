@@ -251,4 +251,23 @@ describe('ManageProfile', () => {
     expect(screen.getByTestId('tabpanel-personal-settings')).toBeInTheDocument();
     expect(screen.getByTestId('tabpanel-change-password')).toBeInTheDocument();
   });
+
+  // v2.7.0: Component key tests
+  describe('component keys static properties (v2.7.0)', () => {
+    it('should have changePasswordKey static property', () => {
+      expect(ManageProfile.changePasswordKey).toBeDefined();
+    });
+
+    it('should have changePasswordKey matching eAccountComponents.ChangePassword', () => {
+      expect(ManageProfile.changePasswordKey).toBe('Account.ChangePasswordComponent');
+    });
+
+    it('should have personalSettingsKey static property', () => {
+      expect(ManageProfile.personalSettingsKey).toBeDefined();
+    });
+
+    it('should have personalSettingsKey matching eAccountComponents.PersonalSettings', () => {
+      expect(ManageProfile.personalSettingsKey).toBe('Account.PersonalSettingsComponent');
+    });
+  });
 });

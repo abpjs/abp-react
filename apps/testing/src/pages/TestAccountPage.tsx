@@ -23,6 +23,9 @@ import {
   DEFAULT_REDIRECT_URL,
   // v2.0.0 additions
   useSelfRegistrationEnabled,
+  // v2.7.0 additions
+  eAccountComponents,
+  eAccountRouteNames,
 } from '@abpjs/account'
 import type { Account } from '@abpjs/account'
 import { useAuth, useConfig } from '@abpjs/core'
@@ -822,6 +825,130 @@ function TestAuthState() {
   )
 }
 
+function TestV270Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v2.7.0</h2>
+
+      <div className="test-card">
+        <h3>eAccountComponents Enum</h3>
+        <p>Component keys for the ABP component replacement system:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eAccountComponents).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px' }}><code>{key}</code></td>
+                <td style={{ padding: '8px', color: '#2ecc71' }}><code>{value}</code></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>eAccountRouteNames Enum</h3>
+        <p>Route name constants for navigation and localization:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eAccountRouteNames).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px' }}><code>{key}</code></td>
+                <td style={{ padding: '8px', color: '#646cff' }}><code>{value}</code></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Component Keys (Static Properties)</h3>
+        <p>Components now have static keys for the component replacement system:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Component</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Static Property</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>AuthWrapper</td>
+              <td style={{ padding: '8px' }}><code>tenantBoxKey</code></td>
+              <td style={{ padding: '8px', color: '#2ecc71' }}><code>{AuthWrapper.tenantBoxKey}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>LoginForm</td>
+              <td style={{ padding: '8px' }}><code>authWrapperKey</code></td>
+              <td style={{ padding: '8px', color: '#2ecc71' }}><code>{LoginForm.authWrapperKey}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>RegisterForm</td>
+              <td style={{ padding: '8px' }}><code>authWrapperKey</code></td>
+              <td style={{ padding: '8px', color: '#2ecc71' }}><code>{RegisterForm.authWrapperKey}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>ManageProfile</td>
+              <td style={{ padding: '8px' }}><code>changePasswordKey</code></td>
+              <td style={{ padding: '8px', color: '#2ecc71' }}><code>{ManageProfile.changePasswordKey}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>ManageProfile</td>
+              <td style={{ padding: '8px' }}><code>personalSettingsKey</code></td>
+              <td style={{ padding: '8px', color: '#2ecc71' }}><code>{ManageProfile.personalSettingsKey}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>TenantBox</td>
+              <td style={{ padding: '8px' }}><code>componentKey</code></td>
+              <td style={{ padding: '8px', color: '#2ecc71' }}><code>{TenantBox.componentKey}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>TenantIdResponse.name Property</h3>
+        <p>The <code>TenantIdResponse</code> interface now includes an optional <code>name</code> property:</p>
+        <pre style={{ fontSize: '12px' }}>{`interface TenantIdResponse {
+  success: boolean;
+  tenantId: string;
+  name?: string;  // NEW in v2.7.0
+}`}</pre>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+          When the API returns a tenant name, it will be used instead of the user-entered name.
+          This ensures the displayed tenant name matches the server's canonical name.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example: Component Replacement</h3>
+        <pre style={{ fontSize: '12px' }}>{`import { eAccountComponents, LoginForm } from '@abpjs/account'
+
+// Use the enum value to identify components
+const loginKey = eAccountComponents.Login  // "Account.LoginComponent"
+
+// Components also expose their own keys
+const wrapperKey = LoginForm.authWrapperKey  // "Account.AuthWrapperComponent"
+
+// Use with ABP's component replacement system
+// to customize or replace default components`}</pre>
+      </div>
+    </div>
+  )
+}
+
 function TestV240Features() {
   const accountService = useAccountService()
 
@@ -866,13 +993,19 @@ console.log(accountService.apiName) // "default"`}</pre>
 export function TestAccountPage() {
   return (
     <div>
-      <h1>@abpjs/account Tests (v2.4.0)</h1>
+      <h1>@abpjs/account Tests (v2.7.0)</h1>
       <p>Testing login, register, tenant switching, and account-related features.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.4.0 - Added isMultiTenancyEnabled prop and apiName property</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.7.0 - Added eAccountComponents, eAccountRouteNames enums and component keys</p>
 
-      {/* v2.4.0 Features - Highlighted at top */}
+      {/* v2.7.0 Features - Highlighted at top */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
-        v2.4.0 New Features
+        v2.7.0 New Features
+      </h2>
+      <TestV270Features />
+
+      {/* v2.4.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #f39c12', paddingTop: '1rem' }}>
+        v2.4.0 Features
       </h2>
       <TestV240Features />
 

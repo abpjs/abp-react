@@ -167,8 +167,15 @@ export interface RegisterResponse {
 
 /**
  * Response from tenant lookup API
+ *
+ * @since 2.7.0 - Added name property
  */
 export interface TenantIdResponse {
   success: boolean;
   tenantId: string;
+  /**
+   * The name of the tenant
+   * @since 2.7.0
+   */
+  name?: string;
 }

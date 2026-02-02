@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { Box, Container, Stack, Flex, Text } from '@chakra-ui/react';
 import { useLocalization, useSetting } from '@abpjs/core';
+import { eAccountComponents } from '../../enums';
 
 /**
  * ABP setting key for local login
@@ -63,6 +64,7 @@ export interface AuthWrapperProps {
  * @since 1.1.0
  * @since 2.0.0 - Added enableLocalLogin prop to control local login visibility
  * @since 2.4.0 - Added isMultiTenancyEnabled prop (equivalent to Angular's isMultiTenancyEnabled$)
+ * @since 2.7.0 - Added tenantBoxKey static property for component replacement system
  *
  * @example
  * ```tsx
@@ -130,5 +132,11 @@ export function AuthWrapper({
     </Flex>
   );
 }
+
+/**
+ * Component key for TenantBox used in AuthWrapper
+ * @since 2.7.0
+ */
+AuthWrapper.tenantBoxKey = eAccountComponents.TenantBox;
 
 export default AuthWrapper;
