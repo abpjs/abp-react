@@ -1,7 +1,12 @@
 /**
  * @abpjs/tenant-management
  * ABP Framework Tenant Management module for React
- * Translated from @abp/ng.tenant-management v2.4.0
+ * Translated from @abp/ng.tenant-management v2.7.0
+ *
+ * Changes in v2.7.0:
+ * - Added eTenantManagementComponents enum for component replacement keys
+ * - Added eTenantManagementRouteNames enum for route name keys
+ * - Added componentKey static property to TenantManagementModal
  *
  * Changes in v2.4.0:
  * - Added apiName property to TenantManagementService (defaults to 'default')
@@ -31,6 +36,9 @@
  * - Updated onSearch signature: (value: any) -> (value: string)
  * - Updated onPageChange signature: (data: any) -> (page: number)
  */
+
+// Enums (v2.7.0)
+export * from './enums';
 
 // Models
 export * from './models';

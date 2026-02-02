@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { TenantManagementModal, type TenantManagementModalProps } from '../../components/TenantManagementModal/TenantManagementModal';
 import type { TenantManagement } from '../../models';
+import { eTenantManagementComponents } from '../../enums';
 
 // Define the hook return type for mocking
 interface MockHookReturn {
@@ -251,6 +252,28 @@ describe('TenantManagementModal', () => {
       );
 
       expect(screen.getByTestId('alert-error')).toHaveTextContent('An error occurred');
+    });
+  });
+
+  describe('componentKey static property (v2.7.0)', () => {
+    it('should have componentKey static property', () => {
+      expect(TenantManagementModal.componentKey).toBeDefined();
+    });
+
+    it('should have componentKey matching eTenantManagementComponents.Tenants', () => {
+      expect(TenantManagementModal.componentKey).toBe(
+        eTenantManagementComponents.Tenants
+      );
+    });
+
+    it('should have componentKey with correct value', () => {
+      expect(TenantManagementModal.componentKey).toBe(
+        'TenantManagement.TenantsComponent'
+      );
+    });
+
+    it('should have componentKey as string type', () => {
+      expect(typeof TenantManagementModal.componentKey).toBe('string');
     });
   });
 });

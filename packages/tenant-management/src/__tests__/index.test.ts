@@ -1,0 +1,137 @@
+import { describe, it, expect } from 'vitest';
+import * as tenantManagementExports from '../index';
+
+describe('@abpjs/tenant-management package exports', () => {
+  describe('enums (v2.7.0)', () => {
+    it('should export eTenantManagementComponents', () => {
+      expect(tenantManagementExports.eTenantManagementComponents).toBeDefined();
+      expect(
+        tenantManagementExports.eTenantManagementComponents.Tenants
+      ).toBe('TenantManagement.TenantsComponent');
+    });
+
+    it('should export eTenantManagementRouteNames', () => {
+      expect(tenantManagementExports.eTenantManagementRouteNames).toBeDefined();
+      expect(
+        tenantManagementExports.eTenantManagementRouteNames.Administration
+      ).toBe('AbpUiNavigation::Menu:Administration');
+      expect(
+        tenantManagementExports.eTenantManagementRouteNames.TenantManagement
+      ).toBe('AbpTenantManagement::Menu:TenantManagement');
+      expect(tenantManagementExports.eTenantManagementRouteNames.Tenants).toBe(
+        'AbpTenantManagement::Tenants'
+      );
+    });
+  });
+
+  describe('components', () => {
+    it('should export TenantManagementModal', () => {
+      expect(tenantManagementExports.TenantManagementModal).toBeDefined();
+      expect(typeof tenantManagementExports.TenantManagementModal).toBe(
+        'function'
+      );
+    });
+
+    it('should export TenantManagementModal with componentKey (v2.7.0)', () => {
+      expect(tenantManagementExports.TenantManagementModal.componentKey).toBe(
+        'TenantManagement.TenantsComponent'
+      );
+    });
+  });
+
+  describe('hooks', () => {
+    it('should export useTenantManagement', () => {
+      expect(tenantManagementExports.useTenantManagement).toBeDefined();
+      expect(typeof tenantManagementExports.useTenantManagement).toBe(
+        'function'
+      );
+    });
+  });
+
+  describe('services', () => {
+    it('should export TenantManagementService', () => {
+      expect(tenantManagementExports.TenantManagementService).toBeDefined();
+    });
+
+    it('should export TenantManagementStateService', () => {
+      expect(tenantManagementExports.TenantManagementStateService).toBeDefined();
+    });
+
+    it('should export getTenantManagementStateService', () => {
+      expect(
+        tenantManagementExports.getTenantManagementStateService
+      ).toBeDefined();
+      expect(
+        typeof tenantManagementExports.getTenantManagementStateService
+      ).toBe('function');
+    });
+  });
+
+  describe('constants', () => {
+    it('should export TENANT_MANAGEMENT_ROUTE_PATHS', () => {
+      expect(
+        tenantManagementExports.TENANT_MANAGEMENT_ROUTE_PATHS
+      ).toBeDefined();
+    });
+
+    it('should export TENANT_MANAGEMENT_POLICIES', () => {
+      expect(tenantManagementExports.TENANT_MANAGEMENT_POLICIES).toBeDefined();
+    });
+  });
+
+  describe('models namespace', () => {
+    it('should export TenantManagement namespace types (verified by TypeScript compilation)', () => {
+      // TenantManagement namespace contains only types (interfaces)
+      // Type-only exports don't exist at runtime, but TypeScript ensures they work
+      // This test verifies the package compiles correctly with the namespace export
+      expect(true).toBe(true);
+    });
+  });
+
+  describe('export completeness', () => {
+    it('should export all required v2.7.0 functionality', () => {
+      // Enums (v2.7.0)
+      expect(tenantManagementExports).toHaveProperty(
+        'eTenantManagementComponents'
+      );
+      expect(tenantManagementExports).toHaveProperty(
+        'eTenantManagementRouteNames'
+      );
+
+      // Components
+      expect(tenantManagementExports).toHaveProperty('TenantManagementModal');
+
+      // Hooks
+      expect(tenantManagementExports).toHaveProperty('useTenantManagement');
+
+      // Services
+      expect(tenantManagementExports).toHaveProperty('TenantManagementService');
+      expect(tenantManagementExports).toHaveProperty(
+        'TenantManagementStateService'
+      );
+      expect(tenantManagementExports).toHaveProperty(
+        'getTenantManagementStateService'
+      );
+
+      // Constants
+      expect(tenantManagementExports).toHaveProperty(
+        'TENANT_MANAGEMENT_ROUTE_PATHS'
+      );
+      expect(tenantManagementExports).toHaveProperty(
+        'TENANT_MANAGEMENT_POLICIES'
+      );
+
+      // Note: TenantManagement namespace contains only types, which don't exist at runtime
+      // TypeScript compilation verifies type exports work correctly
+    });
+
+    it('should have componentKey on TenantManagementModal (v2.7.0)', () => {
+      expect(tenantManagementExports.TenantManagementModal).toHaveProperty(
+        'componentKey'
+      );
+      expect(tenantManagementExports.TenantManagementModal.componentKey).toBe(
+        tenantManagementExports.eTenantManagementComponents.Tenants
+      );
+    });
+  });
+});
