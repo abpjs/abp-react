@@ -3,12 +3,25 @@
  * Tests: Layouts, Navigation, LayoutService
  * @since 0.9.0
  * @updated 2.4.0 - InitialService change (no React impact - uses Chakra UI)
+ * @updated 2.7.0 - New public API components, enums, and LayoutStateService
  */
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { selectRoutes, useConfig, useAuth, useEnvironment } from '@abpjs/core'
-import { useLayoutService, useNavigationElements, useBranding } from '@abpjs/theme-basic'
+import {
+  useLayoutService,
+  useNavigationElements,
+  useBranding,
+  useLayoutStateService,
+  eThemeBasicComponents,
+  eNavigationElementNames,
+  LogoComponent,
+  LayoutApplication,
+} from '@abpjs/theme-basic'
+
+// These are displayed in code examples but not rendered directly
+// import { RoutesComponent, NavItemsComponent } from '@abpjs/theme-basic'
 
 function TestLayoutService() {
   const layoutService = useLayoutService()
@@ -268,10 +281,201 @@ function TestApplicationInfo() {
   )
 }
 
+// v2.7.0: Test new public API components and services
+function TestV270Features() {
+  const layoutStateService = useLayoutStateService()
+  const navigationElements = layoutStateService.getNavigationElements()
+
+  const addCustomElement = () => {
+    layoutStateService.dispatchAddNavigationElement({
+      name: 'v270-custom-' + Date.now(),
+      element: (
+        <span style={{
+          background: '#9333ea',
+          color: 'white',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          fontSize: '12px'
+        }}>
+          v2.7.0 Custom Element
+        </span>
+      ),
+      order: 50
+    })
+  }
+
+  const removeLastElement = () => {
+    const customElements = navigationElements.filter(el => el.name.startsWith('v270-custom-'))
+    if (customElements.length > 0) {
+      layoutStateService.dispatchRemoveNavigationElementByName(customElements[customElements.length - 1].name)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v2.7.0: New Public API Features</h2>
+
+      <div className="test-card">
+        <h3>Component Keys (eThemeBasicComponents)</h3>
+        <p>New enum for component replacement system:</p>
+        <ul>
+          <li><code>ApplicationLayout</code>: {eThemeBasicComponents.ApplicationLayout}</li>
+          <li><code>AccountLayout</code>: {eThemeBasicComponents.AccountLayout}</li>
+          <li><code>EmptyLayout</code>: {eThemeBasicComponents.EmptyLayout}</li>
+          <li><code>Logo</code>: {eThemeBasicComponents.Logo}</li>
+          <li><code>Routes</code>: {eThemeBasicComponents.Routes}</li>
+          <li><code>NavItems</code>: {eThemeBasicComponents.NavItems}</li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>Navigation Element Names (eNavigationElementNames)</h3>
+        <p>Built-in navigation element identifiers:</p>
+        <ul>
+          <li><code>Language</code>: {eNavigationElementNames.Language}</li>
+          <li><code>User</code>: {eNavigationElementNames.User}</li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>LayoutApplication Component Keys</h3>
+        <p>Static properties for component replacement:</p>
+        <ul>
+          <li><code>logoComponentKey</code>: {LayoutApplication.logoComponentKey}</li>
+          <li><code>routesComponentKey</code>: {LayoutApplication.routesComponentKey}</li>
+          <li><code>navItemsComponentKey</code>: {LayoutApplication.navItemsComponentKey}</li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>LayoutStateService (useLayoutStateService)</h3>
+        <p>New service-like hook for managing navigation elements:</p>
+        <div style={{ marginBottom: '1rem' }}>
+          <button onClick={addCustomElement} style={{ marginRight: '8px' }}>
+            Add Custom Element
+          </button>
+          <button onClick={removeLastElement}>
+            Remove Last Custom Element
+          </button>
+        </div>
+        <p>Current navigation elements ({navigationElements.length}):</p>
+        {navigationElements.length > 0 ? (
+          <ul>
+            {navigationElements.map((el) => (
+              <li key={el.name}>
+                <strong>{el.name}</strong> (order: {el.order ?? 99})
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p style={{ color: '#888' }}>No navigation elements registered.</p>
+        )}
+        <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage example:
+const layoutStateService = useLayoutStateService();
+
+// Get elements
+const elements = layoutStateService.getNavigationElements();
+
+// Add element
+layoutStateService.dispatchAddNavigationElement({
+  name: 'my-element',
+  element: <MyComponent />,
+  order: 1
+});
+
+// Remove element
+layoutStateService.dispatchRemoveNavigationElementByName('my-element');`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Public API Components</h3>
+        <p>New standalone components for customization:</p>
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>LogoComponent</h4>
+          <p>Standalone logo component using branding context:</p>
+          <div style={{ padding: '1rem', background: '#1a1a2e', borderRadius: '4px', marginBottom: '1rem' }}>
+            <LogoComponent />
+          </div>
+          <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`import { LogoComponent } from '@abpjs/theme-basic';
+
+// Basic usage
+<LogoComponent />
+
+// With custom link
+<LogoComponent linkTo="/dashboard" />`}
+          </pre>
+        </div>
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>RoutesComponent</h4>
+          <p>Navigation routes component with visibility filtering:</p>
+          <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`import { RoutesComponent } from '@abpjs/theme-basic';
+
+// Uses routes from config
+<RoutesComponent />
+
+// With custom routes
+<RoutesComponent routes={customRoutes} />
+
+// With default icon
+<RoutesComponent defaultIcon={<LuHome />} />`}
+          </pre>
+        </div>
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>NavItemsComponent</h4>
+          <p>Navigation items (language selector, user menu, custom elements):</p>
+          <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`import { NavItemsComponent } from '@abpjs/theme-basic';
+
+// Basic usage
+<NavItemsComponent />
+
+// With props
+<NavItemsComponent
+  showLanguageSelector={true}
+  showCurrentUser={true}
+  userProfileProps={{
+    onLogout: () => handleLogout(),
+    onChangePassword: () => openChangePassword(),
+    onProfile: () => openProfile(),
+  }}
+/>`}
+          </pre>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function TestVersionInfo() {
   return (
     <div className="test-section">
       <h2>Version Info</h2>
+
+      <div className="test-card">
+        <h3>What's New in v2.7.0</h3>
+        <p>Version 2.7.0 adds new public API components and enums for component customization.</p>
+        <ul>
+          <li><strong>New Enum:</strong> <code>eThemeBasicComponents</code> - Component keys for replacement system</li>
+          <li><strong>New Enum:</strong> <code>eNavigationElementNames</code> - Built-in navigation element names</li>
+          <li><strong>New Component:</strong> <code>LogoComponent</code> - Standalone logo with branding context</li>
+          <li><strong>New Component:</strong> <code>NavItemsComponent</code> - Navigation items (language, user)</li>
+          <li><strong>New Component:</strong> <code>RoutesComponent</code> - Route navigation with filtering</li>
+          <li><strong>New Hook:</strong> <code>useLayoutStateService</code> - Service-like navigation management</li>
+          <li><strong>Updated:</strong> <code>LayoutApplication</code> - Added static component key properties</li>
+        </ul>
+        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#1a1a2e', borderRadius: '4px', border: '1px solid #333' }}>
+          <p style={{ color: '#9cf', margin: 0, fontSize: '14px' }}>
+            <strong>Migration:</strong> These are additions - no breaking changes. Existing code continues to work.
+          </p>
+        </div>
+      </div>
 
       <div className="test-card">
         <h3>What's New in v2.4.0</h3>
@@ -355,10 +559,11 @@ function TestVersionInfo() {
 export function TestThemeBasicPage() {
   return (
     <div>
-      <h1>@abpjs/theme-basic Tests (v2.4.0)</h1>
+      <h1>@abpjs/theme-basic Tests (v2.7.0)</h1>
       <p>Testing layouts, navigation, and layout service.</p>
 
       <TestVersionInfo />
+      <TestV270Features />
       <TestLayoutService />
       <TestApplicationInfo />
       <TestLayouts />
