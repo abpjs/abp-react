@@ -16,6 +16,8 @@ import {
   useAccountProService,
   usePasswordFlow,
   ACCOUNT_PRO_ROUTES,
+  eAccountComponents,
+  eAccountRouteNames,
 } from '@abpjs/account-pro'
 import { useAuth, useConfig } from '@abpjs/core'
 import { useToaster } from '@abpjs/theme-shared'
@@ -742,6 +744,112 @@ await service.confirmPhoneNumber(token);`}
   )
 }
 
+function TestV270Features() {
+  return (
+    <div className="test-section">
+      <h2>v2.7.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eAccountComponents Enum <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.7.0)</span></h3>
+        <p>Component replacement keys for customizing account components:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eAccountComponents).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import { eAccountComponents } from '@abpjs/account-pro';
+
+// Use for component replacement
+const loginKey = eAccountComponents.Login;
+// => 'Account.LoginComponent'
+
+// Register custom component
+registerComponent(eAccountComponents.Login, MyCustomLoginForm);`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eAccountRouteNames Enum <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.7.0)</span></h3>
+        <p>Route name keys for localization and navigation:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value (Localization Key)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eAccountRouteNames).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import { eAccountRouteNames } from '@abpjs/account-pro';
+
+// Use for route configuration
+const loginRouteName = eAccountRouteNames.Login;
+// => 'AbpAccount::Login'
+
+// Use with localization
+const localizedName = localize(eAccountRouteNames.ManageProfile);
+// => 'Manage Your Profile'`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.7.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAccountComponents</td>
+              <td>const object</td>
+              <td>Component replacement keys (9 keys)</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAccountRouteNames</td>
+              <td>const object</td>
+              <td>Route name localization keys (6 keys)</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AccountComponentKey</td>
+              <td>type</td>
+              <td>Union type of component key values</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AccountRouteNameKey</td>
+              <td>type</td>
+              <td>Union type of route name values</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestAuthState() {
   const auth = useAuth()
   const config = useConfig()
@@ -787,9 +895,9 @@ function TestAuthState() {
 export function TestAccountProPage() {
   return (
     <div>
-      <h1>@abpjs/account-pro Tests v2.4.0</h1>
+      <h1>@abpjs/account-pro Tests v2.7.0</h1>
       <p>Testing Pro account features: password reset, profile management, enhanced components.</p>
-      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 2.4.0 - Added apiName property, phone number confirmation methods</p>
+      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 2.7.0 - Added eAccountComponents and eAccountRouteNames enums</p>
 
       <div className="test-card" style={{ backgroundColor: '#1a365d', border: '1px solid #2b6cb0' }}>
         <h3 style={{ color: '#90cdf4' }}>Pro Package Features</h3>
@@ -800,9 +908,11 @@ export function TestAccountProPage() {
           <li>Enhanced Login with forgot password link</li>
           <li style={{ color: '#90cdf4' }}>v2.0.0: enableLocalLogin option, isSelfRegistrationEnabled prop, Account namespace interfaces</li>
           <li style={{ color: '#4f4' }}>v2.4.0: apiName property, sendPhoneNumberConfirmationToken(), confirmPhoneNumber(), phoneNumberConfirmed field</li>
+          <li style={{ color: '#4f4' }}>v2.7.0: eAccountComponents enum (9 keys), eAccountRouteNames enum (6 keys)</li>
         </ul>
       </div>
 
+      <TestV270Features />
       <TestV240Features />
       <TestAuthState />
       <TestPasswordFlow />

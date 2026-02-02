@@ -1,7 +1,11 @@
 /**
  * @abpjs/account-pro
  * ABP Framework Account Pro module for React
- * Translated from @volo/abp.ng.account v2.4.0
+ * Translated from @volo/abp.ng.account v2.7.0
+ *
+ * Changes in v2.7.0:
+ * - Added eAccountComponents enum for component replacement keys
+ * - Added eAccountRouteNames enum for route name keys
  *
  * Changes in v2.4.0:
  * - Added apiName property to AccountProService (defaults to 'default')
@@ -17,6 +21,9 @@
  * Changes in v2.1.1:
  * - Version bump only (dependency updates to @abp/ng.theme.shared v2.1.0)
  */
+
+// Enums (v2.7.0)
+export * from './enums';
 
 // Models
 export * from './models';
