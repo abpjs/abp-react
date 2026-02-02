@@ -1,7 +1,13 @@
 /**
  * @abpjs/saas
  * ABP Framework SaaS module for React
- * Translated from @volo/abp.ng.saas v2.4.0
+ * Translated from @volo/abp.ng.saas v2.7.0
+ *
+ * Changes in v2.7.0:
+ * - Changed eSaasComponents from enum to const object
+ * - Added SaasComponentKey type
+ * - Added eSaasRouteNames const object (Administration, Saas, Tenants, Editions)
+ * - Added SaasRouteNameKey type
  *
  * Changes in v2.4.0:
  * - Added apiName property to SaasService
@@ -24,7 +30,7 @@
  * - No functional code changes
  *
  * @since 2.0.0
- * @updated 2.4.0
+ * @updated 2.7.0
  */
 
 // Models

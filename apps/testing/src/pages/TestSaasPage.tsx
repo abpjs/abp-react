@@ -5,6 +5,7 @@
  * @updated 2.1.1 - Dependency updates (no new features)
  * @updated 2.2.0 - Added openFeaturesModal for editions and tenants
  * @updated 2.4.0 - Added apiName property, eSaasComponents enum, updated CreateTenantRequest/UpdateTenantRequest
+ * @updated 2.7.0 - Changed eSaasComponents to const object, added eSaasRouteNames, SaasComponentKey, SaasRouteNameKey types
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -17,7 +18,10 @@ import {
   SaasStateService,
   SaasService,
   eSaasComponents,
+  eSaasRouteNames,
   type Saas,
+  type SaasComponentKey,
+  type SaasRouteNameKey,
 } from '@abpjs/saas'
 import { FeatureManagementModal } from '@abpjs/feature-management'
 
@@ -868,6 +872,175 @@ function EditionsWithFeatures() {
 }
 
 /**
+ * Test section for v2.7.0 features: eSaasRouteNames, SaasComponentKey, SaasRouteNameKey types
+ */
+function TestV270Features() {
+  // Type-safe component key
+  const editionsKey: SaasComponentKey = eSaasComponents.Editions
+  const tenantsKey: SaasComponentKey = eSaasComponents.Tenants
+
+  // Type-safe route name key
+  const adminRoute: SaasRouteNameKey = eSaasRouteNames.Administration
+  const saasRoute: SaasRouteNameKey = eSaasRouteNames.Saas
+  const tenantsRoute: SaasRouteNameKey = eSaasRouteNames.Tenants
+  const editionsRoute: SaasRouteNameKey = eSaasRouteNames.Editions
+
+  return (
+    <div className="test-section">
+      <h2>v2.7.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      <div className="test-card">
+        <h3>eSaasRouteNames Const Object (v2.7.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New const object for route name identifiers used in localization and navigation.
+          Follows the <code>AbpModule::KeyName</code> pattern for localization keys.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Administration</code></td>
+              <td style={{ padding: '8px' }}><code>{adminRoute}</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Saas</code></td>
+              <td style={{ padding: '8px' }}><code>{saasRoute}</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Tenants</code></td>
+              <td style={{ padding: '8px' }}><code>{tenantsRoute}</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Editions</code></td>
+              <td style={{ padding: '8px' }}><code>{editionsRoute}</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Route configuration
+import { eSaasRouteNames } from '@abpjs/saas';
+
+const routes = {
+  [eSaasRouteNames.Tenants]: { path: '/saas/tenants' },
+  [eSaasRouteNames.Editions]: { path: '/saas/editions' },
+};`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Type-Safe Keys (v2.7.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New type exports for compile-time type safety when working with component and route name keys.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Values</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasComponentKey</code></td>
+              <td style={{ padding: '8px' }}><code>'{editionsKey}' | '{tenantsKey}'</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasRouteNameKey</code></td>
+              <td style={{ padding: '8px' }}>
+                <code>'{eSaasRouteNames.Administration}' | '{eSaasRouteNames.Saas}' | '{eSaasRouteNames.Tenants}' | '{eSaasRouteNames.Editions}'</code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Type-safe component key
+import { eSaasComponents, type SaasComponentKey } from '@abpjs/saas';
+
+const key: SaasComponentKey = eSaasComponents.Editions;
+// TypeScript error: 'invalid' is not assignable to SaasComponentKey
+// const invalid: SaasComponentKey = 'invalid';
+
+// Type-safe route configuration
+import { eSaasRouteNames, type SaasRouteNameKey } from '@abpjs/saas';
+
+const routeKey: SaasRouteNameKey = eSaasRouteNames.Tenants;
+const routePaths: Record<SaasRouteNameKey, string> = {
+  '${eSaasRouteNames.Administration}': '/admin',
+  '${eSaasRouteNames.Saas}': '/admin/saas',
+  '${eSaasRouteNames.Tenants}': '/admin/saas/tenants',
+  '${eSaasRouteNames.Editions}': '/admin/saas/editions',
+};`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Const Object Pattern (v2.7.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          In v2.7.0, <code>eSaasComponents</code> was changed from an enum to a const object with <code>as const</code>.
+          This provides better tree-shaking and aligns with modern TypeScript practices.
+        </p>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Before (v2.4.0) - enum
+enum eSaasComponents {
+  Editions = 'Saas.EditionsComponent',
+  Tenants = 'Saas.TenantsComponent',
+}
+
+// After (v2.7.0) - const object
+export const eSaasComponents = {
+  Editions: 'Saas.EditionsComponent',
+  Tenants: 'Saas.TenantsComponent',
+} as const;
+
+export type SaasComponentKey =
+  (typeof eSaasComponents)[keyof typeof eSaasComponents];`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.7.0 API Reference</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eSaasComponents</code></td>
+              <td style={{ padding: '8px' }}>Const Object</td>
+              <td style={{ padding: '8px' }}>Component identifiers (changed from enum)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasComponentKey</code></td>
+              <td style={{ padding: '8px' }}>Type</td>
+              <td style={{ padding: '8px' }}>Union type of component key values</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eSaasRouteNames</code></td>
+              <td style={{ padding: '8px' }}>Const Object</td>
+              <td style={{ padding: '8px' }}>Route name identifiers for navigation (NEW)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasRouteNameKey</code></td>
+              <td style={{ padding: '8px' }}>Type</td>
+              <td style={{ padding: '8px' }}>Union type of route name values (NEW)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/**
  * Test section for v2.4.0 features: apiName property, eSaasComponents enum, model changes
  */
 function TestV240Features() {
@@ -1121,16 +1294,17 @@ function TestApiEndpoints() {
 export function TestSaasPage() {
   return (
     <div>
-      <h1>@abpjs/saas Tests (v2.4.0)</h1>
+      <h1>@abpjs/saas Tests (v2.7.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing SaaS module for tenant and edition management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.4.0 - Added apiName property, eSaasComponents enum, updated CreateTenantRequest/UpdateTenantRequest
+        Version 2.7.0 - Changed eSaasComponents to const object, added eSaasRouteNames, SaasComponentKey, SaasRouteNameKey types
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components for multi-tenant SaaS applications with tenant management,
         edition management, and connection string management.
       </p>
 
+      <TestV270Features />
       <TestV240Features />
       <TestV220FeaturesSection />
       <TestTenantsComponent />
