@@ -8,6 +8,7 @@ import {
   FeatureManagementModal,
   useFeatureManagement,
   FeatureManagementService,
+  eFeatureManagementComponents,
 } from '@abpjs/feature-management'
 import type { FeatureManagement } from '@abpjs/feature-management'
 
@@ -433,6 +434,42 @@ function MyFeatureModal(props: FeatureModalProps) {
   )
 }
 
+function TestV270Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v2.7.0</h2>
+
+      <div className="test-card">
+        <h3>eFeatureManagementComponents Enum</h3>
+        <p>New enum for component replacement keys:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { eFeatureManagementComponents } from '@abpjs/feature-management'
+
+// Component replacement key
+const key = eFeatureManagementComponents.FeatureManagement
+// Value: "FeatureManagement.FeatureManagementComponent"`}</pre>
+        <h4 style={{ marginTop: '1rem' }}>Enum Values:</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>FeatureManagement</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eFeatureManagementComponents.FeatureManagement}</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '1rem' }}>
+          Use this enum to replace the default FeatureManagement component with a custom implementation.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function TestV240Features() {
   const restService = useRestService()
   const service = useMemo(() => new FeatureManagementService(restService), [restService])
@@ -470,13 +507,19 @@ console.log(service.apiName) // "default"`}</pre>
 export function TestFeatureManagementPage() {
   return (
     <div>
-      <h1>@abpjs/feature-management Tests (v2.4.0)</h1>
+      <h1>@abpjs/feature-management Tests (v2.7.0)</h1>
       <p>Testing feature management modal and hooks.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.4.0 - Added apiName property to FeatureManagementService</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.7.0 - Added eFeatureManagementComponents enum for component replacement</p>
 
-      {/* v2.4.0 Features - Highlighted at top */}
+      {/* v2.7.0 Features - Highlighted at top */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
-        v2.4.0 New Features
+        v2.7.0 New Features
+      </h2>
+      <TestV270Features />
+
+      {/* v2.4.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #3498db', paddingTop: '1rem' }}>
+        v2.4.0 Features
       </h2>
       <TestV240Features />
 
