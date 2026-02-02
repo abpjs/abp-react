@@ -1,7 +1,15 @@
 /**
  * @abpjs/audit-logging
  * ABP Framework Audit Logging module for React
- * Translated from @volo/abp.ng.audit-logging v2.4.0
+ * Translated from @volo/abp.ng.audit-logging v2.7.0
+ *
+ * Changes in v2.7.0:
+ * - Added EntityChanges to eAuditLoggingComponents enum
+ * - Added eEntityChangeType enum (Created, Updated, Deleted)
+ * - Added eAuditLoggingRouteNames enum for route name keys
+ * - Added EntityChange namespace with models for entity change management
+ * - Added EntityChangeService for entity change API operations
+ * - Dependency updates to @abp/ng.theme.shared ~2.7.0, @volo/abp.commercial.ng.ui ^2.7.0
  *
  * Changes in v2.4.0:
  * - Added apiName property to AuditLoggingService (defaults to 'default')
