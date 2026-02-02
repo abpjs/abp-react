@@ -12,11 +12,29 @@ export interface ErrorComponentProps {
   showCloseButton?: boolean;
   /** Custom close button text */
   closeButtonText?: string;
+  /**
+   * Whether to show the home button.
+   * When true, shows a "Go Home" button alongside or instead of the close button.
+   * @since 2.7.0
+   */
+  isHomeShow?: boolean;
+  /**
+   * Callback when user clicks the home button.
+   * @since 2.7.0
+   */
+  onHomeClick?: () => void;
+  /**
+   * Custom home button text.
+   * @since 2.7.0
+   */
+  homeButtonText?: string;
 }
 
 /**
  * A component for displaying error pages/messages.
  * Can be used for HTTP errors (404, 500, etc.) or general error states.
+ *
+ * @since 2.7.0 - Added isHomeShow, onHomeClick, homeButtonText props
  *
  * @example
  * ```tsx
@@ -33,6 +51,14 @@ export interface ErrorComponentProps {
  *   showCloseButton
  *   onDestroy={() => navigate('/')}
  * />
+ *
+ * // With home button (v2.7.0)
+ * <ErrorComponent
+ *   title="404"
+ *   details="Page not found."
+ *   isHomeShow
+ *   onHomeClick={() => navigate('/')}
+ * />
  * ```
  */
 export function ErrorComponent({
@@ -41,6 +67,9 @@ export function ErrorComponent({
   onDestroy,
   showCloseButton = true,
   closeButtonText = 'Go Back',
+  isHomeShow = false,
+  onHomeClick,
+  homeButtonText = 'Go Home',
 }: ErrorComponentProps) {
   return (
     <Container maxW="container.md" py={20}>
@@ -55,15 +84,26 @@ export function ErrorComponent({
         <Text fontSize="lg" color="gray.600">
           {details}
         </Text>
-        {showCloseButton && onDestroy && (
-          <Button
-            colorPalette="blue"
-            size="lg"
-            onClick={onDestroy}
-          >
-            {closeButtonText}
-          </Button>
-        )}
+        <Box display="flex" gap={3}>
+          {isHomeShow && onHomeClick && (
+            <Button
+              colorPalette="green"
+              size="lg"
+              onClick={onHomeClick}
+            >
+              {homeButtonText}
+            </Button>
+          )}
+          {showCloseButton && onDestroy && (
+            <Button
+              colorPalette="blue"
+              size="lg"
+              onClick={onDestroy}
+            >
+              {closeButtonText}
+            </Button>
+          )}
+        </Box>
       </VStack>
     </Container>
   );

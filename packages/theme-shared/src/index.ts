@@ -2,10 +2,18 @@
  * @abpjs/theme-shared
  *
  * ABP Framework Theme Shared components for React.
- * Translated from @abp/ng.theme.shared v2.4.0
+ * Translated from @abp/ng.theme.shared v2.7.0
  *
  * This package provides shared UI components, services, and utilities
  * for theme/modal management in ABP Framework React applications.
+ *
+ * Changes in v2.7.0:
+ * - Added ModalService with renderTemplate, clearModal, getContainer, detectChanges
+ * - HttpErrorConfig: Added skipHandledErrorCodes, simplified forWhichErrors to array
+ * - HttpErrorWrapperComponent: Added isHomeShow property
+ * - Added validation-utils with getPasswordValidators function
+ * - Added tokens exports (HTTP_ERROR_CONFIG, httpErrorConfigFactory)
+ * - Dependency updates to @abp/ng.core v2.7.0
  *
  * Changes in v2.4.0:
  * - Added THEME_SHARED_APPEND_CONTENT token for content appending
@@ -56,6 +64,9 @@ export * from './models';
 
 // Constants
 export * from './constants';
+
+// Tokens
+export * from './tokens';
 
 // Contexts (Services)
 export * from './contexts';

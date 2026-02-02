@@ -4,6 +4,7 @@
  * @since 0.9.0
  * @updated 2.2.0 - Dependency updates and cleanup (no new features)
  * @updated 2.4.0 - THEME_SHARED_APPEND_CONTENT token, Toaster.Status deprecation update
+ * @updated 2.7.0 - ModalService, validation-utils, HTTP_ERROR_CONFIG, isHomeShow
  */
 import { useState, useContext } from 'react'
 import {
@@ -21,8 +22,254 @@ import {
   ThemeSharedAppendContentContext,
   // v2.1.0: Deprecated in favor of Confirmation.Status (removal now in v3.0 per v2.4.0)
   Toaster,
+  // v2.7.0: New modal service context
+  ModalProvider,
+  useModal,
+  ModalContainer,
+  // v2.7.0: Password validation utilities
+  getPasswordValidators,
+  getPasswordSettings,
+  PASSWORD_SETTING_KEYS,
+  // v2.7.0: HTTP error config token
+  HTTP_ERROR_CONFIG,
+  HttpErrorConfigContext,
+  httpErrorConfigFactory,
+  useHttpErrorConfig,
 } from '@abpjs/theme-shared'
+import type { SettingsStore } from '@abpjs/theme-shared'
 import { useAbp, useAuth } from '@abpjs/core'
+
+/**
+ * v2.7.0 Features Section
+ * Demonstrates:
+ * - ModalService (useModal, ModalContainer)
+ * - Password validation utilities (getPasswordValidators)
+ * - HTTP_ERROR_CONFIG token
+ * - ErrorComponent isHomeShow prop
+ */
+function TestV270Features() {
+  const [showErrorWithHome, setShowErrorWithHome] = useState(false)
+  const [passwordTestResult, setPasswordTestResult] = useState<string | null>(null)
+  const [testPassword, setTestPassword] = useState('')
+
+  // Demo password validation with mock settings store
+  const mockSettingsStore: SettingsStore = {
+    getSetting: (key: string) => {
+      const settings: Record<string, string> = {
+        [PASSWORD_SETTING_KEYS.requiredLength]: '8',
+        [PASSWORD_SETTING_KEYS.requireDigit]: 'true',
+        [PASSWORD_SETTING_KEYS.requireLowercase]: 'true',
+        [PASSWORD_SETTING_KEYS.requireUppercase]: 'true',
+        [PASSWORD_SETTING_KEYS.requireNonAlphanumeric]: 'true',
+      }
+      return settings[key]
+    },
+  }
+
+  const validatePassword = () => {
+    const validators = getPasswordValidators(mockSettingsStore)
+    const errors: string[] = []
+
+    for (const validator of validators) {
+      const result = validator(testPassword)
+      if (result !== true) {
+        errors.push(result)
+      }
+    }
+
+    if (errors.length === 0) {
+      setPasswordTestResult('Password is valid!')
+    } else {
+      setPasswordTestResult(`Errors: ${errors.join(', ')}`)
+    }
+  }
+
+  const settings = getPasswordSettings(mockSettingsStore)
+  const defaultConfig = httpErrorConfigFactory()
+  const contextConfig = useHttpErrorConfig()
+
+  return (
+    <div className="test-section">
+      <h2>v2.7.0 New Features</h2>
+
+      <div className="test-card">
+        <h3>ModalService (useModal)</h3>
+        <p>New context-based modal service for programmatic modal rendering.</p>
+        <p style={{ fontSize: '0.85rem', color: '#888' }}>
+          Methods: <code>renderTemplate()</code>, <code>clearModal()</code>, <code>getContainer()</code>, <code>detectChanges()</code>
+        </p>
+        <ModalProvider>
+          <ModalServiceDemo />
+          <ModalContainer />
+        </ModalProvider>
+      </div>
+
+      <div className="test-card">
+        <h3>Password Validation Utilities</h3>
+        <p>Get password validators based on ABP Identity settings.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <p style={{ marginBottom: '0.25rem' }}>Settings from mock store:</p>
+          <code style={{ color: '#6cf' }}>requiredLength</code>: {settings.requiredLength}<br />
+          <code style={{ color: '#6cf' }}>requireDigit</code>: {settings.requireDigit ? 'true' : 'false'}<br />
+          <code style={{ color: '#6cf' }}>requireLowercase</code>: {settings.requireLowercase ? 'true' : 'false'}<br />
+          <code style={{ color: '#6cf' }}>requireUppercase</code>: {settings.requireUppercase ? 'true' : 'false'}<br />
+          <code style={{ color: '#6cf' }}>requireNonAlphanumeric</code>: {settings.requireNonAlphanumeric ? 'true' : 'false'}
+        </div>
+        <div style={{ marginTop: '0.75rem' }}>
+          <input
+            type="text"
+            value={testPassword}
+            onChange={(e) => setTestPassword(e.target.value)}
+            placeholder="Enter password to validate..."
+            style={{ padding: '0.5rem', marginRight: '0.5rem', width: '200px' }}
+          />
+          <button onClick={validatePassword}>Validate Password</button>
+        </div>
+        {passwordTestResult && (
+          <p style={{ marginTop: '0.5rem', color: passwordTestResult.includes('valid') ? '#6f6' : '#f88', fontSize: '0.85rem' }}>
+            {passwordTestResult}
+          </p>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>HTTP_ERROR_CONFIG Token</h3>
+        <p>New token for HTTP error handling configuration.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6cf' }}>HTTP_ERROR_CONFIG</code> = "{HTTP_ERROR_CONFIG}"
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
+          Default config from <code>httpErrorConfigFactory()</code>:
+        </p>
+        <div style={{ marginTop: '0.25rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#fc6' }}>skipHandledErrorCodes</code>: [{defaultConfig.skipHandledErrorCodes?.join(', ')}]<br />
+          <code style={{ color: '#fc6' }}>errorScreen</code>: {defaultConfig.errorScreen ? 'defined' : 'undefined'}
+        </div>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#888' }}>
+          Config from <code>useHttpErrorConfig()</code> hook:
+        </p>
+        <div style={{ marginTop: '0.25rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6f6' }}>skipHandledErrorCodes</code>: [{contextConfig.skipHandledErrorCodes?.join(', ')}]
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>HttpErrorConfig.skipHandledErrorCodes</h3>
+        <p>New property to specify error codes that should be skipped by the error handler.</p>
+        <HttpErrorConfigContext.Provider value={{ skipHandledErrorCodes: [404, 418] as number[] }}>
+          <SkipCodesDemo />
+        </HttpErrorConfigContext.Provider>
+      </div>
+
+      <div className="test-card">
+        <h3>ErrorComponent.isHomeShow</h3>
+        <p>New prop to show a "Go Home" button on error pages.</p>
+        <button onClick={() => setShowErrorWithHome(!showErrorWithHome)}>
+          {showErrorWithHome ? 'Hide' : 'Show'} Error with Home Button
+        </button>
+        {showErrorWithHome && (
+          <div style={{ marginTop: '1rem', border: '1px solid #333', borderRadius: '8px', padding: '1rem' }}>
+            <ErrorComponent
+              title="404"
+              details="The page you are looking for was not found."
+              isHomeShow={true}
+              onHomeClick={() => {
+                alert('Home button clicked! Would navigate to home page.')
+                setShowErrorWithHome(false)
+              }}
+              homeButtonText="Go to Home"
+              showCloseButton={true}
+              onDestroy={() => setShowErrorWithHome(false)}
+              closeButtonText="Go Back"
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Helper component to demonstrate ModalService usage
+function ModalServiceDemo() {
+  const modal = useModal()
+  const [modalOpen, setModalOpen] = useState(false)
+
+  const openModal = () => {
+    setModalOpen(true)
+    modal.renderTemplate<{ title: string }>((ctx) => (
+      <div style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        background: '#333',
+        padding: '2rem',
+        borderRadius: '8px',
+        zIndex: 1000,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+      }}>
+        <h3 style={{ marginBottom: '1rem' }}>{ctx?.title}</h3>
+        <p>This modal was rendered using ModalService!</p>
+        <button
+          onClick={() => {
+            modal.clearModal()
+            setModalOpen(false)
+          }}
+          style={{ marginTop: '1rem' }}
+        >
+          Close
+        </button>
+      </div>
+    ), { title: 'ModalService Demo' })
+  }
+
+  return (
+    <div style={{ marginTop: '0.5rem' }}>
+      <button onClick={openModal} disabled={modalOpen}>
+        Open Modal via Service
+      </button>
+      {modalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            zIndex: 999,
+          }}
+          onClick={() => {
+            modal.clearModal()
+            setModalOpen(false)
+          }}
+        />
+      )}
+    </div>
+  )
+}
+
+// Helper component to demonstrate skipHandledErrorCodes
+function SkipCodesDemo() {
+  const config = useHttpErrorConfig()
+
+  return (
+    <div style={{ marginTop: '0.5rem', padding: '0.5rem', border: '1px solid #444', borderRadius: '4px' }}>
+      <p style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+        Config from context: <code>skipHandledErrorCodes = [{config.skipHandledErrorCodes?.join(', ')}]</code>
+      </p>
+      <p style={{ fontSize: '0.85rem', color: '#6f6' }}>
+        404 skipped: {(config.skipHandledErrorCodes as number[] | undefined)?.includes(404) ? 'Yes' : 'No'}
+      </p>
+      <p style={{ fontSize: '0.85rem', color: '#6f6' }}>
+        418 skipped: {(config.skipHandledErrorCodes as number[] | undefined)?.includes(418) ? 'Yes' : 'No'}
+      </p>
+      <p style={{ fontSize: '0.85rem', color: '#f88' }}>
+        500 skipped: {(config.skipHandledErrorCodes as number[] | undefined)?.includes(500) ? 'Yes' : 'No'}
+      </p>
+    </div>
+  )
+}
 
 /**
  * v2.4.0 Features Section
@@ -948,12 +1195,13 @@ function TestProfile() {
 export function TestThemeSharedPage() {
   return (
     <div>
-      <h1>@abpjs/theme-shared Tests (v2.4.0)</h1>
+      <h1>@abpjs/theme-shared Tests (v2.7.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing toast notifications, confirmation dialogs, modals, error handling, and shared components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.4.0 - THEME_SHARED_APPEND_CONTENT token, Toaster.Status deprecation update (v3.0), appendScript deprecated
+        Version 2.7.0 - ModalService, validation-utils, HTTP_ERROR_CONFIG token, isHomeShow, skipHandledErrorCodes
       </p>
 
+      <TestV270Features />
       <TestV240Features />
       <TestLoaderBar />
       <TestErrorComponentDisplay />

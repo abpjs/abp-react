@@ -238,7 +238,7 @@ describe('Confirmation namespace', () => {
   });
 });
 
-describe('Common types (v1.1.0)', () => {
+describe('Common types (v1.1.0, v2.7.0)', () => {
   describe('ErrorScreenErrorCodes', () => {
     it('should accept valid error codes', () => {
       const codes: ErrorScreenErrorCodes[] = [401, 403, 404, 500];
@@ -317,6 +317,102 @@ describe('Common types (v1.1.0)', () => {
       expect(config.errorScreen?.forWhichErrors).toEqual([403, 404]);
       expect(config.errorScreen?.hideCloseIcon).toBe(false);
     });
+
+    // v2.7.0 - skipHandledErrorCodes
+    describe('skipHandledErrorCodes (v2.7.0)', () => {
+      it('should accept skipHandledErrorCodes with ErrorScreenErrorCodes', () => {
+        const config: HttpErrorConfig = {
+          skipHandledErrorCodes: [401, 403, 404, 500],
+        };
+
+        expect(config.skipHandledErrorCodes).toEqual([401, 403, 404, 500]);
+      });
+
+      it('should accept skipHandledErrorCodes with any number', () => {
+        const config: HttpErrorConfig = {
+          skipHandledErrorCodes: [418, 429, 503],
+        };
+
+        expect(config.skipHandledErrorCodes).toEqual([418, 429, 503]);
+      });
+
+      it('should accept empty skipHandledErrorCodes', () => {
+        const config: HttpErrorConfig = {
+          skipHandledErrorCodes: [],
+        };
+
+        expect(config.skipHandledErrorCodes).toEqual([]);
+      });
+
+      it('should accept config with both skipHandledErrorCodes and errorScreen', () => {
+        const MockComponent = () => null;
+        const config: HttpErrorConfig = {
+          skipHandledErrorCodes: [404],
+          errorScreen: {
+            component: MockComponent,
+            forWhichErrors: [500],
+          },
+        };
+
+        expect(config.skipHandledErrorCodes).toEqual([404]);
+        expect(config.errorScreen?.forWhichErrors).toEqual([500]);
+      });
+
+      it('should accept mixed error codes in skipHandledErrorCodes', () => {
+        const config: HttpErrorConfig = {
+          skipHandledErrorCodes: [401, 418, 500, 503],
+        };
+
+        expect(config.skipHandledErrorCodes).toHaveLength(4);
+        expect(config.skipHandledErrorCodes).toContain(401); // ErrorScreenErrorCodes
+        expect(config.skipHandledErrorCodes).toContain(418); // non-standard code
+        expect(config.skipHandledErrorCodes).toContain(500); // ErrorScreenErrorCodes
+        expect(config.skipHandledErrorCodes).toContain(503); // non-standard code
+      });
+    });
+
+    // v2.7.0 - Simplified forWhichErrors type
+    describe('forWhichErrors simplified array (v2.7.0)', () => {
+      it('should accept any length array of ErrorScreenErrorCodes', () => {
+        const MockComponent = () => null;
+
+        // Single error
+        const config1: HttpErrorConfig = {
+          errorScreen: { component: MockComponent, forWhichErrors: [404] },
+        };
+        expect(config1.errorScreen?.forWhichErrors).toHaveLength(1);
+
+        // Two errors
+        const config2: HttpErrorConfig = {
+          errorScreen: { component: MockComponent, forWhichErrors: [401, 403] },
+        };
+        expect(config2.errorScreen?.forWhichErrors).toHaveLength(2);
+
+        // Three errors
+        const config3: HttpErrorConfig = {
+          errorScreen: { component: MockComponent, forWhichErrors: [401, 403, 404] },
+        };
+        expect(config3.errorScreen?.forWhichErrors).toHaveLength(3);
+
+        // Four errors
+        const config4: HttpErrorConfig = {
+          errorScreen: { component: MockComponent, forWhichErrors: [401, 403, 404, 500] },
+        };
+        expect(config4.errorScreen?.forWhichErrors).toHaveLength(4);
+      });
+
+      it('should accept empty forWhichErrors array', () => {
+        const MockComponent = () => null;
+        const config: HttpErrorConfig = {
+          errorScreen: {
+            component: MockComponent,
+            forWhichErrors: [],
+          },
+        };
+
+        expect(config.errorScreen?.forWhichErrors).toEqual([]);
+      });
+    });
   });
 
   describe('RootParams', () => {
@@ -337,6 +433,21 @@ describe('Common types (v1.1.0)', () => {
       };
 
       expect(params.httpErrorConfig?.errorScreen?.component).toBe(MockComponent);
+    });
+
+    it('should accept httpErrorConfig with skipHandledErrorCodes (v2.7.0)', () => {
+      const MockComponent = () => null;
+      const params: RootParams = {
+        httpErrorConfig: {
+          skipHandledErrorCodes: [404],
+          errorScreen: {
+            component: MockComponent,
+            forWhichErrors: [500],
+          },
+        },
+      };
+
+      expect(params.httpErrorConfig?.skipHandledErrorCodes).toEqual([404]);
     });
   });
 });
