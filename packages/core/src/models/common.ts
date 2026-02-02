@@ -9,6 +9,19 @@ export namespace ABP {
      * @deprecated To be deleted in v3.0
      */
     requirements?: Config.Requirements;
+    /**
+     * Skip fetching application configuration on initialization
+     * @since 2.7.0
+     */
+    skipGetAppConfiguration?: boolean;
+  }
+
+  /**
+   * Configuration for test environments
+   * @since 2.7.0
+   */
+  export interface Test {
+    baseHref?: string;
   }
 
   export type PagedResponse<T> = {
@@ -51,6 +64,15 @@ export namespace ABP {
   export interface BasicItem {
     id: string;
     name: string;
+  }
+
+  /**
+   * Option type for form selects derived from enum keys
+   * @since 2.7.0
+   */
+  export interface Option<T> {
+    key: Extract<keyof T, string>;
+    value: T[Extract<keyof T, string>];
   }
 
   /**

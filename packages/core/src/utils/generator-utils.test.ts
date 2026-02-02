@@ -124,4 +124,110 @@ describe('generator-utils', () => {
       expect(result).toBeGreaterThanOrEqual(0);
     });
   });
+
+  describe('generatePassword (v2.7.0)', () => {
+    it('should export generatePassword function', async () => {
+      const module = await import('./generator-utils');
+      expect(typeof module.generatePassword).toBe('function');
+    });
+
+    it('should return a string', async () => {
+      const { generatePassword } = await import('./generator-utils');
+      const result = generatePassword();
+      expect(typeof result).toBe('string');
+    });
+
+    it('should return password of default length 16', async () => {
+      const { generatePassword } = await import('./generator-utils');
+      const result = generatePassword();
+      expect(result.length).toBe(16);
+    });
+
+    it('should return password of specified length', async () => {
+      const { generatePassword } = await import('./generator-utils');
+
+      expect(generatePassword(8).length).toBe(8);
+      expect(generatePassword(12).length).toBe(12);
+      expect(generatePassword(20).length).toBe(20);
+      expect(generatePassword(32).length).toBe(32);
+    });
+
+    it('should include lowercase letters', async () => {
+      const { generatePassword } = await import('./generator-utils');
+
+      // Generate multiple passwords to check for lowercase
+      let hasLowercase = false;
+      for (let i = 0; i < 10; i++) {
+        const password = generatePassword(100);
+        if (/[a-z]/.test(password)) {
+          hasLowercase = true;
+          break;
+        }
+      }
+      expect(hasLowercase).toBe(true);
+    });
+
+    it('should include uppercase letters', async () => {
+      const { generatePassword } = await import('./generator-utils');
+
+      // Generate multiple passwords to check for uppercase
+      let hasUppercase = false;
+      for (let i = 0; i < 10; i++) {
+        const password = generatePassword(100);
+        if (/[A-Z]/.test(password)) {
+          hasUppercase = true;
+          break;
+        }
+      }
+      expect(hasUppercase).toBe(true);
+    });
+
+    it('should include digits', async () => {
+      const { generatePassword } = await import('./generator-utils');
+
+      // Generate multiple passwords to check for digits
+      let hasDigits = false;
+      for (let i = 0; i < 10; i++) {
+        const password = generatePassword(100);
+        if (/[0-9]/.test(password)) {
+          hasDigits = true;
+          break;
+        }
+      }
+      expect(hasDigits).toBe(true);
+    });
+
+    it('should include special characters', async () => {
+      const { generatePassword } = await import('./generator-utils');
+
+      // Generate multiple passwords to check for special chars
+      let hasSpecial = false;
+      for (let i = 0; i < 10; i++) {
+        const password = generatePassword(100);
+        if (/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
+          hasSpecial = true;
+          break;
+        }
+      }
+      expect(hasSpecial).toBe(true);
+    });
+
+    it('should generate different passwords on each call', async () => {
+      const { generatePassword } = await import('./generator-utils');
+
+      const passwords = new Set<string>();
+      for (let i = 0; i < 10; i++) {
+        passwords.add(generatePassword());
+      }
+
+      // All 10 passwords should be unique (extremely high probability)
+      expect(passwords.size).toBe(10);
+    });
+
+    it('should handle minimum length of 4', async () => {
+      const { generatePassword } = await import('./generator-utils');
+      const result = generatePassword(4);
+      expect(result.length).toBe(4);
+    });
+  });
 });

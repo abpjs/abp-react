@@ -6,7 +6,7 @@ import {
 } from './content.strategy';
 import { DOM_STRATEGY } from './dom.strategy';
 
-describe('ContentStrategy (v2.4.0)', () => {
+describe('ContentStrategy (v2.7.0)', () => {
   let mockInsertAdjacentElement: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -38,6 +38,15 @@ describe('ContentStrategy (v2.4.0)', () => {
       const insertedElement = mockInsertAdjacentElement.mock.calls[0][1];
       expect(insertedElement.tagName).toBe('STYLE');
     });
+
+    it('should return the inserted element (v2.7.0)', () => {
+      const strategy = new StyleContentStrategy('.return-test { color: blue; }', DOM_STRATEGY.AppendToHead());
+      const element = strategy.insertElement();
+
+      expect(element).toBeDefined();
+      expect(element.tagName).toBe('STYLE');
+      expect(element.textContent).toBe('.return-test { color: blue; }');
+    });
   });
 
   describe('ScriptContentStrategy', () => {
@@ -56,6 +65,15 @@ describe('ContentStrategy (v2.4.0)', () => {
       expect(mockInsertAdjacentElement).toHaveBeenCalled();
       const insertedElement = mockInsertAdjacentElement.mock.calls[0][1];
       expect(insertedElement.tagName).toBe('SCRIPT');
+    });
+
+    it('should return the inserted element (v2.7.0)', () => {
+      const strategy = new ScriptContentStrategy('var y = 2;', DOM_STRATEGY.AppendToBody());
+      const element = strategy.insertElement();
+
+      expect(element).toBeDefined();
+      expect(element.tagName).toBe('SCRIPT');
+      expect(element.textContent).toBe('var y = 2;');
     });
   });
 

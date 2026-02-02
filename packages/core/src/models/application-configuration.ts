@@ -10,8 +10,39 @@ export namespace ApplicationConfiguration {
   }
 
   export interface Localization {
-    values: LocalizationValue;
+    currentCulture: CurrentCulture;
+    defaultResourceName: string;
     languages: Language[];
+    values: LocalizationValue;
+  }
+
+  /**
+   * Information about the current culture/locale
+   * @since 2.7.0
+   */
+  export interface CurrentCulture {
+    cultureName: string;
+    dateTimeFormat: DateTimeFormat;
+    displayName: string;
+    englishName: string;
+    isRightToLeft: boolean;
+    name: string;
+    nativeName: string;
+    threeLetterIsoLanguageName: string;
+    twoLetterIsoLanguageName: string;
+  }
+
+  /**
+   * Date/time formatting information for the current culture
+   * @since 2.7.0
+   */
+  export interface DateTimeFormat {
+    calendarAlgorithmType: string;
+    dateSeparator: string;
+    fullDateTimePattern: string;
+    longTimePattern: string;
+    shortDatePattern: string;
+    shortTimePattern: string;
   }
 
   export interface LocalizationValue {
