@@ -1,15 +1,22 @@
 /**
  * Identity Pro Component Identifiers
- * Translated from @volo/abp.ng.identity v2.4.0
+ * Translated from @volo/abp.ng.identity v2.7.0
  */
 
 /**
- * Enum for identity component identifiers.
+ * Enum-like const object for identity component identifiers.
  * Used for component registration and identification.
  * @since 2.4.0
+ * @updated 2.7.0 - Changed from enum to const object
  */
-export enum eIdentityComponents {
-  Claims = 'Identity.ClaimsComponent',
-  Roles = 'Identity.RolesComponent',
-  Users = 'Identity.UsersComponent',
-}
+export const eIdentityComponents = {
+  Claims: 'Identity.ClaimsComponent',
+  Roles: 'Identity.RolesComponent',
+  Users: 'Identity.UsersComponent',
+} as const;
+
+/**
+ * Type for identity component key values
+ */
+export type IdentityComponentKey =
+  (typeof eIdentityComponents)[keyof typeof eIdentityComponents];

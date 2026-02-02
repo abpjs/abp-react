@@ -4,6 +4,7 @@
  * @since 2.0.0
  * @updated 2.2.0 - Added unlockUser, openPermissionsModal for users and roles
  * @updated 2.4.0 - Added apiName property, getAllRoles method, eIdentityComponents enum
+ * @updated 2.7.0 - Added changePassword method, eIdentityRouteNames enum, IdentityComponentKey/IdentityRouteNameKey types
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -15,8 +16,11 @@ import {
   useRoles,
   IdentityService,
   eIdentityComponents,
+  eIdentityRouteNames,
   type Identity,
   type IdentityStateService,
+  type IdentityComponentKey,
+  type IdentityRouteNameKey,
 } from '@abpjs/identity-pro'
 
 function TestClaimsComponent() {
@@ -978,6 +982,310 @@ componentRegistry[eIdentityComponents.Users] = UsersComponent;`}
   )
 }
 
+/**
+ * Test section for v2.7.0 features: eIdentityRouteNames, changePassword, IdentityComponentKey/IdentityRouteNameKey types
+ */
+function TestV270Features() {
+  const { isAuthenticated } = useAuth()
+  const restService = useRestService()
+  const [identityService] = useState(() => new IdentityService(restService))
+
+  const [changePasswordUserId, setChangePasswordUserId] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [changePasswordResult, setChangePasswordResult] = useState<string | null>(null)
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
+
+  const {
+    users,
+    fetchUsers,
+  } = useUsers()
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUsers()
+    }
+  }, [isAuthenticated, fetchUsers])
+
+  const handleChangePassword = async () => {
+    if (!changePasswordUserId || !newPassword) return
+
+    setIsChangingPassword(true)
+    setChangePasswordResult(null)
+
+    try {
+      await identityService.changePassword(changePasswordUserId, { newPassword })
+      setChangePasswordResult(`Password changed successfully for user ${changePasswordUserId}!`)
+      setNewPassword('')
+    } catch (err) {
+      setChangePasswordResult(`Error: ${err instanceof Error ? err.message : 'Failed to change password'}`)
+    } finally {
+      setIsChangingPassword(false)
+    }
+  }
+
+  // Demo type-safe component lookup with IdentityComponentKey
+  const getComponentDisplay = (key: IdentityComponentKey): string => {
+    const displays: Record<IdentityComponentKey, string> = {
+      'Identity.ClaimsComponent': 'Claims Management',
+      'Identity.RolesComponent': 'Roles Management',
+      'Identity.UsersComponent': 'Users Management',
+    }
+    return displays[key]
+  }
+
+  // Demo type-safe route lookup with IdentityRouteNameKey
+  const getRouteDisplay = (key: IdentityRouteNameKey): string => {
+    const displays: Record<IdentityRouteNameKey, string> = {
+      'AbpUiNavigation::Menu:Administration': 'Administration Menu',
+      'AbpIdentity::Menu:IdentityManagement': 'Identity Management Menu',
+      'AbpIdentity::Roles': 'Roles Page',
+      'AbpIdentity::Users': 'Users Page',
+      'AbpIdentity::ClaimTypes': 'Claim Types Page',
+    }
+    return displays[key]
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v2.7.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      <div className="test-card">
+        <h3>changePassword() Method (v2.7.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New method to change a user's password. Uses <code>PUT /api/identity/users/:id/change-password</code>
+        </p>
+        {!isAuthenticated ? (
+          <p style={{ color: '#f88' }}>You must be authenticated to test this feature</p>
+        ) : (
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <input
+                type="text"
+                placeholder="Enter User ID"
+                value={changePasswordUserId}
+                onChange={(e) => setChangePasswordUserId(e.target.value)}
+                style={{
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #333',
+                }}
+              />
+              <input
+                type="password"
+                placeholder="New Password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                style={{
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #333',
+                }}
+              />
+              <button
+                onClick={handleChangePassword}
+                disabled={!changePasswordUserId || !newPassword || isChangingPassword}
+              >
+                {isChangingPassword ? 'Changing...' : 'Change Password'}
+              </button>
+            </div>
+            {changePasswordResult && (
+              <p style={{ fontSize: '14px', color: changePasswordResult.startsWith('Error') ? '#f88' : '#4ade80' }}>
+                {changePasswordResult}
+              </p>
+            )}
+            {users.length > 0 && (
+              <div style={{ marginTop: '0.5rem' }}>
+                <p style={{ fontSize: '14px', color: '#888' }}>Available users:</p>
+                <div style={{ maxHeight: '120px', overflow: 'auto' }}>
+                  {users.slice(0, 5).map((user) => (
+                    <div
+                      key={user.id}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '4px 8px',
+                        borderBottom: '1px solid #222',
+                      }}
+                    >
+                      <span>{user.userName}</span>
+                      <button
+                        onClick={() => setChangePasswordUserId(user.id)}
+                        style={{ padding: '2px 8px', fontSize: '12px' }}
+                      >
+                        Select
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage
+await identityService.changePassword(userId, {
+  newPassword: 'NewSecurePassword123!'
+});`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>eIdentityRouteNames Enum (v2.7.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New enum for route name localization keys used in navigation configuration.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Display</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eIdentityRouteNames).map(([key, value]) => (
+              <tr key={key} style={{ borderBottom: '1px solid #222' }}>
+                <td style={{ padding: '8px' }}><code>{key}</code></td>
+                <td style={{ padding: '8px', fontSize: '12px' }}><code>{value}</code></td>
+                <td style={{ padding: '8px', fontSize: '12px' }}>{getRouteDisplay(value as IdentityRouteNameKey)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Navigation configuration
+import { eIdentityRouteNames } from '@abpjs/identity-pro';
+
+const routes = [
+  { name: eIdentityRouteNames.Roles, path: '/identity/roles' },
+  { name: eIdentityRouteNames.Users, path: '/identity/users' },
+  { name: eIdentityRouteNames.ClaimTypes, path: '/identity/claim-types' },
+];`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Type-Safe Keys (v2.7.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New TypeScript types for type-safe component and route key usage.
+        </p>
+        <div style={{ marginBottom: '1rem' }}>
+          <h4 style={{ fontSize: '14px', marginBottom: '0.5rem' }}>IdentityComponentKey</h4>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {Object.values(eIdentityComponents).map((key) => (
+              <div
+                key={key}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #4ade80',
+                  fontSize: '12px',
+                }}
+              >
+                {key} = {getComponentDisplay(key as IdentityComponentKey)}
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <h4 style={{ fontSize: '14px', marginBottom: '0.5rem' }}>IdentityRouteNameKey</h4>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {Object.values(eIdentityRouteNames).map((key) => (
+              <div
+                key={key}
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #60a5fa',
+                  fontSize: '11px',
+                }}
+              >
+                {key.split('::')[1]}
+              </div>
+            ))}
+          </div>
+        </div>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Type-safe lookups
+import {
+  eIdentityComponents,
+  eIdentityRouteNames,
+  IdentityComponentKey,
+  IdentityRouteNameKey,
+} from '@abpjs/identity-pro';
+
+// Component key type ensures only valid keys
+const key: IdentityComponentKey = eIdentityComponents.Users;
+const components: Record<IdentityComponentKey, React.FC> = { ... };
+
+// Route name key type for localization
+const routeKey: IdentityRouteNameKey = eIdentityRouteNames.Roles;
+const routes: Record<IdentityRouteNameKey, string> = { ... };`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>ChangePasswordRequest Interface (v2.7.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New interface for the change password request body.
+        </p>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`interface ChangePasswordRequest {
+  /** The new password to set */
+  newPassword: string;
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.7.0 API Reference</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>changePassword(id, body)</code></td>
+              <td style={{ padding: '8px' }}>Method</td>
+              <td style={{ padding: '8px' }}>Change a user's password</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eIdentityRouteNames</code></td>
+              <td style={{ padding: '8px' }}>Const Object</td>
+              <td style={{ padding: '8px' }}>Route name localization keys (Administration, IdentityManagement, Roles, Users, ClaimTypes)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentityComponentKey</code></td>
+              <td style={{ padding: '8px' }}>Type</td>
+              <td style={{ padding: '8px' }}>Union type of all component key values</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentityRouteNameKey</code></td>
+              <td style={{ padding: '8px' }}>Type</td>
+              <td style={{ padding: '8px' }}>Union type of all route name key values</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ChangePasswordRequest</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+              <td style={{ padding: '8px' }}>Request body for changePassword method</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>eIdentityComponents</code></td>
+              <td style={{ padding: '8px' }}>Const Object</td>
+              <td style={{ padding: '8px' }}>Changed from enum to const object for better tree-shaking</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestProApiEndpoints() {
   return (
     <div className="test-section">
@@ -1320,15 +1628,16 @@ function TestProHookMethods() {
 export function TestIdentityProPage() {
   return (
     <div>
-      <h1>@abpjs/identity-pro Tests (v2.4.0)</h1>
+      <h1>@abpjs/identity-pro Tests (v2.7.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing identity pro components, hooks, and services for claim type management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.4.0 - Added apiName property, getAllRoles method, eIdentityComponents enum
+        Version 2.7.0 - Added changePassword method, eIdentityRouteNames enum, IdentityComponentKey/IdentityRouteNameKey types
       </p>
       <p style={{ color: '#6f6', fontSize: '14px' }}>
-        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods, user unlock, permissions modal, getAllRoles, component identifiers
+        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods, user unlock, permissions modal, getAllRoles, component identifiers, route names, change password
       </p>
 
+      <TestV270Features />
       <TestV240Features />
       <TestV220Features />
       <TestClaimsComponent />

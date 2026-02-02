@@ -428,6 +428,89 @@ describe('IdentityService', () => {
         await expect(identityService.unlockUser('user-1')).rejects.toThrow('User cannot be unlocked');
       });
     });
+
+    describe('changePassword (v2.7.0)', () => {
+      it('should change a user password', async () => {
+        mockRestService.request.mockResolvedValue(undefined);
+        const passwordRequest: Identity.ChangePasswordRequest = {
+          newPassword: 'NewSecurePassword123!',
+        };
+
+        await identityService.changePassword('user-1', passwordRequest);
+
+        expect(mockRestService.request).toHaveBeenCalledWith({
+          method: 'PUT',
+          url: '/api/identity/users/user-1/change-password',
+          body: passwordRequest,
+        });
+      });
+
+      it('should handle password change with complex password', async () => {
+        mockRestService.request.mockResolvedValue(undefined);
+        const passwordRequest: Identity.ChangePasswordRequest = {
+          newPassword: 'C0mpl3x!P@ssw0rd#2024',
+        };
+
+        await identityService.changePassword('user-123', passwordRequest);
+
+        expect(mockRestService.request).toHaveBeenCalledWith({
+          method: 'PUT',
+          url: '/api/identity/users/user-123/change-password',
+          body: passwordRequest,
+        });
+      });
+
+      it('should propagate errors when password change fails', async () => {
+        const error = new Error('Password does not meet requirements');
+        mockRestService.request.mockRejectedValue(error);
+        const passwordRequest: Identity.ChangePasswordRequest = {
+          newPassword: 'weak',
+        };
+
+        await expect(identityService.changePassword('user-1', passwordRequest)).rejects.toThrow(
+          'Password does not meet requirements'
+        );
+      });
+
+      it('should propagate errors when user not found', async () => {
+        const error = new Error('User not found');
+        mockRestService.request.mockRejectedValue(error);
+        const passwordRequest: Identity.ChangePasswordRequest = {
+          newPassword: 'ValidPassword123!',
+        };
+
+        await expect(identityService.changePassword('invalid-user-id', passwordRequest)).rejects.toThrow(
+          'User not found'
+        );
+      });
+
+      it('should use correct URL with user ID', async () => {
+        mockRestService.request.mockResolvedValue(undefined);
+        const userId = 'abc-123-def-456';
+        const passwordRequest: Identity.ChangePasswordRequest = {
+          newPassword: 'TestPassword!',
+        };
+
+        await identityService.changePassword(userId, passwordRequest);
+
+        expect(mockRestService.request).toHaveBeenCalledWith({
+          method: 'PUT',
+          url: `/api/identity/users/${userId}/change-password`,
+          body: passwordRequest,
+        });
+      });
+
+      it('should return void on success', async () => {
+        mockRestService.request.mockResolvedValue(undefined);
+        const passwordRequest: Identity.ChangePasswordRequest = {
+          newPassword: 'NewPassword123!',
+        };
+
+        const result = await identityService.changePassword('user-1', passwordRequest);
+
+        expect(result).toBeUndefined();
+      });
+    });
   });
 
   describe('Error Handling', () => {

@@ -147,6 +147,21 @@ export class IdentityService {
   }
 
   /**
+   * Change a user's password (admin action)
+   * @since 2.7.0
+   * @param id - The user ID
+   * @param body - The password change request (newPassword required)
+   * @returns Promise resolving when complete
+   */
+  changePassword(id: string, body: Identity.ChangePasswordRequest): Promise<void> {
+    return this.rest.request<Identity.ChangePasswordRequest, void>({
+      method: 'PUT',
+      url: `/api/identity/users/${id}/change-password`,
+      body,
+    });
+  }
+
+  /**
    * Delete a user
    * @param id - The user ID to delete
    * @returns Promise resolving when complete
