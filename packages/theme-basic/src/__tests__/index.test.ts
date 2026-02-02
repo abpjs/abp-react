@@ -228,4 +228,94 @@ describe('@abpjs/theme-basic exports', () => {
       expect(typeof defineConfig).toBe('function');
     });
   });
+
+  // v2.7.0 - New enums, components, and services
+  describe('v2.7.0 exports', () => {
+    it('should export eThemeBasicComponents enum', async () => {
+      const { eThemeBasicComponents } = await import('../index');
+
+      expect(eThemeBasicComponents).toBeDefined();
+      expect(eThemeBasicComponents.ApplicationLayout).toBe('Theme.ApplicationLayoutComponent');
+      expect(eThemeBasicComponents.AccountLayout).toBe('Theme.AccountLayoutComponent');
+      expect(eThemeBasicComponents.EmptyLayout).toBe('Theme.EmptyLayoutComponent');
+      expect(eThemeBasicComponents.Logo).toBe('Theme.LogoComponent');
+      expect(eThemeBasicComponents.Routes).toBe('Theme.RoutesComponent');
+      expect(eThemeBasicComponents.NavItems).toBe('Theme.NavItemsComponent');
+    });
+
+    it('should export eNavigationElementNames enum', async () => {
+      const { eNavigationElementNames } = await import('../index');
+
+      expect(eNavigationElementNames).toBeDefined();
+      expect(eNavigationElementNames.Language).toBe('LanguageRef');
+      expect(eNavigationElementNames.User).toBe('CurrentUserRef');
+    });
+
+    it('should export LogoComponent', async () => {
+      const { LogoComponent } = await import('../index');
+
+      expect(LogoComponent).toBeDefined();
+      expect(typeof LogoComponent).toBe('function');
+    });
+
+    it('should export NavItemsComponent', async () => {
+      const { NavItemsComponent } = await import('../index');
+
+      expect(NavItemsComponent).toBeDefined();
+      expect(typeof NavItemsComponent).toBe('function');
+    });
+
+    it('should export RoutesComponent', async () => {
+      const { RoutesComponent } = await import('../index');
+
+      expect(RoutesComponent).toBeDefined();
+      expect(typeof RoutesComponent).toBe('function');
+    });
+
+    it('should export useLayoutStateService hook', async () => {
+      const { useLayoutStateService } = await import('../index');
+
+      expect(useLayoutStateService).toBeDefined();
+      expect(typeof useLayoutStateService).toBe('function');
+    });
+
+    it('should export LayoutApplication with component keys', async () => {
+      const { LayoutApplication, eThemeBasicComponents } = await import('../index');
+
+      expect(LayoutApplication).toBeDefined();
+      expect(LayoutApplication.logoComponentKey).toBe(eThemeBasicComponents.Logo);
+      expect(LayoutApplication.routesComponentKey).toBe(eThemeBasicComponents.Routes);
+      expect(LayoutApplication.navItemsComponentKey).toBe(eThemeBasicComponents.NavItems);
+    });
+
+    it('should maintain all previous exports in v2.7.0', async () => {
+      const exports = await import('../index');
+
+      // v2.0.0+ exports
+      expect(exports.LAYOUTS).toBeDefined();
+      expect(exports.ThemeBasicProvider).toBeDefined();
+      expect(exports.LayoutApplication).toBeDefined();
+      expect(exports.LayoutAccount).toBeDefined();
+      expect(exports.LayoutEmpty).toBeDefined();
+      expect(exports.LayoutProvider).toBeDefined();
+      expect(exports.BrandingProvider).toBeDefined();
+      expect(exports.useLayoutContext).toBeDefined();
+      expect(exports.useLayoutService).toBeDefined();
+      expect(exports.useNavigationElements).toBeDefined();
+      expect(exports.useBranding).toBeDefined();
+      expect(exports.useLogo).toBeDefined();
+
+      // v2.4.0+ exports
+      expect(exports.defaultThemeBasicConfig).toBeDefined();
+      expect(exports.defineConfig).toBeDefined();
+
+      // v2.7.0 new exports
+      expect(exports.eThemeBasicComponents).toBeDefined();
+      expect(exports.eNavigationElementNames).toBeDefined();
+      expect(exports.LogoComponent).toBeDefined();
+      expect(exports.NavItemsComponent).toBeDefined();
+      expect(exports.RoutesComponent).toBeDefined();
+      expect(exports.useLayoutStateService).toBeDefined();
+    });
+  });
 });

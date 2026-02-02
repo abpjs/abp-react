@@ -5,6 +5,7 @@ import { useAuth, eLayoutType, useDirection } from '@abpjs/core';
 import { Sidebar, Navbar, SidebarProps } from '../blocks/sidebars/sidebar-with-collapsible';
 import { ChangePassword } from '../change-password';
 import { Profile } from '../profile';
+import { eThemeBasicComponents } from '../../enums';
 
 /** Z-index for sidebar/navbar - exported so menus can layer above it */
 export const SIDEBAR_Z_INDEX = 1100;
@@ -77,6 +78,15 @@ export function LayoutApplication({
   const navigate = useNavigate();
   const { logout } = useAuth();
   const { direction, isRtl } = useDirection();
+
+  /**
+   * Component key references for dynamic component replacement.
+   * These allow customization of sub-components in the layout.
+   * @since 2.7.0
+   */
+  const logoComponentKey = eThemeBasicComponents.Logo;
+  const routesComponentKey = eThemeBasicComponents.Routes;
+  const navItemsComponentKey = eThemeBasicComponents.NavItems;
 
   // Modal states
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
@@ -171,5 +181,13 @@ export function LayoutApplication({
 
 // Static type property for layout system
 LayoutApplication.type = eLayoutType.application;
+
+/**
+ * Component keys for dynamic replacement of sub-components.
+ * @since 2.7.0
+ */
+LayoutApplication.logoComponentKey = eThemeBasicComponents.Logo;
+LayoutApplication.routesComponentKey = eThemeBasicComponents.Routes;
+LayoutApplication.navItemsComponentKey = eThemeBasicComponents.NavItems;
 
 export default LayoutApplication;

@@ -2,9 +2,19 @@
  * @abpjs/theme-basic
  *
  * ABP Framework Theme Basic components for React.
- * Translated from @abp/ng.theme.basic v2.4.0
+ * Translated from @abp/ng.theme.basic v2.7.0
  *
  * This package provides the basic theme layout components for ABP React applications.
+ *
+ * Changes in v2.7.0:
+ * - Added eThemeBasicComponents enum for component replacement keys
+ * - Added eNavigationElementNames enum for built-in navigation element names
+ * - Added LogoComponent public API component
+ * - Added NavItemsComponent public API component
+ * - Added RoutesComponent public API component
+ * - Added LayoutStateService (useLayoutStateService hook)
+ * - ApplicationLayoutComponent now exposes component keys (logoComponentKey, routesComponentKey, navItemsComponentKey)
+ * - Dependency update to @abp/ng.theme.shared v2.7.0
  *
  * Changes in v2.4.0:
  * - Angular: InitialService now uses DomInsertionService instead of LazyLoadService
@@ -17,7 +27,7 @@
  * - Dependency update to @abp/ng.theme.shared v2.2.0
  * - No functional code changes
  *
- * @version 2.4.0
+ * @version 2.7.0
  * @since 2.0.0 - Removed legacy .abp-confirm styles (no impact on React - we use Chakra UI)
  * @since 2.1.0 - Angular: OAuthService replaced with AuthService (already using useAuth in React)
  *              - Angular: Added styles for loading, modal-backdrop, confirmation (handled by Chakra UI)
@@ -25,6 +35,12 @@
 
 // Models
 export * from './models';
+
+// Enums (v2.7.0+)
+export * from './enums';
+
+// Services (v2.7.0+)
+export * from './services';
 
 // Contexts - export specific items to avoid naming conflicts with Layout namespace
 export {
