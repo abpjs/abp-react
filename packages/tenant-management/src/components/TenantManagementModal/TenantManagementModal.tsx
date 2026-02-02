@@ -9,6 +9,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { useTenantManagement } from '../../hooks';
+import { eTenantManagementComponents } from '../../enums';
 
 /**
  * Modal view type for tenant management
@@ -523,5 +524,11 @@ export function TenantManagementModal({
     </Modal>
   );
 }
+
+/**
+ * Component key for component replacement.
+ * @since 2.7.0
+ */
+TenantManagementModal.componentKey = eTenantManagementComponents.Tenants;
 
 export default TenantManagementModal;

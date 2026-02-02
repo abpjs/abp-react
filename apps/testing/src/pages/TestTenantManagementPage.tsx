@@ -11,6 +11,8 @@ import {
   type TenantManagement,
   TENANT_MANAGEMENT_ROUTE_PATHS,
   TENANT_MANAGEMENT_POLICIES,
+  eTenantManagementComponents,
+  eTenantManagementRouteNames,
 } from '@abpjs/tenant-management'
 import { FeatureManagementModal } from '@abpjs/feature-management'
 
@@ -1497,13 +1499,142 @@ await tenantService.create(request);`}
   )
 }
 
+function TestV270Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v2.7.0</h2>
+
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>eTenantManagementComponents Enum</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Component keys for the Tenant Management module. Used for component replacement/customization.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>
+                <code>Tenants</code>
+              </td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+                  {eTenantManagementComponents.Tenants}
+                </code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>eTenantManagementRouteNames Enum</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Route name keys for the Tenant Management module. Used for route localization and identification.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value (Localization Key)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>
+                <code>Administration</code>
+              </td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+                  {eTenantManagementRouteNames.Administration}
+                </code>
+              </td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>
+                <code>TenantManagement</code>
+              </td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+                  {eTenantManagementRouteNames.TenantManagement}
+                </code>
+              </td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>
+                <code>Tenants</code>
+              </td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+                  {eTenantManagementRouteNames.Tenants}
+                </code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
+        <h3>TenantManagementModal.componentKey</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Static property for component replacement. The modal now has a componentKey property.
+        </p>
+        <div style={{ padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+          <p style={{ margin: 0 }}>
+            <code>TenantManagementModal.componentKey</code> = <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{TenantManagementModal.componentKey}</code>
+          </p>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Examples</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import {
+  eTenantManagementComponents,
+  eTenantManagementRouteNames,
+  TenantManagementModal
+} from '@abpjs/tenant-management';
+
+// Component replacement key
+const componentKey = eTenantManagementComponents.Tenants;
+// => 'TenantManagement.TenantsComponent'
+
+// Route localization keys
+const adminKey = eTenantManagementRouteNames.Administration;
+// => 'AbpUiNavigation::Menu:Administration'
+
+const tenantsKey = eTenantManagementRouteNames.Tenants;
+// => 'AbpTenantManagement::Tenants'
+
+// Static componentKey on the modal
+console.log(TenantManagementModal.componentKey);
+// => 'TenantManagement.TenantsComponent'
+
+// Use in component registry for replacement
+const componentRegistry = {
+  [eTenantManagementComponents.Tenants]: MyCustomTenantsComponent,
+};
+
+// Use for localization
+const localizedName = localize(eTenantManagementRouteNames.TenantManagement);`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 export function TestTenantManagementPage() {
   return (
     <div>
-      <h1>@abpjs/tenant-management Tests v2.4.0</h1>
+      <h1>@abpjs/tenant-management Tests v2.7.0</h1>
       <p>Testing tenant management modal and hooks for creating, updating, and managing tenants.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.4.0 - Added apiName property, AddRequest now requires admin credentials</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.7.0 - Added component and route name enums, componentKey static property</p>
 
+      <TestV270Features />
       <TestV240Features />
       <TestTenantModal />
       <TestTenantHook />
