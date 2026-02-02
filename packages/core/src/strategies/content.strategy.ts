@@ -1,8 +1,9 @@
 /**
  * Content Strategy for inserting inline scripts and styles
- * Translated from @abp/ng.core v2.4.0
+ * Translated from @abp/ng.core v2.7.0
  *
  * @since 2.4.0
+ * @updated 2.7.0 - insertElement() now returns the inserted element
  */
 
 import {
@@ -32,10 +33,16 @@ export abstract class ContentStrategy<T extends HTMLScriptElement | HTMLStyleEle
 
   abstract createElement(): T;
 
-  insertElement(): void {
+  /**
+   * Create and insert the element into the DOM
+   * @returns The inserted element
+   * @since 2.7.0 - Now returns the inserted element
+   */
+  insertElement(): T {
     const element = this.createElement();
     this.contentSecurityStrategy.applyCSP(element);
     this.domStrategy.insertElement(element);
+    return element;
   }
 }
 

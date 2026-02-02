@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { DomInsertionService, getDomInsertionService } from './dom-insertion.service';
 import { CONTENT_STRATEGY, StyleContentStrategy } from '../strategies/content.strategy';
 
-describe('DomInsertionService (v2.4.0)', () => {
+describe('DomInsertionService (v2.7.0)', () => {
   let service: DomInsertionService;
   let mockInsertAdjacentElement: ReturnType<typeof vi.fn>;
 
@@ -18,8 +18,8 @@ describe('DomInsertionService (v2.4.0)', () => {
   });
 
   describe('DomInsertionService', () => {
-    it('should start with empty inserted set', () => {
-      expect(service.inserted.size).toBe(0);
+    it('should start with no inserted content', () => {
+      expect(service.has('any')).toBe(false);
     });
 
     it('should insert content using content strategy', () => {
@@ -27,10 +27,18 @@ describe('DomInsertionService (v2.4.0)', () => {
       service.insertContent(strategy);
 
       expect(mockInsertAdjacentElement).toHaveBeenCalled();
-      expect(service.inserted.has('.test { color: red; }')).toBe(true);
+      expect(service.has('.test { color: red; }')).toBe(true);
     });
 
-    it('should track inserted content', () => {
+    it('should track inserted content using has()', () => {
+      const strategy = CONTENT_STRATEGY.AppendStyleToHead('.class1 { }');
+      service.insertContent(strategy);
+
+      expect(service.has('.class1 { }')).toBe(true);
+      expect(service.has('.class2 { }')).toBe(false);
+    });
+
+    it('should track inserted content using hasInserted() (deprecated)', () => {
       const strategy = CONTENT_STRATEGY.AppendStyleToHead('.class1 { }');
       service.insertContent(strategy);
 
@@ -48,7 +56,7 @@ describe('DomInsertionService (v2.4.0)', () => {
 
       // Should only insert once
       expect(mockInsertAdjacentElement).toHaveBeenCalledTimes(1);
-      expect(service.inserted.size).toBe(1);
+      expect(service.has(content)).toBe(true);
     });
 
     it('should allow different content to be inserted', () => {
@@ -59,19 +67,19 @@ describe('DomInsertionService (v2.4.0)', () => {
       service.insertContent(strategy2);
 
       expect(mockInsertAdjacentElement).toHaveBeenCalledTimes(2);
-      expect(service.inserted.size).toBe(2);
+      expect(service.has('.style1 { }')).toBe(true);
+      expect(service.has('.style2 { }')).toBe(true);
     });
 
     it('should clear tracking set', () => {
       const strategy = CONTENT_STRATEGY.AppendStyleToHead('.test { }');
       service.insertContent(strategy);
 
-      expect(service.inserted.size).toBe(1);
+      expect(service.has('.test { }')).toBe(true);
 
       service.clear();
 
-      expect(service.inserted.size).toBe(0);
-      expect(service.hasInserted('.test { }')).toBe(false);
+      expect(service.has('.test { }')).toBe(false);
     });
 
     it('should work with script content strategy', () => {
@@ -81,6 +89,34 @@ describe('DomInsertionService (v2.4.0)', () => {
       expect(mockInsertAdjacentElement).toHaveBeenCalled();
       const insertedElement = mockInsertAdjacentElement.mock.calls[0][1];
       expect(insertedElement.tagName).toBe('SCRIPT');
+    });
+
+    it('should return the inserted element (v2.7.0)', () => {
+      const strategy = CONTENT_STRATEGY.AppendStyleToHead('.return-test { }');
+      const element = service.insertContent(strategy);
+
+      expect(element).toBeDefined();
+      expect(element.tagName).toBe('STYLE');
+      expect(element.textContent).toBe('.return-test { }');
+    });
+
+    it('should remove content from DOM using removeContent() (v2.7.0)', () => {
+      const mockElement = document.createElement('style');
+      const mockParent = document.createElement('div');
+      mockParent.appendChild(mockElement);
+
+      const removeChildSpy = vi.spyOn(mockParent, 'removeChild');
+
+      service.removeContent(mockElement);
+
+      expect(removeChildSpy).toHaveBeenCalledWith(mockElement);
+    });
+
+    it('should handle removeContent() when element has no parent (v2.7.0)', () => {
+      const mockElement = document.createElement('style');
+
+      // Should not throw
+      expect(() => service.removeContent(mockElement)).not.toThrow();
     });
   });
 

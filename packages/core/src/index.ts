@@ -1,7 +1,19 @@
 /**
  * @abpjs/core
  * ABP Framework Core module for React
- * Translated from @abp/ng.core v2.4.0
+ * Translated from @abp/ng.core v2.7.0
+ *
+ * Changes in v2.7.0:
+ * - Added CurrentCulture and DateTimeFormat interfaces to ApplicationConfiguration.Localization
+ * - Added ABP.Option<T> type for enum-to-options mapping
+ * - Added ABP.Test interface for test configuration
+ * - Added ABP.Root.skipGetAppConfiguration option
+ * - Added utility types: InferredInstanceOf, InferredContextOf
+ * - Added form-utils: mapEnumToOptions() for converting enums to select options
+ * - Added number-utils: isNumber() for value validation
+ * - Added generator-utils: generatePassword() for random password generation
+ * - Updated DomInsertionService: added removeContent(), renamed hasInserted() to has()
+ * - Updated ContentStrategy.insertElement() to return the inserted element
  *
  * Changes in v2.4.0:
  * - Added Config.hmr flag for Hot Module Replacement
@@ -21,7 +33,7 @@
  * - Added @angular/localize dependency (Angular-specific, not applicable to React)
  *
  * @since 0.7.6
- * @updated 2.4.0
+ * @updated 2.7.0
  */
 
 // Models

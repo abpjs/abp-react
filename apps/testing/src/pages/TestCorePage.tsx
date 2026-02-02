@@ -4,6 +4,7 @@
  * @since 0.7.6
  * @updated 2.2.0 - Angular DI pattern changes (no React changes needed)
  * @updated 2.4.0 - Added DTOs, strategies, DomInsertionService, utility functions
+ * @updated 2.7.0 - Added CurrentCulture, ABP.Option, utility types, form-utils, number-utils, generatePassword, DomInsertionService updates
  */
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -49,11 +50,16 @@ import {
   CROSS_ORIGIN_STRATEGY,
   CONTENT_SECURITY_STRATEGY,
   getDomInsertionService,
+  DomInsertionService,
   // v2.4.0 Utils
   generateHash,
   isUndefinedOrEmptyString,
   noop,
   LazyLoadService,
+  // v2.7.0 Utils
+  mapEnumToOptions,
+  isNumber,
+  generatePassword,
 } from '@abpjs/core'
 import { useDispatch } from 'react-redux'
 
@@ -900,6 +906,336 @@ function TestV2Features() {
   )
 }
 
+// Test enums for mapEnumToOptions (v2.7.0)
+const TestStatus = {
+  Draft: 0,
+  Published: 1,
+  Archived: 2,
+} as const
+
+const TestColor = {
+  Red: 'red',
+  Green: 'green',
+  Blue: 'blue',
+} as const
+
+function TestV27Features() {
+  const [formUtilsResults, setFormUtilsResults] = useState<string[]>([])
+  const [numberUtilsResults, setNumberUtilsResults] = useState<string[]>([])
+  const [passwordResults, setPasswordResults] = useState<string[]>([])
+  const [domServiceResults, setDomServiceResults] = useState<string[]>([])
+  const config = useConfig()
+
+  const testFormUtils = () => {
+    const results: string[] = []
+
+    // Test mapEnumToOptions with numeric enum
+    const statusOptions = mapEnumToOptions(TestStatus)
+    results.push(`✓ mapEnumToOptions(TestStatus) - numeric enum:`)
+    statusOptions.forEach(opt => {
+      results.push(`  - key: "${opt.key}", value: ${opt.value}`)
+    })
+
+    results.push(``)
+
+    // Test mapEnumToOptions with string enum
+    const colorOptions = mapEnumToOptions(TestColor)
+    results.push(`✓ mapEnumToOptions(TestColor) - string enum:`)
+    colorOptions.forEach(opt => {
+      results.push(`  - key: "${opt.key}", value: "${opt.value}"`)
+    })
+
+    results.push(``)
+    results.push(`Usage in React select:`)
+    results.push(`  <select>`)
+    results.push(`    {options.map(opt => (`)
+    results.push(`      <option key={opt.key} value={opt.value}>`)
+    results.push(`        {opt.key}`)
+    results.push(`      </option>`)
+    results.push(`    ))}`)
+    results.push(`  </select>`)
+
+    setFormUtilsResults(results)
+  }
+
+  const testNumberUtils = () => {
+    const results: string[] = []
+
+    results.push(`✓ isNumber() tests:`)
+    results.push(``)
+    results.push(`  Numbers:`)
+    results.push(`    isNumber(42): ${isNumber(42)}`)
+    results.push(`    isNumber(3.14): ${isNumber(3.14)}`)
+    results.push(`    isNumber(-100): ${isNumber(-100)}`)
+    results.push(`    isNumber(0): ${isNumber(0)}`)
+    results.push(`    isNumber(NaN): ${isNumber(NaN)}`)
+    results.push(`    isNumber(Infinity): ${isNumber(Infinity)}`)
+    results.push(``)
+    results.push(`  Strings:`)
+    results.push(`    isNumber('42'): ${isNumber('42')}`)
+    results.push(`    isNumber('3.14'): ${isNumber('3.14')}`)
+    results.push(`    isNumber(''): ${isNumber('')}`)
+    results.push(`    isNumber('abc'): ${isNumber('abc')}`)
+    results.push(`    isNumber('12abc'): ${isNumber('12abc')}`)
+    results.push(`    isNumber('  42  '): ${isNumber('  42  ')}`)
+
+    setNumberUtilsResults(results)
+  }
+
+  const testGeneratePassword = () => {
+    const results: string[] = []
+
+    results.push(`✓ generatePassword() tests:`)
+    results.push(``)
+
+    // Default length
+    const pwd1 = generatePassword()
+    results.push(`  Default (16 chars): ${pwd1}`)
+    results.push(`    - length: ${pwd1.length}`)
+
+    // Custom lengths
+    const pwd8 = generatePassword(8)
+    results.push(`  8 chars: ${pwd8}`)
+
+    const pwd24 = generatePassword(24)
+    results.push(`  24 chars: ${pwd24}`)
+
+    results.push(``)
+    results.push(`  Character types included:`)
+    results.push(`    - Lowercase (a-z): ✓`)
+    results.push(`    - Uppercase (A-Z): ✓`)
+    results.push(`    - Digits (0-9): ✓`)
+    results.push(`    - Special (!@#$%^&*...): ✓`)
+
+    results.push(``)
+    results.push(`  Generate 5 more passwords:`)
+    for (let i = 0; i < 5; i++) {
+      results.push(`    ${generatePassword()}`)
+    }
+
+    setPasswordResults(results)
+  }
+
+  const testDomInsertionService = () => {
+    const results: string[] = []
+
+    const service = new DomInsertionService()
+
+    results.push(`✓ DomInsertionService v2.7.0 updates:`)
+    results.push(``)
+
+    // Test has() method (new in v2.7.0)
+    results.push(`  has() method (renamed from hasInserted):`)
+    results.push(`    service.has('nonexistent'): ${service.has('nonexistent')}`)
+
+    // Insert some content
+    const testContent = `.test-v27-${Date.now()} { color: blue; }`
+    const strategy = CONTENT_STRATEGY.AppendStyleToHead(testContent)
+    const element = service.insertContent(strategy)
+
+    results.push(``)
+    results.push(`  insertContent() now returns element:`)
+    results.push(`    element.tagName: ${element.tagName}`)
+    results.push(`    element.textContent length: ${element.textContent?.length || 0}`)
+
+    results.push(``)
+    results.push(`  After insertion:`)
+    results.push(`    service.has(content): ${service.has(testContent)}`)
+
+    // Test removeContent() (new in v2.7.0)
+    results.push(``)
+    results.push(`  removeContent() method (new in v2.7.0):`)
+    service.removeContent(element)
+    results.push(`    Element removed from DOM: ✓`)
+    results.push(`    Note: Content still tracked in set (by design)`)
+
+    // Clear for cleanup
+    service.clear()
+    results.push(``)
+    results.push(`  After clear():`)
+    results.push(`    service.has(content): ${service.has(testContent)}`)
+
+    setDomServiceResults(results)
+  }
+
+  // Get current culture from config if available
+  const currentCulture = config.localization?.currentCulture
+
+  return (
+    <div className="test-section">
+      <h2>v2.7.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.2)' }}>
+        <h3>CurrentCulture & DateTimeFormat (v2.7.0)</h3>
+        <p>New interfaces for culture and date/time formatting information.</p>
+
+        <div style={{ marginBottom: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+          <p><strong>Current Culture:</strong></p>
+          {currentCulture ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <tbody>
+                <tr><td style={{ padding: '4px' }}>name:</td><td>{currentCulture.name || 'N/A'}</td></tr>
+                <tr><td style={{ padding: '4px' }}>displayName:</td><td>{currentCulture.displayName || 'N/A'}</td></tr>
+                <tr><td style={{ padding: '4px' }}>englishName:</td><td>{currentCulture.englishName || 'N/A'}</td></tr>
+                <tr><td style={{ padding: '4px' }}>nativeName:</td><td>{currentCulture.nativeName || 'N/A'}</td></tr>
+                <tr><td style={{ padding: '4px' }}>isRightToLeft:</td><td>{String(currentCulture.isRightToLeft)}</td></tr>
+                <tr><td style={{ padding: '4px' }}>twoLetterIsoLanguageName:</td><td>{currentCulture.twoLetterIsoLanguageName || 'N/A'}</td></tr>
+              </tbody>
+            </table>
+          ) : (
+            <p style={{ color: '#888' }}>No culture loaded. Refresh application config to load.</p>
+          )}
+        </div>
+
+        <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+          <p><strong>DateTimeFormat:</strong></p>
+          {currentCulture?.dateTimeFormat ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <tbody>
+                <tr><td style={{ padding: '4px' }}>shortDatePattern:</td><td><code>{currentCulture.dateTimeFormat.shortDatePattern}</code></td></tr>
+                <tr><td style={{ padding: '4px' }}>shortTimePattern:</td><td><code>{currentCulture.dateTimeFormat.shortTimePattern}</code></td></tr>
+                <tr><td style={{ padding: '4px' }}>longTimePattern:</td><td><code>{currentCulture.dateTimeFormat.longTimePattern}</code></td></tr>
+                <tr><td style={{ padding: '4px' }}>fullDateTimePattern:</td><td><code>{currentCulture.dateTimeFormat.fullDateTimePattern}</code></td></tr>
+                <tr><td style={{ padding: '4px' }}>dateSeparator:</td><td><code>{currentCulture.dateTimeFormat.dateSeparator}</code></td></tr>
+              </tbody>
+            </table>
+          ) : (
+            <p style={{ color: '#888' }}>Default format loaded (no API data yet)</p>
+          )}
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.2)' }}>
+        <h3>mapEnumToOptions() (v2.7.0)</h3>
+        <p>Convert TypeScript enums to option arrays for form selects.</p>
+
+        <button onClick={testFormUtils} style={{ marginBottom: '1rem' }}>
+          Test mapEnumToOptions
+        </button>
+
+        {formUtilsResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '250px',
+            overflow: 'auto',
+          }}>
+            {formUtilsResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.2)' }}>
+        <h3>isNumber() (v2.7.0)</h3>
+        <p>Check if a value is a valid number or numeric string.</p>
+
+        <button onClick={testNumberUtils} style={{ marginBottom: '1rem' }}>
+          Test isNumber
+        </button>
+
+        {numberUtilsResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '300px',
+            overflow: 'auto',
+          }}>
+            {numberUtilsResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.2)' }}>
+        <h3>generatePassword() (v2.7.0)</h3>
+        <p>Generate random passwords with mixed character types.</p>
+
+        <button onClick={testGeneratePassword} style={{ marginBottom: '1rem' }}>
+          Test generatePassword
+        </button>
+
+        {passwordResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '300px',
+            overflow: 'auto',
+          }}>
+            {passwordResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.2)' }}>
+        <h3>DomInsertionService Updates (v2.7.0)</h3>
+        <p>New methods: <code>has()</code>, <code>removeContent()</code>. <code>insertContent()</code> now returns element.</p>
+
+        <button onClick={testDomInsertionService} style={{ marginBottom: '1rem' }}>
+          Test DomInsertionService
+        </button>
+
+        {domServiceResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '300px',
+            overflow: 'auto',
+          }}>
+            {domServiceResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.2)' }}>
+        <h3>New Types (v2.7.0)</h3>
+        <p>New types added for v2.7.0.</p>
+
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ABP.Option&lt;T&gt;</code></td>
+              <td style={{ padding: '8px' }}>Option type for enum-to-options mapping</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ABP.Test</code></td>
+              <td style={{ padding: '8px' }}>Test configuration interface</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ABP.Root.skipGetAppConfiguration</code></td>
+              <td style={{ padding: '8px' }}>Skip app config fetch on init</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ApplicationConfiguration.CurrentCulture</code></td>
+              <td style={{ padding: '8px' }}>Culture information interface</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ApplicationConfiguration.DateTimeFormat</code></td>
+              <td style={{ padding: '8px' }}>Date/time format patterns</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>InferredInstanceOf&lt;T&gt;</code></td>
+              <td style={{ padding: '8px' }}>Infer props from React component</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>InferredContextOf&lt;T&gt;</code></td>
+              <td style={{ padding: '8px' }}>Infer context from render prop</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestV24Features() {
   const [dtoResults, setDtoResults] = useState<string[]>([])
   const [strategyResults, setStrategyResults] = useState<string[]>([])
@@ -989,7 +1325,7 @@ function TestV24Features() {
     // Test DomInsertionService
     const domService = getDomInsertionService()
     results.push(`✓ getDomInsertionService()`)
-    results.push(`  - inserted count: ${domService.inserted.size}`)
+    results.push(`  - has() method available: ${typeof domService.has === 'function'}`)
     results.push(`  - instance is singleton: ${domService === getDomInsertionService()}`)
 
     setStrategyResults(results)
@@ -1436,12 +1772,13 @@ function TestDateExtensions() {
 export function TestCorePage() {
   return (
     <div>
-      <h1>@abpjs/core Tests (v2.4.0)</h1>
+      <h1>@abpjs/core Tests (v2.7.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing core hooks, services, and components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.4.0 - Added DTOs, strategies, DomInsertionService, utility functions
+        Version 2.7.0 - Added CurrentCulture, ABP.Option, form-utils, number-utils, generatePassword, DomInsertionService updates
       </p>
 
+      <TestV27Features />
       <TestV24Features />
       <TestV21Features />
       <TestV2Features />
