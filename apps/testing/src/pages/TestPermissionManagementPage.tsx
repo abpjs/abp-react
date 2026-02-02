@@ -8,6 +8,7 @@ import {
   PermissionManagementModal,
   usePermissionManagement,
   PermissionManagementStateService,
+  ePermissionManagementComponents,
 } from '@abpjs/permission-management'
 import type { PermissionManagement } from '@abpjs/permission-management'
 
@@ -593,6 +594,67 @@ function TestComponentInterfaces() {
   )
 }
 
+function TestV270Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v2.7.0</h2>
+
+      <div className="test-card">
+        <h3>ePermissionManagementComponents Enum</h3>
+        <p>New enum for component replacement keys:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { ePermissionManagementComponents } from '@abpjs/permission-management'
+
+// Component replacement key
+const key = ePermissionManagementComponents.PermissionManagement
+// Value: "PermissionManagement.PermissionManagementComponent"`}</pre>
+        <h4 style={{ marginTop: '1rem' }}>Enum Values:</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>PermissionManagement</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{ePermissionManagementComponents.PermissionManagement}</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '1rem' }}>
+          Use this enum to replace the default PermissionManagementModal component with a custom implementation.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Component Replacement Pattern</h3>
+        <p>Use the component key for registering custom implementations:</p>
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px',
+          marginTop: '0.5rem'
+        }}>
+{`import { ePermissionManagementComponents } from '@abpjs/permission-management'
+
+// Register a custom permission management component
+const componentRegistry = new Map();
+componentRegistry.set(
+  ePermissionManagementComponents.PermissionManagement,
+  MyCustomPermissionModal
+);
+
+// Check if a component has been replaced
+const key = ePermissionManagementComponents.PermissionManagement;
+const CustomComponent = componentRegistry.get(key);`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 function TestV240Features() {
   const [apiNameDemo, setApiNameDemo] = useState('default')
 
@@ -719,10 +781,20 @@ function TestApiEndpoints() {
 export function TestPermissionManagementPage() {
   return (
     <div>
-      <h1>@abpjs/permission-management Tests v2.4.0</h1>
+      <h1>@abpjs/permission-management Tests v2.7.0</h1>
       <p>Testing permission management modal, hooks, and state service.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.4.0 - Added apiName property to PermissionManagementService</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.7.0 - Added ePermissionManagementComponents enum for component replacement</p>
 
+      {/* v2.7.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
+        v2.7.0 New Features
+      </h2>
+      <TestV270Features />
+
+      {/* v2.4.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #3498db', paddingTop: '1rem' }}>
+        v2.4.0 Features
+      </h2>
       <TestV240Features />
       <TestPermissionModal />
       <TestPermissionHook />
