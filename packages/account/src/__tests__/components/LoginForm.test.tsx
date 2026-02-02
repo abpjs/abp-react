@@ -292,4 +292,15 @@ describe('LoginForm', () => {
       expect(mockClearError).toHaveBeenCalled();
     });
   });
+
+  // v2.7.0: Component key tests
+  describe('authWrapperKey static property (v2.7.0)', () => {
+    it('should have authWrapperKey static property', () => {
+      expect(LoginForm.authWrapperKey).toBeDefined();
+    });
+
+    it('should have authWrapperKey matching eAccountComponents.AuthWrapper', () => {
+      expect(LoginForm.authWrapperKey).toBe('Account.AuthWrapperComponent');
+    });
+  });
 });

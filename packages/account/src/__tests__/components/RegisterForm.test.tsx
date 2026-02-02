@@ -378,4 +378,15 @@ describe('RegisterForm', () => {
       expect(onRegisterError).toHaveBeenCalled();
     });
   });
+
+  // v2.7.0: Component key tests
+  describe('authWrapperKey static property (v2.7.0)', () => {
+    it('should have authWrapperKey static property', () => {
+      expect(RegisterForm.authWrapperKey).toBeDefined();
+    });
+
+    it('should have authWrapperKey matching eAccountComponents.AuthWrapper', () => {
+      expect(RegisterForm.authWrapperKey).toBe('Account.AuthWrapperComponent');
+    });
+  });
 });

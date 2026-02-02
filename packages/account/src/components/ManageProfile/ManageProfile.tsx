@@ -3,6 +3,7 @@ import { useLocalization } from '@abpjs/core';
 import { Box, Container, Heading, Stack, Tabs } from '@chakra-ui/react';
 import { PersonalSettingsForm } from '../PersonalSettingsForm';
 import { ChangePasswordForm } from '../ChangePasswordForm';
+import { eAccountComponents } from '../../enums';
 
 /**
  * Tab configuration for manage profile
@@ -42,6 +43,7 @@ export interface ManageProfileProps {
  * including personal information and password change.
  *
  * @since 1.1.0
+ * @since 2.7.0 - Added changePasswordKey and personalSettingsKey static properties for component replacement system
  *
  * @example
  * ```tsx
@@ -113,5 +115,17 @@ export function ManageProfile({
     </Box>
   );
 }
+
+/**
+ * Component key for ChangePassword used in ManageProfile
+ * @since 2.7.0
+ */
+ManageProfile.changePasswordKey = eAccountComponents.ChangePassword;
+
+/**
+ * Component key for PersonalSettings used in ManageProfile
+ * @since 2.7.0
+ */
+ManageProfile.personalSettingsKey = eAccountComponents.PersonalSettings;
 
 export default ManageProfile;

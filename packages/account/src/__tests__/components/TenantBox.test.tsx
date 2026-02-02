@@ -277,4 +277,84 @@ describe('TenantBox', () => {
       expect(mockAccountService.findTenant).toHaveBeenCalledWith('test-tenant');
     });
   });
+
+  // v2.7.0: Component key tests
+  describe('v2.7.0 - Component key', () => {
+    it('should have componentKey static property', () => {
+      expect(TenantBox.componentKey).toBeDefined();
+    });
+
+    it('should have componentKey matching eAccountComponents.TenantBox', () => {
+      expect(TenantBox.componentKey).toBe('Account.TenantBoxComponent');
+    });
+  });
+
+  // v2.7.0: TenantIdResponse.name property tests
+  describe('v2.7.0 - TenantIdResponse.name support', () => {
+    it('should use name from API response when available', async () => {
+      mockAccountService.findTenant.mockResolvedValue({
+        success: true,
+        tenantId: 'tenant-123',
+        name: 'Proper Tenant Name', // v2.7.0: API returns the proper name
+      });
+
+      const { store } = renderTenantBox();
+
+      await user.click(screen.getByText('Switch'));
+      await user.type(screen.getByRole('textbox'), 'proper-tenant');
+
+      const saveButton = screen.getByRole('button', { name: /Save/i });
+      await user.click(saveButton);
+
+      await waitFor(() => {
+        const state = store.getState();
+        // Should use the name from API response
+        expect(state.session.tenant.name).toBe('Proper Tenant Name');
+      });
+    });
+
+    it('should fall back to input name when API response name is not provided', async () => {
+      mockAccountService.findTenant.mockResolvedValue({
+        success: true,
+        tenantId: 'tenant-456',
+        // name not provided in response (backward compatible)
+      });
+
+      const { store } = renderTenantBox();
+
+      await user.click(screen.getByText('Switch'));
+      await user.type(screen.getByRole('textbox'), 'input-tenant-name');
+
+      const saveButton = screen.getByRole('button', { name: /Save/i });
+      await user.click(saveButton);
+
+      await waitFor(() => {
+        const state = store.getState();
+        // Should use the input name as fallback
+        expect(state.session.tenant.name).toBe('input-tenant-name');
+      });
+    });
+
+    it('should handle response with empty name string', async () => {
+      mockAccountService.findTenant.mockResolvedValue({
+        success: true,
+        tenantId: 'tenant-789',
+        name: '', // Empty string
+      });
+
+      const { store } = renderTenantBox();
+
+      await user.click(screen.getByText('Switch'));
+      await user.type(screen.getByRole('textbox'), 'fallback-name');
+
+      const saveButton = screen.getByRole('button', { name: /Save/i });
+      await user.click(saveButton);
+
+      await waitFor(() => {
+        const state = store.getState();
+        // Should use input name when API returns empty string
+        expect(state.session.tenant.name).toBe('fallback-name');
+      });
+    });
+  });
 });

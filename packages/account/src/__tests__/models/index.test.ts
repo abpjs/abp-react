@@ -141,6 +141,33 @@ describe('Account Models', () => {
       expect(response.success).toBe(true);
       expect(response.tenantId).toBe('tenant-123');
     });
+
+    // v2.7.0: name property tests
+    it('should allow optional name property (v2.7.0)', () => {
+      const response: TenantIdResponse = {
+        success: true,
+        tenantId: 'tenant-123',
+        name: 'Test Tenant',
+      };
+      expect(response.name).toBe('Test Tenant');
+    });
+
+    it('should work without name property for backward compatibility (v2.7.0)', () => {
+      const response: TenantIdResponse = {
+        success: true,
+        tenantId: 'tenant-456',
+      };
+      expect(response.name).toBeUndefined();
+    });
+
+    it('should handle empty name string (v2.7.0)', () => {
+      const response: TenantIdResponse = {
+        success: true,
+        tenantId: 'tenant-789',
+        name: '',
+      };
+      expect(response.name).toBe('');
+    });
   });
 
   // v2.0.0: Account namespace tests
