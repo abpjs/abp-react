@@ -4,6 +4,7 @@
  * @since 2.0.0
  * @updated 2.2.0 - Dependency updates only (no new features)
  * @updated 2.4.0 - Added apiName property, eAuditLoggingComponents enum
+ * @updated 2.7.0 - Added EntityChanges component, eEntityChangeType, eAuditLoggingRouteNames, EntityChangeService
  */
 import { useState } from 'react'
 import {
@@ -13,9 +14,12 @@ import {
   HTTP_METHODS,
   HTTP_STATUS_CODES,
   eAuditLoggingComponents,
+  eEntityChangeType,
+  eAuditLoggingRouteNames,
   AuditLoggingService,
+  EntityChangeService,
 } from '@abpjs/audit-logging'
-import type { AuditLogging, AuditLoggingStateService } from '@abpjs/audit-logging'
+import type { AuditLogging, AuditLoggingStateService, EntityChange } from '@abpjs/audit-logging'
 
 function TestAuditLogsComponent() {
   const [showComponent, setShowComponent] = useState(false)
@@ -212,6 +216,231 @@ function TestUseAuditLogsHook() {
             <tr><td style={{ padding: '8px' }}>setSortKey</td><td>Set the sort key for results</td></tr>
             <tr><td style={{ padding: '8px' }}>setSortOrder</td><td>Set the sort order (asc/desc)</td></tr>
             <tr><td style={{ padding: '8px' }}>reset</td><td>Reset all state to initial values</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function TestV270Features() {
+  // Create mock services to demonstrate v2.7.0 features
+  const mockRestService = { request: async () => ({}) }
+  const entityChangeService = new EntityChangeService(mockRestService as any)
+
+  // Type check for EntityChange models
+  const _typeCheck: EntityChange.Item | null = null
+  void _typeCheck
+
+  return (
+    <div className="test-section">
+      <h2>v2.7.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eAuditLoggingComponents Updated <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.7.0)</span></h3>
+        <p>New <code>EntityChanges</code> component key added:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eAuditLoggingComponents).map(([key, value]) => (
+              <tr key={key} style={{ background: key === 'EntityChanges' ? 'rgba(68,255,68,0.1)' : 'transparent' }}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eEntityChangeType Enum <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.7.0)</span></h3>
+        <p>New enum for entity change types:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>Created</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>{eEntityChangeType.Created}</td>
+              <td style={{ padding: '8px' }}>Entity was created</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>Updated</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>{eEntityChangeType.Updated}</td>
+              <td style={{ padding: '8px' }}>Entity was updated</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>Deleted</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>{eEntityChangeType.Deleted}</td>
+              <td style={{ padding: '8px' }}>Entity was deleted</td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import { eEntityChangeType } from '@abpjs/audit-logging';
+
+// Filter entity changes by type
+const createdChanges = changes.filter(
+  c => c.changeType === eEntityChangeType.Created
+);
+
+// Use in switch statements
+switch (change.changeType) {
+  case eEntityChangeType.Created: return 'Created';
+  case eEntityChangeType.Updated: return 'Updated';
+  case eEntityChangeType.Deleted: return 'Deleted';
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eAuditLoggingRouteNames Enum <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.7.0)</span></h3>
+        <p>Route name keys for localization and navigation:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value (Localization Key)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eAuditLoggingRouteNames).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>EntityChangeService <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.7.0)</span></h3>
+        <p>New service for entity change API operations:</p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>apiName:</code> <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{entityChangeService.apiName}</code>
+          {' | '}
+          <code>auditLogsUrl:</code> <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{entityChangeService.auditLogsUrl}</code>
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import { EntityChangeService } from '@abpjs/audit-logging';
+
+const service = new EntityChangeService(restService);
+
+// Get paginated entity changes
+const response = await service.getEntityChanges({
+  entityTypeFullName: 'MyApp.Domain.Entities.User',
+  entityChangeType: eEntityChangeType.Updated,
+  maxResultCount: 10
+});
+
+// Get single entity change by ID
+const change = await service.getEntityChangeById('change-123');
+
+// Get entity changes with user names
+const changesWithUsers = await service.getEntityChangesWithUserName(
+  'entity-id',
+  'MyApp.Domain.Entities.User'
+);
+
+// Get single entity change with user name
+const changeWithUser = await service.getEntityChangeWithUserNameById('change-123');`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>EntityChange Models <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.7.0)</span></h3>
+        <p>New namespace with models for entity change management:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import type { EntityChange } from '@abpjs/audit-logging';
+
+// Entity change item
+const item: EntityChange.Item = {
+  id: 'change-123',
+  auditLogId: 'audit-456',
+  tenantId: null,
+  changeTime: '2024-01-01T00:00:00Z',
+  changeType: eEntityChangeType.Created,
+  entityId: 'entity-789',
+  entityTypeFullName: 'MyApp.Domain.Entities.User',
+  propertyChanges: [],
+  extraProperties: {}
+};
+
+// Property change
+const propChange: EntityChange.PropertyChange = {
+  id: 'prop-1',
+  tenantId: null,
+  entityChangeId: 'change-123',
+  propertyName: 'Name',
+  propertyTypeFullName: 'System.String',
+  originalValue: 'Old Name',
+  newValue: 'New Name'
+};
+
+// Item with user name
+const itemWithUser: EntityChange.ItemWithUserName = {
+  entityChange: item,
+  userName: 'admin'
+};
+
+// Query params
+const params: EntityChange.EntityChangesQueryParams = {
+  entityTypeFullName: 'MyApp.Domain.Entities.User',
+  entityChangeType: eEntityChangeType.Updated,
+  startDate: '2024-01-01',
+  endDate: '2024-12-31',
+  maxResultCount: 10
+};`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.7.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAuditLoggingComponents.EntityChanges</td>
+              <td>string</td>
+              <td>New component key for EntityChanges</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eEntityChangeType</td>
+              <td>enum</td>
+              <td>Created (0), Updated (1), Deleted (2)</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAuditLoggingRouteNames</td>
+              <td>const object</td>
+              <td>Route name localization keys</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>EntityChangeService</td>
+              <td>class</td>
+              <td>Service for entity change operations</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>EntityChange namespace</td>
+              <td>types</td>
+              <td>Item, PropertyChange, ItemWithUserName, etc.</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -714,12 +943,13 @@ const filter: Statistics.Filter = {
 export function TestAuditLoggingPage() {
   return (
     <div>
-      <h1>@abpjs/audit-logging Tests (v2.4.0)</h1>
+      <h1>@abpjs/audit-logging Tests (v2.7.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing audit logging components, hooks, services, and enums.</p>
       <p style={{ fontSize: '14px', color: '#4f4', marginBottom: '16px' }}>
-        Version 2.4.0 - Added apiName property, eAuditLoggingComponents enum
+        Version 2.7.0 - Added EntityChanges component, eEntityChangeType, eAuditLoggingRouteNames, EntityChangeService
       </p>
 
+      <TestV270Features />
       <TestV240Features />
       <TestAuditLogsComponent />
       <TestUseAuditLogsHook />
