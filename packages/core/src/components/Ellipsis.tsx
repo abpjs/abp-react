@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useRef, useState, CSSProperties } from 'react';
+import { ReactNode, useEffect, useRef, useState, CSSProperties } from 'react';
 
 export interface EllipsisProps {
   /** Content to display with ellipsis truncation */
