@@ -103,6 +103,7 @@ describe('usePermissionManagement', () => {
       expect(typeof result.current.toggleSelectThisTab).toBe('function');
       expect(typeof result.current.toggleSelectAll).toBe('function');
       expect(typeof result.current.getSelectedGroupPermissions).toBe('function');
+      expect(typeof result.current.getAssignedCount).toBe('function');
       expect(typeof result.current.isGranted).toBe('function');
       expect(typeof result.current.isGrantedByRole).toBe('function');
       expect(typeof result.current.isGrantedByOtherProviderName).toBe('function');
@@ -479,6 +480,102 @@ describe('usePermissionManagement', () => {
       expect(groupPermissions[0].margin).toBe(0); // Parent permission
       expect(groupPermissions[1].margin).toBe(20); // Child permission
       expect(groupPermissions[2].margin).toBe(20); // Child permission
+    });
+  });
+
+  describe('getAssignedCount (v3.0.0 feature)', () => {
+    it('should return 0 when groups are empty', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      expect(result.current.getAssignedCount('IdentityManagement')).toBe(0);
+    });
+
+    it('should return 0 for non-existent group', async () => {
+      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      expect(result.current.getAssignedCount('NonExistentGroup')).toBe(0);
+    });
+
+    it('should return correct count for group with granted permissions', async () => {
+      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      // IdentityManagement group has 3 permissions: Users (granted), Users.Create (not granted), Users.Update (granted)
+      expect(result.current.getAssignedCount('IdentityManagement')).toBe(2);
+    });
+
+    it('should return 0 for group with no granted permissions', async () => {
+      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      // TenantManagement group has 1 permission: Tenants (not granted)
+      expect(result.current.getAssignedCount('TenantManagement')).toBe(0);
+    });
+
+    it('should update count when permissions are toggled', async () => {
+      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      // Initial count
+      expect(result.current.getAssignedCount('IdentityManagement')).toBe(2);
+
+      // Toggle Users.Create to grant it
+      const permission = result.current.groups[0].permissions[1]; // Users.Create
+      act(() => {
+        result.current.togglePermission(permission);
+      });
+
+      // Count should increase
+      expect(result.current.getAssignedCount('IdentityManagement')).toBe(3);
+    });
+
+    it('should reflect changes after toggleSelectAll', async () => {
+      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      // Select all permissions
+      act(() => {
+        result.current.toggleSelectAll();
+      });
+
+      // All permissions in each group should be granted
+      expect(result.current.getAssignedCount('IdentityManagement')).toBe(3);
+      expect(result.current.getAssignedCount('TenantManagement')).toBe(1);
+
+      // Deselect all permissions
+      act(() => {
+        result.current.toggleSelectAll();
+      });
+
+      // No permissions should be granted
+      expect(result.current.getAssignedCount('IdentityManagement')).toBe(0);
+      expect(result.current.getAssignedCount('TenantManagement')).toBe(0);
     });
   });
 
