@@ -26,6 +26,7 @@ import {
   TestTextTemplateManagementPage,
   TestChatPage,
   TestSchematicsPage,
+  TestComponentsPage,
 } from './pages'
 import './App.css'
 
@@ -195,6 +196,12 @@ function Home() {
             <p>Code generation types, API definitions, proxy utilities</p>
             <Link to="/test/schematics" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
           </div>
+
+          <div className="test-card">
+            <h3>@abpjs/components</h3>
+            <p>Tree component, TreeAdapter, hierarchical data utilities</p>
+            <Link to="/test/components" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
         </div>
       </div>
 
@@ -279,6 +286,7 @@ function App() {
         <Route path="/test/text-template-management" element={<TestTextTemplateManagementPage />} />
         <Route path="/test/chat" element={<TestChatPage />} />
         <Route path="/test/schematics" element={<TestSchematicsPage />} />
+        <Route path="/test/components" element={<TestComponentsPage />} />
         {/* Setting management page from @abpjs/setting-management */}
         <Route path="/setting-management" element={<SettingLayout />} />
       </Route>

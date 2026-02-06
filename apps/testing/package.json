@@ -14,6 +14,7 @@
     "@abpjs/account-pro": "workspace:*",
     "@abpjs/audit-logging": "workspace:*",
     "@abpjs/chat": "workspace:*",
+    "@abpjs/components": "workspace:*",
     "@abpjs/core": "workspace:*",
     "@abpjs/feature-management": "workspace:*",
     "@abpjs/identity": "workspace:*",
