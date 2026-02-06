@@ -5,6 +5,7 @@
  * @updated 2.2.0 - Dependency updates (no new features)
  * @updated 2.4.0 - Added apiName property, eLanguageManagementComponents enum
  * @updated 2.7.0 - Added eLanguageManagementRouteNames, LanguageManagementComponentKey/RouteNameKey types
+ * @updated 2.9.0 - Internal Angular changes (no new React features)
  */
 import { useState } from 'react'
 import { useRestService } from '@abpjs/core'
@@ -891,10 +892,10 @@ function TestModels() {
 export function TestLanguageManagementPage() {
   return (
     <div>
-      <h1>@abpjs/language-management Tests (v2.7.0)</h1>
+      <h1>@abpjs/language-management Tests (v2.9.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing language management components, hooks, and services.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.7.0 - Added eLanguageManagementRouteNames, LanguageManagementComponentKey/RouteNameKey types
+        Version 2.9.0 - No new React features (internal Angular changes only)
       </p>
 
       <TestV270Features />
