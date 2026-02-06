@@ -1634,9 +1634,9 @@ console.log(response.totalCount) // Total count`}</pre>
 export function TestIdentityPage() {
   return (
     <div>
-      <h1>@abpjs/identity Tests v2.7.0</h1>
+      <h1>@abpjs/identity Tests v2.9.0</h1>
       <p>Testing identity management components and hooks for role and user management.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.7.0 - Added eIdentityComponents, eIdentityRouteNames enums and componentKey static properties</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.9.0 - Dependency updates (version bump only)</p>
 
       {/* v2.7.0 Features - Highlighted at top */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
