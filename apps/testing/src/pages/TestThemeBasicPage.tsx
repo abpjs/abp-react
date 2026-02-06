@@ -23,10 +23,6 @@ import {
   LayoutApplication,
   CurrentUserComponent,
   LanguagesComponent,
-  initializeThemeBasicNavItems,
-  initializeThemeBasicStyles,
-  BASIC_THEME_NAV_ITEM_PROVIDERS,
-  BASIC_THEME_STYLES_PROVIDERS,
 } from '@abpjs/theme-basic'
 
 // These are displayed in code examples but not rendered directly

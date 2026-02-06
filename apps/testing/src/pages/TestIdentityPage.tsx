@@ -3,10 +3,10 @@
  * Tests: RolesComponent, UsersComponent, useRoles, useUsers, useIdentity hooks
  *
  * v3.0.0 Updates:
- * - New config subpackage with eIdentityPolicyNames, IDENTITY_ROUTE_PROVIDERS
+ * - New config subpackage with eIdentityPolicyNames
  * - Moved eIdentityRouteNames to config/enums (removed Administration key)
  * - Added getUserAssignableRoles() method to IdentityService
- * - initializeIdentityRoutes helper for easy route setup
+ * - configureRoutes helper for route setup
  *
  * v2.0.0 Updates:
  * - IdentityStateService for stateful identity operations
@@ -29,9 +29,7 @@ import {
   eIdentityRouteNames,
   // v3.0.0 config exports
   eIdentityPolicyNames,
-  IDENTITY_ROUTE_PROVIDERS,
   configureRoutes,
-  initializeIdentityRoutes,
 } from '@abpjs/identity'
 import type { Identity, PasswordRule } from '@abpjs/identity'
 
@@ -1712,37 +1710,34 @@ const usersPolicy = eIdentityPolicyNames.Users`}</pre>
       </div>
 
       <div className="test-card">
-        <h3>IDENTITY_ROUTE_PROVIDERS</h3>
-        <p>Route configuration provider for identity module:</p>
-        <pre style={{ fontSize: '12px' }}>{`import { IDENTITY_ROUTE_PROVIDERS, configureRoutes, getRoutesService } from '@abpjs/identity'
+        <h3>configureRoutes Function</h3>
+        <p>Route configuration function for identity module:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { configureRoutes, getRoutesService } from '@abpjs/identity'
 
 // Configure routes manually
 const routes = getRoutesService()
-const addRoutes = IDENTITY_ROUTE_PROVIDERS.configureRoutes(routes)
-addRoutes()
-
-// Or use the configureRoutes function directly
-const addRoutes2 = configureRoutes(routes)
-addRoutes2()`}</pre>
+const addRoutes = configureRoutes(routes)
+addRoutes()`}</pre>
         <div style={{ marginTop: '1rem' }}>
           <button onClick={handleConfigureRoutes} disabled={routesConfigured}>
             {routesConfigured ? 'Routes Configured!' : 'Configure Identity Routes'}
           </button>
         </div>
         <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
-          IDENTITY_ROUTE_PROVIDERS.configureRoutes: {typeof IDENTITY_ROUTE_PROVIDERS.configureRoutes}
+          configureRoutes: {typeof configureRoutes}
         </p>
       </div>
 
       <div className="test-card">
-        <h3>initializeIdentityRoutes Helper</h3>
-        <p>Simplified route initialization:</p>
-        <pre style={{ fontSize: '12px' }}>{`import { initializeIdentityRoutes } from '@abpjs/identity'
+        <h3>Route Initialization Example</h3>
+        <p>Simplified route initialization with configureRoutes:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { configureRoutes, getRoutesService } from '@abpjs/identity'
 
 // In your app initialization:
-initializeIdentityRoutes()  // That's it!`}</pre>
+const routes = getRoutesService()
+configureRoutes(routes)()`}</pre>
         <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
-          This helper uses getRoutesService() internally and adds all identity routes.
+          This helper uses RoutesService to add all identity routes.
         </p>
       </div>
 

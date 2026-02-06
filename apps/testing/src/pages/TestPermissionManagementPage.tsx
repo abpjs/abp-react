@@ -172,7 +172,6 @@ function TestPermissionHook() {
     toggleSelectThisTab,
     toggleSelectAll,
     getSelectedGroupPermissions,
-    getAssignedCount,
     isGranted,
     isGrantedByRole,
     isGrantedByOtherProviderName,
