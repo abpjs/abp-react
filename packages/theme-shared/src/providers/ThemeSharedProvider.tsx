@@ -145,22 +145,23 @@ export function ThemeSharedProvider({
   renderToasts = true,
   renderConfirmation = true,
   themeOverrides,
-  toastPosition = 'bottom-right',
+  toastPosition: _toastPosition = 'bottom-right',
   enableColorMode = false,
   defaultColorMode = 'light',
   locale = 'en-US',
 }: ThemeSharedProviderProps): React.ReactElement {
   // Create system with overrides if provided
   const system = themeOverrides ? createAbpSystem(themeOverrides) : abpSystem;
-  const {endSide} = useDirection();
-  toastPosition = `bottom-${endSide}`
+  const { endSide } = useDirection();
+  const resolvedToastPosition: ThemeSharedProviderProps['toastPosition'] =
+    endSide === 'left' ? 'bottom-left' : 'bottom-right';
   
   // Core content with toast and confirmation providers
   const content = (
     <ToasterProvider>
       <ConfirmationProvider>
         {children}
-        {renderToasts && <ToastContainer position={toastPosition} />}
+        {renderToasts && <ToastContainer position={resolvedToastPosition} />}
         {renderConfirmation && <ConfirmationDialog />}
       </ConfirmationProvider>
     </ToasterProvider>
