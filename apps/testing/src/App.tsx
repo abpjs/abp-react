@@ -23,6 +23,7 @@ import {
   TestLanguageManagementPage,
   TestSaasPage,
   TestAuditLoggingPage,
+  TestTextTemplateManagementPage,
 } from './pages'
 import './App.css'
 
@@ -174,6 +175,12 @@ function Home() {
             <p>Audit logs, HTTP methods/status tracking, statistics</p>
             <Link to="/test/audit-logging" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
           </div>
+
+          <div className="test-card">
+            <h3>@abpjs/text-template-management</h3>
+            <p>Text template definitions, content editing, cultures</p>
+            <Link to="/test/text-template-management" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
         </div>
       </div>
 
@@ -255,6 +262,7 @@ function App() {
         <Route path="/test/language-management" element={<TestLanguageManagementPage />} />
         <Route path="/test/saas" element={<TestSaasPage />} />
         <Route path="/test/audit-logging" element={<TestAuditLoggingPage />} />
+        <Route path="/test/text-template-management" element={<TestTextTemplateManagementPage />} />
         {/* Setting management page from @abpjs/setting-management */}
         <Route path="/setting-management" element={<SettingLayout />} />
       </Route>

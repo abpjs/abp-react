@@ -20,6 +20,7 @@
     "@abpjs/language-management": "workspace:*",
     "@abpjs/permission-management": "workspace:*",
     "@abpjs/saas": "workspace:*",
+    "@abpjs/text-template-management": "workspace:*",
     "@abpjs/tenant-management": "workspace:*",
     "@abpjs/setting-management": "workspace:*",
     "@abpjs/theme-basic": "workspace:*",
