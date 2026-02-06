@@ -48,6 +48,12 @@ export const eAccountComponents = {
    * Key for the PersonalSettings component.
    */
   PersonalSettings: 'Account.PersonalSettingsComponent',
+
+  /**
+   * Key for the Logo component.
+   * @since 2.9.0
+   */
+  Logo: 'Account.LogoComponent',
 } as const;
 
 /**

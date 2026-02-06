@@ -13,6 +13,7 @@ import {
   ChangePassword,
   PersonalSettings,
   ManageProfile,
+  Logo,
   useAccountProService,
   usePasswordFlow,
   ACCOUNT_PRO_ROUTES,
@@ -744,10 +745,170 @@ await service.confirmPhoneNumber(token);`}
   )
 }
 
+function TestV290Features() {
+  const [showLogo, setShowLogo] = useState(false)
+  const [logoUrl, setLogoUrl] = useState('')
+
+  return (
+    <div className="test-section">
+      <h2>v2.9.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Logo Component <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.9.0)</span></h3>
+        <p>Displays the application logo on account pages (login, register, etc.):</p>
+
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={() => setShowLogo(!showLogo)}>
+            {showLogo ? 'Hide Logo Component' : 'Show Logo Component'}
+          </button>
+        </div>
+
+        {showLogo && (
+          <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #333', borderRadius: '8px' }}>
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.5rem' }}>Custom Logo URL (optional):</label>
+              <input
+                type="text"
+                placeholder="https://example.com/logo.png"
+                value={logoUrl}
+                onChange={(e) => setLogoUrl(e.target.value)}
+                style={{ padding: '8px', width: '100%', maxWidth: '400px' }}
+              />
+            </div>
+
+            <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
+              <Logo
+                logoUrl={logoUrl || undefined}
+                alt="Custom Logo"
+                maxWidth="200px"
+                maxHeight="60px"
+              />
+            </div>
+          </div>
+        )}
+
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import { Logo } from '@abpjs/account-pro';
+
+// Default usage - displays app name as text
+<Logo />
+
+// With custom logo URL
+<Logo logoUrl="/assets/logo.png" alt="My App Logo" />
+
+// With custom dimensions
+<Logo
+  logoUrl="/assets/logo.png"
+  maxWidth="200px"
+  maxHeight="80px"
+/>
+
+// With custom children
+<Logo>
+  <img src="/custom-logo.svg" alt="Custom" />
+</Logo>`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Logo Component Props</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Prop</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Default</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>logoUrl</td>
+              <td>string</td>
+              <td>-</td>
+              <td>Custom logo image URL</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>alt</td>
+              <td>string</td>
+              <td>"Logo"</td>
+              <td>Alt text for the logo image</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>maxWidth</td>
+              <td>string</td>
+              <td>"150px"</td>
+              <td>Maximum width of the logo</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>maxHeight</td>
+              <td>string</td>
+              <td>"50px"</td>
+              <td>Maximum height of the logo</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>children</td>
+              <td>JSX.Element</td>
+              <td>-</td>
+              <td>Custom content to render instead</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eAccountComponents.Logo <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.9.0)</span></h3>
+        <p>New component key added to eAccountComponents for Logo component replacement:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import { eAccountComponents, Logo } from '@abpjs/account-pro';
+
+// Component key for replacement
+const logoKey = eAccountComponents.Logo;
+// => 'Account.LogoComponent'
+
+// Static component key on Logo
+console.log(Logo.componentKey);
+// => 'Account.LogoComponent'`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.9.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>Logo</td>
+              <td>React Component</td>
+              <td>Application logo component for account pages</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>LogoProps</td>
+              <td>TypeScript Interface</td>
+              <td>Props interface for Logo component</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAccountComponents.Logo</td>
+              <td>string constant</td>
+              <td>'Account.LogoComponent' - component replacement key</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestV270Features() {
   return (
     <div className="test-section">
-      <h2>v2.7.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+      <h2>v2.7.0 Features</h2>
 
       <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
         <h3>eAccountComponents Enum <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.7.0)</span></h3>
@@ -826,7 +987,7 @@ const localizedName = localize(eAccountRouteNames.ManageProfile);
             <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
               <td style={{ padding: '8px' }}>eAccountComponents</td>
               <td>const object</td>
-              <td>Component replacement keys (9 keys)</td>
+              <td>Component replacement keys (10 keys, Logo added in v2.9.0)</td>
             </tr>
             <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
               <td style={{ padding: '8px' }}>eAccountRouteNames</td>
@@ -895,9 +1056,9 @@ function TestAuthState() {
 export function TestAccountProPage() {
   return (
     <div>
-      <h1>@abpjs/account-pro Tests v2.7.0</h1>
+      <h1>@abpjs/account-pro Tests v2.9.0</h1>
       <p>Testing Pro account features: password reset, profile management, enhanced components.</p>
-      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 2.7.0 - Added eAccountComponents and eAccountRouteNames enums</p>
+      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 2.9.0 - Added Logo component</p>
 
       <div className="test-card" style={{ backgroundColor: '#1a365d', border: '1px solid #2b6cb0' }}>
         <h3 style={{ color: '#90cdf4' }}>Pro Package Features</h3>
@@ -909,9 +1070,11 @@ export function TestAccountProPage() {
           <li style={{ color: '#90cdf4' }}>v2.0.0: enableLocalLogin option, isSelfRegistrationEnabled prop, Account namespace interfaces</li>
           <li style={{ color: '#4f4' }}>v2.4.0: apiName property, sendPhoneNumberConfirmationToken(), confirmPhoneNumber(), phoneNumberConfirmed field</li>
           <li style={{ color: '#4f4' }}>v2.7.0: eAccountComponents enum (9 keys), eAccountRouteNames enum (6 keys)</li>
+          <li style={{ color: '#4f4' }}>v2.9.0: Logo component, eAccountComponents.Logo key (now 10 keys)</li>
         </ul>
       </div>
 
+      <TestV290Features />
       <TestV270Features />
       <TestV240Features />
       <TestAuthState />

@@ -4,7 +4,7 @@ import {
   type AccountComponentKey,
 } from '../../enums/components';
 
-describe('eAccountComponents (v2.7.0)', () => {
+describe('eAccountComponents (v2.9.0)', () => {
   describe('enum values', () => {
     it('should have Account key with correct value', () => {
       expect(eAccountComponents.Account).toBe('Account.AccountComponent');
@@ -51,12 +51,16 @@ describe('eAccountComponents (v2.7.0)', () => {
         'Account.PersonalSettingsComponent'
       );
     });
+
+    it('should have Logo key with correct value (v2.9.0)', () => {
+      expect(eAccountComponents.Logo).toBe('Account.LogoComponent');
+    });
   });
 
   describe('enum structure', () => {
-    it('should have exactly 9 keys', () => {
+    it('should have exactly 10 keys', () => {
       const keys = Object.keys(eAccountComponents);
-      expect(keys).toHaveLength(9);
+      expect(keys).toHaveLength(10);
     });
 
     it('should have all expected keys', () => {
@@ -70,6 +74,7 @@ describe('eAccountComponents (v2.7.0)', () => {
       expect(keys).toContain('TenantBox');
       expect(keys).toContain('ChangePassword');
       expect(keys).toContain('PersonalSettings');
+      expect(keys).toContain('Logo');
     });
 
     it('should be immutable (const assertion)', () => {
@@ -96,6 +101,7 @@ describe('eAccountComponents (v2.7.0)', () => {
         eAccountComponents.ChangePassword;
       const personalSettingsKey: AccountComponentKey =
         eAccountComponents.PersonalSettings;
+      const logoKey: AccountComponentKey = eAccountComponents.Logo;
 
       expect(accountKey).toBe('Account.AccountComponent');
       expect(loginKey).toBe('Account.LoginComponent');
@@ -106,6 +112,7 @@ describe('eAccountComponents (v2.7.0)', () => {
       expect(tenantBoxKey).toBe('Account.TenantBoxComponent');
       expect(changePasswordKey).toBe('Account.ChangePasswordComponent');
       expect(personalSettingsKey).toBe('Account.PersonalSettingsComponent');
+      expect(logoKey).toBe('Account.LogoComponent');
     });
 
     it('should preserve literal types', () => {
@@ -123,7 +130,7 @@ describe('eAccountComponents (v2.7.0)', () => {
   describe('usage patterns', () => {
     it('should allow iteration over all component keys', () => {
       const allKeys = Object.values(eAccountComponents);
-      expect(allKeys).toHaveLength(9);
+      expect(allKeys).toHaveLength(10);
       expect(allKeys.every((key) => key.startsWith('Account.'))).toBe(true);
     });
 
@@ -167,6 +174,9 @@ describe('eAccountComponents (v2.7.0)', () => {
         case eAccountComponents.PersonalSettings:
           label = 'Personal Settings';
           break;
+        case eAccountComponents.Logo:
+          label = 'Logo';
+          break;
         default:
           label = 'Unknown';
       }
@@ -185,12 +195,13 @@ describe('eAccountComponents (v2.7.0)', () => {
         [eAccountComponents.TenantBox]: true,
         [eAccountComponents.ChangePassword]: true,
         [eAccountComponents.PersonalSettings]: true,
+        [eAccountComponents.Logo]: true,
       };
 
       expect(
         componentConfig[eAccountComponents.Login as AccountComponentKey]
       ).toBe(true);
-      expect(Object.keys(componentConfig)).toHaveLength(9);
+      expect(Object.keys(componentConfig)).toHaveLength(10);
     });
   });
 });
