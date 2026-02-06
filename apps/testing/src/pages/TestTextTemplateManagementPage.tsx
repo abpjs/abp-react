@@ -3,6 +3,7 @@
  * Tests: TextTemplatesComponent, TemplateContentsComponent, useTextTemplates hook
  * @since 2.7.0
  * @updated 2.9.0 - Internal Angular changes (no new React features)
+ * @updated 3.0.0 - Config subpackage, extension tokens, guards, policy names
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -19,6 +20,23 @@ import {
   type TextTemplateManagement,
   type TextTemplateManagementComponentKey,
   type TextTemplateManagementRouteNameKey,
+  // v3.0.0 - Config subpackage
+  eTextTemplateManagementPolicyNames,
+  TEXT_TEMPLATE_MANAGEMENT_ROUTE_CONFIG,
+  type TextTemplateManagementPolicyNameKey,
+  type TextTemplateManagementConfigOptions,
+  // v3.0.0 - Extension tokens
+  DEFAULT_TEXT_TEMPLATE_MANAGEMENT_ENTITY_ACTIONS,
+  DEFAULT_TEXT_TEMPLATE_MANAGEMENT_TOOLBAR_ACTIONS,
+  DEFAULT_TEXT_TEMPLATE_MANAGEMENT_ENTITY_PROPS,
+  type EntityAction,
+  type ToolbarAction,
+  type EntityProp,
+  type EntityActionContributorCallback,
+  type ToolbarActionContributorCallback,
+  type EntityPropContributorCallback,
+  // v3.0.0 - Guards
+  useTextTemplateManagementExtensionsGuard,
 } from '@abpjs/text-template-management'
 
 // Type annotation to ensure services are used
@@ -28,6 +46,222 @@ const _stateServiceType: typeof TextTemplateManagementStateService | null = null
 void _definitionServiceType
 void _contentServiceType
 void _stateServiceType
+
+function TestV300Features() {
+  // v3.0.0 - Policy Names
+  const textTemplatesPolicy: TextTemplateManagementPolicyNameKey = eTextTemplateManagementPolicyNames.TextTemplates
+
+  // v3.0.0 - Extension guard hook
+  const { loading, isLoaded } = useTextTemplateManagementExtensionsGuard()
+
+  // v3.0.0 - Demo custom actions/props (for demonstration purposes)
+  const customEntityAction: EntityAction<TextTemplateManagement.TemplateDefinitionDto> = {
+    text: 'Custom Action',
+    action: (record) => console.log('Custom action on:', record),
+    visible: () => true,
+  }
+
+  const customToolbarAction: ToolbarAction<TextTemplateManagement.TemplateDefinitionDto[]> = {
+    text: 'Toolbar Action',
+    action: () => console.log('Toolbar action triggered'),
+    visible: () => true,
+  }
+
+  const customEntityProp: EntityProp<TextTemplateManagement.TemplateDefinitionDto> = {
+    name: 'customField',
+    displayName: 'Custom Field',
+    sortable: true,
+  }
+
+  // Demonstrate contributor callbacks
+  const entityActionContributor: EntityActionContributorCallback<TextTemplateManagement.TemplateDefinitionDto> = (actionList) => {
+    return [...actionList, customEntityAction]
+  }
+
+  const toolbarActionContributor: ToolbarActionContributorCallback<TextTemplateManagement.TemplateDefinitionDto[]> = (actionList) => {
+    return [...actionList, customToolbarAction]
+  }
+
+  const entityPropContributor: EntityPropContributorCallback<TextTemplateManagement.TemplateDefinitionDto> = (propList) => {
+    return [...propList, customEntityProp]
+  }
+
+  // Type annotation for config options
+  const configOptions: TextTemplateManagementConfigOptions = {
+    entityActionContributors: {
+      [eTextTemplateManagementComponents.TextTemplates]: [entityActionContributor],
+    },
+    toolbarActionContributors: {
+      [eTextTemplateManagementComponents.TextTemplates]: [toolbarActionContributor],
+    },
+    entityPropContributors: {
+      [eTextTemplateManagementComponents.TextTemplates]: [entityPropContributor],
+    },
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.0.0 Features</h2>
+
+      <div className="test-card">
+        <h3>Policy Names (eTextTemplateManagementPolicyNames)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Policy name constants for permission checking.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>TextTemplates</code></td>
+              <td style={{ padding: '8px' }}><code>{textTemplatesPolicy}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Route Configuration</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New route configuration pattern from config subpackage.
+        </p>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px', overflow: 'auto' }}>
+{`// TEXT_TEMPLATE_MANAGEMENT_ROUTE_CONFIG
+${JSON.stringify(TEXT_TEMPLATE_MANAGEMENT_ROUTE_CONFIG, null, 2)}`}
+        </pre>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          Functions: <code>configureRoutes()</code>, <code>initializeTextTemplateManagementRoutes()</code>
+        </p>
+        <p style={{ fontSize: '12px', color: '#888' }}>
+          Provider: <code>TEXT_TEMPLATE_MANAGEMENT_ROUTE_PROVIDERS</code>
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Extension Tokens (DEFAULT_TEXT_TEMPLATE_MANAGEMENT_*)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Default extension tokens for customizing entity actions, toolbar actions, and entity props.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Token</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_TEXT_TEMPLATE_MANAGEMENT_ENTITY_ACTIONS</code></td>
+              <td style={{ padding: '8px' }}>EntityAction[]</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_TEXT_TEMPLATE_MANAGEMENT_TOOLBAR_ACTIONS</code></td>
+              <td style={{ padding: '8px' }}>ToolbarAction[]</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_TEXT_TEMPLATE_MANAGEMENT_ENTITY_PROPS</code></td>
+              <td style={{ padding: '8px' }}>EntityProp[]</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          Current counts: Actions={DEFAULT_TEXT_TEMPLATE_MANAGEMENT_ENTITY_ACTIONS[eTextTemplateManagementComponents.TextTemplates].length},
+          Toolbar={DEFAULT_TEXT_TEMPLATE_MANAGEMENT_TOOLBAR_ACTIONS[eTextTemplateManagementComponents.TextTemplates].length},
+          Props={DEFAULT_TEXT_TEMPLATE_MANAGEMENT_ENTITY_PROPS[eTextTemplateManagementComponents.TextTemplates].length}
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Extensions Guard</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Guard for route protection and extension loading state.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>textTemplateManagementExtensionsGuard</code></td>
+              <td style={{ padding: '8px' }}>Function</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>useTextTemplateManagementExtensionsGuard</code></td>
+              <td style={{ padding: '8px' }}>React Hook</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>TextTemplateManagementExtensionsGuard</code></td>
+              <td style={{ padding: '8px' }}>Class</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ marginTop: '0.5rem' }}>
+          <strong>Hook State:</strong> loading={loading ? 'true' : 'false'}, isLoaded={isLoaded ? 'true' : 'false'}
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Config Options (TextTemplateManagementConfigOptions)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Configuration options for customizing text template management behavior.
+        </p>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px', overflow: 'auto' }}>
+{`// Example configuration with contributor callbacks
+const config: TextTemplateManagementConfigOptions = {
+  entityActionContributors: [
+    (actionList) => {
+      actionList.addTail({ text: 'Custom', action: () => {} });
+      return actionList;
+    }
+  ],
+  toolbarActionContributors: [...],
+  entityPropContributors: [...],
+};`}
+        </pre>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          Demo config has {Object.keys(configOptions.entityActionContributors ?? {}).length} component(s) with entity action contributors
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px', overflow: 'auto' }}>
+{`import {
+  // Config
+  eTextTemplateManagementPolicyNames,
+  TEXT_TEMPLATE_MANAGEMENT_ROUTE_CONFIG,
+  configureRoutes,
+
+  // Tokens
+  DEFAULT_TEXT_TEMPLATE_MANAGEMENT_ENTITY_ACTIONS,
+
+  // Guards
+  useTextTemplateManagementExtensionsGuard,
+
+  // Types
+  type TextTemplateManagementConfigOptions,
+} from '@abpjs/text-template-management';
+
+function ProtectedRoute({ children }) {
+  const { loading, isLoaded } = useTextTemplateManagementExtensionsGuard();
+
+  if (loading) return <Spinner />;
+  if (!isLoaded) return <Redirect to="/unauthorized" />;
+
+  return children;
+}`}
+        </pre>
+      </div>
+    </div>
+  )
+}
 
 function TestTextTemplatesComponent() {
   const { isAuthenticated } = useAuth()
@@ -307,13 +541,12 @@ function TestEnumsSection() {
   const templateContentsKey: TextTemplateManagementComponentKey = eTextTemplateManagementComponents.TemplateContents
   const inlineKey: TextTemplateManagementComponentKey = eTextTemplateManagementComponents.InlineTemplateContent
 
-  // Type-safe route name key
-  const adminRoute: TextTemplateManagementRouteNameKey = eTextTemplateManagementRouteNames.Administration
+  // Type-safe route name key (v3.0.0 - Administration removed)
   const textTemplatesRoute: TextTemplateManagementRouteNameKey = eTextTemplateManagementRouteNames.TextTemplates
 
   return (
     <div className="test-section">
-      <h2>Enums and Type-Safe Keys (v2.7.0)</h2>
+      <h2>Enums and Type-Safe Keys</h2>
 
       <div className="test-card">
         <h3>eTextTemplateManagementComponents</h3>
@@ -349,6 +582,9 @@ function TestEnumsSection() {
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
           Route name keys for localization and navigation.
         </p>
+        <p style={{ fontSize: '12px', color: '#f88', marginBottom: '0.5rem' }}>
+          ⚠️ v3.0.0 Breaking Change: Administration key was removed
+        </p>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #333' }}>
@@ -357,10 +593,6 @@ function TestEnumsSection() {
             </tr>
           </thead>
           <tbody>
-            <tr style={{ borderBottom: '1px solid #222' }}>
-              <td style={{ padding: '8px' }}><code>Administration</code></td>
-              <td style={{ padding: '8px' }}><code>{adminRoute}</code></td>
-            </tr>
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}><code>TextTemplates</code></td>
               <td style={{ padding: '8px' }}><code>{textTemplatesRoute}</code></td>
@@ -559,16 +791,17 @@ function TestApiEndpoints() {
 export function TestTextTemplateManagementPage() {
   return (
     <div>
-      <h1>@abpjs/text-template-management Tests (v2.9.0)</h1>
+      <h1>@abpjs/text-template-management Tests (v3.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing Text Template Management module for managing text templates and their content.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.9.0 - No new React features (internal Angular changes only)
+        Version 3.0.0 - Config subpackage, extension tokens, guards, policy names
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components and services for managing text templates used in email notifications,
         SMS messages, and other text-based content in ABP Framework applications.
       </p>
 
+      <TestV300Features />
       <TestEnumsSection />
       <TestTextTemplatesComponent />
       <TestTemplateContentsComponent />
