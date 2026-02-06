@@ -1,6 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { SettingManagementStateService, getSettingManagementStateService } from '../services/setting-management-state.service';
-import type { SettingTab } from '@abpjs/theme-shared';
+import {
+  SettingManagementStateService,
+  getSettingManagementStateService,
+} from '../services/setting-management-state.service';
+import type { SettingTab } from '../models';
 
 describe('SettingManagementStateService', () => {
   let service: SettingManagementStateService;
@@ -10,19 +13,19 @@ describe('SettingManagementStateService', () => {
   });
 
   describe('initial state', () => {
-    it('should have null selectedTab initially', () => {
-      expect(service.getSelectedTab()).toBeNull();
+    it('should have undefined selectedTab initially', () => {
+      expect(service.getSelectedTab()).toBeUndefined();
     });
 
-    it('should return initial state with null selectedTab', () => {
+    it('should return initial state with undefined selectedTab', () => {
       const state = service.getState();
-      expect(state).toEqual({ selectedTab: null });
+      expect(state).toEqual({ selectedTab: undefined });
     });
   });
 
   describe('getSelectedTab', () => {
-    it('should return null when no tab is selected', () => {
-      expect(service.getSelectedTab()).toBeNull();
+    it('should return undefined when no tab is selected', () => {
+      expect(service.getSelectedTab()).toBeUndefined();
     });
 
     it('should return the selected tab after setting it', () => {
@@ -49,7 +52,7 @@ describe('SettingManagementStateService', () => {
       expect(service.getSelectedTab()).toEqual(tab);
     });
 
-    it('should allow setting null to clear selection', () => {
+    it('should allow setting undefined to clear selection', () => {
       const tab: SettingTab = {
         name: 'Account',
         order: 1,
@@ -59,8 +62,8 @@ describe('SettingManagementStateService', () => {
       service.setSelectedTab(tab);
       expect(service.getSelectedTab()).toEqual(tab);
 
-      service.setSelectedTab(null);
-      expect(service.getSelectedTab()).toBeNull();
+      service.setSelectedTab(undefined);
+      expect(service.getSelectedTab()).toBeUndefined();
     });
 
     it('should notify subscribers when tab is set', () => {
@@ -121,14 +124,14 @@ describe('SettingManagementStateService', () => {
         component: () => null,
       };
 
-      expect(service.getState().selectedTab).toBeNull();
+      expect(service.getState().selectedTab).toBeUndefined();
       service.setSelectedTab(tab);
       expect(service.getState().selectedTab).toEqual(tab);
     });
   });
 
   describe('reset', () => {
-    it('should reset selectedTab to null', () => {
+    it('should reset selectedTab to undefined', () => {
       const tab: SettingTab = {
         name: 'Account',
         order: 1,
@@ -139,7 +142,7 @@ describe('SettingManagementStateService', () => {
       expect(service.getSelectedTab()).toEqual(tab);
 
       service.reset();
-      expect(service.getSelectedTab()).toBeNull();
+      expect(service.getSelectedTab()).toBeUndefined();
     });
 
     it('should notify subscribers when reset', () => {
@@ -206,7 +209,7 @@ describe('SettingManagementStateService', () => {
       expect(callback).toHaveBeenCalledTimes(1);
 
       unsubscribe();
-      service.setSelectedTab(null);
+      service.setSelectedTab(undefined);
       expect(callback).toHaveBeenCalledTimes(1); // Still 1, not called again
     });
 
@@ -250,7 +253,7 @@ describe('SettingManagementStateService', () => {
       expect(callback2).toHaveBeenCalledTimes(1);
 
       unsubscribe1();
-      service.setSelectedTab(null);
+      service.setSelectedTab(undefined);
 
       expect(callback1).toHaveBeenCalledTimes(1); // Not called again
       expect(callback2).toHaveBeenCalledTimes(2); // Called again
@@ -263,8 +266,8 @@ describe('SettingManagementStateService', () => {
       service.subscribe(callback);
 
       // Initial state
-      expect(service.getSelectedTab()).toBeNull();
-      expect(service.getState()).toEqual({ selectedTab: null });
+      expect(service.getSelectedTab()).toBeUndefined();
+      expect(service.getState()).toEqual({ selectedTab: undefined });
 
       // Select a tab
       const accountTab: SettingTab = {
@@ -288,7 +291,7 @@ describe('SettingManagementStateService', () => {
 
       // Reset
       service.reset();
-      expect(service.getSelectedTab()).toBeNull();
+      expect(service.getSelectedTab()).toBeUndefined();
       expect(callback).toHaveBeenCalledTimes(3);
     });
 

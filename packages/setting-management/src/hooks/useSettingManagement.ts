@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { SettingTab } from '@abpjs/theme-shared';
+import type { SettingTab } from '../models';
 import { getSettingManagementService } from '../services';
 
 /**
