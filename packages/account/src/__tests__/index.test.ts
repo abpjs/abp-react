@@ -4,8 +4,51 @@ import * as accountModule from '../index';
 /**
  * Tests for @abpjs/account package exports
  * Uses static import to avoid slow dynamic imports during test execution.
+ * @updated 3.0.0 - Added config and utils exports
  */
 describe('@abpjs/account package exports', () => {
+  // v3.0.0: Config exports
+  describe('v3.0.0 - Config exports', () => {
+    it('should export configureRoutes from config', () => {
+      const { configureRoutes } = accountModule;
+      expect(configureRoutes).toBeDefined();
+      expect(typeof configureRoutes).toBe('function');
+    });
+
+    it('should export ACCOUNT_ROUTE_PROVIDERS from config', () => {
+      const { ACCOUNT_ROUTE_PROVIDERS } = accountModule;
+      expect(ACCOUNT_ROUTE_PROVIDERS).toBeDefined();
+      expect(ACCOUNT_ROUTE_PROVIDERS.configureRoutes).toBeDefined();
+    });
+
+    it('should export initializeAccountRoutes from config', () => {
+      const { initializeAccountRoutes } = accountModule;
+      expect(initializeAccountRoutes).toBeDefined();
+      expect(typeof initializeAccountRoutes).toBe('function');
+    });
+  });
+
+  // v3.0.0: Utils exports
+  describe('v3.0.0 - Utils exports', () => {
+    it('should export accountOptionsFactory', () => {
+      const { accountOptionsFactory } = accountModule;
+      expect(accountOptionsFactory).toBeDefined();
+      expect(typeof accountOptionsFactory).toBe('function');
+    });
+
+    it('accountOptionsFactory should return options with defaults', () => {
+      const { accountOptionsFactory } = accountModule;
+      const options = accountOptionsFactory({});
+      expect(options.redirectUrl).toBe('/');
+    });
+
+    it('accountOptionsFactory should use provided redirectUrl', () => {
+      const { accountOptionsFactory } = accountModule;
+      const options = accountOptionsFactory({ redirectUrl: '/dashboard' });
+      expect(options.redirectUrl).toBe('/dashboard');
+    });
+  });
+
   // v2.7.0: Enum exports
   describe('v2.7.0 - Enum exports', () => {
     it('should export eAccountComponents from package root', () => {

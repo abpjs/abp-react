@@ -4,9 +4,13 @@
  * These constants represent localization keys for account route names
  * in the ABP Framework navigation system.
  *
- * Translated from @abp/ng.account v2.7.0 eAccountRouteNames enum.
+ * Translated from @abp/ng.account/config v3.0.0 eAccountRouteNames enum.
+ *
+ * In v3.0.0, this enum was moved from lib/enums to config/enums
+ * to be part of the config subpackage.
  *
  * @since 2.7.0
+ * @moved 3.0.0 - Moved to config/enums
  *
  * @example
  * ```tsx
