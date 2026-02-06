@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * @abpjs/account-pro Models
- * Translated from @volo/abp.ng.account v2.4.0
+ * Translated from @volo/abp.ng.account v3.0.0
  */
+
+// Config options (v3.0.0)
+export * from './config-options';
 
 /**
  * Account namespace containing component interface types

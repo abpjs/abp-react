@@ -1,7 +1,90 @@
 import { describe, it, expect } from 'vitest';
 import * as accountProExports from '../index';
 
-describe('package root exports (v2.9.0)', () => {
+describe('package root exports (v3.0.0)', () => {
+  describe('config exports (v3.0.0)', () => {
+    it('should export eAccountRouteNames from config', () => {
+      expect(accountProExports.eAccountRouteNames).toBeDefined();
+      expect(typeof accountProExports.eAccountRouteNames).toBe('object');
+    });
+
+    it('should export eAccountSettingTabNames', () => {
+      expect(accountProExports.eAccountSettingTabNames).toBeDefined();
+      expect(typeof accountProExports.eAccountSettingTabNames).toBe('object');
+      expect(accountProExports.eAccountSettingTabNames.Account).toBe(
+        'AbpAccount::Menu:Account'
+      );
+    });
+
+    it('should export ACCOUNT_ROUTE_PROVIDERS', () => {
+      expect(accountProExports.ACCOUNT_ROUTE_PROVIDERS).toBeDefined();
+      expect(typeof accountProExports.ACCOUNT_ROUTE_PROVIDERS).toBe('object');
+      expect(
+        typeof accountProExports.ACCOUNT_ROUTE_PROVIDERS.configureRoutes
+      ).toBe('function');
+    });
+
+    it('should export configureRoutes', () => {
+      expect(accountProExports.configureRoutes).toBeDefined();
+      expect(typeof accountProExports.configureRoutes).toBe('function');
+    });
+
+    it('should export initializeAccountRoutes', () => {
+      expect(accountProExports.initializeAccountRoutes).toBeDefined();
+      expect(typeof accountProExports.initializeAccountRoutes).toBe('function');
+    });
+
+    it('should export ACCOUNT_SETTING_TAB_PROVIDERS', () => {
+      expect(accountProExports.ACCOUNT_SETTING_TAB_PROVIDERS).toBeDefined();
+      expect(typeof accountProExports.ACCOUNT_SETTING_TAB_PROVIDERS).toBe(
+        'object'
+      );
+      expect(
+        typeof accountProExports.ACCOUNT_SETTING_TAB_PROVIDERS.configureSettingTabs
+      ).toBe('function');
+    });
+
+    it('should export configureSettingTabs', () => {
+      expect(accountProExports.configureSettingTabs).toBeDefined();
+      expect(typeof accountProExports.configureSettingTabs).toBe('function');
+    });
+
+    it('should export getSettingTabsService', () => {
+      expect(accountProExports.getSettingTabsService).toBeDefined();
+      expect(typeof accountProExports.getSettingTabsService).toBe('function');
+    });
+  });
+
+  describe('tokens exports (v3.0.0)', () => {
+    it('should export ACCOUNT_OPTIONS', () => {
+      expect(accountProExports.ACCOUNT_OPTIONS).toBeDefined();
+      expect(typeof accountProExports.ACCOUNT_OPTIONS).toBe('symbol');
+    });
+
+    it('should export DEFAULT_ACCOUNT_OPTIONS', () => {
+      expect(accountProExports.DEFAULT_ACCOUNT_OPTIONS).toBeDefined();
+      expect(accountProExports.DEFAULT_ACCOUNT_OPTIONS.redirectUrl).toBe('/');
+    });
+  });
+
+  describe('utils exports (v3.0.0)', () => {
+    it('should export accountOptionsFactory', () => {
+      expect(accountProExports.accountOptionsFactory).toBeDefined();
+      expect(typeof accountProExports.accountOptionsFactory).toBe('function');
+    });
+
+    it('should accountOptionsFactory return correct defaults', () => {
+      const result = accountProExports.accountOptionsFactory({});
+      expect(result.redirectUrl).toBe('/');
+    });
+
+    it('should accountOptionsFactory apply custom redirectUrl', () => {
+      const result = accountProExports.accountOptionsFactory({
+        redirectUrl: '/dashboard',
+      });
+      expect(result.redirectUrl).toBe('/dashboard');
+    });
+  });
   describe('enum exports', () => {
     it('should export eAccountComponents', () => {
       expect(accountProExports.eAccountComponents).toBeDefined();
