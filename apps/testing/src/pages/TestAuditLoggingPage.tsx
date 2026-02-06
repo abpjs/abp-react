@@ -5,6 +5,7 @@
  * @updated 2.2.0 - Dependency updates only (no new features)
  * @updated 2.4.0 - Added apiName property, eAuditLoggingComponents enum
  * @updated 2.7.0 - Added EntityChanges component, eEntityChangeType, eAuditLoggingRouteNames, EntityChangeService
+ * @updated 2.9.0 - AuditLogsComponent aligned with onQueryChange pattern, removed DateAdapter (React uses native Date)
  */
 import { useState } from 'react'
 import {
@@ -223,6 +224,102 @@ function TestUseAuditLogsHook() {
   )
 }
 
+function TestV290Features() {
+  return (
+    <div className="test-section">
+      <h2>v2.9.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>AuditLogsComponent Pattern Update <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.9.0)</span></h3>
+        <p>
+          In Angular v2.9.0, the AuditLogsComponent was updated to use the <code>onQueryChange</code> pattern
+          instead of separate <code>ngOnInit</code> and <code>onPageChange</code> methods.
+        </p>
+        <p style={{ marginTop: '0.5rem', color: '#888', fontSize: '14px' }}>
+          The React implementation already uses this pattern via <code>useEffect</code> with dependency arrays
+          and callback-based query building, so no changes were required in the React code.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`// React already uses the onQueryChange pattern
+function AuditLogsComponent({ onAuditLogSelected }) {
+  // Query parameters are built in useEffect
+  useEffect(() => {
+    const params: AuditLogsQueryParams = {
+      skipCount: page * pageSize,
+      maxResultCount: pageSize,
+      sorting: sortKey ? \`\${sortKey} \${sortOrder}\` : undefined,
+      ...filters  // All filter params included
+    };
+    fetchAuditLogs(params);
+  }, [page, pageSize, sortKey, sortOrder, filters]);
+
+  // handleRefresh builds full query params (equivalent to onQueryChange)
+  const handleRefresh = useCallback(() => {
+    const params = buildQueryParams(filters, page, pageSize, sortKey, sortOrder);
+    fetchAuditLogs(params);
+  }, [filters, page, pageSize, sortKey, sortOrder]);
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>DateAdapter Removed <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.9.0)</span></h3>
+        <p>
+          Angular v2.9.0 removed the <code>DateAdapter</code> class from EntityChangesComponent.
+          The React implementation uses native JavaScript Date handling, so this was never needed.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`// React uses native Date handling
+const formatDate = (dateString: string): string => {
+  try {
+    return new Date(dateString).toLocaleString();
+  } catch {
+    return dateString;
+  }
+};
+
+// Date filtering uses standard ISO strings
+const params: EntityChange.EntityChangesQueryParams = {
+  startDate: '2024-01-01',  // ISO string format
+  endDate: '2024-12-31',
+  entityChangeType: eEntityChangeType.Updated
+};`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.9.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Change</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Angular</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>React</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AuditLogsComponent pattern</td>
+              <td style={{ padding: '8px' }}>ngOnInit + onPageChange → onQueryChange</td>
+              <td style={{ padding: '8px' }}>Already uses useEffect + callbacks</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>DateAdapter class</td>
+              <td style={{ padding: '8px' }}>Removed from EntityChangesComponent</td>
+              <td style={{ padding: '8px' }}>Never needed (native Date)</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>Dependencies</td>
+              <td style={{ padding: '8px' }}>@abp/ng.theme.shared ~2.9.0</td>
+              <td style={{ padding: '8px' }}>@abpjs/theme-shared workspace:*</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestV270Features() {
   // Create mock services to demonstrate v2.7.0 features
   const mockRestService = { request: async () => ({}) }
@@ -234,7 +331,7 @@ function TestV270Features() {
 
   return (
     <div className="test-section">
-      <h2>v2.7.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+      <h2>v2.7.0 Features</h2>
 
       <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
         <h3>eAuditLoggingComponents Updated <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.7.0)</span></h3>
@@ -455,7 +552,7 @@ function TestV240Features() {
 
   return (
     <div className="test-section">
-      <h2>v2.4.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+      <h2>v2.4.0 Features</h2>
 
       <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
         <h3>apiName Property <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.4.0)</span></h3>
@@ -943,12 +1040,13 @@ const filter: Statistics.Filter = {
 export function TestAuditLoggingPage() {
   return (
     <div>
-      <h1>@abpjs/audit-logging Tests (v2.7.0)</h1>
+      <h1>@abpjs/audit-logging Tests (v2.9.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing audit logging components, hooks, services, and enums.</p>
       <p style={{ fontSize: '14px', color: '#4f4', marginBottom: '16px' }}>
-        Version 2.7.0 - Added EntityChanges component, eEntityChangeType, eAuditLoggingRouteNames, EntityChangeService
+        Version 2.9.0 - AuditLogsComponent aligned with onQueryChange pattern, removed DateAdapter
       </p>
 
+      <TestV290Features />
       <TestV270Features />
       <TestV240Features />
       <TestAuditLogsComponent />

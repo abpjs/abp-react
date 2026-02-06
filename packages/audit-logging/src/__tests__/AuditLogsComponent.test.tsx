@@ -1,6 +1,9 @@
 /**
  * Tests for AuditLogsComponent
- * @abpjs/audit-logging v0.7.2
+ * @abpjs/audit-logging v2.9.0
+ *
+ * v2.9.0: Aligned with Angular's onQueryChange pattern
+ * (React already uses this pattern via useEffect and query parameter building)
  */
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';

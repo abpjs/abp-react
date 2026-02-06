@@ -1,6 +1,9 @@
 /**
  * Tests for useAuditLogs hook
- * @abpjs/audit-logging v2.0.0
+ * @abpjs/audit-logging v2.9.0
+ *
+ * v2.9.0: Aligned with Angular's onQueryChange pattern
+ * (React hook already supports full query parameter building)
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
