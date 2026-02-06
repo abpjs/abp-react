@@ -19,6 +19,15 @@ import {
   ACCOUNT_PRO_ROUTES,
   eAccountComponents,
   eAccountRouteNames,
+  // v3.0.0 config exports
+  eAccountSettingTabNames,
+  ACCOUNT_ROUTE_PROVIDERS,
+  ACCOUNT_SETTING_TAB_PROVIDERS,
+  // v3.0.0 tokens
+  ACCOUNT_OPTIONS,
+  DEFAULT_ACCOUNT_OPTIONS,
+  // v3.0.0 utils
+  accountOptionsFactory,
 } from '@abpjs/account-pro'
 import { useAuth, useConfig } from '@abpjs/core'
 import { useToaster } from '@abpjs/theme-shared'
@@ -745,6 +754,233 @@ await service.confirmPhoneNumber(token);`}
   )
 }
 
+function TestV300Features() {
+  // Demo: use the factory to create options
+  const customOptions = accountOptionsFactory({ redirectUrl: '/dashboard' });
+  const defaultOptions = accountOptionsFactory({});
+
+  return (
+    <div className="test-section">
+      <h2>v3.0.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Config Subpackage <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>New config subpackage with enums and providers for route configuration:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import {
+  // Config enums
+  eAccountRouteNames,       // Route name localization keys
+  eAccountSettingTabNames,  // Setting tab name keys (NEW)
+
+  // Route providers
+  ACCOUNT_ROUTE_PROVIDERS,
+  configureRoutes,
+  initializeAccountRoutes,
+
+  // Setting tab providers
+  ACCOUNT_SETTING_TAB_PROVIDERS,
+  configureSettingTabs,
+} from '@abpjs/account-pro';`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eAccountSettingTabNames <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>New enum for setting tab name localization keys:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eAccountSettingTabNames).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>ACCOUNT_ROUTE_PROVIDERS <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>Route provider configuration for initializing account routes:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import {
+  ACCOUNT_ROUTE_PROVIDERS,
+  configureRoutes,
+  initializeAccountRoutes
+} from '@abpjs/account-pro';
+import { getRoutesService } from '@abpjs/core';
+
+// Method 1: Using ACCOUNT_ROUTE_PROVIDERS
+const routes = getRoutesService();
+const addRoutes = ACCOUNT_ROUTE_PROVIDERS.configureRoutes(routes);
+addRoutes();
+
+// Method 2: Using configureRoutes directly
+const addRoutes2 = configureRoutes(routes);
+addRoutes2();
+
+// Method 3: Using the helper function (simplest)
+initializeAccountRoutes();`}
+        </pre>
+        <p style={{ marginTop: '0.5rem' }}>
+          Available function: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof ACCOUNT_ROUTE_PROVIDERS.configureRoutes === 'function' ? 'configureRoutes ✓' : 'N/A'}
+          </code>
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>ACCOUNT_SETTING_TAB_PROVIDERS <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>Setting tab provider for adding account settings to the settings page:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import {
+  ACCOUNT_SETTING_TAB_PROVIDERS,
+  configureSettingTabs
+} from '@abpjs/account-pro';
+import { getSettingTabsService } from '@abpjs/core';
+
+// Configure account setting tabs with a component
+const settingTabs = getSettingTabsService();
+const addTabs = ACCOUNT_SETTING_TAB_PROVIDERS.configureSettingTabs(
+  settingTabs,
+  { component: MyAccountSettingsComponent }
+);
+addTabs();`}
+        </pre>
+        <p style={{ marginTop: '0.5rem' }}>
+          Available function: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof ACCOUNT_SETTING_TAB_PROVIDERS.configureSettingTabs === 'function' ? 'configureSettingTabs ✓' : 'N/A'}
+          </code>
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>ACCOUNT_OPTIONS Token <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>Symbol-based dependency injection token for account configuration:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import {
+  ACCOUNT_OPTIONS,
+  DEFAULT_ACCOUNT_OPTIONS,
+  AccountConfigOptions
+} from '@abpjs/account-pro';
+
+// ACCOUNT_OPTIONS is a Symbol for DI
+console.log(typeof ACCOUNT_OPTIONS); // 'symbol'
+console.log(ACCOUNT_OPTIONS.description); // 'ACCOUNT_OPTIONS'
+
+// DEFAULT_ACCOUNT_OPTIONS provides defaults
+console.log(DEFAULT_ACCOUNT_OPTIONS);
+// { redirectUrl: '/' }
+
+// AccountConfigOptions interface
+const options: AccountConfigOptions = {
+  redirectUrl: '/dashboard'
+};`}
+        </pre>
+        <p style={{ marginTop: '0.5rem' }}>
+          Token type: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{typeof ACCOUNT_OPTIONS}</code>
+          {' | '}
+          Default redirectUrl: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{DEFAULT_ACCOUNT_OPTIONS.redirectUrl}</code>
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>accountOptionsFactory <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>Factory function to create account options with defaults:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import { accountOptionsFactory } from '@abpjs/account-pro';
+
+// With custom redirectUrl
+const customOptions = accountOptionsFactory({
+  redirectUrl: '/dashboard'
+});
+// => { redirectUrl: '/dashboard' }
+
+// With defaults (empty options)
+const defaultOptions = accountOptionsFactory({});
+// => { redirectUrl: '/' }`}
+        </pre>
+        <p style={{ marginTop: '0.5rem' }}>
+          Custom: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{JSON.stringify(customOptions)}</code>
+          {' | '}
+          Default: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{JSON.stringify(defaultOptions)}</code>
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>v3.0.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAccountSettingTabNames</td>
+              <td>const object</td>
+              <td>Setting tab name localization keys</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ACCOUNT_ROUTE_PROVIDERS</td>
+              <td>object</td>
+              <td>Route provider configuration</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>configureRoutes</td>
+              <td>function</td>
+              <td>Configure account routes</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>initializeAccountRoutes</td>
+              <td>function</td>
+              <td>Initialize routes helper</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ACCOUNT_SETTING_TAB_PROVIDERS</td>
+              <td>object</td>
+              <td>Setting tab provider configuration</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>configureSettingTabs</td>
+              <td>function</td>
+              <td>Configure setting tabs with component</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ACCOUNT_OPTIONS</td>
+              <td>symbol</td>
+              <td>DI token for account options</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>DEFAULT_ACCOUNT_OPTIONS</td>
+              <td>object</td>
+              <td>Default account configuration</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>accountOptionsFactory</td>
+              <td>function</td>
+              <td>Factory for creating options with defaults</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AccountConfigOptions</td>
+              <td>interface</td>
+              <td>Config options type with redirectUrl</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestV290Features() {
   const [showLogo, setShowLogo] = useState(false)
   const [logoUrl, setLogoUrl] = useState('')
@@ -1056,9 +1292,9 @@ function TestAuthState() {
 export function TestAccountProPage() {
   return (
     <div>
-      <h1>@abpjs/account-pro Tests v2.9.0</h1>
+      <h1>@abpjs/account-pro Tests v3.0.0</h1>
       <p>Testing Pro account features: password reset, profile management, enhanced components.</p>
-      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 2.9.0 - Added Logo component</p>
+      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 3.0.0 - Added config subpackage with route/setting-tab providers</p>
 
       <div className="test-card" style={{ backgroundColor: '#1a365d', border: '1px solid #2b6cb0' }}>
         <h3 style={{ color: '#90cdf4' }}>Pro Package Features</h3>
@@ -1071,9 +1307,11 @@ export function TestAccountProPage() {
           <li style={{ color: '#4f4' }}>v2.4.0: apiName property, sendPhoneNumberConfirmationToken(), confirmPhoneNumber(), phoneNumberConfirmed field</li>
           <li style={{ color: '#4f4' }}>v2.7.0: eAccountComponents enum (9 keys), eAccountRouteNames enum (6 keys)</li>
           <li style={{ color: '#4f4' }}>v2.9.0: Logo component, eAccountComponents.Logo key (now 10 keys)</li>
+          <li style={{ color: '#4f4' }}>v3.0.0: Config subpackage, eAccountSettingTabNames, ACCOUNT_ROUTE_PROVIDERS, ACCOUNT_SETTING_TAB_PROVIDERS, ACCOUNT_OPTIONS token, accountOptionsFactory</li>
         </ul>
       </div>
 
+      <TestV300Features />
       <TestV290Features />
       <TestV270Features />
       <TestV240Features />
