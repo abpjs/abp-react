@@ -126,6 +126,12 @@ vi.mock('@abpjs/theme-shared', () => ({
       reject: 'reject',
     },
   },
+  Confirmation: {
+    Status: {
+      confirm: 'confirm',
+      reject: 'reject',
+    },
+  },
 }));
 
 import { EditionsComponent } from '../../components/Editions';

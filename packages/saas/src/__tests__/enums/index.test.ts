@@ -1,6 +1,9 @@
 /**
  * Tests for SaaS Enums barrel export
- * @abpjs/saas v2.7.0
+ * @abpjs/saas v3.0.0
+ *
+ * Breaking changes in v3.0.0:
+ * - Removed 'Administration' key from eSaasRouteNames
  */
 import { describe, it, expect } from 'vitest';
 import * as enums from '../../enums';
@@ -27,8 +30,10 @@ describe('enums barrel export', () => {
     expect(enums.eSaasComponents.Tenants).toBe('Saas.TenantsComponent');
   });
 
-  it('should have correct eSaasRouteNames values through barrel', () => {
-    expect(enums.eSaasRouteNames.Administration).toBe('AbpUiNavigation::Menu:Administration');
+  it('should have correct eSaasRouteNames values through barrel (v3.0.0)', () => {
+    // v3.0.0: Administration was removed
+    // @ts-expect-error - Administration was removed in v3.0.0
+    expect(enums.eSaasRouteNames.Administration).toBeUndefined();
     expect(enums.eSaasRouteNames.Saas).toBe('Saas::Menu:Saas');
     expect(enums.eSaasRouteNames.Tenants).toBe('Saas::Tenants');
     expect(enums.eSaasRouteNames.Editions).toBe('Saas::Editions');

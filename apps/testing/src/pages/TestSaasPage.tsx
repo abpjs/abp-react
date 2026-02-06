@@ -7,6 +7,7 @@
  * @updated 2.4.0 - Added apiName property, eSaasComponents enum, updated CreateTenantRequest/UpdateTenantRequest
  * @updated 2.7.0 - Changed eSaasComponents to const object, added eSaasRouteNames, SaasComponentKey, SaasRouteNameKey types
  * @updated 2.9.0 - Internal Angular changes (no new React features)
+ * @updated 3.0.0 - Added config subpackage, tokens, guards, removed Administration route name
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -20,9 +21,31 @@ import {
   SaasService,
   eSaasComponents,
   eSaasRouteNames,
+  // v3.0.0 config exports
+  eSaasPolicyNames,
+  SAAS_ROUTE_CONFIG,
+  SAAS_ROUTE_PROVIDERS,
+  configureRoutes,
+  initializeSaasRoutes,
+  // v3.0.0 token exports
+  DEFAULT_SAAS_ENTITY_ACTIONS,
+  DEFAULT_SAAS_TOOLBAR_ACTIONS,
+  DEFAULT_SAAS_ENTITY_PROPS,
+  DEFAULT_SAAS_CREATE_FORM_PROPS,
+  DEFAULT_SAAS_EDIT_FORM_PROPS,
+  SAAS_ENTITY_ACTION_CONTRIBUTORS,
+  SAAS_TOOLBAR_ACTION_CONTRIBUTORS,
+  SAAS_ENTITY_PROP_CONTRIBUTORS,
+  SAAS_CREATE_FORM_PROP_CONTRIBUTORS,
+  SAAS_EDIT_FORM_PROP_CONTRIBUTORS,
+  // v3.0.0 guard exports
+  saasExtensionsGuard,
+  useSaasExtensionsGuard,
+  SaasExtensionsGuard,
   type Saas,
   type SaasComponentKey,
   type SaasRouteNameKey,
+  type SaasPolicyNameKey,
 } from '@abpjs/saas'
 import { FeatureManagementModal } from '@abpjs/feature-management'
 
@@ -873,28 +896,53 @@ function EditionsWithFeatures() {
 }
 
 /**
- * Test section for v2.7.0 features: eSaasRouteNames, SaasComponentKey, SaasRouteNameKey types
+ * Test section for v3.0.0 features: config, tokens, guards
  */
-function TestV270Features() {
-  // Type-safe component key
-  const editionsKey: SaasComponentKey = eSaasComponents.Editions
-  const tenantsKey: SaasComponentKey = eSaasComponents.Tenants
+function TestV300Features() {
+  // v3.0.0 Policy names
+  const saasPolicy: SaasPolicyNameKey = eSaasPolicyNames.Saas
+  const tenantsPolicy: SaasPolicyNameKey = eSaasPolicyNames.Tenants
+  const editionsPolicy: SaasPolicyNameKey = eSaasPolicyNames.Editions
 
-  // Type-safe route name key
-  const adminRoute: SaasRouteNameKey = eSaasRouteNames.Administration
-  const saasRoute: SaasRouteNameKey = eSaasRouteNames.Saas
-  const tenantsRoute: SaasRouteNameKey = eSaasRouteNames.Tenants
-  const editionsRoute: SaasRouteNameKey = eSaasRouteNames.Editions
+  // v3.0.0 Extensions guard hook
+  const { isLoaded, loading } = useSaasExtensionsGuard()
+
+  // Demonstrate configureRoutes, initializeSaasRoutes, SAAS_ROUTE_PROVIDERS
+  const routeProviderInfo = {
+    configureRoutes: typeof configureRoutes,
+    initializeSaasRoutes: typeof initializeSaasRoutes,
+    providerDeps: SAAS_ROUTE_PROVIDERS.deps,
+  }
+
+  // Demonstrate guard function and class existence
+  const guardInfo = {
+    saasExtensionsGuard: typeof saasExtensionsGuard,
+    SaasExtensionsGuard: SaasExtensionsGuard.name,
+  }
+
+  // Demonstrate token defaults exist (showing counts)
+  const tokenInfo = {
+    toolbarActions: Object.keys(DEFAULT_SAAS_TOOLBAR_ACTIONS).length,
+    entityProps: Object.keys(DEFAULT_SAAS_ENTITY_PROPS).length,
+    createFormProps: Object.keys(DEFAULT_SAAS_CREATE_FORM_PROPS).length,
+    editFormProps: Object.keys(DEFAULT_SAAS_EDIT_FORM_PROPS).length,
+  }
 
   return (
     <div className="test-section">
-      <h2>v2.7.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+      <h2>v3.0.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
 
       <div className="test-card">
-        <h3>eSaasRouteNames Const Object (v2.7.0)</h3>
+        <h3>Config Subpackage (v3.0.0)</h3>
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
-          New const object for route name identifiers used in localization and navigation.
-          Follows the <code>AbpModule::KeyName</code> pattern for localization keys.
+          New config subpackage with policy names, route names, and route providers.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>eSaasPolicyNames (v3.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Policy name constants for SaaS module permission checking.
         </p>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -905,9 +953,256 @@ function TestV270Features() {
           </thead>
           <tbody>
             <tr style={{ borderBottom: '1px solid #222' }}>
-              <td style={{ padding: '8px' }}><code>Administration</code></td>
-              <td style={{ padding: '8px' }}><code>{adminRoute}</code></td>
+              <td style={{ padding: '8px' }}><code>Saas</code></td>
+              <td style={{ padding: '8px' }}><code>{saasPolicy}</code></td>
             </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Tenants</code></td>
+              <td style={{ padding: '8px' }}><code>{tenantsPolicy}</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Editions</code></td>
+              <td style={{ padding: '8px' }}><code>{editionsPolicy}</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Permission checking
+import { eSaasPolicyNames, type SaasPolicyNameKey } from '@abpjs/saas';
+
+const requiredPolicy: SaasPolicyNameKey = eSaasPolicyNames.Tenants;
+// requiredPolicy = 'Saas.Tenants'`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Route Providers (v3.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Route configuration utilities for SaaS module.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SAAS_ROUTE_CONFIG</code></td>
+              <td style={{ padding: '8px' }}>ABP.Route</td>
+              <td style={{ padding: '8px' }}>Default route configuration</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>configureRoutes</code></td>
+              <td style={{ padding: '8px' }}>{routeProviderInfo.configureRoutes}</td>
+              <td style={{ padding: '8px' }}>Returns configure function</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>initializeSaasRoutes</code></td>
+              <td style={{ padding: '8px' }}>{routeProviderInfo.initializeSaasRoutes}</td>
+              <td style={{ padding: '8px' }}>Immediately configures routes</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SAAS_ROUTE_PROVIDERS</code></td>
+              <td style={{ padding: '8px' }}>Object (deps: {routeProviderInfo.providerDeps.join(', ')})</td>
+              <td style={{ padding: '8px' }}>Provider config object</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #333', marginTop: '0.5rem' }}>
+          <p><strong>SAAS_ROUTE_CONFIG:</strong></p>
+          <pre style={{ fontSize: '12px', margin: 0 }}>{JSON.stringify(SAAS_ROUTE_CONFIG, null, 2)}</pre>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>Extension Tokens (v3.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Default entity actions, toolbar actions, entity props, and form props for extensibility.
+          {tokenInfo.toolbarActions} components configured.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Components</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_SAAS_ENTITY_ACTIONS</code></td>
+              <td style={{ padding: '8px' }}>{Object.keys(DEFAULT_SAAS_ENTITY_ACTIONS).length}</td>
+              <td style={{ padding: '8px' }}>Default entity actions by component</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_SAAS_TOOLBAR_ACTIONS</code></td>
+              <td style={{ padding: '8px' }}>{tokenInfo.toolbarActions}</td>
+              <td style={{ padding: '8px' }}>Default toolbar actions by component</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_SAAS_ENTITY_PROPS</code></td>
+              <td style={{ padding: '8px' }}>{tokenInfo.entityProps}</td>
+              <td style={{ padding: '8px' }}>Default entity props by component</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_SAAS_CREATE_FORM_PROPS</code></td>
+              <td style={{ padding: '8px' }}>{tokenInfo.createFormProps}</td>
+              <td style={{ padding: '8px' }}>Default create form props by component</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_SAAS_EDIT_FORM_PROPS</code></td>
+              <td style={{ padding: '8px' }}>{tokenInfo.editFormProps}</td>
+              <td style={{ padding: '8px' }}>Default edit form props by component</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #333', marginTop: '0.5rem' }}>
+          <p><strong>Entity Actions for Tenants:</strong></p>
+          <pre style={{ fontSize: '11px', margin: 0, maxHeight: '150px', overflow: 'auto' }}>
+            {JSON.stringify(DEFAULT_SAAS_ENTITY_ACTIONS[eSaasComponents.Tenants], null, 2)}
+          </pre>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>Contributor Token Symbols (v3.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Symbol tokens for registering extensibility contributors.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Token</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Symbol Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SAAS_ENTITY_ACTION_CONTRIBUTORS</code></td>
+              <td style={{ padding: '8px' }}>{String(SAAS_ENTITY_ACTION_CONTRIBUTORS)}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SAAS_TOOLBAR_ACTION_CONTRIBUTORS</code></td>
+              <td style={{ padding: '8px' }}>{String(SAAS_TOOLBAR_ACTION_CONTRIBUTORS)}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SAAS_ENTITY_PROP_CONTRIBUTORS</code></td>
+              <td style={{ padding: '8px' }}>{String(SAAS_ENTITY_PROP_CONTRIBUTORS)}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SAAS_CREATE_FORM_PROP_CONTRIBUTORS</code></td>
+              <td style={{ padding: '8px' }}>{String(SAAS_CREATE_FORM_PROP_CONTRIBUTORS)}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SAAS_EDIT_FORM_PROP_CONTRIBUTORS</code></td>
+              <td style={{ padding: '8px' }}>{String(SAAS_EDIT_FORM_PROP_CONTRIBUTORS)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>SaasExtensionsGuard (v3.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Guard for protecting SaaS routes and ensuring extensions are loaded.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>saasExtensionsGuard</code></td>
+              <td style={{ padding: '8px' }}>{guardInfo.saasExtensionsGuard}</td>
+              <td style={{ padding: '8px' }}>Guard function returning Promise&lt;boolean&gt;</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>useSaasExtensionsGuard</code></td>
+              <td style={{ padding: '8px' }}>Hook</td>
+              <td style={{ padding: '8px' }}>React hook with isLoaded, loading state</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasExtensionsGuard</code></td>
+              <td style={{ padding: '8px' }}>Class ({guardInfo.SaasExtensionsGuard})</td>
+              <td style={{ padding: '8px' }}>Class with canActivate() method</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #333', marginTop: '0.5rem' }}>
+          <p><strong>useSaasExtensionsGuard() Result:</strong></p>
+          <p>isLoaded: {isLoaded ? 'true' : 'false'}</p>
+          <p>loading: {loading ? 'true' : 'false'}</p>
+        </div>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Protect a route
+import { useSaasExtensionsGuard } from '@abpjs/saas';
+
+function ProtectedRoute({ children }) {
+  const { isLoaded, loading } = useSaasExtensionsGuard();
+
+  if (loading) return <Loading />;
+  if (!isLoaded) return <Navigate to="/unauthorized" />;
+
+  return children;
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v3.0.0 Breaking Changes</h3>
+        <ul style={{ marginLeft: '1.5rem' }}>
+          <li style={{ color: '#f88' }}>
+            <code>eSaasRouteNames.Administration</code> has been removed
+          </li>
+          <li>Route names moved from <code>lib/enums</code> to <code>config/enums</code> (backwards compatible re-export)</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Test section for v2.7.0 features: eSaasRouteNames, SaasComponentKey, SaasRouteNameKey types
+ * Note: Updated for v3.0.0 - Administration key removed
+ */
+function TestV270Features() {
+  // Type-safe component key
+  const editionsKey: SaasComponentKey = eSaasComponents.Editions
+  const tenantsKey: SaasComponentKey = eSaasComponents.Tenants
+
+  // Type-safe route name key (v3.0.0 removed Administration)
+  const saasRoute: SaasRouteNameKey = eSaasRouteNames.Saas
+  const tenantsRoute: SaasRouteNameKey = eSaasRouteNames.Tenants
+  const editionsRoute: SaasRouteNameKey = eSaasRouteNames.Editions
+
+  return (
+    <div className="test-section">
+      <h2>v2.7.0 Features</h2>
+
+      <div className="test-card">
+        <h3>eSaasRouteNames Const Object (v2.7.0, updated v3.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Const object for route name identifiers used in localization and navigation.
+          Follows the <code>AbpModule::KeyName</code> pattern for localization keys.
+        </p>
+        <p style={{ fontSize: '14px', color: '#f88', marginBottom: '0.5rem' }}>
+          Breaking change in v3.0.0: <code>Administration</code> key was removed.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}><code>Saas</code></td>
               <td style={{ padding: '8px' }}><code>{saasRoute}</code></td>
@@ -936,7 +1231,7 @@ const routes = {
       <div className="test-card">
         <h3>Type-Safe Keys (v2.7.0)</h3>
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
-          New type exports for compile-time type safety when working with component and route name keys.
+          Type exports for compile-time type safety when working with component and route name keys.
         </p>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -953,7 +1248,7 @@ const routes = {
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}><code>SaasRouteNameKey</code></td>
               <td style={{ padding: '8px' }}>
-                <code>'{eSaasRouteNames.Administration}' | '{eSaasRouteNames.Saas}' | '{eSaasRouteNames.Tenants}' | '{eSaasRouteNames.Editions}'</code>
+                <code>'{eSaasRouteNames.Saas}' | '{eSaasRouteNames.Tenants}' | '{eSaasRouteNames.Editions}'</code>
               </td>
             </tr>
           </tbody>
@@ -971,10 +1266,9 @@ import { eSaasRouteNames, type SaasRouteNameKey } from '@abpjs/saas';
 
 const routeKey: SaasRouteNameKey = eSaasRouteNames.Tenants;
 const routePaths: Record<SaasRouteNameKey, string> = {
-  '${eSaasRouteNames.Administration}': '/admin',
-  '${eSaasRouteNames.Saas}': '/admin/saas',
-  '${eSaasRouteNames.Tenants}': '/admin/saas/tenants',
-  '${eSaasRouteNames.Editions}': '/admin/saas/editions',
+  '${eSaasRouteNames.Saas}': '/saas',
+  '${eSaasRouteNames.Tenants}': '/saas/tenants',
+  '${eSaasRouteNames.Editions}': '/saas/editions',
 };`}
         </pre>
       </div>
@@ -1295,16 +1589,17 @@ function TestApiEndpoints() {
 export function TestSaasPage() {
   return (
     <div>
-      <h1>@abpjs/saas Tests (v2.9.0)</h1>
+      <h1>@abpjs/saas Tests (v3.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing SaaS module for tenant and edition management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.9.0 - No new React features (internal Angular changes only)
+        Version 3.0.0 - Added config subpackage, tokens, guards, removed Administration route name
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components for multi-tenant SaaS applications with tenant management,
         edition management, and connection string management.
       </p>
 
+      <TestV300Features />
       <TestV270Features />
       <TestV240Features />
       <TestV220FeaturesSection />
