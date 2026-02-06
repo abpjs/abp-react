@@ -9,8 +9,11 @@ import {
   addAbpRoutes,
   getAbpRoutes,
   clearAbpRoutes,
+  findRoute,
+  getRoutePath,
 } from './route-utils';
 import { ABP } from '../models';
+import { RoutesService } from '../services/routes.service';
 
 describe('route-utils', () => {
   beforeEach(() => {
@@ -255,6 +258,110 @@ describe('route-utils', () => {
 
     it('should handle empty routes', () => {
       expect(organizeRoutes([])).toEqual([]);
+    });
+  });
+
+  describe('findRoute', () => {
+    let routesService: RoutesService;
+
+    beforeEach(() => {
+      RoutesService.resetInstance();
+      routesService = RoutesService.getInstance();
+      routesService.add([
+        { name: 'Home', path: '/home' },
+        { name: 'About', path: '/about' },
+        { name: 'Admin', path: '/admin' },
+        { name: 'Users', path: '/users', parentName: 'Admin' },
+      ]);
+    });
+
+    it('should find a route by path', () => {
+      const found = findRoute(routesService, '/home');
+
+      expect(found).not.toBeNull();
+      expect(found!.name).toBe('Home');
+    });
+
+    it('should find a nested route by path', () => {
+      const found = findRoute(routesService, '/users');
+
+      expect(found).not.toBeNull();
+      expect(found!.name).toBe('Users');
+    });
+
+    it('should return null when route not found', () => {
+      const found = findRoute(routesService, '/nonexistent');
+
+      expect(found).toBeNull();
+    });
+
+    it('should find route with exact path match', () => {
+      const found = findRoute(routesService, '/about');
+
+      expect(found).not.toBeNull();
+      expect(found!.path).toBe('/about');
+    });
+  });
+
+  describe('getRoutePath', () => {
+    it('should return clean path from URL', () => {
+      const path = getRoutePath('/users/list');
+
+      expect(path).toBe('/users/list');
+    });
+
+    it('should remove query string', () => {
+      const path = getRoutePath('/users?page=1&size=10');
+
+      expect(path).toBe('/users');
+    });
+
+    it('should remove hash fragment', () => {
+      const path = getRoutePath('/docs#section-1');
+
+      expect(path).toBe('/docs');
+    });
+
+    it('should remove both query string and hash', () => {
+      const path = getRoutePath('/page?id=1#top');
+
+      expect(path).toBe('/page');
+    });
+
+    it('should remove trailing slash', () => {
+      const path = getRoutePath('/users/');
+
+      expect(path).toBe('/users');
+    });
+
+    it('should not remove trailing slash from root path', () => {
+      const path = getRoutePath('/');
+
+      expect(path).toBe('/');
+    });
+
+    it('should handle complex URLs', () => {
+      const path = getRoutePath('/admin/users/edit/?id=123&mode=advanced#details');
+
+      expect(path).toBe('/admin/users/edit');
+    });
+
+    it('should handle URL with only query string', () => {
+      const path = getRoutePath('/?redirect=home');
+
+      expect(path).toBe('/');
+    });
+
+    it('should handle empty string', () => {
+      const path = getRoutePath('');
+
+      expect(path).toBe('');
+    });
+
+    it('should handle path without leading slash', () => {
+      const path = getRoutePath('users/list');
+
+      expect(path).toBe('users/list');
     });
   });
 });

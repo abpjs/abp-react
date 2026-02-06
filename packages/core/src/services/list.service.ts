@@ -1,10 +1,11 @@
 /**
  * ListService - Query management service for list components
- * Translated from @abp/ng.core v2.9.0
+ * Translated from @abp/ng.core v3.0.0
  *
  * Provides reactive query management with debouncing for list components.
  *
  * @since 2.9.0
+ * @updated 3.0.0 - Added generic QueryParamsType parameter
  */
 
 import { ABP } from '../models/common';
@@ -17,16 +18,18 @@ export const LIST_QUERY_DEBOUNCE_TIME = 300;
 
 /**
  * Callback type for creating query streams
+ * @since 3.0.0 - Added generic QueryParamsType parameter
  */
-export type QueryStreamCreatorCallback<T> = (
-  query: ABP.PageQueryParams
+export type QueryStreamCreatorCallback<T, QueryParamsType = ABP.PageQueryParams> = (
+  query: QueryParamsType
 ) => Promise<PagedResultDto<T>>;
 
 /**
  * Service for managing list queries with debouncing and loading state
  * @since 2.9.0
+ * @updated 3.0.0 - Added generic QueryParamsType parameter
  */
-export class ListService {
+export class ListService<QueryParamsType = ABP.PageQueryParams> {
   private _filter: string = '';
   private _maxResultCount: number = 10;
   private _page: number = 0;
@@ -105,8 +108,9 @@ export class ListService {
 
   /**
    * Get the current query parameters
+   * Note: Returns ABP.PageQueryParams by default, but can be cast to QueryParamsType
    */
-  get query(): ABP.PageQueryParams {
+  get query(): QueryParamsType {
     const sorting = this._sortKey
       ? `${this._sortKey}${this._sortOrder ? ' ' + this._sortOrder : ''}`
       : undefined;
@@ -116,7 +120,7 @@ export class ListService {
       maxResultCount: this._maxResultCount,
       skipCount: this._page * this._maxResultCount,
       sorting,
-    };
+    } as QueryParamsType;
   }
 
   /**
@@ -156,7 +160,7 @@ export class ListService {
    * @returns Promise that resolves with the result of the callback
    */
   async hookToQuery<T>(
-    streamCreatorCallback: QueryStreamCreatorCallback<T>
+    streamCreatorCallback: QueryStreamCreatorCallback<T, QueryParamsType>
   ): Promise<PagedResultDto<T>> {
     // Set up the query callback
     this._queryCallback = async () => {
