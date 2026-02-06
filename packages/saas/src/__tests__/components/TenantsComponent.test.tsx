@@ -160,6 +160,12 @@ vi.mock('@abpjs/theme-shared', () => ({
       reject: 'reject',
     },
   },
+  Confirmation: {
+    Status: {
+      confirm: 'confirm',
+      reject: 'reject',
+    },
+  },
 }));
 
 import { TenantsComponent } from '../../components/Tenants';
