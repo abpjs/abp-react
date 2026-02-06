@@ -1,7 +1,11 @@
 /**
  * @abpjs/account
  * ABP Framework Account module for React
- * Translated from @abp/ng.account v2.7.0
+ * Translated from @abp/ng.account v2.9.0
+ *
+ * Changes in v2.9.0:
+ * - Version bump only (dependency updates to @abp/ng.theme.shared v2.9.0)
+ * - No functional code changes
  *
  * Changes in v2.7.0:
  * - Added eAccountComponents enum for component replacement system
@@ -19,7 +23,7 @@
  * - Dependency updates to @abp/ng.theme.shared v2.2.0 and @abp/ng.account.config v2.2.0
  * - No functional code changes
  *
- * @version 2.7.0
+ * @version 2.9.0
  * @since 2.0.0 - Added Account namespace with component interface types
  * @since 2.0.0 - Added isSelfRegistrationEnabled support in Login/Register components
  * @since 2.0.0 - Added enableLocalLogin support in AuthWrapper component
@@ -29,6 +33,7 @@
  * @since 2.4.0 - AuthWrapper: isMultiTenancyEnabled prop; AccountService: apiName property
  * @since 2.7.0 - Added eAccountComponents and eAccountRouteNames enums
  * @since 2.7.0 - Components have static keys for component replacement system
+ * @since 2.9.0 - Version bump only (dependency updates)
  */
 
 // Enums (v2.7.0)
