@@ -689,7 +689,7 @@ function TestLoaderBar() {
     try {
       // This will trigger the loader bar via the API interceptor
       await restService.get('/api/abp/application-configuration')
-    } catch (err) {
+    } catch {
       console.log('API call completed')
     }
   }
@@ -701,7 +701,7 @@ function TestLoaderBar() {
         restService.get('/api/abp/application-configuration'),
         restService.get('/api/abp/application-configuration'),
       ])
-    } catch (err) {
+    } catch {
       console.log('API calls completed')
     }
   }

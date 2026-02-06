@@ -9,6 +9,16 @@ export interface DynamicLayoutProps {
   children: React.ReactNode;
 }
 
+interface LayoutRendererProps {
+  component: React.ComponentType<{ children: React.ReactNode }> | null;
+  children: React.ReactNode;
+}
+
+function LayoutRenderer({ component: Component, children }: LayoutRendererProps) {
+  if (!Component) return <>{children}</>;
+  return <Component>{children}</Component>;
+}
+
 /**
  * Component that dynamically selects layout based on current route
  * Equivalent to Angular's DynamicLayoutComponent
@@ -18,7 +28,7 @@ export function DynamicLayout({ children }: DynamicLayoutProps) {
   const config = useSelector(selectConfig);
   const routes = useSelector(selectRoutes);
 
-  const LayoutComponent = useMemo(() => {
+  const layoutComponent = useMemo(() => {
     const segments = location.pathname.split('/').filter(Boolean);
     const layout = findLayout(segments, routes);
 
@@ -38,11 +48,7 @@ export function DynamicLayout({ children }: DynamicLayoutProps) {
     return matchedLayout || null;
   }, [location.pathname, routes, config.requirements.layouts]);
 
-  if (LayoutComponent) {
-    return <LayoutComponent>{children}</LayoutComponent>;
-  }
-
-  return <>{children}</>;
+  return <LayoutRenderer component={layoutComponent}>{children}</LayoutRenderer>;
 }
 
 function findLayout(segments: string[], routes: ABP.FullRoute[]): eLayoutType {

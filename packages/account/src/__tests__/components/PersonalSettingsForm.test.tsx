@@ -80,7 +80,7 @@ vi.mock('@chakra-ui/react', () => ({
       <span data-testid="error-text" {...props}>{children}</span>
     ),
   },
-  InputGroup: ({ children, startElement, width, ...props }: any) => (
+  InputGroup: ({ children, startElement: _startElement, width: _width, ...props }: any) => (
     <div data-testid="input-group" {...props}>{children}</div>
   ),
 }));

@@ -249,7 +249,7 @@ function TestLoader() {
     try {
       // This will automatically trigger LoaderStart/LoaderStop via the API interceptor
       await restService.get('/api/abp/application-configuration')
-    } catch (err) {
+    } catch {
       console.log('API call completed (may have failed, but loader should still work)')
     }
   }
@@ -263,7 +263,7 @@ function TestLoader() {
         restService.get('/api/abp/application-configuration'),
         restService.get('/api/abp/application-configuration'),
       ])
-    } catch (err) {
+    } catch {
       console.log('API calls completed')
     } finally {
       setManualLoading(false)

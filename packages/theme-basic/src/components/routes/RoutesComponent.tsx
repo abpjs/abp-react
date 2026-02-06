@@ -58,7 +58,7 @@ export interface RoutesComponentProps {
  * ```
  */
 export function RoutesComponent({
-  smallScreen = false,
+  smallScreen: _smallScreen = false,
   defaultIcon,
   routes: customRoutes,
 }: RoutesComponentProps): React.ReactElement {
@@ -69,12 +69,12 @@ export function RoutesComponent({
   const routes = customRoutes || configRoutes || [];
 
   // Get visible routes
-  const visibleRoutes = useMemo(() => {
+  const _visibleRoutes = useMemo(() => {
     return getVisibleRoutes(routes);
   }, [routes]);
 
   // Track function for routes
-  const trackByFn = (index: number, item: ABP.FullRoute) => {
+  const _trackByFn = (index: number, item: ABP.FullRoute) => {
     return item.name || item.path || index;
   };
 

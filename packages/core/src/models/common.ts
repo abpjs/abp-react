@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { ReactNode } from 'react';
 import { Config } from './config';
 import { eLayoutType } from '../enums';

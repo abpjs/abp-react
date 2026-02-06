@@ -84,9 +84,9 @@ export function LayoutApplication({
    * These allow customization of sub-components in the layout.
    * @since 2.7.0
    */
-  const logoComponentKey = eThemeBasicComponents.Logo;
-  const routesComponentKey = eThemeBasicComponents.Routes;
-  const navItemsComponentKey = eThemeBasicComponents.NavItems;
+  const _logoComponentKey = eThemeBasicComponents.Logo;
+  const _routesComponentKey = eThemeBasicComponents.Routes;
+  const _navItemsComponentKey = eThemeBasicComponents.NavItems;
 
   // Modal states
   const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);

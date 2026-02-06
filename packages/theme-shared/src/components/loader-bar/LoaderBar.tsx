@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLoader } from '@abpjs/core';
 
 export interface LoaderBarProps {
@@ -46,7 +46,7 @@ export interface LoaderBarProps {
 export function LoaderBar({
   containerClass = 'abp-loader-bar',
   progressClass = 'abp-progress',
-  filter,
+  filter: _filter,
   intervalPeriod = 300,
   stopDelay = 400,
 }: LoaderBarProps) {
@@ -55,24 +55,7 @@ export function LoaderBar({
   const [progressLevel, setProgressLevel] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    if (loading) {
-      startLoading();
-    } else {
-      stopLoading();
-    }
-  }, [loading]);
-
-  // Cleanup interval on unmount
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, []);
-
-  const startLoading = () => {
+  const startLoading = useCallback(() => {
     setIsLoading(true);
     setProgressLevel(0);
 
@@ -95,9 +78,9 @@ export function LoaderBar({
         return prev + 10;
       });
     }, intervalPeriod);
-  };
+  }, [intervalPeriod]);
 
-  const stopLoading = () => {
+  const stopLoading = useCallback(() => {
     // Complete the progress bar before hiding
     setProgressLevel(100);
 
@@ -111,7 +94,24 @@ export function LoaderBar({
       setIsLoading(false);
       setProgressLevel(0);
     }, stopDelay);
-  };
+  }, [stopDelay]);
+
+  useEffect(() => {
+    if (loading) {
+      startLoading();
+    } else {
+      stopLoading();
+    }
+  }, [loading, startLoading, stopLoading]);
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
 
   if (!isLoading && progressLevel === 0) {
     return null;

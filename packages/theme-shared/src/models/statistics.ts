@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Statistics models for theme-shared
  * Translated from @abp/ng.theme.shared v0.9.0

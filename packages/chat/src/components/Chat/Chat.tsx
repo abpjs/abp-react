@@ -107,6 +107,12 @@ export function Chat({
   // Get contact display name
   const contactName = selectedContact ? getContactName(selectedContact) : '';
 
+  const scrollToEnd = useCallback(() => {
+    if (chatBoxRef.current) {
+      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+    }
+  }, []);
+
   // Scroll to bottom when contact changes or new messages arrive
   useEffect(() => {
     if (selectedContact && chatBoxRef.current) {
@@ -116,7 +122,7 @@ export function Chat({
         prevSelectedContactRef.current = selectedContact.userId;
       }
     }
-  }, [selectedContact, selectedContactMessages.length]);
+  }, [selectedContact, selectedContactMessages.length, scrollToEnd]);
 
   // Mark conversation as read when selecting a contact
   useEffect(() => {
@@ -124,12 +130,6 @@ export function Chat({
       onMarkAsRead?.(selectedContact.userId);
     }
   }, [selectedContact, onMarkAsRead]);
-
-  const scrollToEnd = () => {
-    if (chatBoxRef.current) {
-      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
-    }
-  };
 
   const handleScroll = useCallback(
     (event: React.UIEvent<HTMLDivElement>) => {

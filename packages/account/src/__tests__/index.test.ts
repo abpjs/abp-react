@@ -1,13 +1,15 @@
 import { describe, it, expect } from 'vitest';
+import * as accountModule from '../index';
 
 /**
  * Tests for @abpjs/account package exports
+ * Uses static import to avoid slow dynamic imports during test execution.
  */
 describe('@abpjs/account package exports', () => {
   // v2.7.0: Enum exports
   describe('v2.7.0 - Enum exports', () => {
-    it('should export eAccountComponents from package root', async () => {
-      const { eAccountComponents } = await import('../index');
+    it('should export eAccountComponents from package root', () => {
+      const { eAccountComponents } = accountModule;
       expect(eAccountComponents).toBeDefined();
       expect(eAccountComponents.Login).toBe('Account.LoginComponent');
       expect(eAccountComponents.Register).toBe('Account.RegisterComponent');
@@ -18,8 +20,8 @@ describe('@abpjs/account package exports', () => {
       expect(eAccountComponents.PersonalSettings).toBe('Account.PersonalSettingsComponent');
     });
 
-    it('should export eAccountRouteNames from package root', async () => {
-      const { eAccountRouteNames } = await import('../index');
+    it('should export eAccountRouteNames from package root', () => {
+      const { eAccountRouteNames } = accountModule;
       expect(eAccountRouteNames).toBeDefined();
       expect(eAccountRouteNames.Account).toBe('AbpAccount::Menu:Account');
       expect(eAccountRouteNames.Login).toBe('AbpAccount::Login');
@@ -30,48 +32,47 @@ describe('@abpjs/account package exports', () => {
 
   // Model exports
   describe('Model exports', () => {
-    it('should export model types (type-only, verified by compilation)', async () => {
+    it('should export model types (type-only, verified by compilation)', () => {
       // Account namespace is a TypeScript namespace (type-only export)
       // TenantIdResponse, LoginFormData, etc. are interfaces (type-only exports)
       // We can only verify the module loads correctly - types are checked at compile time
-      const module = await import('../index');
-      expect(module).toBeDefined();
+      expect(accountModule).toBeDefined();
     });
   });
 
   // Component exports
   describe('Component exports', () => {
-    it('should export AuthWrapper', async () => {
-      const { AuthWrapper } = await import('../index');
+    it('should export AuthWrapper', () => {
+      const { AuthWrapper } = accountModule;
       expect(AuthWrapper).toBeDefined();
       // v2.7.0: Should have tenantBoxKey
       expect(AuthWrapper.tenantBoxKey).toBe('Account.TenantBoxComponent');
     });
 
-    it('should export LoginForm', async () => {
-      const { LoginForm } = await import('../index');
+    it('should export LoginForm', () => {
+      const { LoginForm } = accountModule;
       expect(LoginForm).toBeDefined();
       // v2.7.0: Should have authWrapperKey
       expect(LoginForm.authWrapperKey).toBe('Account.AuthWrapperComponent');
     });
 
-    it('should export RegisterForm', async () => {
-      const { RegisterForm } = await import('../index');
+    it('should export RegisterForm', () => {
+      const { RegisterForm } = accountModule;
       expect(RegisterForm).toBeDefined();
       // v2.7.0: Should have authWrapperKey
       expect(RegisterForm.authWrapperKey).toBe('Account.AuthWrapperComponent');
     });
 
-    it('should export ManageProfile', async () => {
-      const { ManageProfile } = await import('../index');
+    it('should export ManageProfile', () => {
+      const { ManageProfile } = accountModule;
       expect(ManageProfile).toBeDefined();
       // v2.7.0: Should have component keys
       expect(ManageProfile.changePasswordKey).toBe('Account.ChangePasswordComponent');
       expect(ManageProfile.personalSettingsKey).toBe('Account.PersonalSettingsComponent');
     });
 
-    it('should export TenantBox', async () => {
-      const { TenantBox } = await import('../index');
+    it('should export TenantBox', () => {
+      const { TenantBox } = accountModule;
       expect(TenantBox).toBeDefined();
       // v2.7.0: Should have componentKey
       expect(TenantBox.componentKey).toBe('Account.TenantBoxComponent');
@@ -80,39 +81,39 @@ describe('@abpjs/account package exports', () => {
 
   // Services exports
   describe('Service exports', () => {
-    it('should export AccountService', async () => {
-      const { AccountService } = await import('../index');
+    it('should export AccountService', () => {
+      const { AccountService } = accountModule;
       expect(AccountService).toBeDefined();
     });
   });
 
   // Hooks exports
   describe('Hook exports', () => {
-    it('should export usePasswordFlow', async () => {
-      const { usePasswordFlow } = await import('../index');
+    it('should export usePasswordFlow', () => {
+      const { usePasswordFlow } = accountModule;
       expect(usePasswordFlow).toBeDefined();
     });
 
-    it('should export useAccountService', async () => {
-      const { useAccountService } = await import('../index');
+    it('should export useAccountService', () => {
+      const { useAccountService } = accountModule;
       expect(useAccountService).toBeDefined();
     });
 
-    it('should export useSelfRegistrationEnabled', async () => {
-      const { useSelfRegistrationEnabled } = await import('../index');
+    it('should export useSelfRegistrationEnabled', () => {
+      const { useSelfRegistrationEnabled } = accountModule;
       expect(useSelfRegistrationEnabled).toBeDefined();
     });
   });
 
   // Routes exports
   describe('Route exports', () => {
-    it('should export DEFAULT_REDIRECT_URL', async () => {
-      const { DEFAULT_REDIRECT_URL } = await import('../index');
+    it('should export DEFAULT_REDIRECT_URL', () => {
+      const { DEFAULT_REDIRECT_URL } = accountModule;
       expect(DEFAULT_REDIRECT_URL).toBe('/');
     });
 
-    it('should export ACCOUNT_PATHS', async () => {
-      const { ACCOUNT_PATHS } = await import('../index');
+    it('should export ACCOUNT_PATHS', () => {
+      const { ACCOUNT_PATHS } = accountModule;
       expect(ACCOUNT_PATHS).toBeDefined();
       expect(ACCOUNT_PATHS.login).toBe('/account/login');
       expect(ACCOUNT_PATHS.register).toBe('/account/register');

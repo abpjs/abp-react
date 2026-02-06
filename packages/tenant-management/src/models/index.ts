@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Tenant Management module type definitions
  * Translated from @abp/ng.tenant-management v2.4.0

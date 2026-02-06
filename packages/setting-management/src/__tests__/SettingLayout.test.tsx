@@ -17,12 +17,7 @@ vi.mock('react-router-dom', () => ({
 
 // Import after mocks are set up
 import { SettingLayout } from '../components/SettingLayout/SettingLayout';
-import { getSettingManagementService, SettingManagementService } from '../services/setting-management.service';
-
-// Helper to get a fresh service instance for isolated tests
-function createTestService(): SettingManagementService {
-  return new SettingManagementService();
-}
+import { getSettingManagementService } from '../services/setting-management.service';
 
 describe('SettingLayout', () => {
   beforeEach(() => {

@@ -108,7 +108,7 @@ export class ConfigStateService {
 
     const state = this.getState().config;
     const keys = condition
-      .replace(/\(|\)|\!|\s/g, '')
+      .replace(/\(|\)|!|\s/g, '')
       .split(/\|\||&&/)
       .filter((key) => key);
 

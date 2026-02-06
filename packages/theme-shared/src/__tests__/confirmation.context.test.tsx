@@ -7,7 +7,7 @@ import {
   useConfirmationState,
   useConfirmationContext,
 } from '../contexts/confirmation.context';
-import { Confirmation, Toaster } from '../models';
+import { Confirmation } from '../models';
 
 describe('ConfirmationContext', () => {
   const wrapper = ({ children }: { children: React.ReactNode }) => (

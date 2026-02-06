@@ -86,7 +86,7 @@ export function TenantManagementModal({
   tenantId,
   initialView = 'tenant',
   onSave,
-  onVisibleFeaturesChange,
+  onVisibleFeaturesChange: _onVisibleFeaturesChange,
 }: TenantManagementModalProps): React.ReactElement {
   const { t } = useLocalization();
 
@@ -145,20 +145,22 @@ export function TenantManagementModal({
     }
 
     if (visible) {
-      setCurrentView(initialView);
+      queueMicrotask(() => setCurrentView(initialView));
     }
 
     // Reset when modal closes
     if (!visible) {
-      reset();
-      setTenantName('');
-      setTenantNameError(null);
-      setAdminEmail('');
-      setAdminEmailError(null);
-      setAdminPassword('');
-      setAdminPasswordError(null);
-      setLocalConnectionString('');
-      setLocalUseSharedDatabase(true);
+      queueMicrotask(() => {
+        reset();
+        setTenantName('');
+        setTenantNameError(null);
+        setAdminEmail('');
+        setAdminEmailError(null);
+        setAdminPassword('');
+        setAdminPasswordError(null);
+        setLocalConnectionString('');
+        setLocalUseSharedDatabase(true);
+      });
     }
   }, [visible, tenantId, initialView, fetchTenantById, fetchConnectionString, reset]);
 
@@ -167,7 +169,7 @@ export function TenantManagementModal({
    */
   useEffect(() => {
     if (selectedTenant) {
-      setTenantName(selectedTenant.name);
+      queueMicrotask(() => setTenantName(selectedTenant.name));
     }
   }, [selectedTenant]);
 
@@ -175,8 +177,10 @@ export function TenantManagementModal({
    * Sync connection string state to local form state
    */
   useEffect(() => {
-    setLocalConnectionString(defaultConnectionString);
-    setLocalUseSharedDatabase(useSharedDatabase);
+    queueMicrotask(() => {
+      setLocalConnectionString(defaultConnectionString);
+      setLocalUseSharedDatabase(useSharedDatabase);
+    });
   }, [defaultConnectionString, useSharedDatabase]);
 
   /**

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { TenantBox } from '../components/TenantBox';
@@ -25,7 +24,7 @@ vi.mock('react-redux', () => ({
 }));
 
 vi.mock('@abpjs/theme-shared', () => ({
-  Modal: ({ children, visible, onVisibleChange, header, footer }: any) => {
+  Modal: ({ children, visible, onVisibleChange: _onVisibleChange, header, footer }: any) => {
     if (!visible) return null;
     return (
       <div role="dialog" data-testid="modal">

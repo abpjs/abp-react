@@ -91,7 +91,7 @@ vi.mock('../hooks', () => ({
 
 // Mock @abpjs/theme-shared
 vi.mock('@abpjs/theme-shared', () => ({
-  Modal: ({ visible, children, header, footer, onVisibleChange }: any) =>
+  Modal: ({ visible, children, header, footer, onVisibleChange: _onVisibleChange }: any) =>
     visible ? (
       <div data-testid="modal">
         <div data-testid="modal-header">{header}</div>
@@ -137,7 +137,7 @@ vi.mock('@chakra-ui/react', () => ({
       {children}
     </div>
   ),
-  Flex: ({ children, justify, align, gap, py, ...props }: any) => (
+  Flex: ({ children, justify: _justify, align: _align, gap: _gap, py: _py, ...props }: any) => (
     <div data-testid="flex" {...props}>
       {children}
     </div>
@@ -154,7 +154,7 @@ vi.mock('@chakra-ui/react', () => ({
     />
   )),
   Spinner: ({ size }: any) => <div data-testid="spinner" data-size={size}>Loading...</div>,
-  VStack: ({ children, align, gap, ...props }: any) => (
+  VStack: ({ children, align: _align, gap: _gap, ...props }: any) => (
     <div data-testid="vstack" {...props}>
       {children}
     </div>

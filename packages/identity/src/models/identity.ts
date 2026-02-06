@@ -1,5 +1,6 @@
 import { ABP } from '@abpjs/core';
 
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Identity namespace containing all types related to identity management.
  * Translated from @abp/ng.identity Identity namespace.

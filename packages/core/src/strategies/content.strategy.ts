@@ -6,11 +6,7 @@
  * @updated 2.7.0 - insertElement() now returns the inserted element
  */
 
-import {
-  ContentSecurityStrategy,
-  NoContentSecurityStrategy,
-  CONTENT_SECURITY_STRATEGY,
-} from './content-security.strategy';
+import { ContentSecurityStrategy, CONTENT_SECURITY_STRATEGY } from './content-security.strategy';
 import { DomStrategy, DOM_STRATEGY } from './dom.strategy';
 
 /**

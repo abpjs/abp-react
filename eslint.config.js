@@ -35,6 +35,8 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // Downgrade to warnings - many packages sync state from props in effects (common pattern)
+      'react-hooks/set-state-in-effect': 'warn',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
@@ -61,6 +63,8 @@ export default tseslint.config(
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
+      // Disable to avoid compatibility issues with ESLint 8 (audit-logging, chat packages)
+      '@typescript-eslint/no-unused-expressions': 'off',
     },
   },
 )

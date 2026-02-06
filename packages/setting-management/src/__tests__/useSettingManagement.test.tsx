@@ -2,7 +2,7 @@
  * Tests for useSettingManagement hook
  * @abpjs/setting-management v0.9.0
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useSettingManagement } from '../hooks/useSettingManagement';
 import { getSettingManagementService } from '../services/setting-management.service';

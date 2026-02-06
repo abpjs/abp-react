@@ -111,7 +111,7 @@ vi.mock('@chakra-ui/react', () => ({
     ErrorText: ({ children }: any) => <span role="alert">{children}</span>,
   },
   Tabs: {
-    Root: ({ children, value, onValueChange }: any) => <div data-value={value}>{children}</div>,
+    Root: ({ children, value, onValueChange: _onValueChange }: any) => <div data-value={value}>{children}</div>,
     List: ({ children }: any) => <div role="tablist">{children}</div>,
     Trigger: ({ children, value }: any) => <button role="tab" data-value={value}>{children}</button>,
     Content: ({ children, value }: any) => <div role="tabpanel" data-value={value}>{children}</div>,
