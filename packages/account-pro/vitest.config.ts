@@ -4,10 +4,12 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    reporters: ['default', 'junit'],
+    outputFile: { junit: 'test-report.junit.xml' },
     setupFiles: ['./src/__tests__/setup.tsx'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
         'dist/',
