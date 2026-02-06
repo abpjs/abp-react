@@ -4,7 +4,7 @@ export default defineConfig({
   test: {
     globals: true,
     reporters: ['default', 'junit'],
-    outputFile: { junit: 'test-report.junit.xml' },
+    outputFile: { junit: 'feature-management.test-report.junit.xml' },
     environment: 'jsdom',
     setupFiles: ['./src/__tests__/setup.ts'],
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
