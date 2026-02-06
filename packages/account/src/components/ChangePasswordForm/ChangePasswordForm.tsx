@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,12 +20,14 @@ const passwordValidation = {
 };
 
 /**
- * Zod schema for change password form validation
+ * Create Zod schema for change password form validation
  * Matches Angular validators
+ *
+ * @param hideCurrentPassword - Whether to hide the current password field
+ * @since 3.1.0 - Added hideCurrentPassword parameter
  */
-const changePasswordSchema = z
-  .object({
-    currentPassword: z.string().min(1, 'Current password is required'),
+function createChangePasswordSchema(hideCurrentPassword: boolean) {
+  const baseSchema = {
     newPassword: z
       .string()
       .min(6, 'Password must be at least 6 characters')
@@ -47,13 +49,30 @@ const changePasswordSchema = z
         'Password must contain at least one special character'
       ),
     confirmNewPassword: z.string().min(1, 'Confirm password is required'),
-  })
-  .refine((data) => data.newPassword === data.confirmNewPassword, {
+  };
+
+  // Only require current password if not hidden
+  const schema = hideCurrentPassword
+    ? z.object({
+        currentPassword: z.string().optional(),
+        ...baseSchema,
+      })
+    : z.object({
+        currentPassword: z.string().min(1, 'Current password is required'),
+        ...baseSchema,
+      });
+
+  return schema.refine((data) => data.newPassword === data.confirmNewPassword, {
     message: 'Passwords do not match',
     path: ['confirmNewPassword'],
   });
+}
 
-type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+type ChangePasswordFormData = {
+  currentPassword?: string;
+  newPassword: string;
+  confirmNewPassword: string;
+};
 
 /**
  * Props for ChangePasswordForm component
@@ -68,6 +87,15 @@ export interface ChangePasswordFormProps {
    * Callback fired on password change error
    */
   onError?: (error: string) => void;
+
+  /**
+   * Whether to hide the current password field.
+   * When undefined, this is automatically determined based on the user's profile.
+   * Users without a password (e.g., social login users) don't need to enter current password.
+   *
+   * @since 3.1.0
+   */
+  hideCurrentPassword?: boolean;
 }
 
 /**
@@ -77,6 +105,7 @@ export interface ChangePasswordFormProps {
  * It provides a form for authenticated users to change their password.
  *
  * @since 1.1.0
+ * @since 3.1.0 - Added hideCurrentPassword prop for users without password (social login)
  *
  * @example
  * ```tsx
@@ -84,14 +113,47 @@ export interface ChangePasswordFormProps {
  *   onSuccess={() => console.log('Password changed!')}
  *   onError={(err) => console.error(err)}
  * />
+ *
+ * // For social login users (no current password needed)
+ * <ChangePasswordForm hideCurrentPassword={true} />
  * ```
  */
-export function ChangePasswordForm({ onSuccess, onError }: ChangePasswordFormProps) {
+export function ChangePasswordForm({
+  onSuccess,
+  onError,
+  hideCurrentPassword: hideCurrentPasswordProp,
+}: ChangePasswordFormProps) {
   const { t } = useLocalization();
-  const { changePassword } = useProfile();
+  const { profile, changePassword } = useProfile();
   const toaster = useToaster();
 
   const [inProgress, setInProgress] = useState(false);
+  // Track if we should show current password after first successful change
+  const [showCurrentPasswordAfterChange, setShowCurrentPasswordAfterChange] = useState(false);
+
+  // Determine if current password should be hidden
+  // v3.1.0: Hide current password if user doesn't have a password set (e.g., social login)
+  const shouldHideCurrentPassword = useMemo(() => {
+    // If explicitly set via prop, use that
+    if (hideCurrentPasswordProp !== undefined) {
+      return hideCurrentPasswordProp;
+    }
+
+    // After first password change, always show current password field
+    if (showCurrentPasswordAfterChange) {
+      return false;
+    }
+
+    // Auto-detect based on profile's hasPassword property
+    // hasPassword === false means user logged in via social login and has no password
+    return profile?.hasPassword === false;
+  }, [hideCurrentPasswordProp, profile?.hasPassword, showCurrentPasswordAfterChange]);
+
+  // Create schema based on whether current password is hidden
+  const changePasswordSchema = useMemo(
+    () => createChangePasswordSchema(shouldHideCurrentPassword),
+    [shouldHideCurrentPassword]
+  );
 
   const {
     register,
@@ -107,12 +169,6 @@ export function ChangePasswordForm({ onSuccess, onError }: ChangePasswordFormPro
     },
   });
 
-  // Initialize form on mount (ngOnInit equivalent)
-  useEffect(() => {
-    // Form is already initialized via defaultValues
-    // This effect is here for consistency with Angular's OnInit pattern
-  }, []);
-
   /**
    * Handle form submission
    */
@@ -121,7 +177,11 @@ export function ChangePasswordForm({ onSuccess, onError }: ChangePasswordFormPro
 
     try {
       await changePassword({
-        currentPassword: data.currentPassword,
+        // Only include currentPassword if not hidden
+        // v3.1.0: Support for users without password (social login)
+        ...(!shouldHideCurrentPassword && data.currentPassword
+          ? { currentPassword: data.currentPassword }
+          : {}),
         newPassword: data.newPassword,
       });
 
@@ -132,6 +192,13 @@ export function ChangePasswordForm({ onSuccess, onError }: ChangePasswordFormPro
 
       // Reset form after successful change
       reset();
+
+      // v3.1.0: After first password change, show current password field
+      // (user now has a password set)
+      if (shouldHideCurrentPassword) {
+        setShowCurrentPasswordAfterChange(true);
+      }
+
       onSuccess?.();
     } catch (err: any) {
       const errorMessage =
@@ -150,22 +217,24 @@ export function ChangePasswordForm({ onSuccess, onError }: ChangePasswordFormPro
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate>
       <Stack gap="5">
-        {/* Current Password Field */}
-        <Field.Root invalid={!!errors.currentPassword}>
-          <Field.Label>{t('AbpAccount::CurrentPassword')}</Field.Label>
-          <InputGroup startElement={<LuLock />} width="full">
-            <Input
-              id="current-password"
-              type="password"
-              autoComplete="current-password"
-              placeholder="••••••••"
-              {...register('currentPassword')}
-            />
-          </InputGroup>
-          {errors.currentPassword && (
-            <Field.ErrorText>{errors.currentPassword.message}</Field.ErrorText>
-          )}
-        </Field.Root>
+        {/* Current Password Field - v3.1.0: Hide for users without password */}
+        {!shouldHideCurrentPassword && (
+          <Field.Root invalid={!!errors.currentPassword}>
+            <Field.Label>{t('AbpAccount::CurrentPassword')}</Field.Label>
+            <InputGroup startElement={<LuLock />} width="full">
+              <Input
+                id="current-password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                {...register('currentPassword')}
+              />
+            </InputGroup>
+            {errors.currentPassword && (
+              <Field.ErrorText>{errors.currentPassword.message}</Field.ErrorText>
+            )}
+          </Field.Root>
+        )}
 
         {/* New Password Field */}
         <Field.Root invalid={!!errors.newPassword}>

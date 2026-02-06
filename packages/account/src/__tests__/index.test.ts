@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import * as accountModule from '../index';
 
 /**
  * Tests for @abpjs/account package exports
  * Uses static import to avoid slow dynamic imports during test execution.
  * @updated 3.0.0 - Added config and utils exports
+ * @updated 3.1.0 - Added guards exports
  */
 describe('@abpjs/account package exports', () => {
   // v3.0.0: Config exports
@@ -160,6 +161,48 @@ describe('@abpjs/account package exports', () => {
       expect(ACCOUNT_PATHS).toBeDefined();
       expect(ACCOUNT_PATHS.login).toBe('/account/login');
       expect(ACCOUNT_PATHS.register).toBe('/account/register');
+    });
+  });
+
+  // v3.1.0: Guards exports
+  describe('v3.1.0 - Guards exports', () => {
+    it('should export authenticationFlowGuard function', () => {
+      const { authenticationFlowGuard } = accountModule;
+      expect(authenticationFlowGuard).toBeDefined();
+      expect(typeof authenticationFlowGuard).toBe('function');
+    });
+
+    it('should export useAuthenticationFlowGuard hook', () => {
+      const { useAuthenticationFlowGuard } = accountModule;
+      expect(useAuthenticationFlowGuard).toBeDefined();
+      expect(typeof useAuthenticationFlowGuard).toBe('function');
+    });
+
+    it('should export AuthenticationFlowGuard class', () => {
+      const { AuthenticationFlowGuard } = accountModule;
+      expect(AuthenticationFlowGuard).toBeDefined();
+      expect(typeof AuthenticationFlowGuard).toBe('function');
+    });
+
+    it('authenticationFlowGuard should return correct result for internal auth', () => {
+      const { authenticationFlowGuard } = accountModule;
+      const result = authenticationFlowGuard({
+        isInternalAuth: true,
+        initLogin: () => {},
+      });
+      expect(result.canActivate).toBe(true);
+    });
+
+    it('authenticationFlowGuard should return correct result for external auth', () => {
+      const { authenticationFlowGuard } = accountModule;
+      const initLogin = vi.fn();
+      const result = authenticationFlowGuard({
+        isInternalAuth: false,
+        initLogin,
+      });
+      expect(result.canActivate).toBe(false);
+      expect(result.reason).toBe('external_auth');
+      expect(initLogin).toHaveBeenCalled();
     });
   });
 });

@@ -1,7 +1,14 @@
 /**
  * @abpjs/account
  * ABP Framework Account module for React
- * Translated from @abp/ng.account v3.0.0
+ * Translated from @abp/ng.account v3.1.0
+ *
+ * Changes in v3.1.0:
+ * - New: AuthenticationFlowGuard - Route guard for checking auth flow type
+ * - ChangePasswordForm: Added hideCurrentPassword prop for users without password (social login)
+ * - ManageProfile: Added hideChangePasswordTab prop and loading state for external users
+ * - AuthWrapper: Internal refactoring (uses SubscriptionService in Angular, no React impact)
+ * - PersonalSettingsForm: Simplified internal implementation
  *
  * Changes in v3.0.0:
  * - New config subpackage: config/providers with ACCOUNT_ROUTE_PROVIDERS, configureRoutes
@@ -31,7 +38,7 @@
  * - Dependency updates to @abp/ng.theme.shared v2.2.0 and @abp/ng.account.config v2.2.0
  * - No functional code changes
  *
- * @version 3.0.0
+ * @version 3.1.0
  * @since 2.0.0 - Added Account namespace with component interface types
  * @since 2.0.0 - Added isSelfRegistrationEnabled support in Login/Register components
  * @since 2.0.0 - Added enableLocalLogin support in AuthWrapper component
@@ -43,6 +50,7 @@
  * @since 2.7.0 - Components have static keys for component replacement system
  * @since 2.9.0 - Version bump only (dependency updates)
  * @since 3.0.0 - Config subpackage, accountOptionsFactory, initializeAccountRoutes
+ * @since 3.1.0 - AuthenticationFlowGuard, hideCurrentPassword, hideChangePasswordTab
  */
 
 // Config (v3.0.0) - Route providers and enums
@@ -50,6 +58,9 @@ export * from './config';
 
 // Enums (v2.7.0, updated v3.0.0)
 export * from './enums';
+
+// Guards (v3.1.0) - Route guards
+export * from './guards';
 
 // Models
 export * from './models';

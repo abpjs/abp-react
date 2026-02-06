@@ -3,6 +3,7 @@
  * Tests: LoginForm, RegisterForm, TenantBox, hooks
  * @updated 2.9.0 - Version bump only (dependency updates)
  * @updated 3.0.0 - Config subpackage, route providers, accountOptionsFactory
+ * @updated 3.1.0 - Guards (AuthenticationFlowGuard), social login support (hideCurrentPassword, hideChangePasswordTab)
  */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -31,6 +32,10 @@ import {
   // v3.0.0 additions - Config subpackage
   configureRoutes,
   accountOptionsFactory,
+  // v3.1.0 additions - Guards
+  authenticationFlowGuard,
+  useAuthenticationFlowGuard,
+  AuthenticationFlowGuard,
 } from '@abpjs/account'
 import type { Account } from '@abpjs/account'
 import { useAuth, useConfig } from '@abpjs/core'
@@ -509,6 +514,7 @@ function TestChangePasswordForm() {
           <tbody>
             <tr><td style={{ padding: '8px' }}>onSuccess</td><td>() =&gt; void</td><td>Called on successful password change</td></tr>
             <tr><td style={{ padding: '8px' }}>onError</td><td>(error: string) =&gt; void</td><td>Called on error</td></tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}><td style={{ padding: '8px' }}>hideCurrentPassword</td><td>boolean</td><td><strong>(v3.1.0)</strong> Hide current password field for social login</td></tr>
           </tbody>
         </table>
       </div>
@@ -614,6 +620,7 @@ function TestManageProfile() {
             <tr><td style={{ padding: '8px' }}>defaultTabIndex</td><td>number</td><td>0</td></tr>
             <tr><td style={{ padding: '8px' }}>onTabChange</td><td>(index: number) =&gt; void</td><td>-</td></tr>
             <tr><td style={{ padding: '8px' }}>customTabs</td><td>ProfileTab[]</td><td>Default tabs</td></tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}><td style={{ padding: '8px' }}>hideChangePasswordTab</td><td>boolean</td><td><strong>(v3.1.0)</strong> Auto from profile.isExternal</td></tr>
           </tbody>
         </table>
       </div>
@@ -1139,6 +1146,251 @@ const customOptions = accountOptionsFactory({ redirectUrl: '/dashboard' });
   )
 }
 
+function TestV310Features() {
+  const [guardResult, setGuardResult] = useState<string | null>(null)
+  const [showChangePasswordDemo, setShowChangePasswordDemo] = useState(false)
+  const [showManageProfileDemo, setShowManageProfileDemo] = useState(false)
+  const [hideCurrentPassword, setHideCurrentPassword] = useState(true)
+  const [hideChangePasswordTab, setHideChangePasswordTab] = useState(true)
+  const toaster = useToaster()
+
+  const testGuardInternal = () => {
+    const result = authenticationFlowGuard({
+      isInternalAuth: true,
+      initLogin: () => console.log('initLogin called'),
+    })
+    setGuardResult(JSON.stringify(result, null, 2))
+  }
+
+  const testGuardExternal = () => {
+    const result = authenticationFlowGuard({
+      isInternalAuth: false,
+      initLogin: () => console.log('initLogin called - redirecting to SSO'),
+    })
+    setGuardResult(JSON.stringify(result, null, 2))
+  }
+
+  // Example of using the hook
+  const hookResult = useAuthenticationFlowGuard({
+    isInternalAuth: true,
+    initLogin: () => {},
+  })
+
+  // Example of using the class
+  const guardInstance = new AuthenticationFlowGuard(true, () => {})
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.1.0</h2>
+
+      <div className="test-card">
+        <h3>AuthenticationFlowGuard (Route Guard)</h3>
+        <p>
+          New route guard for checking authentication flow type. Useful for applications
+          that support both internal (username/password) and external (SSO/OIDC) authentication.
+        </p>
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <button onClick={testGuardInternal}>Test Internal Auth</button>
+          <button onClick={testGuardExternal}>Test External Auth</button>
+        </div>
+        {guardResult && (
+          <pre style={{ fontSize: '12px', marginTop: '0.5rem', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+            {guardResult}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>Guard API Styles</h3>
+        <p>Three ways to use the authentication flow guard:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Style</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Usage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>Function</td>
+              <td style={{ padding: '8px' }}><code>authenticationFlowGuard</code></td>
+              <td style={{ padding: '8px' }}>Returns <code>{'{ canActivate, reason? }'}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>Hook</td>
+              <td style={{ padding: '8px' }}><code>useAuthenticationFlowGuard</code></td>
+              <td style={{ padding: '8px' }}>Returns <code>boolean</code> (canActivate: {String(hookResult)})</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>Class</td>
+              <td style={{ padding: '8px' }}><code>AuthenticationFlowGuard</code></td>
+              <td style={{ padding: '8px' }}><code>guard.canActivate()</code> (result: {String(guardInstance.canActivate())})</td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ fontSize: '12px', marginTop: '0.5rem', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`// Function style
+const result = authenticationFlowGuard({
+  isInternalAuth: true,
+  initLogin: () => auth.login(),
+});
+if (!result.canActivate) return null;
+
+// Hook style
+const canActivate = useAuthenticationFlowGuard({
+  isInternalAuth: config.isInternalAuth,
+  initLogin: () => auth.login(),
+});
+
+// Class style
+const guard = new AuthenticationFlowGuard(isInternal, initLogin);
+if (!guard.canActivate()) return <Redirect />;`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>ChangePasswordForm: hideCurrentPassword prop</h3>
+        <p>
+          New prop to hide the current password field. Useful for social login users who
+          don't have a password set yet.
+        </p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <input
+            type="checkbox"
+            checked={hideCurrentPassword}
+            onChange={(e) => setHideCurrentPassword(e.target.checked)}
+          />
+          hideCurrentPassword={String(hideCurrentPassword)}
+        </label>
+        <button onClick={() => setShowChangePasswordDemo(!showChangePasswordDemo)} style={{ marginTop: '0.5rem' }}>
+          {showChangePasswordDemo ? 'Hide Demo' : 'Show Demo'}
+        </button>
+        {showChangePasswordDemo && (
+          <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #333', borderRadius: '8px', maxWidth: '400px' }}>
+            <ChangePasswordForm
+              hideCurrentPassword={hideCurrentPassword}
+              onSuccess={() => toaster.success('Password changed!', 'Success')}
+              onError={(error) => toaster.error(error, 'Error')}
+            />
+          </div>
+        )}
+        <pre style={{ fontSize: '12px', marginTop: '0.5rem', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`// For social login users without a password
+<ChangePasswordForm hideCurrentPassword={true} />
+
+// Auto-detect from profile.hasPassword (default behavior)
+<ChangePasswordForm />
+
+// The component checks profile.hasPassword and hides
+// the current password field if user has no password`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>ManageProfile: hideChangePasswordTab prop</h3>
+        <p>
+          New prop to hide the Change Password tab. Useful for external authentication users
+          (SSO/OIDC) who cannot change their password through the application.
+        </p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <input
+            type="checkbox"
+            checked={hideChangePasswordTab}
+            onChange={(e) => setHideChangePasswordTab(e.target.checked)}
+          />
+          hideChangePasswordTab={String(hideChangePasswordTab)}
+        </label>
+        <button onClick={() => setShowManageProfileDemo(!showManageProfileDemo)} style={{ marginTop: '0.5rem' }}>
+          {showManageProfileDemo ? 'Hide Demo' : 'Show Demo'}
+        </button>
+        {showManageProfileDemo && (
+          <div style={{ marginTop: '1rem', border: '1px solid #333', borderRadius: '8px', overflow: 'hidden' }}>
+            <ManageProfile
+              hideChangePasswordTab={hideChangePasswordTab}
+              onTabChange={(index) => console.log('Tab changed to:', index)}
+            />
+          </div>
+        )}
+        <pre style={{ fontSize: '12px', marginTop: '0.5rem', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`// For external auth users (SSO/OIDC)
+<ManageProfile hideChangePasswordTab={true} />
+
+// Auto-detect from profile.isExternal (default behavior)
+<ManageProfile />
+
+// The component checks profile.isExternal and hides
+// the Change Password tab for external users`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Profile Model Updates</h3>
+        <p>New optional properties on the Profile.Response interface:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Property</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>isExternal</code></td>
+              <td style={{ padding: '8px' }}>boolean?</td>
+              <td style={{ padding: '8px' }}>Whether user is authenticated via external provider</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>hasPassword</code></td>
+              <td style={{ padding: '8px' }}>boolean?</td>
+              <td style={{ padding: '8px' }}>Whether user has a password set</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>emailConfirmed</code></td>
+              <td style={{ padding: '8px' }}>boolean?</td>
+              <td style={{ padding: '8px' }}>Whether user's email is confirmed</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>phoneNumberConfirmed</code></td>
+              <td style={{ padding: '8px' }}>boolean?</td>
+              <td style={{ padding: '8px' }}>Whether user's phone is confirmed</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>ChangePasswordRequest: Optional currentPassword</h3>
+        <p>
+          The <code>currentPassword</code> field is now optional in the ChangePasswordRequest interface
+          to support social login users setting their first password:
+        </p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`interface ChangePasswordRequest {
+  currentPassword?: string;  // Now optional for social login
+  newPassword: string;
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Migration from v3.0.0</h3>
+        <div style={{ padding: '0.75rem', background: '#1a2e1a', borderRadius: '4px', border: '1px solid #2e4a2e' }}>
+          <p style={{ color: '#6f6', margin: 0, fontSize: '14px' }}>
+            <strong>No breaking changes!</strong> All existing code continues to work.
+          </p>
+        </div>
+        <ul style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+          <li>New guard exports are additive</li>
+          <li>New props have sensible defaults (auto-detect from profile)</li>
+          <li>Profile model changes are backward compatible (optional properties)</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 function TestV240Features() {
   const accountService = useAccountService()
 
@@ -1183,15 +1435,21 @@ console.log(accountService.apiName) // "default"`}</pre>
 export function TestAccountPage() {
   return (
     <div>
-      <h1>@abpjs/account Tests (v3.0.0)</h1>
+      <h1>@abpjs/account Tests (v3.1.0)</h1>
       <p>Testing login, register, tenant switching, and account-related features.</p>
       <p style={{ color: '#888', fontSize: '0.9rem' }}>
-        Version 3.0.0 - Config subpackage, route providers, accountOptionsFactory
+        Version 3.1.0 - Guards (AuthenticationFlowGuard), social login support (hideCurrentPassword, hideChangePasswordTab)
       </p>
 
-      {/* v3.0.0 Features - Highlighted at top */}
+      {/* v3.1.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #8b5cf6', paddingTop: '1rem' }}>
+        v3.1.0 New Features
+      </h2>
+      <TestV310Features />
+
+      {/* v3.0.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #ec4899', paddingTop: '1rem' }}>
-        v3.0.0 New Features
+        v3.0.0 Features
       </h2>
       <TestV300Features />
 
