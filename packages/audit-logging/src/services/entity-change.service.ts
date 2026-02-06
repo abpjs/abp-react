@@ -1,6 +1,6 @@
 /**
  * Entity Change Service
- * Translated from @volo/abp.ng.audit-logging v2.7.0
+ * Translated from @volo/abp.ng.audit-logging v3.0.0
  */
 
 import type { RestService } from '@abpjs/core';
