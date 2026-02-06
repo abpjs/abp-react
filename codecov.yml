@@ -1,6 +1,11 @@
 # Codecov configuration for monorepo
 # Components isolate coverage by package path - no flags needed at upload time
 # See: https://docs.codecov.com/docs/components
+# Path fixing: https://docs.codecov.com/docs/fixing-paths
+
+fixes:
+  # Strip GitHub Actions workspace prefix so paths match git structure
+  - "/home/runner/work/abp-react/abp-react/::"
 
 coverage:
   status:
@@ -12,7 +17,7 @@ coverage:
         target: auto
 
 comment:
-  layout: "diff, components, files"
+  layout: "condensed_header, diff, flags, components"
   behavior: default
 
 component_management:
