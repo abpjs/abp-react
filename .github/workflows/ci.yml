@@ -38,14 +38,7 @@ jobs:
         run: pnpm type-check
 
       - name: Test with coverage
-        run: pnpm -r run test -- --coverage
-
-      - name: Debug - List Coverage Files
-        run: |
-          echo "Checking for lcov files..."
-          find . -name "lcov.info"
-          echo "Checking for any coverage files..."
-          find . -type d -name "coverage"
+        run: pnpm -r run test --coverage
 
       - name: Upload coverage reports to Codecov
         if: matrix.node-version == 20
