@@ -1,7 +1,16 @@
 /**
  * @abpjs/tenant-management
  * ABP Framework Tenant Management module for React
- * Translated from @abp/ng.tenant-management v2.9.0
+ * Translated from @abp/ng.tenant-management v3.0.0
+ *
+ * Changes in v3.0.0:
+ * - Added config subpackage with route providers and policy names
+ * - Added eTenantManagementPolicyNames enum for permission checks
+ * - Added TENANT_MANAGEMENT_ROUTE_PROVIDERS for route configuration
+ * - Added configureRoutes function for route setup
+ * - Added initializeTenantManagementRoutes helper function
+ * - Moved eTenantManagementRouteNames to config subpackage (re-exported for backward compatibility)
+ * - Removed Administration from eTenantManagementRouteNames (use 'AbpUiNavigation::Menu:Administration' directly)
  *
  * Changes in v2.9.0:
  * - Version bump only (dependency updates to @abp/ng.theme.shared v2.9.0, @abp/ng.feature-management v2.9.0)
@@ -39,6 +48,9 @@
  * - Updated onSearch signature: (value: any) -> (value: string)
  * - Updated onPageChange signature: (data: any) -> (page: number)
  */
+
+// Config (v3.0.0) - Route providers and policy names
+export * from './config';
 
 // Enums (v2.7.0)
 export * from './enums';

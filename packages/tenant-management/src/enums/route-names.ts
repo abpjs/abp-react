@@ -1,27 +1,14 @@
 /**
  * Route name keys for the Tenant Management module.
  * These keys are used for route localization and identification.
+ *
+ * Note: In v3.0.0, this is re-exported from the config subpackage.
+ * The Administration key was removed - use 'AbpUiNavigation::Menu:Administration' directly.
+ *
  * @since 2.7.0
+ * @deprecated Import from config subpackage instead: `import { eTenantManagementRouteNames } from '@abpjs/tenant-management/config'`
  */
-export const eTenantManagementRouteNames = {
-  /**
-   * Administration menu route name key.
-   */
-  Administration: 'AbpUiNavigation::Menu:Administration',
-
-  /**
-   * Tenant Management menu route name key.
-   */
-  TenantManagement: 'AbpTenantManagement::Menu:TenantManagement',
-
-  /**
-   * Tenants route name key.
-   */
-  Tenants: 'AbpTenantManagement::Tenants',
-} as const;
-
-/**
- * Type for tenant management route name key values
- */
-export type TenantManagementRouteNameKey =
-  (typeof eTenantManagementRouteNames)[keyof typeof eTenantManagementRouteNames];
+export {
+  eTenantManagementRouteNames,
+  type TenantManagementRouteNameKey,
+} from '../config/enums/route-names';
