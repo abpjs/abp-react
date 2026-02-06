@@ -1,0 +1,67 @@
+{
+  "name": "@abpjs/schematics",
+  "version": "3.1.0",
+  "description": "ABP Framework schematics types and utilities for React - translated from @abp/ng.schematics",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup src/index.ts --format cjs,esm --watch",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json,md}\"",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "abp",
+    "react",
+    "framework",
+    "schematics",
+    "code-generation",
+    "proxy"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@abp/ng.schematics": "3.1.0",
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.1.2",
+    "prettier": "^3.7.4",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "@vitest/coverage-v8": "^1.0.0"
+  },
+  "author": "tekthar.com",
+  "license": "LGPL-3.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abpjs/abp-react",
+    "directory": "packages/schematics"
+  },
+  "homepage": "https://docs.abpjs.io/docs/packages/schematics/overview",
+  "bugs": {
+    "url": "https://github.com/abpjs/abp-react/issues"
+  }
+}

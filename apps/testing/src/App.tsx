@@ -25,6 +25,7 @@ import {
   TestAuditLoggingPage,
   TestTextTemplateManagementPage,
   TestChatPage,
+  TestSchematicsPage,
 } from './pages'
 import './App.css'
 
@@ -188,6 +189,12 @@ function Home() {
             <p>Real-time chat, contacts, messaging, SignalR integration</p>
             <Link to="/test/chat" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
           </div>
+
+          <div className="test-card">
+            <h3>@abpjs/schematics</h3>
+            <p>Code generation types, API definitions, proxy utilities</p>
+            <Link to="/test/schematics" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
         </div>
       </div>
 
@@ -271,6 +278,7 @@ function App() {
         <Route path="/test/audit-logging" element={<TestAuditLoggingPage />} />
         <Route path="/test/text-template-management" element={<TestTextTemplateManagementPage />} />
         <Route path="/test/chat" element={<TestChatPage />} />
+        <Route path="/test/schematics" element={<TestSchematicsPage />} />
         {/* Setting management page from @abpjs/setting-management */}
         <Route path="/setting-management" element={<SettingLayout />} />
       </Route>
