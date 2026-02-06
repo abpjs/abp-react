@@ -30,8 +30,6 @@ import {
   eAccountRouteNames,
   // v3.0.0 additions - Config subpackage
   configureRoutes,
-  ACCOUNT_ROUTE_PROVIDERS,
-  initializeAccountRoutes,
   accountOptionsFactory,
 } from '@abpjs/account'
 import type { Account } from '@abpjs/account'

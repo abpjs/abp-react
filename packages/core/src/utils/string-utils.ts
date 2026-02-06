@@ -1,0 +1,50 @@
+/**
+ * String utility functions
+ * Translated from @abp/ng.core v3.1.0
+ *
+ * @since 3.1.0
+ */
+
+/**
+ * Create a token parser that extracts tokens from a string based on a format
+ *
+ * @example
+ * const parser = createTokenParser('{0}.{1}');
+ * parser('tenant.user'); // { '0': ['tenant'], '1': ['user'] }
+ *
+ * @since 3.1.0
+ */
+export function createTokenParser(
+  format: string
+): (str: string) => Record<string, string[]> {
+  // Escape special regex characters except for {} placeholders
+  const escapedFormat = format.replace(/[.*+?^$|()[\]\\]/g, '\\$&');
+
+  // Replace {n} with capture groups
+  const pattern = escapedFormat.replace(/\{(\d+)\}/g, '(.+?)');
+  const regex = new RegExp(`^${pattern}$`);
+
+  // Extract placeholder names in order
+  const placeholders: string[] = [];
+  const placeholderRegex = /\{(\d+)\}/g;
+  let match: RegExpExecArray | null;
+  while ((match = placeholderRegex.exec(format)) !== null) {
+    placeholders.push(match[1]);
+  }
+
+  return (str: string): Record<string, string[]> => {
+    const result: Record<string, string[]> = {};
+    const matches = str.match(regex);
+
+    if (matches) {
+      placeholders.forEach((placeholder, index) => {
+        if (!result[placeholder]) {
+          result[placeholder] = [];
+        }
+        result[placeholder].push(matches[index + 1]);
+      });
+    }
+
+    return result;
+  };
+}

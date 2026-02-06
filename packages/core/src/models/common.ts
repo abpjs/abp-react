@@ -17,6 +17,11 @@ export namespace ABP {
      * @since 2.9.0
      */
     sendNullsAsQueryParam?: boolean;
+    /**
+     * Map culture names to locale file names
+     * @since 3.1.0
+     */
+    cultureNameLocaleFileMap?: Dictionary<string>;
   }
 
   /**
@@ -40,6 +45,15 @@ export namespace ABP {
     sorting?: string;
     skipCount?: number;
     maxResultCount?: number;
+  }
+
+  /**
+   * Lookup item for dropdown/select fields
+   * @since 3.1.0
+   */
+  export interface Lookup {
+    id: string;
+    displayName: string;
   }
 
   /**

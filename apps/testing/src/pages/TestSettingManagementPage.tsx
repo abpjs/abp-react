@@ -251,7 +251,7 @@ function TestSettingManagementHook() {
       <div className="test-card">
         <h3>Selection Methods</h3>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button onClick={() => setSelected(undefined)}>
+          <button onClick={() => setSelected(null)}>
             Clear Selection
           </button>
           <button onClick={() => selectByName('Security')} disabled={!settings.find((s: SettingTab) => s.name === 'Security')}>
