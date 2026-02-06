@@ -16,13 +16,14 @@ export interface ClaimOperationResult {
 /**
  * Return type for useClaims hook
  * @since 0.7.2
+ * @updated 3.0.0 - Added fetchRolesClaimTypes and fetchUsersClaimTypes
  */
 export interface UseClaimsReturn {
   /** List of claim types */
   claimTypes: Identity.ClaimType[];
   /** Total count of claim types */
   totalCount: number;
-  /** Claim type names for dropdowns */
+  /** Claim type names for dropdowns (roles) */
   claimTypeNames: Identity.ClaimTypeName[];
   /** Currently selected claim type for editing */
   selectedClaimType: Identity.ClaimType | null;
@@ -36,8 +37,16 @@ export interface UseClaimsReturn {
   sortOrder: SortOrder;
   /** Fetch all claim types with optional pagination/filtering */
   fetchClaimTypes: (params?: ABP.PageQueryParams) => Promise<ClaimOperationResult>;
-  /** Fetch claim type names for dropdowns */
-  fetchClaimTypeNames: () => Promise<ClaimOperationResult>;
+  /**
+   * Fetch claim type names for roles
+   * @since 3.0.0
+   */
+  fetchRolesClaimTypes: () => Promise<ClaimOperationResult>;
+  /**
+   * Fetch claim type names for users
+   * @since 3.0.0
+   */
+  fetchUsersClaimTypes: () => Promise<ClaimOperationResult>;
   /** Get a claim type by ID and set it as selected */
   getClaimTypeById: (id: string) => Promise<ClaimOperationResult>;
   /** Create a new claim type */
@@ -140,19 +149,41 @@ export function useClaims(): UseClaimsReturn {
   }, [service]);
 
   /**
-   * Fetch claim type names for dropdowns
+   * Fetch claim type names for roles
+   * @since 3.0.0
    */
-  const fetchClaimTypeNames = useCallback(async (): Promise<ClaimOperationResult> => {
+  const fetchRolesClaimTypes = useCallback(async (): Promise<ClaimOperationResult> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await service.getClaimTypeNames();
+      const response = await service.getRolesClaimTypes();
       setClaimTypeNames(response || []);
       setIsLoading(false);
       return { success: true };
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch claim type names';
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch role claim types';
+      setError(errorMessage);
+      setIsLoading(false);
+      return { success: false, error: errorMessage };
+    }
+  }, [service]);
+
+  /**
+   * Fetch claim type names for users
+   * @since 3.0.0
+   */
+  const fetchUsersClaimTypes = useCallback(async (): Promise<ClaimOperationResult> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await service.getUsersClaimTypes();
+      setClaimTypeNames(response || []);
+      setIsLoading(false);
+      return { success: true };
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch user claim types';
       setError(errorMessage);
       setIsLoading(false);
       return { success: false, error: errorMessage };
@@ -311,7 +342,8 @@ export function useClaims(): UseClaimsReturn {
     sortKey,
     sortOrder,
     fetchClaimTypes,
-    fetchClaimTypeNames,
+    fetchRolesClaimTypes,
+    fetchUsersClaimTypes,
     getClaimTypeById,
     createClaimType,
     updateClaimType,

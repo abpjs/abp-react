@@ -12,7 +12,8 @@ vi.mock('@abpjs/core', () => ({
 
 // Mock the IdentityService
 const mockGetClaimTypes = vi.fn();
-const mockGetClaimTypeNames = vi.fn();
+const mockGetRolesClaimTypes = vi.fn();
+const mockGetUsersClaimTypes = vi.fn();
 const mockGetClaimTypeById = vi.fn();
 const mockCreateClaimType = vi.fn();
 const mockUpdateClaimType = vi.fn();
@@ -23,7 +24,8 @@ const mockUpdateClaims = vi.fn();
 vi.mock('../../services', () => ({
   IdentityService: vi.fn().mockImplementation(() => ({
     getClaimTypes: mockGetClaimTypes,
-    getClaimTypeNames: mockGetClaimTypeNames,
+    getRolesClaimTypes: mockGetRolesClaimTypes,
+    getUsersClaimTypes: mockGetUsersClaimTypes,
     getClaimTypeById: mockGetClaimTypeById,
     createClaimType: mockCreateClaimType,
     updateClaimType: mockUpdateClaimType,
@@ -138,18 +140,18 @@ describe('useClaims', () => {
     });
   });
 
-  describe('fetchClaimTypeNames', () => {
-    it('should fetch claim type names for dropdowns', async () => {
+  describe('fetchRolesClaimTypes (v3.0.0)', () => {
+    it('should fetch claim type names for roles', async () => {
       const mockResponse: Identity.ClaimTypeName[] = [
         { name: 'email' },
         { name: 'role' },
       ];
-      mockGetClaimTypeNames.mockResolvedValue(mockResponse);
+      mockGetRolesClaimTypes.mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => useClaims());
 
       await act(async () => {
-        const operationResult = await result.current.fetchClaimTypeNames();
+        const operationResult = await result.current.fetchRolesClaimTypes();
         expect(operationResult.success).toBe(true);
       });
 
@@ -157,16 +159,74 @@ describe('useClaims', () => {
     });
 
     it('should handle errors', async () => {
-      mockGetClaimTypeNames.mockRejectedValue(new Error('Failed to fetch'));
+      mockGetRolesClaimTypes.mockRejectedValue(new Error('Failed to fetch role claim types'));
 
       const { result } = renderHook(() => useClaims());
 
       await act(async () => {
-        const operationResult = await result.current.fetchClaimTypeNames();
+        const operationResult = await result.current.fetchRolesClaimTypes();
         expect(operationResult.success).toBe(false);
       });
 
-      expect(result.current.error).toBe('Failed to fetch');
+      expect(result.current.error).toBe('Failed to fetch role claim types');
+    });
+
+    it('should return empty array when no claim types exist', async () => {
+      mockGetRolesClaimTypes.mockResolvedValue([]);
+
+      const { result } = renderHook(() => useClaims());
+
+      await act(async () => {
+        const operationResult = await result.current.fetchRolesClaimTypes();
+        expect(operationResult.success).toBe(true);
+      });
+
+      expect(result.current.claimTypeNames).toEqual([]);
+    });
+  });
+
+  describe('fetchUsersClaimTypes (v3.0.0)', () => {
+    it('should fetch claim type names for users', async () => {
+      const mockResponse: Identity.ClaimTypeName[] = [
+        { name: 'email' },
+        { name: 'phone_number' },
+      ];
+      mockGetUsersClaimTypes.mockResolvedValue(mockResponse);
+
+      const { result } = renderHook(() => useClaims());
+
+      await act(async () => {
+        const operationResult = await result.current.fetchUsersClaimTypes();
+        expect(operationResult.success).toBe(true);
+      });
+
+      expect(result.current.claimTypeNames).toEqual(mockResponse);
+    });
+
+    it('should handle errors', async () => {
+      mockGetUsersClaimTypes.mockRejectedValue(new Error('Failed to fetch user claim types'));
+
+      const { result } = renderHook(() => useClaims());
+
+      await act(async () => {
+        const operationResult = await result.current.fetchUsersClaimTypes();
+        expect(operationResult.success).toBe(false);
+      });
+
+      expect(result.current.error).toBe('Failed to fetch user claim types');
+    });
+
+    it('should return empty array when no claim types exist', async () => {
+      mockGetUsersClaimTypes.mockResolvedValue([]);
+
+      const { result } = renderHook(() => useClaims());
+
+      await act(async () => {
+        const operationResult = await result.current.fetchUsersClaimTypes();
+        expect(operationResult.success).toBe(true);
+      });
+
+      expect(result.current.claimTypeNames).toEqual([]);
     });
   });
 
@@ -536,14 +596,14 @@ describe('useClaims', () => {
         ],
         totalCount: 1,
       });
-      mockGetClaimTypeNames.mockResolvedValue([{ name: 'email' }]);
+      mockGetRolesClaimTypes.mockResolvedValue([{ name: 'email' }]);
 
       const { result } = renderHook(() => useClaims());
 
       // First populate some state
       await act(async () => {
         await result.current.fetchClaimTypes();
-        await result.current.fetchClaimTypeNames();
+        await result.current.fetchRolesClaimTypes();
         result.current.setSelectedClaimType({
           id: 'claim-1',
           name: 'email',

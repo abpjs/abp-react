@@ -226,19 +226,43 @@ export class IdentityService {
     });
   }
 
+  /**
+   * Get assignable roles for users
+   * @since 3.0.0
+   * @returns Promise with roles that can be assigned to users
+   */
+  getUserAssingableRoles(): Promise<Identity.RoleResponse> {
+    return this.rest.request<null, Identity.RoleResponse>({
+      method: 'GET',
+      url: '/api/identity/users/assignable-roles',
+    });
+  }
+
   // ========================
   // Pro: Claim Type Operations
   // ========================
 
   /**
-   * Get all claim type names for dropdowns
-   * Pro feature since 0.7.2
-   * @returns Promise with claim type names
+   * Get claim types available for roles
+   * @since 3.0.0
+   * @returns Promise with claim type names for roles
    */
-  getClaimTypeNames(): Promise<Identity.ClaimTypeName[]> {
+  getRolesClaimTypes(): Promise<Identity.ClaimTypeName[]> {
     return this.rest.request<null, Identity.ClaimTypeName[]>({
       method: 'GET',
-      url: '/api/identity/claim-types/all',
+      url: '/api/identity/roles/available-claim-types',
+    });
+  }
+
+  /**
+   * Get claim types available for users
+   * @since 3.0.0
+   * @returns Promise with claim type names for users
+   */
+  getUsersClaimTypes(): Promise<Identity.ClaimTypeName[]> {
+    return this.rest.request<null, Identity.ClaimTypeName[]>({
+      method: 'GET',
+      url: '/api/identity/users/available-claim-types',
     });
   }
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useLocalization, ABP } from '@abpjs/core';
-import { Modal, useConfirmation, Toaster, Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
+import { Modal, useConfirmation, Confirmation, Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
 import { PermissionManagementModal } from '@abpjs/permission-management';
 import {
   Box,
@@ -193,7 +193,7 @@ export function UsersComponent({
         t('AbpIdentity::AreYouSure')
       );
 
-      if (status === Toaster.Status.confirm) {
+      if (status === Confirmation.Status.confirm) {
         const result = await deleteUser(id);
         if (result.success) {
           onUserDeleted?.(id);

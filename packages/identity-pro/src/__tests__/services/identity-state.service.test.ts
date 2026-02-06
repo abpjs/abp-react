@@ -1,6 +1,6 @@
 /**
  * Tests for IdentityStateService
- * @abpjs/identity-pro v2.0.0
+ * @abpjs/identity-pro v3.0.0
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { IdentityStateService } from '../../services/identity-state.service';
@@ -43,10 +43,6 @@ describe('IdentityStateService', () => {
 
     it('should return 0 claim types total count initially', () => {
       expect(stateService.getClaimTypesTotalCount()).toBe(0);
-    });
-
-    it('should return empty claim type names initially', () => {
-      expect(stateService.getClaimTypeNames()).toEqual([]);
     });
   });
 
@@ -356,34 +352,6 @@ describe('IdentityStateService', () => {
           body: updatedClaimType,
         });
         expect(result).toEqual(updatedClaimType);
-      });
-    });
-
-    describe('dispatchGetClaimTypeNames', () => {
-      it('should fetch claim type names and update state', async () => {
-        const mockClaimTypeNames: Identity.ClaimTypeName[] = [
-          { name: 'email' },
-          { name: 'role' },
-          { name: 'preferred_username' },
-        ];
-        mockRequest.mockResolvedValue(mockClaimTypeNames);
-
-        const result = await stateService.dispatchGetClaimTypeNames();
-
-        expect(mockRequest).toHaveBeenCalledWith({
-          method: 'GET',
-          url: '/api/identity/claim-types/all',
-        });
-        expect(result).toEqual(mockClaimTypeNames);
-        expect(stateService.getClaimTypeNames()).toEqual(mockClaimTypeNames);
-      });
-
-      it('should handle null response', async () => {
-        mockRequest.mockResolvedValue(null);
-
-        await stateService.dispatchGetClaimTypeNames();
-
-        expect(stateService.getClaimTypeNames()).toEqual([]);
       });
     });
   });
