@@ -24,12 +24,11 @@ function getVisibleRoutes(routes: ABP.FullRoute[]): ABP.FullRoute[] {
 /**
  * Props for the RoutesComponent.
  * @since 2.7.0
+ * @updated 2.9.0 - Removed isDropdownChildDynamic prop
  */
 export interface RoutesComponentProps {
   /** Whether the screen is small (mobile) */
   smallScreen?: boolean;
-  /** Whether to use dynamic dropdown positioning for children */
-  isDropdownChildDynamic?: boolean;
   /** Default icon for routes without specific icons */
   defaultIcon?: ReactNode;
   /** Custom routes to display (overrides config routes) */
@@ -60,7 +59,6 @@ export interface RoutesComponentProps {
  */
 export function RoutesComponent({
   smallScreen = false,
-  isDropdownChildDynamic = false,
   defaultIcon,
   routes: customRoutes,
 }: RoutesComponentProps): React.ReactElement {
