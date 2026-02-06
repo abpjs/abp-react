@@ -2,6 +2,12 @@
  * Test page for @abpjs/identity package
  * Tests: RolesComponent, UsersComponent, useRoles, useUsers, useIdentity hooks
  *
+ * v3.0.0 Updates:
+ * - New config subpackage with eIdentityPolicyNames, IDENTITY_ROUTE_PROVIDERS
+ * - Moved eIdentityRouteNames to config/enums (removed Administration key)
+ * - Added getUserAssignableRoles() method to IdentityService
+ * - initializeIdentityRoutes helper for easy route setup
+ *
  * v2.0.0 Updates:
  * - IdentityStateService for stateful identity operations
  * - onVisiblePermissionChange callback for components
@@ -9,7 +15,7 @@
  * - IDENTITY_ROUTES removed (use IDENTITY_ROUTE_PATHS instead)
  */
 import { useState, useEffect, useMemo } from 'react'
-import { useAuth, useRestService, type ABP } from '@abpjs/core'
+import { useAuth, useRestService, getRoutesService, type ABP } from '@abpjs/core'
 import {
   RolesComponent,
   UsersComponent,
@@ -21,6 +27,11 @@ import {
   IdentityService,
   eIdentityComponents,
   eIdentityRouteNames,
+  // v3.0.0 config exports
+  eIdentityPolicyNames,
+  IDENTITY_ROUTE_PROVIDERS,
+  configureRoutes,
+  initializeIdentityRoutes,
 } from '@abpjs/identity'
 import type { Identity, PasswordRule } from '@abpjs/identity'
 
@@ -1444,15 +1455,17 @@ const usersKey = eIdentityComponents.Users    // "Identity.UsersComponent"`}</pr
 
       <div className="test-card">
         <h3>eIdentityRouteNames Enum</h3>
-        <p>New enum for route name constants (used for navigation menus and breadcrumbs):</p>
+        <p>Enum for route name constants (used for navigation menus and breadcrumbs):</p>
+        <p style={{ color: '#f88', fontSize: '12px', marginBottom: '0.5rem' }}>
+          Note: In v3.0.0, the Administration key was removed. Use AbpUiNavigation for administration menu.
+        </p>
         <pre style={{ fontSize: '12px' }}>{`import { eIdentityRouteNames } from '@abpjs/identity'
 
-// Route names for localization
-const admin = eIdentityRouteNames.Administration
+// Route names for localization (v3.0.0 - no Administration key)
 const identity = eIdentityRouteNames.IdentityManagement
 const roles = eIdentityRouteNames.Roles
 const users = eIdentityRouteNames.Users`}</pre>
-        <h4 style={{ marginTop: '1rem' }}>Enum Values:</h4>
+        <h4 style={{ marginTop: '1rem' }}>Enum Values (v3.0.0):</h4>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #333' }}>
@@ -1461,10 +1474,6 @@ const users = eIdentityRouteNames.Users`}</pre>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td style={{ padding: '8px' }}><code>Administration</code></td>
-              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eIdentityRouteNames.Administration}</code></td>
-            </tr>
             <tr>
               <td style={{ padding: '8px' }}><code>IdentityManagement</code></td>
               <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eIdentityRouteNames.IdentityManagement}</code></td>
@@ -1631,16 +1640,201 @@ console.log(response.totalCount) // Total count`}</pre>
   )
 }
 
+function TestV300Features() {
+  const restService = useRestService()
+  const identityService = useMemo(() => new IdentityService(restService), [restService])
+  const { isAuthenticated } = useAuth()
+  const [assignableRoles, setAssignableRoles] = useState<Identity.RoleItem[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [routesConfigured, setRoutesConfigured] = useState(false)
+
+  const handleFetchAssignableRoles = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const response = await identityService.getUserAssignableRoles()
+      setAssignableRoles(response.items)
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch assignable roles')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleConfigureRoutes = () => {
+    try {
+      const routes = getRoutesService()
+      const addRoutes = configureRoutes(routes)
+      addRoutes()
+      setRoutesConfigured(true)
+    } catch (err: any) {
+      setError(err.message || 'Failed to configure routes')
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.0.0</h2>
+
+      <div className="test-card">
+        <h3>eIdentityPolicyNames Enum</h3>
+        <p>New enum for permission policy names:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { eIdentityPolicyNames } from '@abpjs/identity'
+
+// Policy names for authorization
+const managementPolicy = eIdentityPolicyNames.IdentityManagement
+const rolesPolicy = eIdentityPolicyNames.Roles
+const usersPolicy = eIdentityPolicyNames.Users`}</pre>
+        <h4 style={{ marginTop: '1rem' }}>Enum Values:</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>IdentityManagement</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eIdentityPolicyNames.IdentityManagement}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>Roles</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eIdentityPolicyNames.Roles}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>Users</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{eIdentityPolicyNames.Users}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>IDENTITY_ROUTE_PROVIDERS</h3>
+        <p>Route configuration provider for identity module:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { IDENTITY_ROUTE_PROVIDERS, configureRoutes, getRoutesService } from '@abpjs/identity'
+
+// Configure routes manually
+const routes = getRoutesService()
+const addRoutes = IDENTITY_ROUTE_PROVIDERS.configureRoutes(routes)
+addRoutes()
+
+// Or use the configureRoutes function directly
+const addRoutes2 = configureRoutes(routes)
+addRoutes2()`}</pre>
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={handleConfigureRoutes} disabled={routesConfigured}>
+            {routesConfigured ? 'Routes Configured!' : 'Configure Identity Routes'}
+          </button>
+        </div>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          IDENTITY_ROUTE_PROVIDERS.configureRoutes: {typeof IDENTITY_ROUTE_PROVIDERS.configureRoutes}
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>initializeIdentityRoutes Helper</h3>
+        <p>Simplified route initialization:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { initializeIdentityRoutes } from '@abpjs/identity'
+
+// In your app initialization:
+initializeIdentityRoutes()  // That's it!`}</pre>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          This helper uses getRoutesService() internally and adds all identity routes.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>getUserAssignableRoles() Method</h3>
+        <p>New method to fetch roles that can be assigned to users:</p>
+        <pre style={{ fontSize: '12px' }}>{`const service = new IdentityService(restService)
+const response = await service.getUserAssignableRoles()
+console.log(response.items) // Assignable roles`}</pre>
+
+        <div style={{ marginTop: '1rem' }}>
+          <button
+            onClick={handleFetchAssignableRoles}
+            disabled={isLoading || !isAuthenticated}
+          >
+            {isLoading ? 'Loading...' : 'Fetch Assignable Roles'}
+          </button>
+          {!isAuthenticated && (
+            <span style={{ marginLeft: '0.5rem', color: '#f88', fontSize: '12px' }}>
+              (Login required)
+            </span>
+          )}
+        </div>
+
+        {error && (
+          <p style={{ color: '#f88', marginTop: '0.5rem', fontSize: '14px' }}>
+            Error: {error}
+          </p>
+        )}
+
+        {assignableRoles.length > 0 && (
+          <div style={{ marginTop: '0.5rem' }}>
+            <p style={{ fontSize: '14px' }}>
+              Fetched <strong>{assignableRoles.length}</strong> assignable roles:
+            </p>
+            <ul style={{ fontSize: '12px', margin: '0.25rem 0', paddingLeft: '1.5rem' }}>
+              {assignableRoles.slice(0, 5).map(role => (
+                <li key={role.id}>{role.name} {role.isDefault && '(Default)'}</li>
+              ))}
+              {assignableRoles.length > 5 && <li>... and {assignableRoles.length - 5} more</li>}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>API Endpoint</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Endpoint</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>GET</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/users/assignable-roles</code></td>
+              <td><strong>(v3.0.0)</strong> Fetch roles assignable to users</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Breaking Changes</h3>
+        <ul>
+          <li><code>eIdentityRouteNames.Administration</code> has been removed. Use <code>AbpUiNavigation::Menu:Administration</code> directly.</li>
+          <li><code>Toaster.Status</code> usage replaced with <code>Confirmation.Status</code> in components.</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 export function TestIdentityPage() {
   return (
     <div>
-      <h1>@abpjs/identity Tests v2.9.0</h1>
+      <h1>@abpjs/identity Tests v3.0.0</h1>
       <p>Testing identity management components and hooks for role and user management.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.9.0 - Dependency updates (version bump only)</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 3.0.0 - Config subpackage, route providers, policy names</p>
 
-      {/* v2.7.0 Features - Highlighted at top */}
+      {/* v3.0.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #e74c3c', paddingTop: '1rem' }}>
+        v3.0.0 New Features
+      </h2>
+      <TestV300Features />
+
+      {/* v2.7.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
-        v2.7.0 New Features
+        v2.7.0 Features
       </h2>
       <TestV270Features />
 

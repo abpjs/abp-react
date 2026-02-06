@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocalization } from '@abpjs/core';
-import { Modal, useConfirmation, Toaster, Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
+import { Modal, useConfirmation, Confirmation, Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
 import { PermissionManagementModal } from '@abpjs/permission-management';
 import { eIdentityComponents } from '../../enums';
 import {
@@ -161,7 +161,7 @@ export function RolesComponent({
         t('AbpIdentity::AreYouSure')
       );
 
-      if (status === Toaster.Status.confirm) {
+      if (status === Confirmation.Status.confirm) {
         const result = await deleteRole(id);
         if (result.success) {
           onRoleDeleted?.(id);

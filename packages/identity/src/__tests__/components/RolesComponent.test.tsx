@@ -75,7 +75,7 @@ vi.mock('@abpjs/theme-shared', () => ({
   useConfirmation: () => ({
     warn: mockConfirmationWarn,
   }),
-  Toaster: {
+  Confirmation: {
     Status: {
       confirm: 'confirm',
       reject: 'reject',

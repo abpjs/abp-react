@@ -5,7 +5,9 @@ import { Identity } from '../models';
  * Service for managing identity-related API operations.
  * Handles roles and users CRUD operations.
  *
- * Translated from @abp/ng.identity IdentityService v2.4.0
+ * Translated from @abp/ng.identity IdentityService v3.0.0
+ *
+ * @since 3.0.0 - Added getUserAssignableRoles method
  */
 export class IdentityService {
   private rest: RestService;
@@ -139,6 +141,19 @@ export class IdentityService {
     return this.rest.request<null, Identity.RoleResponse>({
       method: 'GET',
       url: `/api/identity/users/${id}/roles`,
+    });
+  }
+
+  /**
+   * Get all roles that can be assigned to users.
+   * This returns the list of available roles for user assignment.
+   * @since 3.0.0
+   * @returns Promise with assignable roles
+   */
+  getUserAssignableRoles(): Promise<Identity.RoleResponse> {
+    return this.rest.request<null, Identity.RoleResponse>({
+      method: 'GET',
+      url: '/api/identity/users/assignable-roles',
     });
   }
 
