@@ -20,9 +20,9 @@ import {
   TreeAdapter,
   eIdentityComponents,
   eIdentityRouteNames,
-  createOrganizationUnitWithDetailsDto,
   createOrganizationUnitCreateDto,
   createGetOrganizationUnitInput,
+  type BaseNode,
   type Identity,
   type IdentityStateService,
   type IdentityComponentKey,
@@ -1376,57 +1376,51 @@ function TestV290Features() {
 
     try {
       const response = await identityService.getUserOrganizationUnits(userId)
-      setUserOrgUnits(response.items || [])
+      // getUserOrganizationUnits returns OrganizationUnitWithDetailsDto[] directly
+      setUserOrgUnits(response || [])
     } catch (err) {
       console.error('Failed to fetch user organization units:', err)
     }
   }
 
   const handleTreeAdapterDemo = () => {
-    // Create sample hierarchical data
-    const sampleData = [
-      createOrganizationUnitWithDetailsDto({
+    // Create sample hierarchical data that conforms to BaseNode
+    // BaseNode requires parentId: string | null, so we use null for root nodes
+    const sampleData: BaseNode[] = [
+      {
         id: 'unit-1',
         displayName: 'Company',
-        code: '00001',
-        parentId: undefined,
-      }),
-      createOrganizationUnitWithDetailsDto({
+        parentId: null,
+      },
+      {
         id: 'unit-2',
         displayName: 'Engineering',
-        code: '00001.00001',
         parentId: 'unit-1',
-      }),
-      createOrganizationUnitWithDetailsDto({
+      },
+      {
         id: 'unit-3',
         displayName: 'Marketing',
-        code: '00001.00002',
         parentId: 'unit-1',
-      }),
-      createOrganizationUnitWithDetailsDto({
+      },
+      {
         id: 'unit-4',
         displayName: 'Frontend Team',
-        code: '00001.00001.00001',
         parentId: 'unit-2',
-      }),
-      createOrganizationUnitWithDetailsDto({
+      },
+      {
         id: 'unit-5',
         displayName: 'Backend Team',
-        code: '00001.00001.00002',
         parentId: 'unit-2',
-      }),
+      },
     ]
 
-    const adapter = new TreeAdapter<OrganizationUnitWithDetailsDto>({
-      getKey: (node) => node.id,
-      getParentKey: (node) => node.parentId,
-      getChildren: (node) => (node as any).children || [],
-      setChildren: (node, children) => ({ ...node, children }),
-    })
+    // TreeAdapter constructor takes (list: T[], nameResolver?)
+    const adapter = new TreeAdapter(sampleData)
 
-    const tree = adapter.toTree(sampleData)
-    const flattened = adapter.flattenTree(tree)
-    const rootNodes = adapter.getRootNodes(sampleData)
+    // Use the actual TreeAdapter API
+    const tree = adapter.getTree()
+    const flatList = adapter.getList()
+    const rootNodes = tree // getTree() returns root nodes
 
     setTreeAdapterDemo(`TreeAdapter Demo Results:
 
@@ -1438,16 +1432,17 @@ Input Data: ${sampleData.length} flat items
   - Marketing
 
 Tree Structure: ${tree.length} root nodes
-Flattened: ${flattened.length} items
-Root Nodes: ${rootNodes.map(n => n.displayName).join(', ')}
+Original List: ${flatList.length} items
+Root Nodes: ${rootNodes.map(n => n.title).join(', ')}
 
 TreeAdapter Methods:
-- toTree(items): Convert flat array to tree
-- flattenTree(tree): Convert tree back to flat array
-- getRootNodes(items): Get items without parents
-- findNode(tree, key): Find node by key
-- getAncestors(items, key): Get all ancestors
-- getDescendants(items, key): Get all descendants`)
+- constructor(list, nameResolver): Create adapter with data
+- setList(items): Update the data and rebuild tree
+- getTree(): Get root TreeNodes (tree structure)
+- getList(): Get original flat list
+- getNodeById(id): Find node by ID
+- expandAll() / collapseAll(): Expand/collapse all nodes
+- getPathToNode(id): Get ancestors from root to node`)
   }
 
   return (
