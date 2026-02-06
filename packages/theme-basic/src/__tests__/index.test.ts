@@ -20,15 +20,13 @@ vi.mock('@abpjs/core', async () => {
   };
 });
 
-// Mock @abpjs/theme-shared with proper exports
-vi.mock('@abpjs/theme-shared', async (importOriginal) => {
-  const actual = await importOriginal() as object;
-  return {
-    ...actual,
-    ChangePassword: () => null,
-    Profile: () => null,
-  };
-});
+// Mock @abpjs/theme-shared - avoid importOriginal() which loads the full package and causes timeout in CI
+vi.mock('@abpjs/theme-shared', () => ({
+  ChangePassword: () => null,
+  Profile: () => null,
+  ThemeSharedProvider: ({ children }: { children?: unknown }) => children ?? null,
+  defineConfig: (config: unknown) => config,
+}));
 
 describe('@abpjs/theme-basic exports', () => {
   it('should export context providers and hooks', async () => {
