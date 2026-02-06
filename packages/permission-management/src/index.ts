@@ -1,7 +1,12 @@
 /**
  * @abpjs/permission-management
  * ABP Framework Permission Management module for React
- * Translated from @abp/ng.permission-management v2.9.0
+ * Translated from @abp/ng.permission-management v3.0.0
+ *
+ * Changes in v3.0.0:
+ * - Added getAssignedCount(groupName: string) method to usePermissionManagement hook
+ * - Internal: visible property changed to getter/setter (Angular-specific, no React impact)
+ * - Internal: selectedGroupPermissions$ changed to getter (Angular-specific, no React impact)
  *
  * Changes in v2.9.0:
  * - Version bump only (dependency updates to @abp/ng.theme.shared v2.9.0)
