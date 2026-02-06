@@ -15,6 +15,9 @@ coverage:
     patch:
       default:
         target: auto
+  precision: 2
+  round: down
+  range: "70...100"
 
 comment:
   layout: "condensed_header, diff, flags, components"
