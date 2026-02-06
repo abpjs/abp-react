@@ -5,10 +5,12 @@ type LoadedLibraries = Record<string, Promise<void> | undefined>;
 
 export class LazyLoadService {
   /**
-   * Set of loaded resources (tracked by path)
+   * Map of loaded resources (tracked by path to element)
+   * Changed from Set<unknown> to Map in v2.9.0
    * @since 2.4.0
+   * @updated 2.9.0
    */
-  readonly loaded: Set<unknown> = new Set();
+  readonly loaded: Map<string, HTMLScriptElement | HTMLLinkElement> = new Map();
 
   private loadedLibraries: LoadedLibraries = {};
 
@@ -135,7 +137,10 @@ export class LazyLoadService {
     for (let attempt = 0; attempt <= retryTimes; attempt++) {
       try {
         const event = await strategy.createStream<Event>();
-        this.loaded.add(strategy.path);
+        // Store element reference in map (v2.9.0)
+        if (strategy.element) {
+          this.loaded.set(strategy.path, strategy.element);
+        }
         return event;
       } catch (error) {
         lastError = error;
@@ -180,6 +185,22 @@ export class LazyLoadService {
    */
   isLoaded(path: string): boolean {
     return this.loaded.has(path) || path in this.loadedLibraries;
+  }
+
+  /**
+   * Remove a loaded resource by path
+   * @param path - The path/URL of the resource to remove
+   * @returns true if the resource was found and removed, false otherwise
+   * @since 2.9.0
+   */
+  remove(path: string): boolean {
+    const element = this.loaded.get(path);
+    if (element) {
+      element.remove();
+      this.loaded.delete(path);
+      return true;
+    }
+    return false;
   }
 
   loadScript(

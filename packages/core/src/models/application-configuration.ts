@@ -90,5 +90,10 @@ export namespace ApplicationConfiguration {
     id: string;
     tenantId: string;
     userName: string;
+    /**
+     * User's email address
+     * @since 2.9.0
+     */
+    email: string;
   }
 }

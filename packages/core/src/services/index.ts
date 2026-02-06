@@ -2,6 +2,7 @@ export * from './application-configuration.service';
 export * from './config-state.service';
 export * from './dom-insertion.service';
 export * from './lazy-load.service';
+export * from './list.service';
 export * from './localization.service';
 export * from './profile.service';
 export * from './profile-state.service';

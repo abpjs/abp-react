@@ -1,3 +1,11 @@
+/**
+ * Localization Service
+ * Translated from @abp/ng.core v2.9.0
+ *
+ * @since 1.0.0
+ * @updated 2.9.0 - Added localize, localizeSync, localizeWithFallback, localizeWithFallbackSync methods
+ */
+
 import { RootState } from '../store';
 import { Config } from '../models';
 
@@ -18,10 +26,7 @@ export class LocalizationService {
    * @param interpolateParams Parameters to interpolate into the string
    * @since 1.1.0 - Now accepts Config.LocalizationWithDefault
    */
-  get(
-    key: string | Config.LocalizationWithDefault,
-    ...interpolateParams: string[]
-  ): string {
+  get(key: string | Config.LocalizationWithDefault, ...interpolateParams: string[]): string {
     const keyStr = typeof key === 'string' ? key : key.key;
     const defaultValue = typeof key === 'string' ? keyStr : key.defaultValue;
 
@@ -74,10 +79,7 @@ export class LocalizationService {
    * @param interpolateParams Parameters to interpolate into the string
    * @since 1.1.0 - Now accepts Config.LocalizationWithDefault
    */
-  instant(
-    key: string | Config.LocalizationWithDefault,
-    ...interpolateParams: string[]
-  ): string {
+  instant(key: string | Config.LocalizationWithDefault, ...interpolateParams: string[]): string {
     return this.get(key, ...interpolateParams);
   }
 
@@ -102,5 +104,89 @@ export class LocalizationService {
    */
   getLocalizationValues() {
     return this.getState().config.localization.values;
+  }
+
+  /**
+   * Get a localized string by resource name and key
+   * Returns a promise that resolves with the localized string
+   * @param resourceName - The resource name (e.g., 'AbpIdentity')
+   * @param key - The localization key
+   * @param defaultValue - The default value if not found
+   * @returns Promise that resolves with the localized string
+   * @since 2.9.0
+   */
+  async localize(resourceName: string, key: string, defaultValue: string): Promise<string> {
+    return this.localizeSync(resourceName, key, defaultValue);
+  }
+
+  /**
+   * Get a localized string by resource name and key (synchronous)
+   * @param resourceName - The resource name (e.g., 'AbpIdentity')
+   * @param key - The localization key
+   * @param defaultValue - The default value if not found
+   * @returns The localized string or default value
+   * @since 2.9.0
+   */
+  localizeSync(resourceName: string, key: string, defaultValue: string): string {
+    const state = this.getState().config;
+    const values = state.localization?.values;
+
+    if (!values) return defaultValue;
+
+    const resourceValues = values[resourceName];
+    if (!resourceValues) return defaultValue;
+
+    return resourceValues[key] ?? defaultValue;
+  }
+
+  /**
+   * Get a localized string with fallback across multiple resources and keys
+   * Tries each resource/key combination until a value is found
+   * @param resourceNames - Array of resource names to try
+   * @param keys - Array of keys to try
+   * @param defaultValue - The default value if not found
+   * @returns Promise that resolves with the localized string
+   * @since 2.9.0
+   */
+  async localizeWithFallback(
+    resourceNames: string[],
+    keys: string[],
+    defaultValue: string
+  ): Promise<string> {
+    return this.localizeWithFallbackSync(resourceNames, keys, defaultValue);
+  }
+
+  /**
+   * Get a localized string with fallback across multiple resources and keys (synchronous)
+   * Tries each resource/key combination until a value is found
+   * @param resourceNames - Array of resource names to try
+   * @param keys - Array of keys to try
+   * @param defaultValue - The default value if not found
+   * @returns The localized string or default value
+   * @since 2.9.0
+   */
+  localizeWithFallbackSync(
+    resourceNames: string[],
+    keys: string[],
+    defaultValue: string
+  ): string {
+    const state = this.getState().config;
+    const values = state.localization?.values;
+
+    if (!values) return defaultValue;
+
+    for (const resourceName of resourceNames) {
+      const resourceValues = values[resourceName];
+      if (!resourceValues) continue;
+
+      for (const key of keys) {
+        const value = resourceValues[key];
+        if (value !== undefined) {
+          return value;
+        }
+      }
+    }
+
+    return defaultValue;
   }
 }

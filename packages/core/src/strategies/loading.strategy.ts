@@ -1,8 +1,9 @@
 /**
  * Loading Strategy for loading external scripts and styles
- * Translated from @abp/ng.core v2.4.0
+ * Translated from @abp/ng.core v2.9.0
  *
  * @since 2.4.0
+ * @updated 2.9.0 - Added element property to track the created element
  */
 
 import { CrossOriginStrategy, CROSS_ORIGIN_STRATEGY } from './cross-origin.strategy';
@@ -15,6 +16,12 @@ export abstract class LoadingStrategy<T extends HTMLScriptElement | HTMLLinkElem
   path: string;
   protected domStrategy: DomStrategy;
   protected crossOriginStrategy?: CrossOriginStrategy;
+
+  /**
+   * The created element (available after createStream is called)
+   * @since 2.9.0
+   */
+  element!: T;
 
   constructor(
     path: string,
@@ -35,6 +42,8 @@ export abstract class LoadingStrategy<T extends HTMLScriptElement | HTMLLinkElem
   createStream<E extends Event>(): Promise<E> {
     return new Promise((resolve, reject) => {
       const element = this.createElement();
+      // Store the element reference (v2.9.0)
+      this.element = element;
 
       if (this.crossOriginStrategy) {
         this.crossOriginStrategy.setCrossOrigin(element);

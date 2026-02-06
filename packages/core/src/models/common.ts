@@ -14,6 +14,12 @@ export namespace ABP {
      * @since 2.7.0
      */
     skipGetAppConfiguration?: boolean;
+    /**
+     * Send null values as query parameters
+     * When true, null values will be included in query strings
+     * @since 2.9.0
+     */
+    sendNullsAsQueryParam?: boolean;
   }
 
   /**
