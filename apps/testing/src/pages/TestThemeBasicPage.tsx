@@ -4,6 +4,7 @@
  * @since 0.9.0
  * @updated 2.4.0 - InitialService change (no React impact - uses Chakra UI)
  * @updated 2.7.0 - New public API components, enums, and LayoutStateService
+ * @updated 2.9.0 - Removed isDropdownChildDynamic prop, RTL support via Chakra UI
  */
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
@@ -416,15 +417,21 @@ layoutStateService.dispatchRemoveNavigationElementByName('my-element');`}
           <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
 {`import { RoutesComponent } from '@abpjs/theme-basic';
 
-// Uses routes from config
+// Uses routes from config (v2.9.0 simplified API)
 <RoutesComponent />
 
 // With custom routes
 <RoutesComponent routes={customRoutes} />
 
-// With default icon
-<RoutesComponent defaultIcon={<LuHome />} />`}
+// With default icon for routes without icons
+<RoutesComponent defaultIcon={<LuHome />} />
+
+// Mobile mode
+<RoutesComponent smallScreen={true} />`}
           </pre>
+          <p style={{ color: '#888', fontSize: '12px', marginTop: '8px' }}>
+            Note: <code>isDropdownChildDynamic</code> prop was removed in v2.9.0.
+          </p>
         </div>
 
         <div style={{ marginTop: '1rem' }}>
@@ -457,6 +464,41 @@ function TestVersionInfo() {
   return (
     <div className="test-section">
       <h2>Version Info</h2>
+
+      <div className="test-card">
+        <h3>What's New in v2.9.0</h3>
+        <p>Version 2.9.0 simplifies the API by removing unused props and improves RTL support.</p>
+        <ul>
+          <li><strong>Removed:</strong> <code>isDropdownChildDynamic</code> from <code>RoutesComponent</code></li>
+          <li><strong>Removed:</strong> <code>isDropdownChildDynamic</code> from <code>ApplicationLayoutComponent</code></li>
+          <li><strong>Angular Change:</strong> Added RTL support styles for dropdown menus</li>
+          <li><strong>React Status:</strong> RTL already supported via Chakra UI and <code>useDirection</code> hook</li>
+          <li><strong>Angular Change:</strong> Media query breakpoint changed from 768px to 992px</li>
+          <li><strong>React Status:</strong> Uses Chakra UI breakpoints - already appropriate for our layout</li>
+          <li><strong>Updated:</strong> Dependency on <code>@abpjs/theme-shared</code> to v2.9.0</li>
+        </ul>
+        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#1a2e1a', borderRadius: '4px', border: '1px solid #2e4a2e' }}>
+          <p style={{ color: '#6f6', margin: 0, fontSize: '14px' }}>
+            <strong>Migration:</strong> If you were using <code>isDropdownChildDynamic</code> prop, simply remove it - it had no effect.
+          </p>
+        </div>
+        <div style={{ marginTop: '1rem' }}>
+          <h4>Updated RoutesComponent API (v2.9.0)</h4>
+          <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// v2.9.0 RoutesComponent props (simplified)
+interface RoutesComponentProps {
+  smallScreen?: boolean;      // Mobile mode
+  defaultIcon?: ReactNode;    // Fallback icon
+  routes?: ABP.FullRoute[];   // Custom routes
+}
+
+// Example usage
+<RoutesComponent />
+<RoutesComponent defaultIcon={<LuFolder />} />
+<RoutesComponent routes={customRoutes} smallScreen={isMobile} />`}
+          </pre>
+        </div>
+      </div>
 
       <div className="test-card">
         <h3>What's New in v2.7.0</h3>
@@ -559,8 +601,11 @@ function TestVersionInfo() {
 export function TestThemeBasicPage() {
   return (
     <div>
-      <h1>@abpjs/theme-basic Tests (v2.7.0)</h1>
+      <h1>@abpjs/theme-basic Tests (v2.9.0)</h1>
       <p>Testing layouts, navigation, and layout service.</p>
+      <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
+        Version 2.9.0 - API simplification: removed isDropdownChildDynamic prop
+      </p>
 
       <TestVersionInfo />
       <TestV270Features />
