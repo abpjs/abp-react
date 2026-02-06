@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/permission-management",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "description": "ABP Framework permission-management components for React - translated from @abp/ng.permission-management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -48,7 +48,7 @@
     "@abpjs/theme-shared": "workspace:*"
   },
   "devDependencies": {
-    "@abp/ng.permission-management": "2.9.0",
+    "@abp/ng.permission-management": "3.0.0",
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^14.2.0",
     "@types/react": "^18.2.0",

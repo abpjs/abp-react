@@ -51,6 +51,13 @@ export interface UsePermissionManagementReturn {
   toggleSelectAll: () => void;
   /** Get permissions for currently selected group with margin */
   getSelectedGroupPermissions: () => PermissionWithMargin[];
+  /**
+   * Get count of assigned (granted) permissions for a specific group
+   * @param groupName The name of the permission group
+   * @returns Number of granted permissions in the group
+   * @since 3.0.0
+   */
+  getAssignedCount: (groupName: string) => number;
   /** Check if a permission is granted */
   isGranted: (permissionName: string) => boolean;
   /**
@@ -195,6 +202,22 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
       isGranted: isGranted(permission.name),
     }));
   }, [selectedGroup, groups, isGranted]);
+
+  /**
+   * Get count of assigned (granted) permissions for a specific group
+   * @param groupName The name of the permission group
+   * @returns Number of granted permissions in the group
+   * @since 3.0.0
+   */
+  const getAssignedCount = useCallback(
+    (groupName: string): number => {
+      const group = groups.find((g) => g.name === groupName);
+      if (!group) return 0;
+
+      return group.permissions.filter((p) => isGranted(p.name)).length;
+    },
+    [groups, isGranted]
+  );
 
   /**
    * Update checkbox states based on current permissions
@@ -427,6 +450,7 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
     toggleSelectThisTab,
     toggleSelectAll,
     getSelectedGroupPermissions,
+    getAssignedCount,
     isGranted,
     isGrantedByOtherProviderName,
     isGrantedByRole,

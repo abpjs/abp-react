@@ -11,6 +11,11 @@ import {
   SETTING_MANAGEMENT_ROUTES,
   eSettingManagementComponents,
   eSettingManagementRouteNames,
+  // v3.0.0 config exports
+  SETTING_MANAGEMENT_ROUTE_PROVIDERS,
+  configureRoutes,
+  hideRoutes,
+  initializeSettingManagementRoutes,
 } from '@abpjs/setting-management'
 import type { SettingTab, SettingManagement } from '@abpjs/setting-management'
 
@@ -134,7 +139,7 @@ function TestSettingManagementHook() {
       <div className="test-card">
         <h3>Hook State</h3>
         <p>settings count: <strong>{settings.length}</strong></p>
-        <p>selected: <strong>{selected?.name || 'null'}</strong></p>
+        <p>selected: <strong>{selected?.name || 'undefined'}</strong></p>
       </div>
 
       <div className="test-card">
@@ -246,7 +251,7 @@ function TestSettingManagementHook() {
       <div className="test-card">
         <h3>Selection Methods</h3>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button onClick={() => setSelected(null)}>
+          <button onClick={() => setSelected(undefined)}>
             Clear Selection
           </button>
           <button onClick={() => selectByName('Security')} disabled={!settings.find((s: SettingTab) => s.name === 'Security')}>
@@ -282,14 +287,14 @@ function TestSettingManagementHook() {
 function TestSettingManagementService() {
   const [serviceState, setServiceState] = useState({
     settingsCount: 0,
-    selectedName: 'null',
+    selectedName: 'undefined',
   })
 
   const refreshState = () => {
     const service = getSettingManagementService()
     setServiceState({
       settingsCount: service.settings.length,
-      selectedName: service.selected?.name || 'null',
+      selectedName: service.selected?.name || 'undefined',
     })
   }
 
@@ -347,7 +352,7 @@ service.subscribe(() => console.log('Changed!'));`}
 
 function TestSettingManagementStateService() {
   const [stateServiceState, setStateServiceState] = useState<SettingManagement.State>({
-    selectedTab: null,
+    selectedTab: undefined,
   })
 
   const refreshState = () => {
@@ -373,7 +378,7 @@ function TestSettingManagementStateService() {
 
   const handleClearSelectedTab = () => {
     const stateService = getSettingManagementStateService()
-    stateService.setSelectedTab(null)
+    stateService.setSelectedTab(undefined)
   }
 
   const handleReset = () => {
@@ -383,15 +388,16 @@ function TestSettingManagementStateService() {
 
   return (
     <div className="test-section">
-      <h2>SettingManagementStateService (v1.1.0)</h2>
+      <h2>SettingManagementStateService (v3.0.0)</h2>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '1rem' }}>
-        New in v1.1.0: State service equivalent to Angular's NGXS SettingManagementState.
+        State service equivalent to Angular's NGXS SettingManagementState.
         Provides selectors and actions for managing the selected setting tab.
+        <br/><strong style={{ color: '#22c55e' }}>v3.0.0:</strong> Now uses <code>undefined</code> instead of <code>null</code> for unset values.
       </p>
 
       <div className="test-card">
         <h3>State Service State</h3>
-        <p>selectedTab: <strong>{stateServiceState.selectedTab?.name || 'null'}</strong></p>
+        <p>selectedTab: <strong>{stateServiceState.selectedTab?.name || 'undefined'}</strong></p>
         {stateServiceState.selectedTab && (
           <div style={{ marginTop: '8px', padding: '8px', background: 'rgba(100,108,255,0.1)', borderRadius: '4px' }}>
             <p style={{ fontSize: '12px', margin: 0 }}>name: {stateServiceState.selectedTab.name}</p>
@@ -482,54 +488,219 @@ function TestModels() {
     <div className="test-section">
       <h2>Models</h2>
 
-      <div className="test-card">
-        <h3>SettingTab Interface</h3>
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>SettingTab Interface (v3.0.0)</h3>
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
-          Re-exported from @abpjs/theme-shared:
+          <strong style={{ color: '#22c55e' }}>v3.0.0:</strong> Now extends ABP.Tab with additional properties. The <code>order</code> property is now required.
         </p>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`interface SettingTab {
+{`interface SettingTab extends Omit<ABP.Tab, 'component'> {
   /** Display name of the tab */
   name: string;
-  /** Order/priority for tab sorting */
+  /** Order/priority for tab sorting (REQUIRED in v3.0.0) */
   order: number;
   /** Required policy to view this tab */
   requiredPolicy?: string;
   /** URL/route for this settings tab */
   url?: string;
+  /** Optional component to render */
+  component?: ComponentType<unknown>;
 }`}
         </pre>
       </div>
 
-      <div className="test-card" style={{ background: 'rgba(100,108,255,0.05)', border: '1px solid rgba(100,108,255,0.2)' }}>
-        <h3>SettingManagement.State Interface (v1.1.0)</h3>
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>SettingManagement.State Interface (v3.0.0)</h3>
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
-          New in v1.1.0: State interface for setting management state tracking.
+          State interface for setting management state tracking.
+          <br/><strong style={{ color: '#22c55e' }}>v3.0.0:</strong> Uses <code>undefined</code> instead of <code>null</code> for selectedTab.
         </p>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`namespace SettingManagement {
   interface State {
-    /** Currently selected setting tab */
-    selectedTab: SettingTab | null;
+    /** Currently selected setting tab (undefined instead of null in v3.0.0) */
+    selectedTab?: SettingTab;
   }
 }`}
         </pre>
       </div>
 
-      <div className="test-card">
-        <h3>UseSettingManagementReturn Interface</h3>
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>UseSettingManagementReturn Interface (v3.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          <strong style={{ color: '#22c55e' }}>v3.0.0:</strong> Uses <code>undefined</code> instead of <code>null</code> for selected.
+        </p>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`interface UseSettingManagementReturn {
   settings: SettingTab[];
-  selected: SettingTab | null;
+  selected: SettingTab | undefined;  // v3.0.0: changed from null
   addSetting: (tab: SettingTab) => void;
   addSettings: (tabs: SettingTab[]) => void;
   removeSetting: (name: string) => void;
-  setSelected: (tab: SettingTab | null) => void;
+  setSelected: (tab: SettingTab | undefined) => void;  // v3.0.0: changed from null
   selectByName: (name: string) => void;
   selectByUrl: (url: string) => void;
   clearSettings: () => void;
 }`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
+function TestV300Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.0.0</h2>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>Config Route Providers</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          New in v3.0.0: Route configuration providers for setting management routes.
+          Matches Angular's pattern for configuring routes at application startup.
+        </p>
+
+        <h4 style={{ marginTop: '16px' }}>SETTING_MANAGEMENT_ROUTE_PROVIDERS</h4>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Object containing route configuration functions:
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`// SETTING_MANAGEMENT_ROUTE_PROVIDERS object:
+{
+  configureRoutes: typeof configureRoutes,
+  hideRoutes: typeof hideRoutes
+}
+
+// configureRoutes is: ${typeof configureRoutes}
+// hideRoutes is: ${typeof hideRoutes}
+// SETTING_MANAGEMENT_ROUTE_PROVIDERS has configureRoutes: ${!!SETTING_MANAGEMENT_ROUTE_PROVIDERS.configureRoutes}
+// SETTING_MANAGEMENT_ROUTE_PROVIDERS has hideRoutes: ${!!SETTING_MANAGEMENT_ROUTE_PROVIDERS.hideRoutes}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>configureRoutes Function</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Configures the setting management module routes. Returns a function that adds routes to RoutesService.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import { configureRoutes } from '@abpjs/setting-management';
+import { getRoutesService } from '@abpjs/core';
+
+// Configure routes
+const routes = getRoutesService();
+const addRoutes = configureRoutes(routes);
+addRoutes();
+
+// Route configuration added:
+// - path: '/setting-management'
+// - name: 'AbpSettingManagement::Settings'
+// - parentName: 'AbpUiNavigation::Menu:Administration'
+// - layout: eLayoutType.application
+// - iconClass: 'bi bi-gear'
+// - order: 100`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>hideRoutes Function</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Hides the setting management route if no setting tabs are registered.
+          Checks if there are any visible setting tabs and hides the route if none exist.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import { hideRoutes } from '@abpjs/setting-management';
+import { getRoutesService, getSettingTabsService } from '@abpjs/core';
+
+// Conditionally hide routes
+const routes = getRoutesService();
+const tabs = getSettingTabsService();
+const hideIfEmpty = hideRoutes(routes, tabs);
+hideIfEmpty();
+
+// If no visible tabs are registered, the route will be patched with:
+// { invisible: true }`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>initializeSettingManagementRoutes Helper</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Convenience function that initializes setting management routes using global services.
+          Combines configureRoutes and hideRoutes in a single call.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import { initializeSettingManagementRoutes } from '@abpjs/setting-management';
+
+// In your app initialization:
+initializeSettingManagementRoutes();
+
+// This is equivalent to:
+// const routes = getRoutesService();
+// const tabs = getSettingTabsService();
+// const addRoutes = configureRoutes(routes);
+// addRoutes();
+// const hideIfEmpty = hideRoutes(routes, tabs);
+// hideIfEmpty();
+
+// initializeSettingManagementRoutes is: ${typeof initializeSettingManagementRoutes}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>State Change: null → undefined</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          In v3.0.0, the state service now uses <code>undefined</code> instead of <code>null</code> for unset values.
+          This aligns with TypeScript best practices and makes optional handling more consistent.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`// Before v3.0.0:
+interface State {
+  selectedTab: SettingTab | null;
+}
+stateService.setSelectedTab(null); // Clear selection
+
+// After v3.0.0:
+interface State {
+  selectedTab?: SettingTab;  // or SettingTab | undefined
+}
+stateService.setSelectedTab(undefined); // Clear selection`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>SettingTab Interface Update</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          The SettingTab interface now extends ABP.Tab with additional properties.
+          The <code>order</code> property is now required (not optional).
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`// v3.0.0 SettingTab interface:
+interface SettingTab extends Omit<ABP.Tab, 'component'> {
+  /** Optional component to render */
+  component?: ComponentType<unknown>;
+  /** URL for navigation (optional) */
+  url?: string;
+  /** Order is now REQUIRED */
+  order: number;
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>eSettingManagementRouteNames Location Change</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          The <code>eSettingManagementRouteNames</code> enum is now defined in the config subpackage
+          and re-exported from the main package for backward compatibility.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`// Both imports work:
+import { eSettingManagementRouteNames } from '@abpjs/setting-management';
+// or from config (v3.0.0):
+import { eSettingManagementRouteNames } from '@abpjs/setting-management/config/enums/route-names';
+
+// Value:
+eSettingManagementRouteNames.Settings === '${eSettingManagementRouteNames.Settings}'`}
         </pre>
       </div>
     </div>
@@ -627,10 +798,11 @@ const localizedName = localize(eSettingManagementRouteNames.Settings);`}
 export function TestSettingManagementPage() {
   return (
     <div>
-      <h1>@abpjs/setting-management Tests v2.9.0</h1>
+      <h1>@abpjs/setting-management Tests v3.0.0</h1>
       <p>Testing setting management layout, hook, and services.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.9.0 - Dependency updates (version bump only)</p>
+      <p style={{ color: '#22c55e', fontSize: '0.9rem' }}>Version 3.0.0 - Config route providers, state changes (null → undefined)</p>
 
+      <TestV300Features />
       <TestV270Features />
       <TestSettingLayoutComponent />
       <TestSettingManagementHook />

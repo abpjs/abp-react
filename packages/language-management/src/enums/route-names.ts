@@ -1,21 +1,13 @@
 /**
  * Language Management Route Names
- * Translated from @volo/abp.ng.language-management v2.7.0
- */
-
-/**
- * Enum-like const object for language management route names.
- * Used for localization and navigation configuration.
+ * Translated from @volo/abp.ng.language-management v3.0.0
+ *
  * @since 2.7.0
+ * @updated 3.0.0 - Moved to config subpackage, removed Administration, updated values
+ *
+ * Note: This file re-exports from config/enums/route-names for backwards compatibility.
  */
-export const eLanguageManagementRouteNames = {
-  Administration: 'AbpUiNavigation::Menu:Administration',
-  Languages: 'LanguageManagement::Menu:Languages',
-  LanguageTexts: 'LanguageManagement::LanguageTexts',
-} as const;
-
-/**
- * Type for language management route name values
- */
-export type LanguageManagementRouteNameKey =
-  (typeof eLanguageManagementRouteNames)[keyof typeof eLanguageManagementRouteNames];
+export {
+  eLanguageManagementRouteNames,
+  type LanguageManagementRouteNameKey,
+} from '../config/enums/route-names';

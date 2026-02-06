@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocalization } from '@abpjs/core';
-import { Modal, useConfirmation, Toaster, Alert, Button, FormField } from '@abpjs/theme-shared';
+import { Modal, useConfirmation, Confirmation, Alert, Button, FormField } from '@abpjs/theme-shared';
 import {
   Box,
   Flex,
@@ -183,7 +183,7 @@ export function ClaimsComponent({
         t('AbpIdentity::AreYouSure')
       );
 
-      if (status === Toaster.Status.confirm) {
+      if (status === Confirmation.Status.confirm) {
         const result = await deleteClaimType(id);
         if (result.success) {
           onClaimTypeDeleted?.(id);

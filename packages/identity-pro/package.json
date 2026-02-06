@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/identity-pro",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "description": "ABP Framework identity pro components for React - translated from @volo/abp.ng.identity",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -44,7 +44,7 @@
     "react-icons": "^5.3.0"
   },
   "devDependencies": {
-    "@volo/abp.ng.identity": "2.9.0",
+    "@volo/abp.ng.identity": "3.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.6.1",

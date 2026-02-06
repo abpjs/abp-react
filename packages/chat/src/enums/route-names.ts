@@ -1,18 +1,10 @@
 /**
  * Route name keys for the Chat module.
- * These keys are used for route localization and identification.
+ * Re-exports from config/enums for backward compatibility.
  * @since 2.9.0
+ * @updated 3.0.0 - Moved to config/enums, re-exported here for backward compat
+ * Note: Value changed from 'AbpChat::Chat' to 'Chat' in v3.0.0
  */
-export const eChatRouteNames = {
-  /**
-   * Chat route name key.
-   * Used for the main chat route.
-   */
-  Chat: 'AbpChat::Chat',
-} as const;
 
-/**
- * Type for chat route name key values
- */
-export type ChatRouteNameKey =
-  (typeof eChatRouteNames)[keyof typeof eChatRouteNames];
+// Re-export from config/enums for backward compatibility
+export { eChatRouteNames, type ChatRouteNameKey } from '../config/enums/route-names';

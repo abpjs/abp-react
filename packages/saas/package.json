@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/saas",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "description": "ABP Framework SaaS components for React - translated from @volo/abp.ng.saas",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -44,7 +44,7 @@
     "@abpjs/feature-management": "workspace:*"
   },
   "devDependencies": {
-    "@volo/abp.ng.saas": "2.9.0",
+    "@volo/abp.ng.saas": "3.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.6.1",

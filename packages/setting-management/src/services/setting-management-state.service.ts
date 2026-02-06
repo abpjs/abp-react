@@ -1,23 +1,25 @@
 /**
  * Setting Management State Service
- * Translated from @abp/ng.setting-management v1.1.0
+ * Translated from @abp/ng.setting-management v3.0.0
  *
  * This service provides state management for setting tabs,
  * equivalent to the Angular NGXS SettingManagementState.
+ *
+ * @updated 3.0.0 - Changed state to use undefined instead of null
  */
 
-import type { SettingTab } from '@abpjs/theme-shared';
-import type { SettingManagement } from '../models';
+import type { SettingManagement, SettingTab } from '../models';
 
 /**
  * State service for managing setting management state.
  * Provides methods equivalent to Angular's NGXS state selectors and actions.
  *
  * @since 1.1.0
+ * @updated 3.0.0 - Uses undefined instead of null for selectedTab
  */
 export class SettingManagementStateService {
   private _state: SettingManagement.State = {
-    selectedTab: null,
+    selectedTab: undefined,
   };
 
   private _subscribers: Set<() => void> = new Set();
@@ -25,8 +27,9 @@ export class SettingManagementStateService {
   /**
    * Get the currently selected setting tab
    * Equivalent to Angular's @Selector() getSelectedTab
+   * @since 3.0.0 - Returns SettingTab | undefined instead of SettingTab | null
    */
-  getSelectedTab(): SettingTab | null {
+  getSelectedTab(): SettingTab | undefined {
     return this._state.selectedTab;
   }
 
@@ -34,8 +37,9 @@ export class SettingManagementStateService {
    * Set the selected setting tab
    * Equivalent to Angular's SetSelectedSettingTab action
    * @param tab The setting tab to select
+   * @since 3.0.0 - Accepts SettingTab | undefined instead of SettingTab | null
    */
-  setSelectedTab(tab: SettingTab | null): void {
+  setSelectedTab(tab: SettingTab | undefined): void {
     this._state = {
       ...this._state,
       selectedTab: tab,
@@ -55,7 +59,7 @@ export class SettingManagementStateService {
    */
   reset(): void {
     this._state = {
-      selectedTab: null,
+      selectedTab: undefined,
     };
     this.notifySubscribers();
   }

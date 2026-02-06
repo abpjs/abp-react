@@ -7,7 +7,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useLocalization } from '@abpjs/core';
-import { Modal, Button, FormField, useConfirmation, Toaster } from '@abpjs/theme-shared';
+import { Modal, Button, FormField, useConfirmation, Confirmation } from '@abpjs/theme-shared';
 import {
   Box,
   Flex,
@@ -170,7 +170,7 @@ export function TenantsComponent({
         t('Saas::AreYouSure')
       );
 
-      if (status === Toaster.Status.confirm) {
+      if (status === Confirmation.Status.confirm) {
         const result = await deleteTenant(tenant.id);
         if (result.success) {
           onTenantDeleted?.(tenant.id);

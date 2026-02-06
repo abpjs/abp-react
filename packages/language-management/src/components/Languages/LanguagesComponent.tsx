@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocalization } from '@abpjs/core';
-import { Modal, useConfirmation, Toaster, Alert, Button, FormField } from '@abpjs/theme-shared';
+import { Modal, useConfirmation, Confirmation, Alert, Button, FormField } from '@abpjs/theme-shared';
 import {
   Box,
   Flex,
@@ -164,7 +164,7 @@ export function LanguagesComponent({
         t('AbpLanguageManagement::AreYouSure') || 'Are you sure?'
       );
 
-      if (status === Toaster.Status.confirm) {
+      if (status === Confirmation.Status.confirm) {
         const result = await deleteLanguage(id);
         if (result.success) {
           onLanguageDeleted?.(id);
@@ -185,7 +185,7 @@ export function LanguagesComponent({
         t('AbpLanguageManagement::AreYouSure') || 'Are you sure?'
       );
 
-      if (status === Toaster.Status.confirm) {
+      if (status === Confirmation.Status.confirm) {
         await setAsDefaultLanguage(id);
       }
     },

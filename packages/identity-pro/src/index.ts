@@ -2,7 +2,7 @@
  * @abpjs/identity-pro
  *
  * ABP Framework identity pro components for React.
- * Translated from @volo/abp.ng.identity version 2.9.0.
+ * Translated from @volo/abp.ng.identity version 3.0.0.
  *
  * This package provides:
  * - Identity models (User, Role, ClaimType, OrganizationUnit, etc.)
@@ -15,6 +15,9 @@
  * - Component identifiers enum (v2.4.0)
  * - Route names enum for localization (v2.7.0)
  * - TreeAdapter utility for hierarchical data (v2.9.0)
+ * - Config subpackage with enums, providers, and models (v3.0.0)
+ * - Extension tokens for customizing entity actions, props, and forms (v3.0.0)
+ * - Extensions guard for route protection (v3.0.0)
  *
  * Pro features:
  * - Claim type management (ClaimsComponent)
@@ -24,6 +27,20 @@
  * - useClaims hook for claim operations
  * - IdentityStateService with 17 dispatch methods (v2.0.0)
  * - Admin password change for users (v2.7.0)
+ *
+ * Changes in v3.0.0:
+ * - Added config subpackage with enums (policy-names, route-names, setting-tab-names)
+ * - Added config providers (route.provider, setting-tab.provider)
+ * - Added config models (IdentitySettings)
+ * - Added tokens/extensions.token.ts with DEFAULT_IDENTITY_* constants
+ * - Added guards/extensions.guard.ts for route protection
+ * - Added getUserAssingableRoles() method to IdentityService
+ * - Replaced getClaimTypeNames() with getRolesClaimTypes() and getUsersClaimTypes()
+ * - Removed getClaimTypeNames() and dispatchGetClaimTypeNames() from IdentityStateService
+ * - Removed Administration key from eIdentityRouteNames (now only in config)
+ * - Dependency updates to @abp/ng.permission-management ~3.0.0
+ * - Dependency updates to @abp/ng.theme.shared ~3.0.0
+ * - Dependency updates to @volo/abp.commercial.ng.ui ~3.0.0
  *
  * Changes in v2.9.0:
  * - Added OrganizationUnitService for managing organization unit hierarchy
@@ -94,14 +111,20 @@
  *
  * @packageDocumentation
  * @since 2.0.0
- * @updated 2.9.0
+ * @updated 3.0.0
  */
+
+// Config (v3.0.0)
+export * from './config';
 
 // Models
 export * from './models';
 
 // Enums
 export * from './enums';
+
+// Guards (v3.0.0)
+export * from './guards';
 
 // Services
 export * from './services';
@@ -114,6 +137,9 @@ export * from './components';
 
 // Constants
 export * from './constants';
+
+// Tokens (v3.0.0)
+export * from './tokens';
 
 // Utils
 export * from './utils';

@@ -2,7 +2,7 @@
  * @abpjs/identity
  *
  * ABP Framework identity components for React.
- * Translated from @abp/ng.identity version 2.9.0.
+ * Translated from @abp/ng.identity version 3.0.0.
  *
  * This package provides:
  * - Identity models (User, Role, etc.)
@@ -12,6 +12,14 @@
  * - UI components for role and user management
  * - Route path constants for navigation
  * - Component and route name enums for customization (v2.7.0)
+ * - Config subpackage with route providers and policy names (v3.0.0)
+ *
+ * Changes in v3.0.0:
+ * - Added config subpackage with eIdentityPolicyNames, IDENTITY_ROUTE_PROVIDERS
+ * - Moved eIdentityRouteNames to config/enums (removed Administration key)
+ * - Added getUserAssignableRoles() method to IdentityService
+ * - Angular: RolesComponent and UsersComponent now use ListService pattern
+ *   (React components already use hooks-based state management)
  *
  * Changes in v2.9.0:
  * - Version bump only (dependency updates to @abp/ng.theme.shared v2.9.0)
@@ -48,7 +56,20 @@
  *
  * @example
  * ```tsx
- * import { RolesComponent, UsersComponent, useIdentity, Identity, eIdentityComponents } from '@abpjs/identity';
+ * import {
+ *   RolesComponent,
+ *   UsersComponent,
+ *   useIdentity,
+ *   Identity,
+ *   eIdentityComponents,
+ *   // v3.0.0 config exports
+ *   eIdentityPolicyNames,
+ *   IDENTITY_ROUTE_PROVIDERS,
+ *   initializeIdentityRoutes,
+ * } from '@abpjs/identity';
+ *
+ * // Initialize routes (v3.0.0)
+ * initializeIdentityRoutes();
  *
  * function IdentityPage() {
  *   const { roles, users } = useIdentity();
@@ -75,7 +96,10 @@
  * @packageDocumentation
  */
 
-// Enums (v2.7.0)
+// Config (v3.0.0)
+export * from './config';
+
+// Enums (v2.7.0, updated in v3.0.0)
 export * from './enums';
 
 // Models

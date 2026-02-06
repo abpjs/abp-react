@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { eAccountRouteNames } from '../../enums/route-names';
+import { eAccountRouteNames } from '../../config/enums/route-names';
 
 /**
  * Tests for eAccountRouteNames enum
  * @since 2.7.0
+ * @updated 3.0.0 - Moved from enums to config/enums
  */
-describe('eAccountRouteNames (v2.7.0)', () => {
+describe('eAccountRouteNames (v2.7.0, moved to config in v3.0.0)', () => {
   it('should export all route name keys', () => {
     expect(eAccountRouteNames).toBeDefined();
     expect(Object.keys(eAccountRouteNames)).toHaveLength(4);

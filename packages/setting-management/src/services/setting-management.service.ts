@@ -1,13 +1,15 @@
 /**
  * Setting Management Service
- * Translated from @abp/ng.setting-management v1.1.0
+ * Translated from @abp/ng.setting-management v3.0.0
  *
  * Note: In Angular, the SettingManagementService was removed in favor
  * of using Store directly. In React, we keep this service as it provides
  * a clean API for managing settings tabs without requiring a global store.
+ *
+ * @updated 3.0.0 - Uses SettingTab (alias for ABP.Tab) from local models
  */
 
-import type { SettingTab } from '@abpjs/theme-shared';
+import type { SettingTab } from '../models';
 
 /**
  * Service for managing settings tabs and selection.

@@ -6,6 +6,7 @@
  * @updated 2.4.0 - Added apiName property, getAllRoles method, eIdentityComponents enum
  * @updated 2.7.0 - Added changePassword method, eIdentityRouteNames enum, IdentityComponentKey/IdentityRouteNameKey types
  * @updated 2.9.0 - Added Organization Units support, OrganizationUnitService, TreeAdapter utility
+ * @updated 3.0.0 - Added config subpackage, extension tokens, guards, new claim type methods
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -22,6 +23,23 @@ import {
   eIdentityRouteNames,
   createOrganizationUnitCreateDto,
   createGetOrganizationUnitInput,
+  // v3.0.0 - Config enums
+  eIdentityPolicyNames,
+  eIdentitySettingTabNames,
+  // v3.0.0 - Config providers
+  IDENTITY_ROUTE_PROVIDERS,
+  IDENTITY_SETTING_TAB_PROVIDERS,
+  IDENTITY_SETTING_TAB_CONFIG,
+  // v3.0.0 - Extension tokens
+  DEFAULT_IDENTITY_ENTITY_ACTIONS,
+  DEFAULT_IDENTITY_TOOLBAR_ACTIONS,
+  DEFAULT_IDENTITY_ENTITY_PROPS,
+  DEFAULT_IDENTITY_CREATE_FORM_PROPS,
+  DEFAULT_IDENTITY_EDIT_FORM_PROPS,
+  IDENTITY_ENTITY_ACTION_CONTRIBUTORS,
+  // v3.0.0 - Guards
+  identityExtensionsGuard,
+  useIdentityExtensionsGuard,
   type BaseNode,
   type Identity,
   type IdentityStateService,
@@ -144,7 +162,9 @@ function TestClaimsHook() {
     sortKey,
     sortOrder,
     fetchClaimTypes,
-    fetchClaimTypeNames,
+    // v3.0.0: fetchClaimTypeNames replaced with fetchRolesClaimTypes and fetchUsersClaimTypes
+    fetchRolesClaimTypes,
+    fetchUsersClaimTypes,
     getClaimTypeById,
     createClaimType,
     updateClaimType,
@@ -172,8 +192,9 @@ function TestClaimsHook() {
 
   useEffect(() => {
     fetchClaimTypes()
-    fetchClaimTypeNames()
-  }, [fetchClaimTypes, fetchClaimTypeNames])
+    // v3.0.0: Using fetchRolesClaimTypes by default
+    fetchRolesClaimTypes()
+  }, [fetchClaimTypes, fetchRolesClaimTypes])
 
   const handleFetchClaims = async () => {
     if (subjectId) {
@@ -188,16 +209,19 @@ function TestClaimsHook() {
 
       <div className="test-card">
         <h3>Fetch Claim Types</h3>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button onClick={() => fetchClaimTypes()} disabled={isLoading}>
             {isLoading ? 'Loading...' : 'Fetch All Claim Types'}
           </button>
-          <button onClick={() => fetchClaimTypeNames()} disabled={isLoading}>
-            Fetch Claim Type Names
+          <button onClick={() => fetchRolesClaimTypes()} disabled={isLoading}>
+            Fetch Roles Claim Types (v3.0.0)
+          </button>
+          <button onClick={() => fetchUsersClaimTypes()} disabled={isLoading}>
+            Fetch Users Claim Types (v3.0.0)
           </button>
         </div>
         <p style={{ marginTop: '0.5rem', fontSize: '14px', color: '#888' }}>
-          Fetches claim types from the server
+          v3.0.0: fetchClaimTypeNames replaced with fetchRolesClaimTypes and fetchUsersClaimTypes
         </p>
       </div>
 
@@ -1044,9 +1068,9 @@ function TestV270Features() {
   }
 
   // Demo type-safe route lookup with IdentityRouteNameKey
+  // v3.0.0: Administration was removed from eIdentityRouteNames
   const getRouteDisplay = (key: IdentityRouteNameKey): string => {
     const displays: Record<IdentityRouteNameKey, string> = {
-      'AbpUiNavigation::Menu:Administration': 'Administration Menu',
       'AbpIdentity::Menu:IdentityManagement': 'Identity Management Menu',
       'AbpIdentity::Roles': 'Roles Page',
       'AbpIdentity::Users': 'Users Page',
@@ -1268,7 +1292,7 @@ const routes: Record<IdentityRouteNameKey, string> = { ... };`}
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}><code>eIdentityRouteNames</code></td>
               <td style={{ padding: '8px' }}>Const Object</td>
-              <td style={{ padding: '8px' }}>Route name localization keys (Administration, IdentityManagement, Roles, Users, ClaimTypes)</td>
+              <td style={{ padding: '8px' }}>Route name localization keys (IdentityManagement, Roles, Users, ClaimTypes, OrganizationUnits) - v3.0.0: Administration removed</td>
             </tr>
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}><code>IdentityComponentKey</code></td>
@@ -1292,6 +1316,199 @@ const routes: Record<IdentityRouteNameKey, string> = { ... };`}
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Test section for v3.0.0 features: Config subpackage, Extension tokens, Guards, Policy names
+ */
+function TestV300Features() {
+  // Test extension guard hook
+  const extensionsGuard = useIdentityExtensionsGuard()
+
+  return (
+    <div className="test-section">
+      <h2>v3.0.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(Config, Tokens, Guards)</span></h2>
+
+      <div className="test-card">
+        <h3>Config Subpackage - Enums</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          v3.0.0 introduces a config subpackage with policy names, route names, and setting tab names.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Enum</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Values</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eIdentityPolicyNames</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                Roles: {eIdentityPolicyNames.Roles}, Users: {eIdentityPolicyNames.Users}, ClaimTypes: {eIdentityPolicyNames.ClaimTypes}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eIdentitySettingTabNames</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                IdentityManagement: {eIdentitySettingTabNames.IdentityManagement}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Config Subpackage - Providers</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          Route and setting tab providers for configuring the identity module.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Provider</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IDENTITY_ROUTE_PROVIDERS</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>
+                {IDENTITY_ROUTE_PROVIDERS ? '✓ Available' : '✗ Not found'}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IDENTITY_SETTING_TAB_PROVIDERS</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>
+                {IDENTITY_SETTING_TAB_PROVIDERS ? '✓ Available' : '✗ Not found'}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IDENTITY_SETTING_TAB_CONFIG</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>
+                {IDENTITY_SETTING_TAB_CONFIG ? `✓ Name: ${IDENTITY_SETTING_TAB_CONFIG.name}` : '✗ Not found'}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Extension Tokens</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          Default extension tokens for entity actions, toolbar actions, and form props.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Token</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Has Keys</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_IDENTITY_ENTITY_ACTIONS</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                Users: {DEFAULT_IDENTITY_ENTITY_ACTIONS['Identity.UsersComponent'] ? '✓' : '✗'},
+                Roles: {DEFAULT_IDENTITY_ENTITY_ACTIONS['Identity.RolesComponent'] ? '✓' : '✗'}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_IDENTITY_TOOLBAR_ACTIONS</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                Users: {DEFAULT_IDENTITY_TOOLBAR_ACTIONS['Identity.UsersComponent'] ? '✓' : '✗'},
+                Roles: {DEFAULT_IDENTITY_TOOLBAR_ACTIONS['Identity.RolesComponent'] ? '✓' : '✗'}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_IDENTITY_ENTITY_PROPS</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                Users: {DEFAULT_IDENTITY_ENTITY_PROPS['Identity.UsersComponent'] ? '✓' : '✗'},
+                Roles: {DEFAULT_IDENTITY_ENTITY_PROPS['Identity.RolesComponent'] ? '✓' : '✗'}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_IDENTITY_CREATE_FORM_PROPS</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                Users: {DEFAULT_IDENTITY_CREATE_FORM_PROPS['Identity.UsersComponent'] ? '✓' : '✗'},
+                Roles: {DEFAULT_IDENTITY_CREATE_FORM_PROPS['Identity.RolesComponent'] ? '✓' : '✗'}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_IDENTITY_EDIT_FORM_PROPS</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                Users: {DEFAULT_IDENTITY_EDIT_FORM_PROPS['Identity.UsersComponent'] ? '✓' : '✗'},
+                Roles: {DEFAULT_IDENTITY_EDIT_FORM_PROPS['Identity.RolesComponent'] ? '✓' : '✗'}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IDENTITY_ENTITY_ACTION_CONTRIBUTORS</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>
+                {typeof IDENTITY_ENTITY_ACTION_CONTRIBUTORS === 'symbol' ? '✓ Symbol' : '✗ Not a symbol'}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Extensions Guard</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          Route guard for identity extensions.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Guard</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>identityExtensionsGuard</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>
+                {typeof identityExtensionsGuard === 'function' ? '✓ Function' : '✗ Not a function'}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>useIdentityExtensionsGuard</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                isLoaded: {extensionsGuard.isLoaded ? '✓' : '✗'}, loading: {extensionsGuard.loading ? 'yes' : 'no'}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>v3.0.0 API Changes</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          Breaking changes and new methods in v3.0.0.
+        </p>
+        <div style={{ fontSize: '14px' }}>
+          <h4>Removed:</h4>
+          <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+            <li><code>IdentityService.getClaimTypeNames()</code> - Use <code>getRolesClaimTypes()</code> or <code>getUsersClaimTypes()</code></li>
+            <li><code>IdentityStateService.getClaimTypeNames()</code> - Removed</li>
+            <li><code>IdentityStateService.dispatchGetClaimTypeNames()</code> - Removed</li>
+            <li><code>useClaims.fetchClaimTypeNames()</code> - Use <code>fetchRolesClaimTypes()</code> or <code>fetchUsersClaimTypes()</code></li>
+            <li><code>eIdentityRouteNames.Administration</code> - Removed from route names</li>
+          </ul>
+          <h4 style={{ marginTop: '12px' }}>Added:</h4>
+          <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+            <li><code>IdentityService.getRolesClaimTypes()</code> - Claim types for role claims</li>
+            <li><code>IdentityService.getUsersClaimTypes()</code> - Claim types for user claims</li>
+            <li><code>IdentityService.getUserAssingableRoles(id)</code> - Get roles assignable to a user</li>
+            <li><code>useClaims.fetchRolesClaimTypes()</code> - Fetch claim types for roles</li>
+            <li><code>useClaims.fetchUsersClaimTypes()</code> - Fetch claim types for users</li>
+            <li><code>config/</code> subpackage with enums, providers, and models</li>
+            <li><code>tokens/</code> subpackage with extension tokens</li>
+            <li><code>guards/</code> subpackage with extensions guard</li>
+          </ul>
+        </div>
       </div>
     </div>
   )
@@ -2006,7 +2223,7 @@ Getter Methods:
 - getUsersTotalCount(): number
 - getClaimTypes(): Identity.ClaimType[]
 - getClaimTypesTotalCount(): number
-- getClaimTypeNames(): Identity.ClaimTypeName[]
+(v3.0.0: getClaimTypeNames removed - use IdentityService.getRolesClaimTypes/getUsersClaimTypes instead)
 
 Role Dispatch Methods (v2.0.0):
 - dispatchGetRoles(params?): Promise<Identity.RoleResponse>
@@ -2029,7 +2246,7 @@ ClaimType Dispatch Methods (v2.0.0):
 - dispatchDeleteClaimType(id): Promise<void>
 - dispatchCreateClaimType(body): Promise<Identity.ClaimType>
 - dispatchUpdateClaimType(body): Promise<Identity.ClaimType>
-- dispatchGetClaimTypeNames(): Promise<Identity.ClaimTypeName[]>
+(v3.0.0: dispatchGetClaimTypeNames removed - use IdentityService.getRolesClaimTypes/getUsersClaimTypes)
 
 The state service maintains internal state and provides
 facade methods for dispatching identity actions.`)
@@ -2083,7 +2300,7 @@ facade methods for dispatching identity actions.`)
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}>Claim Types</td>
               <td style={{ padding: '8px', fontSize: '12px' }}>
-                <code>dispatchGetClaimTypes</code>, <code>dispatchGetClaimTypeById</code>, <code>dispatchDeleteClaimType</code>, <code>dispatchCreateClaimType</code>, <code>dispatchUpdateClaimType</code>, <code>dispatchGetClaimTypeNames</code>
+                <code>dispatchGetClaimTypes</code>, <code>dispatchGetClaimTypeById</code>, <code>dispatchDeleteClaimType</code>, <code>dispatchCreateClaimType</code>, <code>dispatchUpdateClaimType</code> (v3.0.0: dispatchGetClaimTypeNames removed)
               </td>
             </tr>
           </tbody>
@@ -2144,7 +2361,8 @@ function TestProHookMethods() {
           </thead>
           <tbody>
             <tr><td style={{ padding: '8px' }}>fetchClaimTypes</td><td>Fetch claim types with optional pagination</td></tr>
-            <tr><td style={{ padding: '8px' }}>fetchClaimTypeNames</td><td>Fetch claim type names for dropdowns</td></tr>
+            <tr><td style={{ padding: '8px' }}>fetchRolesClaimTypes</td><td>Fetch claim type names for role claims (v3.0.0)</td></tr>
+            <tr><td style={{ padding: '8px' }}>fetchUsersClaimTypes</td><td>Fetch claim type names for user claims (v3.0.0)</td></tr>
             <tr><td style={{ padding: '8px' }}>getClaimTypeById</td><td>Fetch a specific claim type and select it</td></tr>
             <tr><td style={{ padding: '8px' }}>createClaimType</td><td>Create a new claim type</td></tr>
             <tr><td style={{ padding: '8px' }}>updateClaimType</td><td>Update an existing claim type</td></tr>
@@ -2202,15 +2420,16 @@ function TestProHookMethods() {
 export function TestIdentityProPage() {
   return (
     <div>
-      <h1>@abpjs/identity-pro Tests (v2.9.0)</h1>
+      <h1>@abpjs/identity-pro Tests (v3.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing identity pro components, hooks, and services for claim type management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.9.0 - Added Organization Units support, OrganizationUnitService, TreeAdapter utility, getUserOrganizationUnits method
+        Version 3.0.0 - Added config subpackage, extension tokens, guards, policy names, new claim type API methods
       </p>
       <p style={{ color: '#6f6', fontSize: '14px' }}>
-        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods, user unlock, permissions modal, getAllRoles, component identifiers, route names, change password, organization units
+        Pro features: Claim type management, user/role claims, IdentityStateService, user unlock, permissions modal, getAllRoles, component identifiers, route names, change password, organization units, config/extensions
       </p>
 
+      <TestV300Features />
       <TestV290Features />
       <TestV270Features />
       <TestV240Features />

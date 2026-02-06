@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useConfirmation } from '../contexts/confirmation.context';
-import { Toaster } from '../models';
+import { Confirmation } from '../models';
 import { ErrorComponentProps } from '../components/errors/ErrorComponent';
 
 // Optional navigation function type
@@ -35,12 +35,13 @@ export interface ErrorComponentInstance {
 
 /**
  * Error handler interface.
+ * @since 3.0.0 - showError now returns Confirmation.Status instead of Toaster.Status
  */
 export interface ErrorHandler {
   /** Handle an HTTP error response */
   handleError: (error: HttpErrorResponse) => Promise<void>;
   /** Show an error message in a confirmation dialog */
-  showError: (message: string, title?: string) => Promise<Toaster.Status>;
+  showError: (message: string, title?: string) => Promise<Confirmation.Status>;
   /** Navigate to the login page */
   navigateToLogin: () => void;
   /** Create error component props for full-page error display */
@@ -126,7 +127,7 @@ export function useErrorHandler(options: UseErrorHandlerOptions = {}): ErrorHand
   }, [navigate, loginPath]);
 
   const showError = useCallback(
-    async (message: string, title?: string): Promise<Toaster.Status> => {
+    async (message: string, title?: string): Promise<Confirmation.Status> => {
       return confirmation.error(message, title || 'AbpUi::Error');
     },
     [confirmation]

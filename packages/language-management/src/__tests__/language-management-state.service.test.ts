@@ -1,6 +1,7 @@
 /**
  * Tests for LanguageManagementStateService
  * @since 2.0.0
+ * @updated 3.0.0 - Removed getLanguagesTotalCount() tests (removed in v3.0.0)
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -87,7 +88,7 @@ describe('LanguageManagementStateService', () => {
     });
 
     it('should return zero for initial total counts', () => {
-      expect(stateService.getLanguagesTotalCount()).toBe(0);
+      // Note: getLanguagesTotalCount() was removed in v3.0.0
       expect(stateService.getLanguageTextsTotalCount()).toBe(0);
     });
 
@@ -97,7 +98,7 @@ describe('LanguageManagementStateService', () => {
       await stateService.dispatchGetLanguages();
 
       expect(stateService.getLanguages()).toEqual([mockLanguage]);
-      expect(stateService.getLanguagesTotalCount()).toBe(1);
+      // Note: getLanguagesTotalCount() was removed in v3.0.0
     });
 
     it('should return language texts after dispatch', async () => {
@@ -336,7 +337,7 @@ describe('LanguageManagementStateService', () => {
       await stateService.dispatchGetLanguageResources();
 
       expect(stateService.getLanguages()).toEqual([]);
-      expect(stateService.getLanguagesTotalCount()).toBe(0);
+      // Note: getLanguagesTotalCount() was removed in v3.0.0
       expect(stateService.getLanguageTexts()).toEqual([]);
       expect(stateService.getLanguageTextsTotalCount()).toBe(0);
       expect(stateService.getCultures()).toEqual([]);
@@ -348,7 +349,7 @@ describe('LanguageManagementStateService', () => {
     it('should handle undefined languageResponse items gracefully', () => {
       // Access getters before any state is set - should return defaults
       expect(stateService.getLanguages()).toEqual([]);
-      expect(stateService.getLanguagesTotalCount()).toBe(0);
+      // Note: getLanguagesTotalCount() was removed in v3.0.0
     });
 
     it('should handle undefined languageTextsResponse items gracefully', () => {
@@ -379,7 +380,7 @@ describe('LanguageManagementStateService', () => {
       await stateService.dispatchGetLanguages({ maxResultCount: 100 });
 
       expect(stateService.getLanguages()).toHaveLength(100);
-      expect(stateService.getLanguagesTotalCount()).toBe(1000);
+      // Note: getLanguagesTotalCount() was removed in v3.0.0
     });
   });
 

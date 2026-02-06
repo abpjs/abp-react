@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { ChakraProvider } from '@chakra-ui/react';
 import { ConfirmationProvider, useConfirmation } from '../contexts/confirmation.context';
 import { ConfirmationDialog } from '../components/confirmation/Confirmation';
-import { Toaster } from '../models';
+import { Confirmation } from '../models';
 import { abpSystem } from '../theme';
 
 // Mock @abpjs/core
@@ -45,7 +45,7 @@ function ConfirmationTrigger({
   message: string;
   title: string;
   options?: Record<string, unknown>;
-  onResult?: (status: Toaster.Status) => void;
+  onResult?: (status: Confirmation.Status) => void;
 }) {
   const confirmation = useConfirmation();
 
@@ -69,7 +69,7 @@ describe('ConfirmationDialog', () => {
     message = 'Are you sure?',
     title = 'Confirm',
     options?: Record<string, unknown>,
-    onResult?: (status: Toaster.Status) => void
+    onResult?: (status: Confirmation.Status) => void
   ) => {
     return render(
       <ChakraProvider value={abpSystem}>
@@ -132,7 +132,7 @@ describe('ConfirmationDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Yes' }));
 
     await waitFor(() => {
-      expect(onResult).toHaveBeenCalledWith(Toaster.Status.confirm);
+      expect(onResult).toHaveBeenCalledWith(Confirmation.Status.confirm);
     });
   });
 
@@ -149,7 +149,7 @@ describe('ConfirmationDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     await waitFor(() => {
-      expect(onResult).toHaveBeenCalledWith(Toaster.Status.reject);
+      expect(onResult).toHaveBeenCalledWith(Confirmation.Status.reject);
     });
   });
 
@@ -315,8 +315,8 @@ describe('ConfirmationDialog', () => {
     // v2.0.0 - yesCopy/cancelCopy removed, no longer need preference/fallback tests
   });
 
-  // v2.0.0 - dismiss and closable behavior
-  describe('v2.0.0 - dismiss and closable behavior', () => {
+  // v2.0.0 - dismiss behavior, v3.0.0 - closable renamed to dismissible
+  describe('v3.0.0 - dismiss and dismissible behavior', () => {
     it('should handle dialog without title', async () => {
       render(
         <ChakraProvider value={abpSystem}>
@@ -366,16 +366,17 @@ describe('ConfirmationDialog', () => {
       });
     });
 
-    it('should use closable option when specified', async () => {
+    // v3.0.0 - closable renamed to dismissible
+    it('should use dismissible option when specified (v3.0.0)', async () => {
       // Just verify the option is passed through - actual behavior depends on dialog implementation
-      renderWithProvider('warn', 'Test', 'Confirm', { closable: false });
+      renderWithProvider('warn', 'Test', 'Confirm', { dismissible: false });
 
       await user.click(screen.getByTestId('trigger'));
 
       await waitFor(() => {
         expect(screen.getByText('Test')).toBeInTheDocument();
       });
-      // Dialog renders with closable=false option set
+      // Dialog renders with dismissible=false option set
     });
   });
 });

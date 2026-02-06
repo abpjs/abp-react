@@ -1,7 +1,15 @@
 /**
  * @abpjs/account-pro
  * ABP Framework Account Pro module for React
- * Translated from @volo/abp.ng.account v2.9.0
+ * Translated from @volo/abp.ng.account v3.0.0
+ *
+ * Changes in v3.0.0:
+ * - Added config subpackage with enums and providers
+ * - Added eAccountRouteNames and eAccountSettingTabNames to config/enums
+ * - Added ACCOUNT_ROUTE_PROVIDERS, configureRoutes, initializeAccountRoutes
+ * - Added ACCOUNT_SETTING_TAB_PROVIDERS, configureSettingTabs, initializeAccountSettingTabs
+ * - Added AccountConfigOptions interface with redirectUrl
+ * - Added ACCOUNT_OPTIONS token and accountOptionsFactory utility
  *
  * Changes in v2.9.0:
  * - Added Logo component key to eAccountComponents enum
@@ -28,6 +36,9 @@
  * - Version bump only (dependency updates to @abp/ng.theme.shared v2.1.0)
  */
 
+// Config (v3.0.0)
+export * from './config';
+
 // Enums (v2.7.0)
 export * from './enums';
 
@@ -48,3 +59,9 @@ export * from './hooks';
 
 // Components
 export * from './components';
+
+// Tokens (v3.0.0)
+export * from './tokens';
+
+// Utils (v3.0.0)
+export * from './utils';

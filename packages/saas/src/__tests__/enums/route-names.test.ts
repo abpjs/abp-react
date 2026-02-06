@@ -1,16 +1,15 @@
 /**
  * Tests for SaaS Route Names
- * @abpjs/saas v2.7.0
+ * @abpjs/saas v3.0.0
+ *
+ * Breaking changes in v3.0.0:
+ * - Removed 'Administration' key
  */
 import { describe, it, expect } from 'vitest';
 import { eSaasRouteNames, SaasRouteNameKey } from '../../enums';
 
 describe('eSaasRouteNames', () => {
   describe('route name values', () => {
-    it('should have Administration route name', () => {
-      expect(eSaasRouteNames.Administration).toBe('AbpUiNavigation::Menu:Administration');
-    });
-
     it('should have Saas route name', () => {
       expect(eSaasRouteNames.Saas).toBe('Saas::Menu:Saas');
     });
@@ -22,16 +21,19 @@ describe('eSaasRouteNames', () => {
     it('should have Editions route name', () => {
       expect(eSaasRouteNames.Editions).toBe('Saas::Editions');
     });
+
+    it('should NOT have Administration route name (removed in v3.0.0)', () => {
+      // @ts-expect-error - Administration was removed in v3.0.0
+      expect(eSaasRouteNames.Administration).toBeUndefined();
+    });
   });
 
   describe('string usage', () => {
     it('should be usable as string values', () => {
-      const admin: string = eSaasRouteNames.Administration;
       const saas: string = eSaasRouteNames.Saas;
       const tenants: string = eSaasRouteNames.Tenants;
       const editions: string = eSaasRouteNames.Editions;
 
-      expect(admin).toBe('AbpUiNavigation::Menu:Administration');
       expect(saas).toBe('Saas::Menu:Saas');
       expect(tenants).toBe('Saas::Tenants');
       expect(editions).toBe('Saas::Editions');
@@ -48,22 +50,22 @@ describe('eSaasRouteNames', () => {
   });
 
   describe('object structure', () => {
-    it('should have correct keys', () => {
+    it('should have correct keys (v3.0.0 - without Administration)', () => {
       const keys = Object.keys(eSaasRouteNames);
-      expect(keys).toContain('Administration');
+      expect(keys).not.toContain('Administration'); // Removed in v3.0.0
       expect(keys).toContain('Saas');
       expect(keys).toContain('Tenants');
       expect(keys).toContain('Editions');
-      expect(keys).toHaveLength(4);
+      expect(keys).toHaveLength(3);
     });
 
-    it('should have correct values', () => {
+    it('should have correct values (v3.0.0 - without Administration)', () => {
       const values = Object.values(eSaasRouteNames);
-      expect(values).toContain('AbpUiNavigation::Menu:Administration');
+      expect(values).not.toContain('AbpUiNavigation::Menu:Administration'); // Removed in v3.0.0
       expect(values).toContain('Saas::Menu:Saas');
       expect(values).toContain('Saas::Tenants');
       expect(values).toContain('Saas::Editions');
-      expect(values).toHaveLength(4);
+      expect(values).toHaveLength(3);
     });
 
     it('should have unique values for each route', () => {
@@ -79,9 +81,9 @@ describe('eSaasRouteNames', () => {
   });
 
   describe('localization key pattern', () => {
-    it('should follow AbpModule::KeyName pattern', () => {
+    it('should follow Saas:: pattern (v3.0.0)', () => {
       Object.values(eSaasRouteNames).forEach((value) => {
-        expect(value).toMatch(/^(Abp\w+|Saas)::/);
+        expect(value).toMatch(/^Saas::/);
       });
     });
 
@@ -96,11 +98,7 @@ describe('eSaasRouteNames', () => {
   });
 
   describe('navigation hierarchy', () => {
-    it('should have Administration as top-level menu', () => {
-      expect(eSaasRouteNames.Administration).toContain('Menu:Administration');
-    });
-
-    it('should have Saas as submenu', () => {
+    it('should have Saas as top-level menu (v3.0.0)', () => {
       expect(eSaasRouteNames.Saas).toContain('Menu:Saas');
     });
 
@@ -112,13 +110,11 @@ describe('eSaasRouteNames', () => {
 });
 
 describe('SaasRouteNameKey type', () => {
-  it('should accept valid route name keys', () => {
-    const adminKey: SaasRouteNameKey = 'AbpUiNavigation::Menu:Administration';
+  it('should accept valid route name keys (v3.0.0)', () => {
     const saasKey: SaasRouteNameKey = 'Saas::Menu:Saas';
     const tenantsKey: SaasRouteNameKey = 'Saas::Tenants';
     const editionsKey: SaasRouteNameKey = 'Saas::Editions';
 
-    expect(adminKey).toBe(eSaasRouteNames.Administration);
     expect(saasKey).toBe(eSaasRouteNames.Saas);
     expect(tenantsKey).toBe(eSaasRouteNames.Tenants);
     expect(editionsKey).toBe(eSaasRouteNames.Editions);
@@ -134,30 +130,26 @@ describe('SaasRouteNameKey type', () => {
       return Object.values(eSaasRouteNames).includes(key);
     };
 
-    expect(isValidRouteKey(eSaasRouteNames.Administration)).toBe(true);
     expect(isValidRouteKey(eSaasRouteNames.Saas)).toBe(true);
     expect(isValidRouteKey(eSaasRouteNames.Tenants)).toBe(true);
     expect(isValidRouteKey(eSaasRouteNames.Editions)).toBe(true);
   });
 
-  it('should work with Record type for route configuration', () => {
+  it('should work with Record type for route configuration (v3.0.0)', () => {
     const routePaths: Record<SaasRouteNameKey, string> = {
-      'AbpUiNavigation::Menu:Administration': '/admin',
       'Saas::Menu:Saas': '/admin/saas',
       'Saas::Tenants': '/admin/saas/tenants',
       'Saas::Editions': '/admin/saas/editions',
     };
 
-    expect(routePaths[eSaasRouteNames.Administration]).toBe('/admin');
     expect(routePaths[eSaasRouteNames.Saas]).toBe('/admin/saas');
     expect(routePaths[eSaasRouteNames.Tenants]).toBe('/admin/saas/tenants');
     expect(routePaths[eSaasRouteNames.Editions]).toBe('/admin/saas/editions');
   });
 
-  it('should be usable for localization lookups', () => {
+  it('should be usable for localization lookups (v3.0.0)', () => {
     const mockLocalize = (key: SaasRouteNameKey): string => {
       const translations: Record<SaasRouteNameKey, string> = {
-        'AbpUiNavigation::Menu:Administration': 'Administration',
         'Saas::Menu:Saas': 'SaaS',
         'Saas::Tenants': 'Tenants',
         'Saas::Editions': 'Editions',
@@ -165,7 +157,6 @@ describe('SaasRouteNameKey type', () => {
       return translations[key];
     };
 
-    expect(mockLocalize(eSaasRouteNames.Administration)).toBe('Administration');
     expect(mockLocalize(eSaasRouteNames.Saas)).toBe('SaaS');
     expect(mockLocalize(eSaasRouteNames.Tenants)).toBe('Tenants');
     expect(mockLocalize(eSaasRouteNames.Editions)).toBe('Editions');

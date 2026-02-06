@@ -1,20 +1,13 @@
 /**
  * Audit Logging Route Names
- * Translated from @volo/abp.ng.audit-logging v2.7.0
+ * Translated from @volo/abp.ng.audit-logging v3.0.0
+ *
+ * @since 3.0.0 - Re-exports from config/enums for backward compatibility.
+ *                Administration entry removed - use @abpjs/core instead.
+ * @deprecated Import from config/enums directly for new code.
  */
 
-/**
- * Enum-like const object for audit logging route names.
- * Used for localization and navigation configuration.
- * @since 2.7.0
- */
-export const eAuditLoggingRouteNames = {
-  Administration: 'AbpUiNavigation::Menu:Administration',
-  AuditLogging: 'AbpAuditLogging::Menu:AuditLogging',
-} as const;
-
-/**
- * Type for audit logging route name values
- */
-export type AuditLoggingRouteNameKey =
-  (typeof eAuditLoggingRouteNames)[keyof typeof eAuditLoggingRouteNames];
+export {
+  eAuditLoggingRouteNames,
+  type AuditLoggingRouteNameKey,
+} from '../config/enums/route-names';

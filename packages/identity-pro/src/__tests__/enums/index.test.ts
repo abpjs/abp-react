@@ -1,6 +1,6 @@
 /**
  * Tests for Identity Pro Enums barrel export
- * @abpjs/identity-pro v2.7.0
+ * @abpjs/identity-pro v3.0.0
  */
 import { describe, it, expect } from 'vitest';
 import * as enums from '../../enums';
@@ -29,11 +29,11 @@ describe('enums barrel export', () => {
   });
 
   it('should have correct eIdentityRouteNames values through barrel', () => {
-    expect(enums.eIdentityRouteNames.Administration).toBe('AbpUiNavigation::Menu:Administration');
     expect(enums.eIdentityRouteNames.IdentityManagement).toBe('AbpIdentity::Menu:IdentityManagement');
     expect(enums.eIdentityRouteNames.Roles).toBe('AbpIdentity::Roles');
     expect(enums.eIdentityRouteNames.Users).toBe('AbpIdentity::Users');
     expect(enums.eIdentityRouteNames.ClaimTypes).toBe('AbpIdentity::ClaimTypes');
+    expect(enums.eIdentityRouteNames.OrganizationUnits).toBe('AbpIdentity::OrganizationUnits');
   });
 });
 

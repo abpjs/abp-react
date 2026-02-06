@@ -1,15 +1,11 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { ReactNode } from 'react';
+import { ComponentType, ReactNode } from 'react';
 import { Config } from './config';
 import { eLayoutType } from '../enums';
 
 export namespace ABP {
   export interface Root {
     environment: Partial<Config.Environment>;
-    /**
-     * @deprecated To be deleted in v3.0
-     */
-    requirements?: Config.Requirements;
     /**
      * Skip fetching application configuration on initialization
      * @since 2.7.0
@@ -46,23 +42,47 @@ export namespace ABP {
     maxResultCount?: number;
   }
 
-  export interface Route {
+  /**
+   * Base navigation item interface
+   * @since 3.0.0
+   */
+  export interface Nav {
+    name: string;
+    parentName?: string;
+    requiredPolicy?: string;
+    order?: number;
+    invisible?: boolean;
+  }
+
+  /**
+   * Route configuration extending Nav
+   * @since 3.0.0 - Updated to extend Nav interface
+   */
+  export interface Route extends Nav {
     children?: Route[];
     /** Icon to display in navigation (React component or element) */
     icon?: ReactNode;
-    invisible?: boolean;
     layout?: eLayoutType;
-    name: string;
-    order?: number;
-    parentName?: string;
     path: string;
-    requiredPolicy?: string;
+    iconClass?: string;
     /** Badge content (number or text) to display at end of link in sidebar */
     badge?: ReactNode;
     /** Badge color palette (default: 'gray') */
     badgeColorPalette?: string;
   }
 
+  /**
+   * Tab configuration extending Nav
+   * @since 3.0.0
+   */
+  export interface Tab extends Nav {
+    component: ComponentType<any>;
+  }
+
+  /**
+   * @deprecated Use RoutesService instead. Will be removed in v4.0.0
+   * Full route with computed URL
+   */
   export interface FullRoute extends Route {
     url?: string;
     wrapper?: boolean;

@@ -10,17 +10,41 @@ describe('@abpjs/tenant-management package exports', () => {
       ).toBe('TenantManagement.TenantsComponent');
     });
 
-    it('should export eTenantManagementRouteNames', () => {
+    it('should export eTenantManagementRouteNames (v3.0.0: Administration removed)', () => {
       expect(tenantManagementExports.eTenantManagementRouteNames).toBeDefined();
-      expect(
-        tenantManagementExports.eTenantManagementRouteNames.Administration
-      ).toBe('AbpUiNavigation::Menu:Administration');
       expect(
         tenantManagementExports.eTenantManagementRouteNames.TenantManagement
       ).toBe('AbpTenantManagement::Menu:TenantManagement');
       expect(tenantManagementExports.eTenantManagementRouteNames.Tenants).toBe(
         'AbpTenantManagement::Tenants'
       );
+    });
+
+    it('should export eTenantManagementPolicyNames (v3.0.0)', () => {
+      expect(tenantManagementExports.eTenantManagementPolicyNames).toBeDefined();
+      expect(
+        tenantManagementExports.eTenantManagementPolicyNames.TenantManagement
+      ).toBe('AbpTenantManagement.Tenants');
+      expect(tenantManagementExports.eTenantManagementPolicyNames.Tenants).toBe(
+        'AbpTenantManagement.Tenants'
+      );
+    });
+  });
+
+  describe('config (v3.0.0)', () => {
+    it('should export TENANT_MANAGEMENT_ROUTE_PROVIDERS', () => {
+      expect(tenantManagementExports.TENANT_MANAGEMENT_ROUTE_PROVIDERS).toBeDefined();
+      expect(typeof tenantManagementExports.TENANT_MANAGEMENT_ROUTE_PROVIDERS).toBe('object');
+    });
+
+    it('should export configureRoutes function', () => {
+      expect(tenantManagementExports.configureRoutes).toBeDefined();
+      expect(typeof tenantManagementExports.configureRoutes).toBe('function');
+    });
+
+    it('should export initializeTenantManagementRoutes function', () => {
+      expect(tenantManagementExports.initializeTenantManagementRoutes).toBeDefined();
+      expect(typeof tenantManagementExports.initializeTenantManagementRoutes).toBe('function');
     });
   });
 
@@ -89,7 +113,13 @@ describe('@abpjs/tenant-management package exports', () => {
   });
 
   describe('export completeness', () => {
-    it('should export all required v2.7.0 functionality', () => {
+    it('should export all required v3.0.0 functionality', () => {
+      // Config (v3.0.0)
+      expect(tenantManagementExports).toHaveProperty('TENANT_MANAGEMENT_ROUTE_PROVIDERS');
+      expect(tenantManagementExports).toHaveProperty('configureRoutes');
+      expect(tenantManagementExports).toHaveProperty('initializeTenantManagementRoutes');
+      expect(tenantManagementExports).toHaveProperty('eTenantManagementPolicyNames');
+
       // Enums (v2.7.0)
       expect(tenantManagementExports).toHaveProperty(
         'eTenantManagementComponents'

@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/account",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "description": "ABP Framework Account module for React - Translation of @abp/ng.account",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -69,7 +69,7 @@
     "react-icons": "^5.0.0"
   },
   "devDependencies": {
-    "@abp/ng.account": "2.9.0",
+    "@abp/ng.account": "3.0.0",
     "@reduxjs/toolkit": "^2.0.0",
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^14.2.0",

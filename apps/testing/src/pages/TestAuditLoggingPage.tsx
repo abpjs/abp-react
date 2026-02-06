@@ -6,6 +6,7 @@
  * @updated 2.4.0 - Added apiName property, eAuditLoggingComponents enum
  * @updated 2.7.0 - Added EntityChanges component, eEntityChangeType, eAuditLoggingRouteNames, EntityChangeService
  * @updated 2.9.0 - AuditLogsComponent aligned with onQueryChange pattern, removed DateAdapter (React uses native Date)
+ * @updated 3.0.0 - Added config subpackage, policy names, route providers, extensions tokens, guards
  */
 import { useState } from 'react'
 import {
@@ -19,8 +20,25 @@ import {
   eAuditLoggingRouteNames,
   AuditLoggingService,
   EntityChangeService,
+  // v3.0.0 imports
+  eAuditLoggingPolicyNames,
+  AUDIT_LOGGING_ROUTE_PROVIDERS,
+  configureRoutes,
+  initializeAuditLoggingRoutes,
+  ENTITY_DETAILS_PROVIDERS,
+  ENTITY_HISTORY_PROVIDERS,
+  SHOW_ENTITY_DETAILS,
+  SHOW_ENTITY_HISTORY,
+  AUDIT_LOGGING_ENTITY_ACTION_CONTRIBUTORS,
+  AUDIT_LOGGING_TOOLBAR_ACTION_CONTRIBUTORS,
+  AUDIT_LOGGING_ENTITY_PROP_CONTRIBUTORS,
+  auditLoggingExtensionsGuard,
+  canActivateAuditLoggingExtensions,
+  auditLoggingExtensionsLoader,
+  DEFAULT_AUDIT_LOGS_ENTITY_PROPS,
+  DEFAULT_AUDIT_LOGGING_CONFIG_OPTIONS,
 } from '@abpjs/audit-logging'
-import type { AuditLogging, AuditLoggingStateService, EntityChange } from '@abpjs/audit-logging'
+import type { AuditLogging, AuditLoggingStateService, EntityChange, AuditLoggingConfigOptions } from '@abpjs/audit-logging'
 
 function TestAuditLogsComponent() {
   const [showComponent, setShowComponent] = useState(false)
@@ -217,6 +235,344 @@ function TestUseAuditLogsHook() {
             <tr><td style={{ padding: '8px' }}>setSortKey</td><td>Set the sort key for results</td></tr>
             <tr><td style={{ padding: '8px' }}>setSortOrder</td><td>Set the sort order (asc/desc)</td></tr>
             <tr><td style={{ padding: '8px' }}>reset</td><td>Reset all state to initial values</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function TestV300Features() {
+  const [guardResult, setGuardResult] = useState<string>('')
+
+  const testGuard = async () => {
+    const asyncResult = await auditLoggingExtensionsGuard()
+    const syncResult = canActivateAuditLoggingExtensions()
+    const loaderResult = await auditLoggingExtensionsLoader()
+    setGuardResult(`Async Guard: ${asyncResult}\nSync Guard: ${syncResult}\nLoader: ${JSON.stringify(loaderResult)}`)
+  }
+
+  // Type check for config options
+  const _configCheck: AuditLoggingConfigOptions = DEFAULT_AUDIT_LOGGING_CONFIG_OPTIONS
+  void _configCheck
+
+  return (
+    <div className="test-section">
+      <h2>v3.0.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Config Subpackage <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>
+          Version 3.0.0 introduces a config subpackage with enums, providers, and services for module configuration.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`// Config exports available from main package
+import {
+  // Config enums
+  eAuditLoggingPolicyNames,
+  eAuditLoggingRouteNames,  // Now in config, re-exported for backward compat
+
+  // Config providers
+  AUDIT_LOGGING_ROUTE_PROVIDERS,
+  configureRoutes,
+  initializeAuditLoggingRoutes,
+  ENTITY_DETAILS_PROVIDERS,
+  ENTITY_HISTORY_PROVIDERS,
+
+  // Config services
+  EntityChangeModalService,
+} from '@abpjs/audit-logging';`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eAuditLoggingPolicyNames Enum <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>New enum for permission policy checks:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eAuditLoggingPolicyNames).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import { eAuditLoggingPolicyNames } from '@abpjs/audit-logging';
+
+// Check permissions
+const hasAuditLoggingPermission = grantedPolicies[eAuditLoggingPolicyNames.AuditLogging];
+
+// Use in route configuration
+{
+  path: '/audit-logging',
+  requiredPolicy: eAuditLoggingPolicyNames.AuditLogging
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Route Providers <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>New route configuration providers:</p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>AUDIT_LOGGING_ROUTE_PROVIDERS:</code>{' '}
+          <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof AUDIT_LOGGING_ROUTE_PROVIDERS === 'object' ? 'object' : 'undefined'}
+          </code>
+        </p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>configureRoutes:</code>{' '}
+          <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof configureRoutes}
+          </code>
+        </p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>initializeAuditLoggingRoutes:</code>{' '}
+          <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof initializeAuditLoggingRoutes}
+          </code>
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import {
+  configureRoutes,
+  initializeAuditLoggingRoutes,
+  AUDIT_LOGGING_ROUTE_PROVIDERS
+} from '@abpjs/audit-logging';
+import { getRoutesService } from '@abpjs/core';
+
+// Option 1: Use configureRoutes with RoutesService
+const routes = getRoutesService();
+const addRoutes = configureRoutes(routes);
+addRoutes(); // Adds audit logging routes
+
+// Option 2: Use convenience function
+const addRoutes2 = initializeAuditLoggingRoutes();
+addRoutes2();
+
+// Option 3: Use providers object
+AUDIT_LOGGING_ROUTE_PROVIDERS.configureRoutes(routes);`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Entity Details/History Providers <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>Providers for entity change details and history display:</p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>ENTITY_DETAILS_PROVIDERS.provide:</code>{' '}
+          <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {ENTITY_DETAILS_PROVIDERS.provide === SHOW_ENTITY_DETAILS ? 'SHOW_ENTITY_DETAILS' : 'Symbol'}
+          </code>
+        </p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>ENTITY_HISTORY_PROVIDERS.provide:</code>{' '}
+          <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {ENTITY_HISTORY_PROVIDERS.provide === SHOW_ENTITY_HISTORY ? 'SHOW_ENTITY_HISTORY' : 'Symbol'}
+          </code>
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import {
+  ENTITY_DETAILS_PROVIDERS,
+  ENTITY_HISTORY_PROVIDERS,
+  EntityChangeModalService,
+  SHOW_ENTITY_DETAILS,
+  SHOW_ENTITY_HISTORY
+} from '@abpjs/audit-logging';
+
+// Create modal service with entity change service
+const modalService = new EntityChangeModalService(entityChangeService);
+
+// Register callbacks for modal display
+modalService.onShowDetails((data) => {
+  // Handle entity change details
+  console.log('Entity change:', data.entityChange);
+  console.log('User:', data.userName);
+});
+
+modalService.onShowHistory((data) => {
+  // Handle entity change history
+  console.log('History items:', data.length);
+});
+
+// Show details/history
+await modalService.showDetails('entity-change-id');
+await modalService.showHistory('entity-id', 'MyApp.Entity');`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Extension Tokens <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>Tokens for extending audit logging components:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Token</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>SHOW_ENTITY_DETAILS</td>
+              <td style={{ padding: '8px' }}>{typeof SHOW_ENTITY_DETAILS}</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>SHOW_ENTITY_HISTORY</td>
+              <td style={{ padding: '8px' }}>{typeof SHOW_ENTITY_HISTORY}</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>AUDIT_LOGGING_ENTITY_ACTION_CONTRIBUTORS</td>
+              <td style={{ padding: '8px' }}>{typeof AUDIT_LOGGING_ENTITY_ACTION_CONTRIBUTORS}</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>AUDIT_LOGGING_TOOLBAR_ACTION_CONTRIBUTORS</td>
+              <td style={{ padding: '8px' }}>{typeof AUDIT_LOGGING_TOOLBAR_ACTION_CONTRIBUTORS}</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>AUDIT_LOGGING_ENTITY_PROP_CONTRIBUTORS</td>
+              <td style={{ padding: '8px' }}>{typeof AUDIT_LOGGING_ENTITY_PROP_CONTRIBUTORS}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Default Entity Props <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>Pre-defined entity properties for audit logs table:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Name</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Sortable</th>
+            </tr>
+          </thead>
+          <tbody>
+            {DEFAULT_AUDIT_LOGS_ENTITY_PROPS.map((prop, index) => (
+              <tr key={index}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{String(prop.name)}</td>
+                <td style={{ padding: '8px' }}>{prop.type}</td>
+                <td style={{ padding: '8px' }}>{prop.sortable ? '✓' : '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Extensions Guard <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>Guard functions for route protection:</p>
+        <button onClick={testGuard} style={{ marginTop: '0.5rem' }}>
+          Test Guards
+        </button>
+        {guardResult && (
+          <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+            {guardResult}
+          </pre>
+        )}
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import {
+  auditLoggingExtensionsGuard,
+  canActivateAuditLoggingExtensions,
+  auditLoggingExtensionsLoader
+} from '@abpjs/audit-logging';
+
+// Async guard for route protection
+const canAccess = await auditLoggingExtensionsGuard(); // Promise<boolean>
+
+// Sync guard for immediate checks
+const canRender = canActivateAuditLoggingExtensions(); // boolean
+
+// React Router loader pattern
+const { ready } = await auditLoggingExtensionsLoader(); // { ready: boolean }`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Route Names Update <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>
+          In v3.0.0, <code>eAuditLoggingRouteNames</code> was moved to config/enums and the <code>Administration</code> entry was removed.
+          Use <code>AbpUiNavigation::Menu:Administration</code> from <code>@abpjs/core</code> instead.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eAuditLoggingRouteNames).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>v3.0.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAuditLoggingPolicyNames</td>
+              <td>const object</td>
+              <td>Permission policy names</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AUDIT_LOGGING_ROUTE_PROVIDERS</td>
+              <td>object</td>
+              <td>Route configuration providers</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>configureRoutes, initializeAuditLoggingRoutes</td>
+              <td>function</td>
+              <td>Route initialization functions</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ENTITY_DETAILS_PROVIDERS, ENTITY_HISTORY_PROVIDERS</td>
+              <td>object</td>
+              <td>Entity change modal providers</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>EntityChangeModalService</td>
+              <td>class</td>
+              <td>Service for showing entity change modals</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>SHOW_ENTITY_DETAILS, SHOW_ENTITY_HISTORY</td>
+              <td>symbol</td>
+              <td>Tokens for entity details/history functions</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>DEFAULT_AUDIT_LOGGING_*</td>
+              <td>object</td>
+              <td>Default entity actions/props/toolbar</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>auditLoggingExtensionsGuard, etc.</td>
+              <td>function</td>
+              <td>Route protection guards</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AuditLoggingConfigOptions</td>
+              <td>interface</td>
+              <td>Configuration options type</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -1040,12 +1396,13 @@ const filter: Statistics.Filter = {
 export function TestAuditLoggingPage() {
   return (
     <div>
-      <h1>@abpjs/audit-logging Tests (v2.9.0)</h1>
+      <h1>@abpjs/audit-logging Tests (v3.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing audit logging components, hooks, services, and enums.</p>
       <p style={{ fontSize: '14px', color: '#4f4', marginBottom: '16px' }}>
-        Version 2.9.0 - AuditLogsComponent aligned with onQueryChange pattern, removed DateAdapter
+        Version 3.0.0 - Config subpackage, policy names, route providers, extensions tokens, guards
       </p>
 
+      <TestV300Features />
       <TestV290Features />
       <TestV270Features />
       <TestV240Features />

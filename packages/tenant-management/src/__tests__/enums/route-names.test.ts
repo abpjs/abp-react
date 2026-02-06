@@ -6,12 +6,6 @@ import {
 
 describe('eTenantManagementRouteNames', () => {
   describe('enum values', () => {
-    it('should have Administration key with correct value', () => {
-      expect(eTenantManagementRouteNames.Administration).toBe(
-        'AbpUiNavigation::Menu:Administration'
-      );
-    });
-
     it('should have TenantManagement key with correct value', () => {
       expect(eTenantManagementRouteNames.TenantManagement).toBe(
         'AbpTenantManagement::Menu:TenantManagement'
@@ -24,15 +18,18 @@ describe('eTenantManagementRouteNames', () => {
       );
     });
 
-    it('should have exactly 3 keys', () => {
+    it('should have exactly 2 keys (v3.0.0: Administration was removed)', () => {
       const keys = Object.keys(eTenantManagementRouteNames);
-      expect(keys).toHaveLength(3);
+      expect(keys).toHaveLength(2);
     });
 
     it('should contain all expected keys', () => {
-      expect('Administration' in eTenantManagementRouteNames).toBe(true);
       expect('TenantManagement' in eTenantManagementRouteNames).toBe(true);
       expect('Tenants' in eTenantManagementRouteNames).toBe(true);
+    });
+
+    it('should not contain Administration key (removed in v3.0.0)', () => {
+      expect('Administration' in eTenantManagementRouteNames).toBe(false);
     });
   });
 
@@ -62,15 +59,12 @@ describe('eTenantManagementRouteNames', () => {
   describe('type safety', () => {
     it('should allow type assignment for valid keys', () => {
       const key1: TenantManagementRouteNameKey =
-        eTenantManagementRouteNames.Administration;
-      const key2: TenantManagementRouteNameKey =
         eTenantManagementRouteNames.TenantManagement;
-      const key3: TenantManagementRouteNameKey =
+      const key2: TenantManagementRouteNameKey =
         eTenantManagementRouteNames.Tenants;
 
-      expect(key1).toBe('AbpUiNavigation::Menu:Administration');
-      expect(key2).toBe('AbpTenantManagement::Menu:TenantManagement');
-      expect(key3).toBe('AbpTenantManagement::Tenants');
+      expect(key1).toBe('AbpTenantManagement::Menu:TenantManagement');
+      expect(key2).toBe('AbpTenantManagement::Tenants');
     });
   });
 
@@ -83,9 +77,6 @@ describe('eTenantManagementRouteNames', () => {
       let result = '';
 
       switch (routeName) {
-        case eTenantManagementRouteNames.Administration:
-          result = 'admin';
-          break;
         case eTenantManagementRouteNames.TenantManagement:
           result = 'tenant-management';
           break;
@@ -102,7 +93,6 @@ describe('eTenantManagementRouteNames', () => {
     it('should work with Object.entries', () => {
       const entries = Object.entries(eTenantManagementRouteNames);
       expect(entries).toEqual([
-        ['Administration', 'AbpUiNavigation::Menu:Administration'],
         ['TenantManagement', 'AbpTenantManagement::Menu:TenantManagement'],
         ['Tenants', 'AbpTenantManagement::Tenants'],
       ]);
@@ -111,7 +101,6 @@ describe('eTenantManagementRouteNames', () => {
     it('should work with Object.values', () => {
       const values = Object.values(eTenantManagementRouteNames);
       expect(values).toEqual([
-        'AbpUiNavigation::Menu:Administration',
         'AbpTenantManagement::Menu:TenantManagement',
         'AbpTenantManagement::Tenants',
       ]);
@@ -119,19 +108,15 @@ describe('eTenantManagementRouteNames', () => {
 
     it('should work with Object.keys', () => {
       const keys = Object.keys(eTenantManagementRouteNames);
-      expect(keys).toEqual(['Administration', 'TenantManagement', 'Tenants']);
+      expect(keys).toEqual(['TenantManagement', 'Tenants']);
     });
 
     it('should be usable for route name lookup', () => {
       const routeLabels: Record<TenantManagementRouteNameKey, string> = {
-        [eTenantManagementRouteNames.Administration]: 'Administration',
         [eTenantManagementRouteNames.TenantManagement]: 'Tenant Management',
         [eTenantManagementRouteNames.Tenants]: 'Tenants',
       };
 
-      expect(routeLabels[eTenantManagementRouteNames.Administration]).toBe(
-        'Administration'
-      );
       expect(routeLabels[eTenantManagementRouteNames.TenantManagement]).toBe(
         'Tenant Management'
       );
@@ -141,14 +126,10 @@ describe('eTenantManagementRouteNames', () => {
     it('should be usable for localization keys', () => {
       // Simulate localization lookup
       const localizations: Record<string, string> = {
-        'AbpUiNavigation::Menu:Administration': 'Administration',
         'AbpTenantManagement::Menu:TenantManagement': 'Tenant Management',
         'AbpTenantManagement::Tenants': 'Tenants',
       };
 
-      expect(localizations[eTenantManagementRouteNames.Administration]).toBe(
-        'Administration'
-      );
       expect(localizations[eTenantManagementRouteNames.TenantManagement]).toBe(
         'Tenant Management'
       );
@@ -157,11 +138,6 @@ describe('eTenantManagementRouteNames', () => {
   });
 
   describe('localization key format', () => {
-    it('should use AbpUiNavigation for Administration prefix', () => {
-      const value = eTenantManagementRouteNames.Administration;
-      expect(value.startsWith('AbpUiNavigation::')).toBe(true);
-    });
-
     it('should use AbpTenantManagement for TenantManagement prefix', () => {
       const value = eTenantManagementRouteNames.TenantManagement;
       expect(value.startsWith('AbpTenantManagement::')).toBe(true);
@@ -173,12 +149,20 @@ describe('eTenantManagementRouteNames', () => {
     });
 
     it('should use Menu: prefix for menu items', () => {
-      expect(eTenantManagementRouteNames.Administration).toContain('Menu:');
       expect(eTenantManagementRouteNames.TenantManagement).toContain('Menu:');
     });
 
     it('should not use Menu: prefix for non-menu items', () => {
       expect(eTenantManagementRouteNames.Tenants).not.toContain('Menu:');
+    });
+  });
+
+  describe('v3.0.0 migration notes', () => {
+    it('should document that Administration was removed', () => {
+      // In v3.0.0, Administration was removed from eTenantManagementRouteNames
+      // Users should use 'AbpUiNavigation::Menu:Administration' directly
+      const administrationValue = 'AbpUiNavigation::Menu:Administration';
+      expect(typeof administrationValue).toBe('string');
     });
   });
 });

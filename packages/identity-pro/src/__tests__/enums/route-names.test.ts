@@ -1,16 +1,12 @@
 /**
  * Tests for Identity Pro Route Names
- * @abpjs/identity-pro v2.9.0
+ * @abpjs/identity-pro v3.0.0
  */
 import { describe, it, expect } from 'vitest';
 import { eIdentityRouteNames, IdentityRouteNameKey } from '../../enums';
 
 describe('eIdentityRouteNames', () => {
   describe('route name values', () => {
-    it('should have Administration route name', () => {
-      expect(eIdentityRouteNames.Administration).toBe('AbpUiNavigation::Menu:Administration');
-    });
-
     it('should have IdentityManagement route name', () => {
       expect(eIdentityRouteNames.IdentityManagement).toBe('AbpIdentity::Menu:IdentityManagement');
     });
@@ -27,20 +23,23 @@ describe('eIdentityRouteNames', () => {
       expect(eIdentityRouteNames.ClaimTypes).toBe('AbpIdentity::ClaimTypes');
     });
 
-    it('should have OrganizationUnits route name (v2.9.0)', () => {
+    it('should have OrganizationUnits route name', () => {
       expect(eIdentityRouteNames.OrganizationUnits).toBe('AbpIdentity::OrganizationUnits');
+    });
+
+    it('should NOT have Administration route name in v3.0.0', () => {
+      // Administration was removed in v3.0.0
+      expect((eIdentityRouteNames as Record<string, string>).Administration).toBeUndefined();
     });
   });
 
   describe('string usage', () => {
     it('should be usable as string values', () => {
-      const admin: string = eIdentityRouteNames.Administration;
       const identity: string = eIdentityRouteNames.IdentityManagement;
       const roles: string = eIdentityRouteNames.Roles;
       const users: string = eIdentityRouteNames.Users;
       const claims: string = eIdentityRouteNames.ClaimTypes;
 
-      expect(admin).toBe('AbpUiNavigation::Menu:Administration');
       expect(identity).toBe('AbpIdentity::Menu:IdentityManagement');
       expect(roles).toBe('AbpIdentity::Roles');
       expect(users).toBe('AbpIdentity::Users');
@@ -60,26 +59,26 @@ describe('eIdentityRouteNames', () => {
   });
 
   describe('object structure', () => {
-    it('should have correct keys', () => {
+    it('should have correct keys (v3.0.0 - no Administration)', () => {
       const keys = Object.keys(eIdentityRouteNames);
-      expect(keys).toContain('Administration');
       expect(keys).toContain('IdentityManagement');
       expect(keys).toContain('Roles');
       expect(keys).toContain('Users');
       expect(keys).toContain('ClaimTypes');
       expect(keys).toContain('OrganizationUnits');
-      expect(keys).toHaveLength(6);
+      expect(keys).not.toContain('Administration');
+      expect(keys).toHaveLength(5);
     });
 
-    it('should have correct values', () => {
+    it('should have correct values (v3.0.0)', () => {
       const values = Object.values(eIdentityRouteNames);
-      expect(values).toContain('AbpUiNavigation::Menu:Administration');
       expect(values).toContain('AbpIdentity::Menu:IdentityManagement');
       expect(values).toContain('AbpIdentity::Roles');
       expect(values).toContain('AbpIdentity::Users');
       expect(values).toContain('AbpIdentity::ClaimTypes');
       expect(values).toContain('AbpIdentity::OrganizationUnits');
-      expect(values).toHaveLength(6);
+      expect(values).not.toContain('AbpUiNavigation::Menu:Administration');
+      expect(values).toHaveLength(5);
     });
 
     it('should have unique values for each route', () => {
@@ -112,11 +111,7 @@ describe('eIdentityRouteNames', () => {
   });
 
   describe('navigation hierarchy', () => {
-    it('should have Administration as top-level menu', () => {
-      expect(eIdentityRouteNames.Administration).toContain('Menu:Administration');
-    });
-
-    it('should have IdentityManagement as submenu', () => {
+    it('should have IdentityManagement as top-level menu in v3.0.0', () => {
       expect(eIdentityRouteNames.IdentityManagement).toContain('Menu:IdentityManagement');
     });
 
@@ -131,14 +126,12 @@ describe('eIdentityRouteNames', () => {
 
 describe('IdentityRouteNameKey type', () => {
   it('should accept valid route name keys', () => {
-    const adminKey: IdentityRouteNameKey = 'AbpUiNavigation::Menu:Administration';
     const identityKey: IdentityRouteNameKey = 'AbpIdentity::Menu:IdentityManagement';
     const rolesKey: IdentityRouteNameKey = 'AbpIdentity::Roles';
     const usersKey: IdentityRouteNameKey = 'AbpIdentity::Users';
     const claimsKey: IdentityRouteNameKey = 'AbpIdentity::ClaimTypes';
     const orgUnitsKey: IdentityRouteNameKey = 'AbpIdentity::OrganizationUnits';
 
-    expect(adminKey).toBe(eIdentityRouteNames.Administration);
     expect(identityKey).toBe(eIdentityRouteNames.IdentityManagement);
     expect(rolesKey).toBe(eIdentityRouteNames.Roles);
     expect(usersKey).toBe(eIdentityRouteNames.Users);
@@ -156,7 +149,6 @@ describe('IdentityRouteNameKey type', () => {
       return Object.values(eIdentityRouteNames).includes(key);
     };
 
-    expect(isValidRouteKey(eIdentityRouteNames.Administration)).toBe(true);
     expect(isValidRouteKey(eIdentityRouteNames.IdentityManagement)).toBe(true);
     expect(isValidRouteKey(eIdentityRouteNames.Roles)).toBe(true);
     expect(isValidRouteKey(eIdentityRouteNames.Users)).toBe(true);
@@ -166,26 +158,23 @@ describe('IdentityRouteNameKey type', () => {
 
   it('should work with Record type for route configuration', () => {
     const routePaths: Record<IdentityRouteNameKey, string> = {
-      'AbpUiNavigation::Menu:Administration': '/admin',
-      'AbpIdentity::Menu:IdentityManagement': '/admin/identity',
-      'AbpIdentity::Roles': '/admin/identity/roles',
-      'AbpIdentity::Users': '/admin/identity/users',
-      'AbpIdentity::ClaimTypes': '/admin/identity/claim-types',
-      'AbpIdentity::OrganizationUnits': '/admin/identity/organization-units',
+      'AbpIdentity::Menu:IdentityManagement': '/identity',
+      'AbpIdentity::Roles': '/identity/roles',
+      'AbpIdentity::Users': '/identity/users',
+      'AbpIdentity::ClaimTypes': '/identity/claim-types',
+      'AbpIdentity::OrganizationUnits': '/identity/organization-units',
     };
 
-    expect(routePaths[eIdentityRouteNames.Administration]).toBe('/admin');
-    expect(routePaths[eIdentityRouteNames.IdentityManagement]).toBe('/admin/identity');
-    expect(routePaths[eIdentityRouteNames.Roles]).toBe('/admin/identity/roles');
-    expect(routePaths[eIdentityRouteNames.Users]).toBe('/admin/identity/users');
-    expect(routePaths[eIdentityRouteNames.ClaimTypes]).toBe('/admin/identity/claim-types');
-    expect(routePaths[eIdentityRouteNames.OrganizationUnits]).toBe('/admin/identity/organization-units');
+    expect(routePaths[eIdentityRouteNames.IdentityManagement]).toBe('/identity');
+    expect(routePaths[eIdentityRouteNames.Roles]).toBe('/identity/roles');
+    expect(routePaths[eIdentityRouteNames.Users]).toBe('/identity/users');
+    expect(routePaths[eIdentityRouteNames.ClaimTypes]).toBe('/identity/claim-types');
+    expect(routePaths[eIdentityRouteNames.OrganizationUnits]).toBe('/identity/organization-units');
   });
 
   it('should be usable for localization lookups', () => {
     const mockLocalize = (key: IdentityRouteNameKey): string => {
       const translations: Record<IdentityRouteNameKey, string> = {
-        'AbpUiNavigation::Menu:Administration': 'Administration',
         'AbpIdentity::Menu:IdentityManagement': 'Identity Management',
         'AbpIdentity::Roles': 'Roles',
         'AbpIdentity::Users': 'Users',
@@ -195,7 +184,6 @@ describe('IdentityRouteNameKey type', () => {
       return translations[key];
     };
 
-    expect(mockLocalize(eIdentityRouteNames.Administration)).toBe('Administration');
     expect(mockLocalize(eIdentityRouteNames.IdentityManagement)).toBe('Identity Management');
     expect(mockLocalize(eIdentityRouteNames.Roles)).toBe('Roles');
     expect(mockLocalize(eIdentityRouteNames.Users)).toBe('Users');

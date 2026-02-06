@@ -147,7 +147,7 @@ export function ConfirmationDialog({ className }: ConfirmationDialogProps): Reac
   };
 
   const handleOpenChange = (details: { open: boolean }) => {
-    if (!details.open && options?.closable !== false) {
+    if (!details.open && options?.dismissible !== false) {
       handleDismiss();
     }
   };

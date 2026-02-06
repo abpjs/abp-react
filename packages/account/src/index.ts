@@ -1,7 +1,15 @@
 /**
  * @abpjs/account
  * ABP Framework Account module for React
- * Translated from @abp/ng.account v2.9.0
+ * Translated from @abp/ng.account v3.0.0
+ *
+ * Changes in v3.0.0:
+ * - New config subpackage: config/providers with ACCOUNT_ROUTE_PROVIDERS, configureRoutes
+ * - New config/enums: eAccountRouteNames moved from lib/enums to config/enums
+ * - New utils: accountOptionsFactory for creating account options with defaults
+ * - New helper: initializeAccountRoutes() for easy route initialization
+ * - Merged @abp/ng.account.config into main package (no longer a separate dependency)
+ * - Dependency updates to @abp/ng.theme.shared v3.0.0
  *
  * Changes in v2.9.0:
  * - Version bump only (dependency updates to @abp/ng.theme.shared v2.9.0)
@@ -23,7 +31,7 @@
  * - Dependency updates to @abp/ng.theme.shared v2.2.0 and @abp/ng.account.config v2.2.0
  * - No functional code changes
  *
- * @version 2.9.0
+ * @version 3.0.0
  * @since 2.0.0 - Added Account namespace with component interface types
  * @since 2.0.0 - Added isSelfRegistrationEnabled support in Login/Register components
  * @since 2.0.0 - Added enableLocalLogin support in AuthWrapper component
@@ -34,9 +42,13 @@
  * @since 2.7.0 - Added eAccountComponents and eAccountRouteNames enums
  * @since 2.7.0 - Components have static keys for component replacement system
  * @since 2.9.0 - Version bump only (dependency updates)
+ * @since 3.0.0 - Config subpackage, accountOptionsFactory, initializeAccountRoutes
  */
 
-// Enums (v2.7.0)
+// Config (v3.0.0) - Route providers and enums
+export * from './config';
+
+// Enums (v2.7.0, updated v3.0.0)
 export * from './enums';
 
 // Models
@@ -44,6 +56,9 @@ export * from './models';
 
 // Services
 export * from './services';
+
+// Utils (v3.0.0)
+export * from './utils';
 
 // Contexts/Providers
 export * from './providers';

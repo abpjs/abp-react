@@ -172,6 +172,7 @@ function TestPermissionHook() {
     toggleSelectThisTab,
     toggleSelectAll,
     getSelectedGroupPermissions,
+    getAssignedCount,
     isGranted,
     isGrantedByRole,
     isGrantedByOtherProviderName,
@@ -317,6 +318,7 @@ function TestPermissionHook() {
             <tr><td style={{ padding: '8px' }}>toggleSelectThisTab</td><td>Toggle all permissions in current tab</td></tr>
             <tr><td style={{ padding: '8px' }}>toggleSelectAll</td><td>Toggle all permissions</td></tr>
             <tr><td style={{ padding: '8px' }}>getSelectedGroupPermissions</td><td>Get permissions for selected group with margin</td></tr>
+            <tr style={{ background: 'rgba(100,255,100,0.1)' }}><td style={{ padding: '8px' }}>getAssignedCount</td><td>Get count of granted permissions for a group (v3.0.0)</td></tr>
             <tr><td style={{ padding: '8px' }}>isGranted</td><td>Check if permission is granted</td></tr>
             <tr><td style={{ padding: '8px' }}>isGrantedByRole</td><td>Check if permission is granted by a role (deprecated in v1.1.0)</td></tr>
             <tr style={{ background: 'rgba(100,108,255,0.1)' }}><td style={{ padding: '8px' }}>isGrantedByOtherProviderName</td><td>Check if permission is granted by another provider (v1.1.0)</td></tr>
@@ -594,6 +596,153 @@ function TestComponentInterfaces() {
   )
 }
 
+function TestV300Features() {
+  const [testProviderKey, setTestProviderKey] = useState('')
+  const [testProviderName, setTestProviderName] = useState<'R' | 'U'>('R')
+  const { isAuthenticated } = useAuth()
+
+  const {
+    groups,
+    isLoading,
+    fetchPermissions,
+    getAssignedCount,
+    toggleSelectAll,
+    selectAllTab,
+    reset,
+  } = usePermissionManagement()
+
+  const handleFetch = () => {
+    if (testProviderKey) {
+      fetchPermissions(testProviderKey, testProviderName)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.0.0</h2>
+
+      <div className="test-card">
+        <h3>getAssignedCount(groupName: string): number</h3>
+        <p>New method to get the count of granted permissions for a specific permission group.</p>
+        <p>Useful for showing badge counts in permission management UI tabs.</p>
+
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px',
+          marginTop: '1rem'
+        }}>
+{`const { getAssignedCount } = usePermissionManagement();
+
+// Get count of granted permissions in "Identity Management" group
+const count = getAssignedCount('IdentityManagement');
+console.log(\`\${count} permissions granted\`);`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Interactive Demo</h3>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
+          <select
+            value={testProviderName}
+            onChange={(e) => setTestProviderName(e.target.value as 'R' | 'U')}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333'
+            }}
+          >
+            <option value="R">Role (R)</option>
+            <option value="U">User (U)</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Provider Key (ID)"
+            value={testProviderKey}
+            onChange={(e) => setTestProviderKey(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+              flex: 1
+            }}
+          />
+          <button onClick={handleFetch} disabled={!testProviderKey || !isAuthenticated || isLoading}>
+            {isLoading ? 'Loading...' : 'Fetch'}
+          </button>
+        </div>
+
+        {groups.length > 0 && (
+          <>
+            <div style={{ marginBottom: '1rem' }}>
+              <button onClick={toggleSelectAll} style={{ marginRight: '0.5rem' }}>
+                {selectAllTab ? 'Deselect All' : 'Select All'}
+              </button>
+              <button onClick={reset} style={{ background: '#f44', color: 'white' }}>
+                Reset
+              </button>
+            </div>
+
+            <h4>Permission Groups with Assigned Counts:</h4>
+            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #333' }}>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>Group Name</th>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>Display Name</th>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>Total Permissions</th>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>Assigned Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {groups.map((group) => {
+                  const assignedCount = getAssignedCount(group.name)
+                  const totalCount = group.permissions.length
+                  const allAssigned = assignedCount === totalCount
+                  const noneAssigned = assignedCount === 0
+
+                  return (
+                    <tr key={group.name}>
+                      <td style={{ padding: '8px' }}><code>{group.name}</code></td>
+                      <td style={{ padding: '8px' }}>{group.displayName}</td>
+                      <td style={{ padding: '8px' }}>{totalCount}</td>
+                      <td style={{ padding: '8px' }}>
+                        <span style={{
+                          background: allAssigned ? '#2ecc71' : noneAssigned ? '#e74c3c' : '#f39c12',
+                          color: 'white',
+                          padding: '2px 8px',
+                          borderRadius: '10px',
+                          fontSize: '12px'
+                        }}>
+                          {assignedCount} / {totalCount}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </>
+        )}
+
+        {!isAuthenticated && (
+          <p style={{ color: '#f88', fontSize: '12px' }}>Login required to test this feature</p>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>Use Cases</h3>
+        <ul>
+          <li><strong>Badge Counts:</strong> Show how many permissions are granted per group in tab headers</li>
+          <li><strong>Progress Indicators:</strong> Display permission assignment progress</li>
+          <li><strong>Summary Views:</strong> Quick overview of permission states across groups</li>
+          <li><strong>Validation:</strong> Check if any permissions are assigned before saving</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 function TestV270Features() {
   return (
     <div className="test-section">
@@ -781,13 +930,19 @@ function TestApiEndpoints() {
 export function TestPermissionManagementPage() {
   return (
     <div>
-      <h1>@abpjs/permission-management Tests v2.9.0</h1>
+      <h1>@abpjs/permission-management Tests v3.0.0</h1>
       <p>Testing permission management modal, hooks, and state service.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.9.0 - Dependency updates (version bump only)</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 3.0.0 - Added getAssignedCount method</p>
 
-      {/* v2.7.0 Features - Highlighted at top */}
+      {/* v3.0.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #9b59b6', paddingTop: '1rem' }}>
+        v3.0.0 New Features
+      </h2>
+      <TestV300Features />
+
+      {/* v2.7.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
-        v2.7.0 New Features
+        v2.7.0 Features
       </h2>
       <TestV270Features />
 

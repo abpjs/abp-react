@@ -1,7 +1,15 @@
 /**
  * @abpjs/saas
  * ABP Framework SaaS module for React
- * Translated from @volo/abp.ng.saas v2.7.0
+ * Translated from @volo/abp.ng.saas v3.0.0
+ *
+ * Changes in v3.0.0:
+ * - Added config subpackage with policy names, route names, and route providers
+ * - Added tokens subpackage with DEFAULT_SAAS_* extension constants
+ * - Added guards subpackage with SaasExtensionsGuard
+ * - Moved route-names from lib/enums to config/enums
+ * - Removed Administration key from eSaasRouteNames (breaking change)
+ * - Added config-options model for extensibility configuration
  *
  * Changes in v2.7.0:
  * - Changed eSaasComponents from enum to const object
@@ -30,8 +38,11 @@
  * - No functional code changes
  *
  * @since 2.0.0
- * @updated 2.7.0
+ * @updated 3.0.0
  */
+
+// Config subpackage (v3.0.0)
+export * from './config';
 
 // Models
 export * from './models';
@@ -42,8 +53,14 @@ export * from './constants';
 // Enums
 export * from './enums';
 
+// Guards (v3.0.0)
+export * from './guards';
+
 // Services
 export * from './services';
+
+// Tokens (v3.0.0)
+export * from './tokens';
 
 // Hooks
 export * from './hooks';

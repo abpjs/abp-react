@@ -1,5 +1,6 @@
 /**
  * Tests for v2.7.0 enums
+ * Updated for v3.0.0 (added CurrentUser and Languages)
  */
 import { describe, it, expect } from 'vitest';
 import { eThemeBasicComponents, eNavigationElementNames } from '../enums';
@@ -29,6 +30,15 @@ describe('eThemeBasicComponents', () => {
     expect(eThemeBasicComponents.NavItems).toBe('Theme.NavItemsComponent');
   });
 
+  // v3.0.0 additions
+  it('should have CurrentUser key (v3.0.0)', () => {
+    expect(eThemeBasicComponents.CurrentUser).toBe('Theme.CurrentUserComponent');
+  });
+
+  it('should have Languages key (v3.0.0)', () => {
+    expect(eThemeBasicComponents.Languages).toBe('Theme.LanguagesComponent');
+  });
+
   it('should have all expected keys', () => {
     const keys = Object.keys(eThemeBasicComponents);
     expect(keys).toContain('ApplicationLayout');
@@ -37,7 +47,9 @@ describe('eThemeBasicComponents', () => {
     expect(keys).toContain('Logo');
     expect(keys).toContain('Routes');
     expect(keys).toContain('NavItems');
-    expect(keys).toHaveLength(6);
+    expect(keys).toContain('CurrentUser');
+    expect(keys).toContain('Languages');
+    expect(keys).toHaveLength(8);
   });
 
   it('should have unique values', () => {
@@ -55,6 +67,8 @@ describe('eThemeBasicComponents', () => {
     expect(eThemeBasicComponents.Logo).toMatch(/^Theme\./);
     expect(eThemeBasicComponents.Routes).toMatch(/^Theme\./);
     expect(eThemeBasicComponents.NavItems).toMatch(/^Theme\./);
+    expect(eThemeBasicComponents.CurrentUser).toMatch(/^Theme\./);
+    expect(eThemeBasicComponents.Languages).toMatch(/^Theme\./);
   });
 });
 

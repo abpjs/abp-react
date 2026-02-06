@@ -70,7 +70,8 @@ export function ClaimModal({
 
   const {
     claimTypeNames,
-    fetchClaimTypeNames,
+    fetchRolesClaimTypes,
+    fetchUsersClaimTypes,
     getClaims,
     updateClaims,
     isLoading,
@@ -88,13 +89,17 @@ export function ClaimModal({
   const initModal = useCallback(async () => {
     if (!visible || !subjectId) return;
 
-    // Fetch claim type names for dropdown
-    await fetchClaimTypeNames();
+    // Fetch claim type names for dropdown based on subject type
+    if (subjectType === 'roles') {
+      await fetchRolesClaimTypes();
+    } else {
+      await fetchUsersClaimTypes();
+    }
 
     // Fetch existing claims for the subject
     const claims = await getClaims(subjectId, subjectType);
     setSubjectClaims(claims);
-  }, [visible, subjectId, subjectType, fetchClaimTypeNames, getClaims]);
+  }, [visible, subjectId, subjectType, fetchRolesClaimTypes, fetchUsersClaimTypes, getClaims]);
 
   // Initialize when modal opens
   useEffect(() => {

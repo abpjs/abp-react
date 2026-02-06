@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/core",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "description": "ABP Framework Core for React - Translation of @abp/ng.core",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -64,7 +64,7 @@
     "react-redux": "^9.0.0"
   },
   "devDependencies": {
-    "@abp/ng.core": "2.9.0",
+    "@abp/ng.core": "3.0.0",
     "@vitest/coverage-v8": "^3.2.0"
   }
 }
