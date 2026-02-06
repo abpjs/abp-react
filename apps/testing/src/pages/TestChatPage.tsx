@@ -2,6 +2,7 @@
  * Test page for @abpjs/chat package
  * Tests: Chat components, hooks, services, constants, enums
  * @since 2.9.0 - New package
+ * @updated 3.0.0 - Added config subpackage with policy names, route providers, nav item providers
  */
 import { useState } from 'react'
 import {
@@ -22,6 +23,15 @@ import {
   // Models
   createChatContactDto,
   createChatMessageDto,
+  // v3.0.0 Config imports
+  eChatPolicyNames,
+  CHAT_ROUTE_PROVIDERS,
+  configureRoutes,
+  initializeChatRoutes,
+  CHAT_NAV_ITEM_PROVIDERS,
+  configureNavItems,
+  initializeChatNavItems,
+  CHAT_NAV_ITEM_CONFIG,
 } from '@abpjs/chat'
 import type {
   ChatContactDto,
@@ -806,10 +816,269 @@ function ChatPage() {
   )
 }
 
+function TestV300Features() {
+  return (
+    <div className="test-section">
+      <h2>v3.0.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Config Subpackage <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>
+          Version 3.0.0 introduces a config subpackage with enums, route providers, and nav item providers.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`// Config exports available from main package
+import {
+  // Config enums
+  eChatPolicyNames,
+  eChatRouteNames,  // Now in config, re-exported for backward compat
+
+  // Route providers
+  CHAT_ROUTE_PROVIDERS,
+  configureRoutes,
+  initializeChatRoutes,
+
+  // Nav item providers
+  CHAT_NAV_ITEM_PROVIDERS,
+  configureNavItems,
+  initializeChatNavItems,
+  CHAT_NAV_ITEM_CONFIG,
+} from '@abpjs/chat';`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eChatPolicyNames Enum <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>New enum for permission policy checks:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eChatPolicyNames).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import { eChatPolicyNames } from '@abpjs/chat';
+
+// Check permissions
+const hasChatPermission = grantedPolicies[eChatPolicyNames.Messaging];
+
+// Use in route configuration
+{
+  path: '/chat',
+  requiredPolicy: eChatPolicyNames.Messaging
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Route Providers <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>New route configuration providers:</p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>CHAT_ROUTE_PROVIDERS:</code>{' '}
+          <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof CHAT_ROUTE_PROVIDERS === 'object' ? 'object' : 'undefined'}
+          </code>
+        </p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>configureRoutes:</code>{' '}
+          <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof configureRoutes}
+          </code>
+        </p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>initializeChatRoutes:</code>{' '}
+          <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof initializeChatRoutes}
+          </code>
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import {
+  configureRoutes,
+  initializeChatRoutes,
+  CHAT_ROUTE_PROVIDERS
+} from '@abpjs/chat';
+import { getRoutesService } from '@abpjs/core';
+
+// Option 1: Use configureRoutes with RoutesService
+const routes = getRoutesService();
+const addRoutes = configureRoutes(routes);
+addRoutes(); // Adds chat route (invisible)
+
+// Option 2: Use convenience function
+const addRoutes2 = initializeChatRoutes();
+addRoutes2();
+
+// Option 3: Use providers object
+CHAT_ROUTE_PROVIDERS.configureRoutes(routes);`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Nav Item Providers <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>Providers for navigation item configuration (ChatIcon in navbar):</p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>CHAT_NAV_ITEM_PROVIDERS:</code>{' '}
+          <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof CHAT_NAV_ITEM_PROVIDERS === 'object' ? 'object' : 'undefined'}
+          </code>
+        </p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>configureNavItems:</code>{' '}
+          <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof configureNavItems}
+          </code>
+        </p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>initializeChatNavItems:</code>{' '}
+          <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof initializeChatNavItems}
+          </code>
+        </p>
+        <p style={{ marginTop: '0.5rem' }}>
+          <code>CHAT_NAV_ITEM_CONFIG:</code>
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Property</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>id</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{CHAT_NAV_ITEM_CONFIG.id}</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>requiredPolicy</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{CHAT_NAV_ITEM_CONFIG.requiredPolicy}</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>component</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{CHAT_NAV_ITEM_CONFIG.component}</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>order</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{CHAT_NAV_ITEM_CONFIG.order}</td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import {
+  configureNavItems,
+  initializeChatNavItems,
+  CHAT_NAV_ITEM_PROVIDERS,
+  CHAT_NAV_ITEM_CONFIG
+} from '@abpjs/chat';
+import { getNavItemsService } from '@abpjs/theme-shared';
+
+// Option 1: Use configureNavItems with NavItemsService
+const navItems = getNavItemsService();
+const addNavItems = configureNavItems(navItems);
+addNavItems(); // Adds ChatIcon to navbar
+
+// Option 2: Use convenience function
+const addNavItems2 = initializeChatNavItems();
+addNavItems2();
+
+// Option 3: Use providers object
+CHAT_NAV_ITEM_PROVIDERS.configureNavItems(navItems);
+
+// Access default config
+console.log(CHAT_NAV_ITEM_CONFIG.id); // 'Chat.ChatIconComponent'`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Route Names Update <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
+        <p>
+          In v3.0.0, <code>eChatRouteNames</code> was moved to config/enums and the value changed from <code>'AbpChat::Chat'</code> to <code>'Chat'</code>.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eChatRouteNames).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>v3.0.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eChatPolicyNames</td>
+              <td>const object</td>
+              <td>Permission policy names</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>CHAT_ROUTE_PROVIDERS</td>
+              <td>object</td>
+              <td>Route configuration providers</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>configureRoutes, initializeChatRoutes</td>
+              <td>function</td>
+              <td>Route initialization functions</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>CHAT_NAV_ITEM_PROVIDERS</td>
+              <td>object</td>
+              <td>Nav item configuration providers</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>configureNavItems, initializeChatNavItems</td>
+              <td>function</td>
+              <td>Nav item initialization functions</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>CHAT_NAV_ITEM_CONFIG</td>
+              <td>object</td>
+              <td>Default nav item configuration</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eChatRouteNames</td>
+              <td>const object</td>
+              <td>Route names (value changed to 'Chat')</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestAPISummary() {
   return (
     <div className="test-section">
-      <h2>v2.9.0 API Summary</h2>
+      <h2>Complete API Summary</h2>
 
       <div className="test-card">
         <h3>Complete Package Exports</h3>
@@ -893,12 +1162,13 @@ function TestAPISummary() {
 export function TestChatPage() {
   return (
     <div>
-      <h1>@abpjs/chat Tests (v2.9.0)</h1>
+      <h1>@abpjs/chat Tests (v3.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing chat components, hooks, services, and SignalR integration.</p>
       <p style={{ fontSize: '14px', color: '#4f4', marginBottom: '16px' }}>
-        Version 2.9.0 - New package with real-time messaging support
+        Version 3.0.0 - Config subpackage with policy names, route providers, nav item providers
       </p>
 
+      <TestV300Features />
       <TestAPISummary />
       <TestChatComponent />
       <TestChatContactsComponent />

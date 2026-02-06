@@ -1,11 +1,54 @@
 /**
  * Tests for @abpjs/chat package exports
- * @abpjs/chat v2.9.0
+ * @abpjs/chat v3.0.0
  */
 import { describe, it, expect } from 'vitest';
 import * as chatExports from '../index';
 
 describe('@abpjs/chat exports', () => {
+  describe('Config (v3.0.0)', () => {
+    it('should export eChatPolicyNames', () => {
+      expect(chatExports.eChatPolicyNames).toBeDefined();
+      expect(chatExports.eChatPolicyNames.Messaging).toBe('Chat.Messaging');
+    });
+
+    it('should export CHAT_ROUTE_PROVIDERS', () => {
+      expect(chatExports.CHAT_ROUTE_PROVIDERS).toBeDefined();
+      expect(chatExports.CHAT_ROUTE_PROVIDERS.configureRoutes).toBeDefined();
+    });
+
+    it('should export configureRoutes', () => {
+      expect(chatExports.configureRoutes).toBeDefined();
+      expect(typeof chatExports.configureRoutes).toBe('function');
+    });
+
+    it('should export initializeChatRoutes', () => {
+      expect(chatExports.initializeChatRoutes).toBeDefined();
+      expect(typeof chatExports.initializeChatRoutes).toBe('function');
+    });
+
+    it('should export CHAT_NAV_ITEM_PROVIDERS', () => {
+      expect(chatExports.CHAT_NAV_ITEM_PROVIDERS).toBeDefined();
+      expect(chatExports.CHAT_NAV_ITEM_PROVIDERS.configureNavItems).toBeDefined();
+    });
+
+    it('should export configureNavItems', () => {
+      expect(chatExports.configureNavItems).toBeDefined();
+      expect(typeof chatExports.configureNavItems).toBe('function');
+    });
+
+    it('should export initializeChatNavItems', () => {
+      expect(chatExports.initializeChatNavItems).toBeDefined();
+      expect(typeof chatExports.initializeChatNavItems).toBe('function');
+    });
+
+    it('should export CHAT_NAV_ITEM_CONFIG', () => {
+      expect(chatExports.CHAT_NAV_ITEM_CONFIG).toBeDefined();
+      expect(chatExports.CHAT_NAV_ITEM_CONFIG.id).toBe('Chat.ChatIconComponent');
+      expect(chatExports.CHAT_NAV_ITEM_CONFIG.requiredPolicy).toBe('Chat.Messaging');
+    });
+  });
+
   describe('Enums', () => {
     it('should export ChatMessageSide enum', () => {
       expect(chatExports.ChatMessageSide).toBeDefined();
@@ -20,7 +63,8 @@ describe('@abpjs/chat exports', () => {
 
     it('should export eChatRouteNames', () => {
       expect(chatExports.eChatRouteNames).toBeDefined();
-      expect(chatExports.eChatRouteNames.Chat).toBe('AbpChat::Chat');
+      // v3.0.0: Changed from 'AbpChat::Chat' to 'Chat'
+      expect(chatExports.eChatRouteNames.Chat).toBe('Chat');
     });
   });
 
