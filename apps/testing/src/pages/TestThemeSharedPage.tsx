@@ -5,8 +5,9 @@
  * @updated 2.2.0 - Dependency updates and cleanup (no new features)
  * @updated 2.4.0 - THEME_SHARED_APPEND_CONTENT token, Toaster.Status deprecation update
  * @updated 2.7.0 - ModalService, validation-utils, HTTP_ERROR_CONFIG, isHomeShow
+ * @updated 2.9.0 - RTL support, LazyStyleHandler, NavItems, LAZY_STYLES token, dismissible
  */
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import {
   useToaster,
   useConfirmation,
@@ -35,9 +36,285 @@ import {
   HttpErrorConfigContext,
   httpErrorConfigFactory,
   useHttpErrorConfig,
+  // v2.9.0: RTL/LTR support and lazy styles
+  BOOTSTRAP,
+  useLazyStyleHandler,
+  createLazyStyleHref,
+  getLoadedBootstrapDirection,
+  // v2.9.0: Lazy styles token
+  LAZY_STYLES,
+  DEFAULT_LAZY_STYLES,
+  LazyStylesContext,
+  useLazyStyles,
+  // v2.9.0: Nav items management
+  addNavItem,
+  removeNavItem,
+  clearNavItems,
+  getNavItemsSync,
+  subscribeToNavItems,
 } from '@abpjs/theme-shared'
-import type { SettingsStore } from '@abpjs/theme-shared'
+import type { SettingsStore, NavItem } from '@abpjs/theme-shared'
 import { useAbp, useAuth } from '@abpjs/core'
+
+/**
+ * v2.9.0 Features Section
+ * Demonstrates:
+ * - LocaleDirection type for RTL/LTR support
+ * - useLazyStyleHandler hook for direction switching
+ * - createLazyStyleHref utility
+ * - getLoadedBootstrapDirection function
+ * - initLazyStyleHandler for non-hook contexts
+ * - LAZY_STYLES token and useLazyStyles hook
+ * - NavItem management (addNavItem, removeNavItem, getNavItems, etc.)
+ * - Confirmation.Options.dismissible property
+ * - BOOTSTRAP constant
+ */
+function TestV290Features() {
+  const [navItems, setNavItems] = useState<NavItem[]>([])
+  const [nextOrder, setNextOrder] = useState(1)
+  const confirmation = useConfirmation()
+  const [dismissibleResult, setDismissibleResult] = useState<string | null>(null)
+
+  // useLazyStyleHandler hook demo
+  const lazyStyleHandler = useLazyStyleHandler({ initialDirection: 'ltr' })
+
+  // useLazyStyles hook demo
+  const lazyStyles = useLazyStyles()
+
+  // Subscribe to nav items changes
+  useEffect(() => {
+    const unsubscribe = subscribeToNavItems((items) => {
+      setNavItems([...items])
+    })
+    return unsubscribe
+  }, [])
+
+  // Add a test nav item
+  const handleAddNavItem = () => {
+    const newItem: NavItem = {
+      html: `<span>Nav Item ${nextOrder}</span>`,
+      order: nextOrder * 10,
+      permission: nextOrder % 2 === 0 ? 'Admin.Access' : undefined,
+    }
+    addNavItem(newItem)
+    setNextOrder((prev) => prev + 1)
+  }
+
+  // Add nav item with component
+  const handleAddComponentNavItem = () => {
+    const MockComponent = () => <span style={{ color: '#6cf' }}>Component Nav #{nextOrder}</span>
+    const newItem: NavItem = {
+      component: MockComponent,
+      order: nextOrder * 10,
+    }
+    addNavItem(newItem)
+    setNextOrder((prev) => prev + 1)
+  }
+
+  // Remove last nav item
+  const handleRemoveLastNavItem = () => {
+    const items = getNavItemsSync()
+    if (items.length > 0) {
+      removeNavItem(items[items.length - 1])
+    }
+  }
+
+  // Test dismissible confirmation
+  const showDismissibleConfirmation = async () => {
+    setDismissibleResult(null)
+    const status = await confirmation.warn(
+      'This confirmation uses the new dismissible property (v2.9.0). Try clicking outside or pressing Escape.',
+      'Dismissible Demo',
+      { dismissible: true }
+    )
+    setDismissibleResult(
+      status === Confirmation.Status.confirm
+        ? 'Confirmed!'
+        : status === Confirmation.Status.reject
+          ? 'Cancelled'
+          : 'Dismissed'
+    )
+  }
+
+  // Test non-dismissible confirmation
+  const showNonDismissibleConfirmation = async () => {
+    setDismissibleResult(null)
+    const status = await confirmation.warn(
+      'This confirmation has dismissible: false. Click Yes or Cancel to close.',
+      'Non-Dismissible Demo',
+      { dismissible: false }
+    )
+    setDismissibleResult(
+      status === Confirmation.Status.confirm ? 'Confirmed!' : 'Cancelled'
+    )
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v2.9.0 New Features</h2>
+
+      <div className="test-card">
+        <h3>BOOTSTRAP Constant & RTL Support</h3>
+        <p>New <code>BOOTSTRAP</code> constant for lazy-loading direction-aware stylesheets.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6cf' }}>BOOTSTRAP</code> = "{BOOTSTRAP}"
+        </div>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#888' }}>
+          Use <code>createLazyStyleHref()</code> to generate direction-specific URLs:
+        </p>
+        <div style={{ marginTop: '0.25rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6f6' }}>createLazyStyleHref(BOOTSTRAP, 'ltr')</code> → "{createLazyStyleHref(BOOTSTRAP, 'ltr')}"<br />
+          <code style={{ color: '#fc6' }}>createLazyStyleHref(BOOTSTRAP, 'rtl')</code> → "{createLazyStyleHref(BOOTSTRAP, 'rtl')}"
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>useLazyStyleHandler Hook</h3>
+        <p>Hook for managing RTL/LTR direction and lazy-loaded stylesheets.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6cf' }}>direction</code>: {lazyStyleHandler.direction}<br />
+          <code style={{ color: '#6cf' }}>document.body.dir</code>: {document.body.dir || '(empty)'}
+        </div>
+        <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+          <button
+            onClick={() => lazyStyleHandler.setDirection('ltr')}
+            style={{ background: lazyStyleHandler.direction === 'ltr' ? '#646cff' : undefined }}
+          >
+            Set LTR
+          </button>
+          <button
+            onClick={() => lazyStyleHandler.setDirection('rtl')}
+            style={{ background: lazyStyleHandler.direction === 'rtl' ? '#646cff' : undefined }}
+          >
+            Set RTL
+          </button>
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
+          Note: Changing direction also updates <code>document.body.dir</code> attribute.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>getLoadedBootstrapDirection()</h3>
+        <p>Detect the currently loaded bootstrap direction from stylesheets.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6cf' }}>getLoadedBootstrapDirection()</code>: {getLoadedBootstrapDirection() ?? 'undefined (no bootstrap loaded)'}
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>initLazyStyleHandler()</h3>
+        <p>Factory function for non-hook contexts (e.g., initialization scripts).</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#888' }}>const init = initLazyStyleHandler({'{ initialDirection: "rtl" }'})</code><br />
+          <code style={{ color: '#888' }}>const {'{ direction }'} = init()</code>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>LAZY_STYLES Token & useLazyStyles Hook</h3>
+        <p>Token for configuring lazy-loaded stylesheets. Provides Context for customization.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6cf' }}>LAZY_STYLES</code>: [{LAZY_STYLES.map((s, i) => (
+            <span key={i}>"{s}"{i < LAZY_STYLES.length - 1 ? ', ' : ''}</span>
+          ))}]<br />
+          <code style={{ color: '#6cf' }}>DEFAULT_LAZY_STYLES</code>: [{DEFAULT_LAZY_STYLES.map((s, i) => (
+            <span key={i}>"{s}"{i < DEFAULT_LAZY_STYLES.length - 1 ? ', ' : ''}</span>
+          ))}]
+        </div>
+        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#888' }}>
+          <code>useLazyStyles()</code> returns: [{lazyStyles.map((s, i) => (
+            <span key={i}>"{s}"{i < lazyStyles.length - 1 ? ', ' : ''}</span>
+          ))}]
+        </p>
+        <div style={{ marginTop: '0.75rem' }}>
+          <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Custom LazyStylesContext demo:</p>
+          <LazyStylesContext.Provider value={['custom-{{dir}}.css', 'theme-{{dir}}.css']}>
+            <LazyStylesDemo />
+          </LazyStylesContext.Provider>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>NavItem Management</h3>
+        <p>Functions for managing navigation items dynamically.</p>
+        <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button onClick={handleAddNavItem}>Add HTML NavItem</button>
+          <button onClick={handleAddComponentNavItem}>Add Component NavItem</button>
+          <button onClick={handleRemoveLastNavItem} disabled={navItems.length === 0}>
+            Remove Last
+          </button>
+          <button onClick={clearNavItems} disabled={navItems.length === 0}>
+            Clear All
+          </button>
+        </div>
+        <div style={{ marginTop: '0.75rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <p style={{ marginBottom: '0.25rem' }}>Current nav items ({navItems.length}):</p>
+          {navItems.length === 0 ? (
+            <p style={{ color: '#888' }}>No items</p>
+          ) : (
+            <ul style={{ marginLeft: '1rem', marginTop: '0.25rem' }}>
+              {navItems.map((item, index) => (
+                <li key={index} style={{ marginBottom: '0.25rem' }}>
+                  <code style={{ color: '#6cf' }}>order</code>: {item.order ?? 0}
+                  {item.html && <>, <code style={{ color: '#fc6' }}>html</code>: {item.html}</>}
+                  {item.component && <>, <code style={{ color: '#6f6' }}>component</code>: defined</>}
+                  {item.permission && <>, <code style={{ color: '#f88' }}>permission</code>: {item.permission}</>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
+          Functions: <code>addNavItem()</code>, <code>removeNavItem()</code>, <code>clearNavItems()</code>,{' '}
+          <code>getNavItemsSync()</code>, <code>subscribeToNavItems()</code>, <code>getNavItems()</code>
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Confirmation.Options.dismissible</h3>
+        <p>New <code>dismissible</code> property (v2.9.0) replaces deprecated <code>closable</code>.</p>
+        <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button onClick={showDismissibleConfirmation}>dismissible: true</button>
+          <button onClick={showNonDismissibleConfirmation}>dismissible: false</button>
+        </div>
+        {dismissibleResult && (
+          <p style={{ marginTop: '0.5rem', color: dismissibleResult.includes('!') ? '#6f6' : '#f88', fontSize: '0.85rem' }}>
+            Result: {dismissibleResult}
+          </p>
+        )}
+        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#f88' }}>
+          Note: <code>closable</code> is deprecated and will be removed in a future version.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>LocaleDirection Type</h3>
+        <p>New TypeScript type for direction values.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6cf' }}>type LocaleDirection = 'ltr' | 'rtl'</code>
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
+          Used by <code>useLazyStyleHandler</code>, <code>createLazyStyleHref</code>, and <code>getLoadedBootstrapDirection</code>.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// Helper component to demonstrate LazyStylesContext
+function LazyStylesDemo() {
+  const styles = useLazyStyles()
+  return (
+    <div style={{ padding: '0.5rem', border: '1px solid #444', borderRadius: '4px' }}>
+      <p style={{ fontSize: '0.85rem' }}>
+        <code>useLazyStyles()</code> from custom context: [{styles.map((s, i) => (
+          <span key={i}>"{s}"{i < styles.length - 1 ? ', ' : ''}</span>
+        ))}]
+      </p>
+    </div>
+  )
+}
 
 /**
  * v2.7.0 Features Section
@@ -1195,12 +1472,13 @@ function TestProfile() {
 export function TestThemeSharedPage() {
   return (
     <div>
-      <h1>@abpjs/theme-shared Tests (v2.7.0)</h1>
+      <h1>@abpjs/theme-shared Tests (v2.9.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing toast notifications, confirmation dialogs, modals, error handling, and shared components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.7.0 - ModalService, validation-utils, HTTP_ERROR_CONFIG token, isHomeShow, skipHandledErrorCodes
+        Version 2.9.0 - RTL support, LazyStyleHandler, NavItems, LAZY_STYLES token, dismissible
       </p>
 
+      <TestV290Features />
       <TestV270Features />
       <TestV240Features />
       <TestLoaderBar />

@@ -9,6 +9,7 @@
  * - Removed deprecated cancelCopy/yesCopy
  *
  * @since 2.1.0 - Added Status enum (confirmation-specific, replaces Toaster.Status usage)
+ * @since 2.9.0 - Added dismissible property, deprecated closable
  */
 import type { Config } from '@abpjs/core';
 
@@ -16,12 +17,16 @@ export namespace Confirmation {
   /**
    * Options for configuring a confirmation dialog.
    * @since 2.0.0 - No longer extends Toaster.Options
+   * @since 2.9.0 - Added dismissible, deprecated closable
    */
   export interface Options {
     /** Unique identifier for the confirmation */
     id?: string | number;
-    /** Whether the confirmation can be closed by clicking outside or pressing escape */
-    closable?: boolean;
+    /**
+     * Whether the confirmation can be dismissed by clicking outside or pressing escape.
+     * @since 2.9.0
+     */
+    dismissible?: boolean;
     /** Parameters for localizing the message */
     messageLocalizationParams?: string[];
     /** Parameters for localizing the title */
@@ -34,6 +39,11 @@ export namespace Confirmation {
     cancelText?: Config.LocalizationParam;
     /** Custom text for the yes button */
     yesText?: Config.LocalizationParam;
+    /**
+     * Whether the confirmation can be closed by clicking outside or pressing escape.
+     * @deprecated Use dismissible instead. To be deleted in v3.0.
+     */
+    closable?: boolean;
   }
 
   /**

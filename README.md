@@ -7,17 +7,8 @@
 [![Work in Progress](https://img.shields.io/badge/status-WIP-orange)](https://github.com)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-10.28.0-orange)](https://pnpm.io/)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com)
-[![Lint](https://img.shields.io/badge/lint-passing-brightgreen)](https://github.com)
-[![Type Check](https://img.shields.io/badge/type--check-passing-brightgreen)](https://github.com)
-[![Coverage](https://img.shields.io/badge/coverage-coming%20soon-lightgrey)](https://github.com)
-
-<!-- Uncomment these when you set up GitHub Actions CI/CD -->
-<!-- [![Build](https://github.com/YOUR_USERNAME/abp-react/actions/workflows/build.yml/badge.svg)](https://github.com/YOUR_USERNAME/abp-react/actions/workflows/build.yml) -->
-<!-- [![Tests](https://github.com/YOUR_USERNAME/abp-react/actions/workflows/test.yml/badge.svg)](https://github.com/YOUR_USERNAME/abp-react/actions/workflows/test.yml) -->
-<!-- [![Lint](https://github.com/YOUR_USERNAME/abp-react/actions/workflows/lint.yml/badge.svg)](https://github.com/YOUR_USERNAME/abp-react/actions/workflows/lint.yml) -->
-<!-- [![Type Check](https://github.com/YOUR_USERNAME/abp-react/actions/workflows/type-check.yml/badge.svg)](https://github.com/YOUR_USERNAME/abp-react/actions/workflows/type-check.yml) -->
+[![CI](https://github.com/abpjs/abp-react/actions/workflows/ci.yml/badge.svg)](https://github.com/abpjs/abp-react/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/abpjs/abp-react/graph/badge.svg)](https://codecov.io/gh/abpjs/abp-react)
 
 ## 🚧 Work in Progress
 

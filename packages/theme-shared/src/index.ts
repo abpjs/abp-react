@@ -2,10 +2,20 @@
  * @abpjs/theme-shared
  *
  * ABP Framework Theme Shared components for React.
- * Translated from @abp/ng.theme.shared v2.7.0
+ * Translated from @abp/ng.theme.shared v2.9.0
  *
  * This package provides shared UI components, services, and utilities
  * for theme/modal management in ABP Framework React applications.
+ *
+ * Changes in v2.9.0:
+ * - Added LocaleDirection type for RTL/LTR support
+ * - Added LazyStyleHandler for RTL/LTR style switching
+ * - Added NavItem interface and functions (addNavItem, getNavItems, etc.)
+ * - Added LAZY_STYLES token and LazyStylesContext
+ * - Added BOOTSTRAP constant for bootstrap CSS pattern
+ * - Confirmation.Options: Added dismissible property, deprecated closable
+ * - Updated styles with RTL support for data-tables-filter
+ * - Dependency updates to @abp/ng.core v2.9.0
  *
  * Changes in v2.7.0:
  * - Added ModalService with renderTemplate, clearModal, getContainer, detectChanges
