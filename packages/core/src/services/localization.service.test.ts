@@ -184,4 +184,171 @@ describe('LocalizationService', () => {
       expect(service.getLocalizationValues()).toEqual({});
     });
   });
+
+  describe('localize (v2.9.0)', () => {
+    it('should return localized string when resource and key exist', async () => {
+      const result = await service.localize('TestResource', 'Hello', 'Default');
+      expect(result).toBe('Hello');
+    });
+
+    it('should return localized string from another resource', async () => {
+      const result = await service.localize('OtherResource', 'Goodbye', 'Default');
+      expect(result).toBe('Goodbye');
+    });
+
+    it('should return default value when resource does not exist', async () => {
+      const result = await service.localize('NonExistent', 'Key', 'Default Value');
+      expect(result).toBe('Default Value');
+    });
+
+    it('should return default value when key does not exist', async () => {
+      const result = await service.localize('TestResource', 'NonExistentKey', 'Default Value');
+      expect(result).toBe('Default Value');
+    });
+
+    it('should return default value when values is undefined', async () => {
+      mockState.config.localization = undefined as any;
+      const result = await service.localize('TestResource', 'Hello', 'Default');
+      expect(result).toBe('Default');
+    });
+  });
+
+  describe('localizeSync (v2.9.0)', () => {
+    it('should return localized string when resource and key exist', () => {
+      const result = service.localizeSync('TestResource', 'Hello', 'Default');
+      expect(result).toBe('Hello');
+    });
+
+    it('should return localized string from another resource', () => {
+      const result = service.localizeSync('OtherResource', 'Goodbye', 'Default');
+      expect(result).toBe('Goodbye');
+    });
+
+    it('should return default value when resource does not exist', () => {
+      const result = service.localizeSync('NonExistent', 'Key', 'Default Value');
+      expect(result).toBe('Default Value');
+    });
+
+    it('should return default value when key does not exist', () => {
+      const result = service.localizeSync('TestResource', 'NonExistentKey', 'Default Value');
+      expect(result).toBe('Default Value');
+    });
+
+    it('should return default value when values is undefined', () => {
+      mockState.config.localization = undefined as any;
+      const result = service.localizeSync('TestResource', 'Hello', 'Default');
+      expect(result).toBe('Default');
+    });
+  });
+
+  describe('localizeWithFallback (v2.9.0)', () => {
+    it('should return value from first resource when it exists', async () => {
+      const result = await service.localizeWithFallback(
+        ['TestResource', 'OtherResource'],
+        ['Hello'],
+        'Default'
+      );
+      expect(result).toBe('Hello');
+    });
+
+    it('should fallback to second resource when first does not have the key', async () => {
+      const result = await service.localizeWithFallback(
+        ['TestResource', 'OtherResource'],
+        ['Goodbye'],
+        'Default'
+      );
+      expect(result).toBe('Goodbye');
+    });
+
+    it('should try multiple keys in order', async () => {
+      const result = await service.localizeWithFallback(
+        ['TestResource'],
+        ['NonExistent', 'Hello'],
+        'Default'
+      );
+      expect(result).toBe('Hello');
+    });
+
+    it('should return default when no resource has any key', async () => {
+      const result = await service.localizeWithFallback(
+        ['TestResource', 'OtherResource'],
+        ['NonExistent1', 'NonExistent2'],
+        'Default Value'
+      );
+      expect(result).toBe('Default Value');
+    });
+
+    it('should return default when resources do not exist', async () => {
+      const result = await service.localizeWithFallback(['NonExistent'], ['Hello'], 'Default');
+      expect(result).toBe('Default');
+    });
+
+    it('should return default when values is undefined', async () => {
+      mockState.config.localization = undefined as any;
+      const result = await service.localizeWithFallback(
+        ['TestResource'],
+        ['Hello'],
+        'Default'
+      );
+      expect(result).toBe('Default');
+    });
+  });
+
+  describe('localizeWithFallbackSync (v2.9.0)', () => {
+    it('should return value from first resource when it exists', () => {
+      const result = service.localizeWithFallbackSync(
+        ['TestResource', 'OtherResource'],
+        ['Hello'],
+        'Default'
+      );
+      expect(result).toBe('Hello');
+    });
+
+    it('should fallback to second resource when first does not have the key', () => {
+      const result = service.localizeWithFallbackSync(
+        ['TestResource', 'OtherResource'],
+        ['Goodbye'],
+        'Default'
+      );
+      expect(result).toBe('Goodbye');
+    });
+
+    it('should try multiple keys in order', () => {
+      const result = service.localizeWithFallbackSync(
+        ['TestResource'],
+        ['NonExistent', 'Hello'],
+        'Default'
+      );
+      expect(result).toBe('Hello');
+    });
+
+    it('should return default when no resource has any key', () => {
+      const result = service.localizeWithFallbackSync(
+        ['TestResource', 'OtherResource'],
+        ['NonExistent1', 'NonExistent2'],
+        'Default Value'
+      );
+      expect(result).toBe('Default Value');
+    });
+
+    it('should return default when resources do not exist', () => {
+      const result = service.localizeWithFallbackSync(['NonExistent'], ['Hello'], 'Default');
+      expect(result).toBe('Default');
+    });
+
+    it('should return default when values is undefined', () => {
+      mockState.config.localization = undefined as any;
+      const result = service.localizeWithFallbackSync(['TestResource'], ['Hello'], 'Default');
+      expect(result).toBe('Default');
+    });
+
+    it('should skip non-existent resources and continue checking', () => {
+      const result = service.localizeWithFallbackSync(
+        ['NonExistent', 'OtherResource'],
+        ['Goodbye'],
+        'Default'
+      );
+      expect(result).toBe('Goodbye');
+    });
+  });
 });

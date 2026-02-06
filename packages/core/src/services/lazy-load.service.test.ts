@@ -193,23 +193,31 @@ describe('LazyLoadService', () => {
     });
   });
 
-  describe('load with LoadingStrategy (v2.4.0)', () => {
-    it('should have loaded set', () => {
+  describe('load with LoadingStrategy (v2.4.0, updated v2.9.0)', () => {
+    it('should have loaded map (v2.9.0 change from Set to Map)', () => {
       expect(service.loaded).toBeDefined();
-      expect(service.loaded).toBeInstanceOf(Set);
+      expect(service.loaded).toBeInstanceOf(Map);
     });
 
-    it('should track loaded paths in loaded set', async () => {
+    it('should track loaded paths with element reference in loaded map', async () => {
       const strategy = LOADING_STRATEGY.AppendAnonymousScriptToHead(
         'https://example.com/tracked.js'
       );
 
+      // Mock element that will be stored
+      const mockElement = document.createElement('script');
+      strategy.element = mockElement;
+
       // Mock createStream to resolve immediately
-      vi.spyOn(strategy, 'createStream').mockResolvedValue(new Event('load'));
+      vi.spyOn(strategy, 'createStream').mockImplementation(async () => {
+        strategy.element = mockElement;
+        return new Event('load');
+      });
 
       await service.load(strategy);
 
       expect(service.loaded.has('https://example.com/tracked.js')).toBe(true);
+      expect(service.loaded.get('https://example.com/tracked.js')).toBe(mockElement);
     });
 
     it('should return cached result for already loaded path', async () => {
@@ -217,7 +225,11 @@ describe('LazyLoadService', () => {
         'https://example.com/cached-strategy.js'
       );
 
-      const createStreamSpy = vi.spyOn(strategy, 'createStream').mockResolvedValue(new Event('load'));
+      const mockElement = document.createElement('script');
+      const createStreamSpy = vi.spyOn(strategy, 'createStream').mockImplementation(async () => {
+        strategy.element = mockElement;
+        return new Event('load');
+      });
 
       // First load
       await service.load(strategy);
@@ -285,7 +297,11 @@ describe('LazyLoadService', () => {
         'https://example.com/isloaded-test.js'
       );
 
-      vi.spyOn(strategy, 'createStream').mockResolvedValue(new Event('load'));
+      const mockElement = document.createElement('script');
+      vi.spyOn(strategy, 'createStream').mockImplementation(async () => {
+        strategy.element = mockElement;
+        return new Event('load');
+      });
 
       await service.load(strategy);
 
