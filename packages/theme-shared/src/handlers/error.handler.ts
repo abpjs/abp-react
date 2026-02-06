@@ -55,7 +55,7 @@ export interface ErrorHandler {
 /**
  * Default error messages for common HTTP status codes.
  */
-const DEFAULT_ERROR_MESSAGES: Record<number, string> = {
+export const DEFAULT_ERROR_MESSAGES: Record<number, string> = {
   400: 'AbpUi::DefaultErrorMessage400',
   401: 'AbpUi::DefaultErrorMessage401',
   403: 'AbpUi::DefaultErrorMessage403',
@@ -63,6 +63,34 @@ const DEFAULT_ERROR_MESSAGES: Record<number, string> = {
   500: 'AbpUi::DefaultErrorMessage500',
   503: 'AbpUi::DefaultErrorMessage503',
 };
+
+/**
+ * Default error localizations with title and details.
+ * These are the localization keys used for error messages.
+ * @since 3.1.0
+ */
+export const DEFAULT_ERROR_LOCALIZATIONS = {
+  defaultError: {
+    title: 'AbpUi::DefaultErrorMessage',
+    details: 'AbpUi::DefaultErrorMessageDetail',
+  },
+  defaultError401: {
+    title: 'AbpUi::DefaultErrorMessage401',
+    details: 'AbpUi::DefaultErrorMessage401Detail',
+  },
+  defaultError403: {
+    title: 'AbpUi::DefaultErrorMessage403',
+    details: 'AbpUi::DefaultErrorMessage403Detail',
+  },
+  defaultError404: {
+    title: 'AbpUi::DefaultErrorMessage404',
+    details: 'AbpUi::DefaultErrorMessage404Detail',
+  },
+  defaultError500: {
+    title: 'AbpUi::DefaultErrorMessage500',
+    details: 'AbpUi::DefaultErrorMessage500Detail',
+  },
+} as const;
 
 export interface UseErrorHandlerOptions {
   /**

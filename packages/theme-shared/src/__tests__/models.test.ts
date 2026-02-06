@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { Toaster } from '../models/toaster';
 import { Confirmation } from '../models/confirmation';
-import type { NavItem } from '../models/nav-item';
+import { NavItem } from '../models/nav-item';
 import type {
   RootParams,
   HttpErrorConfig,
@@ -517,36 +517,174 @@ describe('Common types (v1.1.0, v2.7.0)', () => {
   });
 });
 
-describe('NavItem interface (v3.0.0)', () => {
+describe('NavItem class (v3.1.0)', () => {
+  describe('constructor', () => {
+    it('should create NavItem with all properties', () => {
+      const MockComponent = () => null;
+      const mockAction = vi.fn();
+      const mockVisible = vi.fn(() => true);
+
+      const item = new NavItem({
+        id: 'test-item',
+        component: MockComponent,
+        html: '<span>Test</span>',
+        action: mockAction,
+        order: 10,
+        requiredPolicy: 'Admin.Access',
+        visible: mockVisible,
+      });
+
+      expect(item.id).toBe('test-item');
+      expect(item.component).toBe(MockComponent);
+      expect(item.html).toBe('<span>Test</span>');
+      expect(item.action).toBe(mockAction);
+      expect(item.order).toBe(10);
+      expect(item.requiredPolicy).toBe('Admin.Access');
+      expect(item.visible).toBe(mockVisible);
+    });
+
+    it('should create NavItem with partial properties', () => {
+      const item = new NavItem({
+        id: 'partial',
+        order: 5,
+      });
+
+      expect(item.id).toBe('partial');
+      expect(item.order).toBe(5);
+      expect(item.component).toBeUndefined();
+      expect(item.html).toBeUndefined();
+      expect(item.action).toBeUndefined();
+      expect(item.requiredPolicy).toBeUndefined();
+      expect(item.visible).toBeUndefined();
+    });
+
+    it('should default id to empty string when not provided', () => {
+      const item = new NavItem({});
+
+      expect(item.id).toBe('');
+    });
+
+    it('should create NavItem with only id', () => {
+      const item = new NavItem({ id: 'only-id' });
+
+      expect(item.id).toBe('only-id');
+      expect(item.component).toBeUndefined();
+      expect(item.html).toBeUndefined();
+      expect(item.action).toBeUndefined();
+      expect(item.order).toBeUndefined();
+      expect(item.requiredPolicy).toBeUndefined();
+      expect(item.visible).toBeUndefined();
+    });
+
+    it('should accept numeric id', () => {
+      const item = new NavItem({ id: 123 });
+
+      expect(item.id).toBe(123);
+    });
+
+    it('should accept zero as id', () => {
+      const item = new NavItem({ id: 0 });
+
+      expect(item.id).toBe(0);
+    });
+  });
+
+  describe('visible property (v3.1.0)', () => {
+    it('should accept visible callback that returns true', () => {
+      const visibleFn = () => true;
+      const item = new NavItem({
+        id: 'visible-item',
+        visible: visibleFn,
+      });
+
+      expect(item.visible).toBe(visibleFn);
+      expect(item.visible?.()).toBe(true);
+    });
+
+    it('should accept visible callback that returns false', () => {
+      const visibleFn = () => false;
+      const item = new NavItem({
+        id: 'hidden-item',
+        visible: visibleFn,
+      });
+
+      expect(item.visible?.()).toBe(false);
+    });
+
+    it('should handle dynamic visibility based on external state', () => {
+      let isAdmin = false;
+      const visibleFn = () => isAdmin;
+      const item = new NavItem({
+        id: 'dynamic-item',
+        visible: visibleFn,
+      });
+
+      expect(item.visible?.()).toBe(false);
+
+      isAdmin = true;
+      expect(item.visible?.()).toBe(true);
+    });
+
+    it('should allow undefined visible callback', () => {
+      const item = new NavItem({
+        id: 'no-visible',
+      });
+
+      expect(item.visible).toBeUndefined();
+    });
+  });
+
+  describe('NavItemProps interface (v3.1.0)', () => {
+    it('should accept NavItemProps with visible property', () => {
+      const props: import('../models/nav-item').NavItemProps = {
+        id: 'props-item',
+        visible: () => true,
+      };
+
+      expect(props.id).toBe('props-item');
+      expect(props.visible?.()).toBe(true);
+    });
+
+    it('should accept NavItemProps without visible property', () => {
+      const props: import('../models/nav-item').NavItemProps = {
+        id: 'props-no-visible',
+        order: 5,
+      };
+
+      expect(props.id).toBe('props-no-visible');
+      expect(props.visible).toBeUndefined();
+    });
+  });
+
   describe('id property (required)', () => {
     it('should accept string id', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'profile',
-      };
+      });
 
       expect(item.id).toBe('profile');
     });
 
     it('should accept numeric id', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 123,
-      };
+      });
 
       expect(item.id).toBe(123);
     });
 
     it('should accept empty string id', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: '',
-      };
+      });
 
       expect(item.id).toBe('');
     });
 
     it('should accept zero as id', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 0,
-      };
+      });
 
       expect(item.id).toBe(0);
     });
@@ -555,26 +693,26 @@ describe('NavItem interface (v3.0.0)', () => {
   describe('component property (optional)', () => {
     it('should accept a React component', () => {
       const MockComponent = () => null;
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         component: MockComponent,
-      };
+      });
 
       expect(item.component).toBe(MockComponent);
     });
 
     it('should accept component with props', () => {
       const MockComponent = ({ name }: { name: string }) => null;
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         component: MockComponent,
-      };
+      });
 
       expect(item.component).toBe(MockComponent);
     });
 
     it('should be undefined when not provided', () => {
-      const item: NavItem = { id: 'test' };
+      const item = new NavItem({ id: 'test' });
 
       expect(item.component).toBeUndefined();
     });
@@ -582,25 +720,25 @@ describe('NavItem interface (v3.0.0)', () => {
 
   describe('html property (optional)', () => {
     it('should accept html string', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         html: '<span>Hello</span>',
-      };
+      });
 
       expect(item.html).toBe('<span>Hello</span>');
     });
 
     it('should accept empty html string', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         html: '',
-      };
+      });
 
       expect(item.html).toBe('');
     });
 
     it('should be undefined when not provided', () => {
-      const item: NavItem = { id: 'test' };
+      const item = new NavItem({ id: 'test' });
 
       expect(item.html).toBeUndefined();
     });
@@ -609,20 +747,20 @@ describe('NavItem interface (v3.0.0)', () => {
   describe('action property (optional)', () => {
     it('should accept a function', () => {
       const mockAction = vi.fn();
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         action: mockAction,
-      };
+      });
 
       expect(item.action).toBe(mockAction);
     });
 
     it('should be callable', () => {
       const mockAction = vi.fn();
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         action: mockAction,
-      };
+      });
 
       item.action?.();
 
@@ -630,7 +768,7 @@ describe('NavItem interface (v3.0.0)', () => {
     });
 
     it('should be undefined when not provided', () => {
-      const item: NavItem = { id: 'test' };
+      const item = new NavItem({ id: 'test' });
 
       expect(item.action).toBeUndefined();
     });
@@ -638,43 +776,43 @@ describe('NavItem interface (v3.0.0)', () => {
 
   describe('order property (optional)', () => {
     it('should accept positive number', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         order: 100,
-      };
+      });
 
       expect(item.order).toBe(100);
     });
 
     it('should accept negative number', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         order: -10,
-      };
+      });
 
       expect(item.order).toBe(-10);
     });
 
     it('should accept zero', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         order: 0,
-      };
+      });
 
       expect(item.order).toBe(0);
     });
 
     it('should accept decimal number', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         order: 1.5,
-      };
+      });
 
       expect(item.order).toBe(1.5);
     });
 
     it('should be undefined when not provided', () => {
-      const item: NavItem = { id: 'test' };
+      const item = new NavItem({ id: 'test' });
 
       expect(item.order).toBeUndefined();
     });
@@ -682,51 +820,53 @@ describe('NavItem interface (v3.0.0)', () => {
 
   describe('requiredPolicy property (v3.0.0 - renamed from permission)', () => {
     it('should accept policy string', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         requiredPolicy: 'AbpIdentity.Users',
-      };
+      });
 
       expect(item.requiredPolicy).toBe('AbpIdentity.Users');
     });
 
     it('should accept empty policy string', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         requiredPolicy: '',
-      };
+      });
 
       expect(item.requiredPolicy).toBe('');
     });
 
     it('should accept complex policy string', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         requiredPolicy: 'AbpIdentity.Users.Create || AbpIdentity.Users.Update',
-      };
+      });
 
       expect(item.requiredPolicy).toBe('AbpIdentity.Users.Create || AbpIdentity.Users.Update');
     });
 
     it('should be undefined when not provided', () => {
-      const item: NavItem = { id: 'test' };
+      const item = new NavItem({ id: 'test' });
 
       expect(item.requiredPolicy).toBeUndefined();
     });
   });
 
-  describe('full NavItem object', () => {
-    it('should accept all properties', () => {
+  describe('full NavItem object (v3.1.0)', () => {
+    it('should accept all properties including visible', () => {
       const MockComponent = () => null;
       const mockAction = vi.fn();
-      const item: NavItem = {
+      const mockVisible = vi.fn(() => true);
+      const item = new NavItem({
         id: 'full-item',
         component: MockComponent,
         html: '<span>Full Item</span>',
         action: mockAction,
         order: 50,
         requiredPolicy: 'Admin.Access',
-      };
+        visible: mockVisible,
+      });
 
       expect(item.id).toBe('full-item');
       expect(item.component).toBe(MockComponent);
@@ -734,10 +874,11 @@ describe('NavItem interface (v3.0.0)', () => {
       expect(item.action).toBe(mockAction);
       expect(item.order).toBe(50);
       expect(item.requiredPolicy).toBe('Admin.Access');
+      expect(item.visible).toBe(mockVisible);
     });
 
     it('should accept minimal NavItem with only id', () => {
-      const item: NavItem = { id: 'minimal' };
+      const item = new NavItem({ id: 'minimal' });
 
       expect(item.id).toBe('minimal');
       expect(item.component).toBeUndefined();
@@ -745,15 +886,16 @@ describe('NavItem interface (v3.0.0)', () => {
       expect(item.action).toBeUndefined();
       expect(item.order).toBeUndefined();
       expect(item.requiredPolicy).toBeUndefined();
+      expect(item.visible).toBeUndefined();
     });
   });
 
   describe('v3.0.0 migration - permission to requiredPolicy', () => {
     it('should use requiredPolicy instead of permission', () => {
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'test',
         requiredPolicy: 'SomePolicy',
-      };
+      });
 
       // @ts-expect-error - permission was renamed to requiredPolicy in v3.0.0
       expect(item.permission).toBeUndefined();
@@ -763,12 +905,28 @@ describe('NavItem interface (v3.0.0)', () => {
     it('should document migration from v2.9.0 permission to v3.0.0 requiredPolicy', () => {
       // v2.9.0 had: permission?: string
       // v3.0.0 has: requiredPolicy?: string
-      const item: NavItem = {
+      const item = new NavItem({
         id: 'migrated',
         requiredPolicy: 'AbpIdentity.Roles',
-      };
+      });
 
       expect(item.requiredPolicy).toBe('AbpIdentity.Roles');
+    });
+  });
+
+  describe('instanceof checks (v3.1.0)', () => {
+    it('should be an instance of NavItem class', () => {
+      const item = new NavItem({ id: 'test' });
+
+      expect(item).toBeInstanceOf(NavItem);
+    });
+
+    it('should differentiate NavItem instances from plain objects', () => {
+      const instance = new NavItem({ id: 'instance' });
+      const plainObject = { id: 'plain' };
+
+      expect(instance instanceof NavItem).toBe(true);
+      expect(plainObject instanceof NavItem).toBe(false);
     });
   });
 });

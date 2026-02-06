@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NavItemsService, getNavItemsService } from '../services/nav-items.service';
-import type { NavItem } from '../models/nav-item';
+import { NavItem, type NavItemProps } from '../models/nav-item';
 
-describe('NavItemsService (v3.0.0)', () => {
+describe('NavItemsService (v3.1.0)', () => {
   beforeEach(() => {
     NavItemsService.resetInstance();
   });
@@ -684,6 +684,165 @@ describe('NavItemsService (v3.0.0)', () => {
       service.addItems([{ id: 42, order: 1 }]);
 
       expect(service.items[0].id).toBe(42);
+    });
+  });
+
+  describe('v3.1.0 features - addItems with NavItem class and NavItemProps', () => {
+    it('should accept NavItem instances', () => {
+      const service = NavItemsService.getInstance();
+      const navItem = new NavItem({ id: 'class-item', order: 1 });
+
+      service.addItems([navItem]);
+
+      expect(service.items).toHaveLength(1);
+      expect(service.items[0].id).toBe('class-item');
+      expect(service.items[0]).toBeInstanceOf(NavItem);
+    });
+
+    it('should accept NavItemProps objects and convert to NavItem instances', () => {
+      const service = NavItemsService.getInstance();
+      const props: NavItemProps = { id: 'props-item', order: 1 };
+
+      service.addItems([props]);
+
+      expect(service.items).toHaveLength(1);
+      expect(service.items[0].id).toBe('props-item');
+      expect(service.items[0]).toBeInstanceOf(NavItem);
+    });
+
+    it('should accept mixed NavItem instances and NavItemProps', () => {
+      const service = NavItemsService.getInstance();
+      const navItem = new NavItem({ id: 'class-item', order: 1 });
+      const props: NavItemProps = { id: 'props-item', order: 2 };
+
+      service.addItems([navItem, props]);
+
+      expect(service.items).toHaveLength(2);
+      expect(service.items[0]).toBeInstanceOf(NavItem);
+      expect(service.items[1]).toBeInstanceOf(NavItem);
+    });
+
+    it('should preserve NavItem instance when already an instance', () => {
+      const service = NavItemsService.getInstance();
+      const mockVisible = vi.fn(() => true);
+      const navItem = new NavItem({
+        id: 'original',
+        order: 1,
+        visible: mockVisible,
+      });
+
+      service.addItems([navItem]);
+
+      expect(service.items[0]).toBe(navItem);
+      expect(service.items[0].visible).toBe(mockVisible);
+    });
+
+    it('should support visible callback in NavItem', () => {
+      const service = NavItemsService.getInstance();
+      const mockVisible = vi.fn(() => true);
+
+      service.addItems([
+        new NavItem({
+          id: 'visible-item',
+          order: 1,
+          visible: mockVisible,
+        }),
+      ]);
+
+      expect(service.items[0].visible).toBe(mockVisible);
+      expect(service.items[0].visible?.()).toBe(true);
+      expect(mockVisible).toHaveBeenCalled();
+    });
+
+    it('should support visible callback in NavItemProps', () => {
+      const service = NavItemsService.getInstance();
+      let isVisible = false;
+      const mockVisible = () => isVisible;
+
+      service.addItems([
+        {
+          id: 'dynamic-visible',
+          order: 1,
+          visible: mockVisible,
+        },
+      ]);
+
+      expect(service.items[0].visible?.()).toBe(false);
+
+      isVisible = true;
+      expect(service.items[0].visible?.()).toBe(true);
+    });
+
+    it('should handle items with all v3.1.0 properties', () => {
+      const service = NavItemsService.getInstance();
+      const MockComponent = () => null;
+      const mockAction = vi.fn();
+      const mockVisible = vi.fn(() => true);
+
+      const fullItem = new NavItem({
+        id: 'full-v31-item',
+        component: MockComponent,
+        html: '<span>Test</span>',
+        action: mockAction,
+        order: 10,
+        requiredPolicy: 'Admin.Access',
+        visible: mockVisible,
+      });
+
+      service.addItems([fullItem]);
+
+      const result = service.items[0];
+      expect(result.id).toBe('full-v31-item');
+      expect(result.component).toBe(MockComponent);
+      expect(result.html).toBe('<span>Test</span>');
+      expect(result.action).toBe(mockAction);
+      expect(result.order).toBe(10);
+      expect(result.requiredPolicy).toBe('Admin.Access');
+      expect(result.visible).toBe(mockVisible);
+    });
+
+    it('should convert NavItemProps without visible to NavItem', () => {
+      const service = NavItemsService.getInstance();
+
+      service.addItems([
+        { id: 'no-visible', order: 1 },
+      ]);
+
+      expect(service.items[0]).toBeInstanceOf(NavItem);
+      expect(service.items[0].visible).toBeUndefined();
+    });
+
+    it('should filter duplicates when mixing NavItem and NavItemProps with same id', () => {
+      const service = NavItemsService.getInstance();
+      const navItem = new NavItem({ id: 'duplicate', order: 1 });
+
+      service.addItems([navItem]);
+      service.addItems([{ id: 'duplicate', order: 2 }]); // Same id, should be filtered
+
+      expect(service.items).toHaveLength(1);
+      expect(service.items[0].order).toBe(1); // Original order preserved
+    });
+
+    it('should handle empty id in NavItemProps (defaults to empty string)', () => {
+      const service = NavItemsService.getInstance();
+
+      service.addItems([new NavItem({})]);
+
+      expect(service.items[0].id).toBe('');
+    });
+  });
+
+  describe('v3.1.0 newItems parameter name', () => {
+    it('should accept newItems array (renamed from items in v3.1.0)', () => {
+      const service = NavItemsService.getInstance();
+      const newItems = [
+        new NavItem({ id: 'item1', order: 1 }),
+        new NavItem({ id: 'item2', order: 2 }),
+      ];
+
+      service.addItems(newItems);
+
+      expect(service.items).toHaveLength(2);
     });
   });
 

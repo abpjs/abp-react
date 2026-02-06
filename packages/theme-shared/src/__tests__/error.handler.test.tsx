@@ -5,6 +5,8 @@ import { ConfirmationProvider } from '../contexts/confirmation.context';
 import {
   useErrorHandler,
   createErrorInterceptor,
+  DEFAULT_ERROR_MESSAGES,
+  DEFAULT_ERROR_LOCALIZATIONS,
   type HttpErrorResponse,
 } from '../handlers/error.handler';
 
@@ -266,5 +268,161 @@ describe('createErrorInterceptor', () => {
 
     // Should not navigate to login for 503
     expect(mockNav).not.toHaveBeenCalled();
+  });
+});
+
+describe('DEFAULT_ERROR_MESSAGES', () => {
+  it('should have error message for 400', () => {
+    expect(DEFAULT_ERROR_MESSAGES[400]).toBe('AbpUi::DefaultErrorMessage400');
+  });
+
+  it('should have error message for 401', () => {
+    expect(DEFAULT_ERROR_MESSAGES[401]).toBe('AbpUi::DefaultErrorMessage401');
+  });
+
+  it('should have error message for 403', () => {
+    expect(DEFAULT_ERROR_MESSAGES[403]).toBe('AbpUi::DefaultErrorMessage403');
+  });
+
+  it('should have error message for 404', () => {
+    expect(DEFAULT_ERROR_MESSAGES[404]).toBe('AbpUi::DefaultErrorMessage404');
+  });
+
+  it('should have error message for 500', () => {
+    expect(DEFAULT_ERROR_MESSAGES[500]).toBe('AbpUi::DefaultErrorMessage500');
+  });
+
+  it('should have error message for 503', () => {
+    expect(DEFAULT_ERROR_MESSAGES[503]).toBe('AbpUi::DefaultErrorMessage503');
+  });
+
+  it('should return undefined for unknown status codes', () => {
+    expect(DEFAULT_ERROR_MESSAGES[418]).toBeUndefined();
+    expect(DEFAULT_ERROR_MESSAGES[502]).toBeUndefined();
+  });
+});
+
+describe('DEFAULT_ERROR_LOCALIZATIONS (v3.1.0)', () => {
+  describe('structure', () => {
+    it('should have defaultError with title and details', () => {
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError).toBeDefined();
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError.title).toBe('AbpUi::DefaultErrorMessage');
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError.details).toBe('AbpUi::DefaultErrorMessageDetail');
+    });
+
+    it('should have defaultError401 with title and details', () => {
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError401).toBeDefined();
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError401.title).toBe('AbpUi::DefaultErrorMessage401');
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError401.details).toBe('AbpUi::DefaultErrorMessage401Detail');
+    });
+
+    it('should have defaultError403 with title and details', () => {
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError403).toBeDefined();
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError403.title).toBe('AbpUi::DefaultErrorMessage403');
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError403.details).toBe('AbpUi::DefaultErrorMessage403Detail');
+    });
+
+    it('should have defaultError404 with title and details', () => {
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError404).toBeDefined();
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError404.title).toBe('AbpUi::DefaultErrorMessage404');
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError404.details).toBe('AbpUi::DefaultErrorMessage404Detail');
+    });
+
+    it('should have defaultError500 with title and details', () => {
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError500).toBeDefined();
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError500.title).toBe('AbpUi::DefaultErrorMessage500');
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError500.details).toBe('AbpUi::DefaultErrorMessage500Detail');
+    });
+  });
+
+  describe('const assertion', () => {
+    it('should be a readonly object', () => {
+      // Verify that the object is typed as const (readonly)
+      // We can't modify it at runtime due to TypeScript's const assertion
+      const localizations = DEFAULT_ERROR_LOCALIZATIONS;
+      expect(Object.keys(localizations)).toHaveLength(5);
+    });
+
+    it('should have exactly 5 error localization entries', () => {
+      expect(Object.keys(DEFAULT_ERROR_LOCALIZATIONS)).toEqual([
+        'defaultError',
+        'defaultError401',
+        'defaultError403',
+        'defaultError404',
+        'defaultError500',
+      ]);
+    });
+  });
+
+  describe('localization key format', () => {
+    it('should use AbpUi namespace for all titles', () => {
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError.title).toMatch(/^AbpUi::/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError401.title).toMatch(/^AbpUi::/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError403.title).toMatch(/^AbpUi::/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError404.title).toMatch(/^AbpUi::/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError500.title).toMatch(/^AbpUi::/);
+    });
+
+    it('should use AbpUi namespace for all details', () => {
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError.details).toMatch(/^AbpUi::/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError401.details).toMatch(/^AbpUi::/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError403.details).toMatch(/^AbpUi::/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError404.details).toMatch(/^AbpUi::/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError500.details).toMatch(/^AbpUi::/);
+    });
+
+    it('should have Detail suffix for all detail keys', () => {
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError.details).toMatch(/Detail$/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError401.details).toMatch(/Detail$/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError403.details).toMatch(/Detail$/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError404.details).toMatch(/Detail$/);
+      expect(DEFAULT_ERROR_LOCALIZATIONS.defaultError500.details).toMatch(/Detail$/);
+    });
+  });
+
+  describe('usage patterns', () => {
+    it('should allow accessing by key name', () => {
+      const errorKey = 'defaultError403' as const;
+      const localization = DEFAULT_ERROR_LOCALIZATIONS[errorKey];
+
+      expect(localization.title).toBe('AbpUi::DefaultErrorMessage403');
+      expect(localization.details).toBe('AbpUi::DefaultErrorMessage403Detail');
+    });
+
+    it('should support iteration over entries', () => {
+      const entries = Object.entries(DEFAULT_ERROR_LOCALIZATIONS);
+
+      expect(entries).toHaveLength(5);
+      entries.forEach(([key, value]) => {
+        expect(value).toHaveProperty('title');
+        expect(value).toHaveProperty('details');
+        expect(typeof value.title).toBe('string');
+        expect(typeof value.details).toBe('string');
+      });
+    });
+
+    it('should support mapping error codes to localization keys', () => {
+      // Common pattern for mapping HTTP status codes to localization entries
+      const getLocalizationKey = (status: number): keyof typeof DEFAULT_ERROR_LOCALIZATIONS | null => {
+        switch (status) {
+          case 401:
+            return 'defaultError401';
+          case 403:
+            return 'defaultError403';
+          case 404:
+            return 'defaultError404';
+          case 500:
+            return 'defaultError500';
+          default:
+            return null;
+        }
+      };
+
+      expect(getLocalizationKey(401)).toBe('defaultError401');
+      expect(getLocalizationKey(403)).toBe('defaultError403');
+      expect(getLocalizationKey(404)).toBe('defaultError404');
+      expect(getLocalizationKey(500)).toBe('defaultError500');
+      expect(getLocalizationKey(418)).toBeNull();
+    });
   });
 });

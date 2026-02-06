@@ -7,6 +7,7 @@
  * @updated 2.7.0 - ModalService, validation-utils, HTTP_ERROR_CONFIG, isHomeShow
  * @updated 2.9.0 - RTL support, LazyStyleHandler, NavItems, LAZY_STYLES token, dismissible
  * @updated 3.0.0 - NavItemsService, eThemeSharedRouteNames, route providers, Toaster.Status removed
+ * @updated 3.1.0 - NavItem class with visible callback, NavItemProps interface, DEFAULT_ERROR_LOCALIZATIONS
  */
 import { useState, useContext, useEffect } from 'react'
 import {
@@ -51,9 +52,182 @@ import {
   eThemeSharedRouteNames,
   // v3.0.0: Route providers
   initializeThemeSharedRoutes,
+  // v3.1.0: NavItem class (replaces interface), NavItemProps interface
+  NavItem,
+  // v3.1.0: DEFAULT_ERROR_LOCALIZATIONS
+  DEFAULT_ERROR_LOCALIZATIONS,
 } from '@abpjs/theme-shared'
-import type { SettingsStore, NavItem } from '@abpjs/theme-shared'
+import type { SettingsStore, NavItemProps } from '@abpjs/theme-shared'
 import { useAbp, useAuth } from '@abpjs/core'
+
+/**
+ * v3.1.0 Features Section
+ * Demonstrates:
+ * - NavItem class with constructor (changed from interface)
+ * - NavItemProps interface
+ * - visible callback for dynamic visibility
+ * - DEFAULT_ERROR_LOCALIZATIONS constant
+ */
+function TestV310Features() {
+  const [classItems, setClassItems] = useState<NavItem[]>([])
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [nextId, setNextId] = useState(1)
+
+  // Get the NavItemsService singleton
+  const navItemsService = getNavItemsService()
+
+  // Subscribe to service items
+  useEffect(() => {
+    const unsubscribe = navItemsService.subscribe((items) => {
+      // Filter to only show items from v3.1.0 demo
+      setClassItems(items.filter((i) => String(i.id).startsWith('v31-')))
+    })
+    return unsubscribe
+  }, [navItemsService])
+
+  // Add NavItem using class constructor with visible callback
+  const handleAddVisibleItem = () => {
+    const item = new NavItem({
+      id: `v31-visible-${nextId}`,
+      html: `<span style="color: ${isAdmin ? '#6f6' : '#f88'}">Visible Item ${nextId} (isAdmin: ${isAdmin})</span>`,
+      order: nextId * 10,
+      visible: () => isAdmin, // Dynamic visibility based on isAdmin state
+    })
+    navItemsService.addItems([item])
+    setNextId((prev) => prev + 1)
+  }
+
+  // Add NavItem using NavItemProps object (auto-converted to class)
+  const handleAddPropsItem = () => {
+    const props: NavItemProps = {
+      id: `v31-props-${nextId}`,
+      html: `<span style="color: #6cf">Props Item ${nextId}</span>`,
+      order: nextId * 10,
+      requiredPolicy: 'Admin.Users',
+    }
+    navItemsService.addItems([props])
+    setNextId((prev) => prev + 1)
+  }
+
+  // Add NavItem with all v3.1.0 properties
+  const handleAddFullItem = () => {
+    const MockComponent = () => <span style={{ color: '#fc6' }}>Component #{nextId}</span>
+    const item = new NavItem({
+      id: `v31-full-${nextId}`,
+      component: MockComponent,
+      html: `<span>Full Item ${nextId}</span>`,
+      action: () => alert(`Action for item ${nextId}`),
+      order: nextId * 10,
+      requiredPolicy: 'Admin.Access',
+      visible: () => true,
+    })
+    navItemsService.addItems([item])
+    setNextId((prev) => prev + 1)
+  }
+
+  // Clear v3.1.0 demo items
+  const handleClearV31Items = () => {
+    classItems.forEach((item) => navItemsService.removeItem(item.id))
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.1.0 New Features</h2>
+
+      <div className="test-card">
+        <h3>NavItem Class (Changed from Interface)</h3>
+        <p>In v3.1.0, <code>NavItem</code> changed from an interface to a class with a constructor.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6f6' }}>new NavItem(props)</code> - Creates a NavItem instance<br />
+          <code style={{ color: '#6cf' }}>item instanceof NavItem</code> - Now returns <code>true</code>
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
+          NavItemProps objects are automatically converted to NavItem instances when added via <code>addItems()</code>.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>visible Callback (New in v3.1.0)</h3>
+        <p>NavItem now supports a <code>visible</code> callback for dynamic visibility control.</p>
+        <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <input
+              type="checkbox"
+              checked={isAdmin}
+              onChange={(e) => setIsAdmin(e.target.checked)}
+            />
+            isAdmin = {isAdmin ? 'true' : 'false'}
+          </label>
+        </div>
+        <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button onClick={handleAddVisibleItem}>Add with visible callback</button>
+          <button onClick={handleAddPropsItem}>Add from NavItemProps</button>
+          <button onClick={handleAddFullItem}>Add with all properties</button>
+          <button onClick={handleClearV31Items} disabled={classItems.length === 0}>
+            Clear v3.1.0 Items
+          </button>
+        </div>
+        <div style={{ marginTop: '0.75rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <p style={{ marginBottom: '0.25rem' }}>NavItem instances ({classItems.length}):</p>
+          {classItems.length === 0 ? (
+            <p style={{ color: '#888' }}>No items</p>
+          ) : (
+            <ul style={{ marginLeft: '1rem', marginTop: '0.25rem' }}>
+              {classItems.map((item) => (
+                <li key={item.id} style={{ marginBottom: '0.25rem' }}>
+                  <code style={{ color: '#aaf' }}>id</code>: {item.id}
+                  , <code style={{ color: '#6cf' }}>instanceof NavItem</code>: {item instanceof NavItem ? 'true' : 'false'}
+                  {item.visible && (
+                    <>, <code style={{ color: '#fc6' }}>visible()</code>: {item.visible() ? 'true' : 'false'}</>
+                  )}
+                  {item.requiredPolicy && (
+                    <>, <code style={{ color: '#f88' }}>requiredPolicy</code>: {item.requiredPolicy}</>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
+          Toggle <code>isAdmin</code> and watch how <code>visible()</code> updates dynamically for items with the callback.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>DEFAULT_ERROR_LOCALIZATIONS</h3>
+        <p>New constant providing default localization keys for error messages with title and details.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          {Object.entries(DEFAULT_ERROR_LOCALIZATIONS).map(([key, value]) => (
+            <div key={key} style={{ marginBottom: '0.5rem' }}>
+              <code style={{ color: '#6cf' }}>{key}</code>:<br />
+              <span style={{ marginLeft: '1rem' }}>
+                <code style={{ color: '#6f6' }}>title</code>: "{value.title}"<br />
+              </span>
+              <span style={{ marginLeft: '1rem' }}>
+                <code style={{ color: '#fc6' }}>details</code>: "{value.details}"
+              </span>
+            </div>
+          ))}
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
+          Use these keys with your localization service to display proper error messages.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>NavItemProps Interface</h3>
+        <p>New interface for NavItem constructor props. Use when you want type checking before instantiation.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6cf' }}>const props: NavItemProps = {'{ id, visible, ... }'}</code><br />
+          <code style={{ color: '#6cf' }}>new NavItem(props)</code>
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
+          <code>NavItemsService.addItems()</code> accepts both <code>NavItem</code> instances and <code>NavItemProps</code> objects.
+        </p>
+      </div>
+    </div>
+  )
+}
 
 /**
  * v3.0.0 Features Section
@@ -83,15 +257,15 @@ function TestV300Features() {
     return unsubscribe
   }, [navItemsService])
 
-  // Add item using NavItemsService
+  // Add item using NavItemsService (v3.1.0: using NavItem class)
   const handleServiceAddItem = () => {
     navItemsService.addItems([
-      {
+      new NavItem({
         id: `service-item-${serviceNextOrder}`,
         html: `<span>Service Item ${serviceNextOrder}</span>`,
         order: serviceNextOrder * 10,
         requiredPolicy: serviceNextOrder % 2 === 0 ? 'Admin.Access' : undefined,
-      },
+      }),
     ])
     setServiceNextOrder((prev) => prev + 1)
   }
@@ -252,26 +426,26 @@ function TestV290Features() {
     return unsubscribe
   }, [navItemsService])
 
-  // Add a test nav item (v3.0.0: now requires id, uses requiredPolicy instead of permission)
+  // Add a test nav item (v3.1.0: using NavItem class)
   const handleAddNavItem = () => {
-    const newItem: NavItem = {
+    const newItem = new NavItem({
       id: `nav-item-${nextOrder}`,
       html: `<span>Nav Item ${nextOrder}</span>`,
       order: nextOrder * 10,
       requiredPolicy: nextOrder % 2 === 0 ? 'Admin.Access' : undefined,
-    }
+    })
     navItemsService.addItems([newItem])
     setNextOrder((prev) => prev + 1)
   }
 
-  // Add nav item with component (v3.0.0: now requires id)
+  // Add nav item with component (v3.1.0: using NavItem class)
   const handleAddComponentNavItem = () => {
     const MockComponent = () => <span style={{ color: '#6cf' }}>Component Nav #{nextOrder}</span>
-    const newItem: NavItem = {
+    const newItem = new NavItem({
       id: `component-nav-${nextOrder}`,
       component: MockComponent,
       order: nextOrder * 10,
-    }
+    })
     navItemsService.addItems([newItem])
     setNextOrder((prev) => prev + 1)
   }
@@ -1623,12 +1797,13 @@ function TestProfile() {
 export function TestThemeSharedPage() {
   return (
     <div>
-      <h1>@abpjs/theme-shared Tests (v3.0.0)</h1>
+      <h1>@abpjs/theme-shared Tests (v3.1.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing toast notifications, confirmation dialogs, modals, error handling, and shared components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.0.0 - NavItemsService, eThemeSharedRouteNames, route providers, breaking changes
+        Version 3.1.0 - NavItem class with visible callback, NavItemProps, DEFAULT_ERROR_LOCALIZATIONS
       </p>
 
+      <TestV310Features />
       <TestV300Features />
       <TestV290Features />
       <TestV270Features />

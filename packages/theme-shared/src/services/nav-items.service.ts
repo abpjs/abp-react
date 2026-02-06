@@ -1,14 +1,15 @@
 /**
  * Nav Items Service
- * Translated from @abp/ng.theme.shared/lib/services/nav-items.service.ts v3.0.0
+ * Translated from @abp/ng.theme.shared/lib/services/nav-items.service.ts v3.1.0
  *
  * Provides a service-based approach to managing navigation items,
  * replacing the utility functions approach from v2.9.0.
  *
  * @since 3.0.0
+ * @since 3.1.0 - Updated addItems parameter name to newItems for clarity
  */
 
-import type { NavItem } from '../models/nav-item';
+import { NavItem, NavItemProps } from '../models/nav-item';
 
 /**
  * NavItemsService manages navigation items with reactive updates.
@@ -108,15 +109,18 @@ export class NavItemsService {
    * Add one or more items.
    * Items are automatically sorted by order.
    *
-   * @param items - Array of items to add
+   * @param newItems - Array of items to add
    * @since 3.0.0
+   * @since 3.1.0 - Renamed parameter from items to newItems
    */
-  addItems(items: NavItem[]): void {
+  addItems(newItems: (NavItem | NavItemProps)[]): void {
     // Filter out items that already exist
     const existingIds = new Set(this._items.map((item) => item.id));
-    const newItems = items.filter((item) => !existingIds.has(item.id));
+    const itemsToAdd = newItems
+      .filter((item) => !existingIds.has(item.id))
+      .map((item) => (item instanceof NavItem ? item : new NavItem(item)));
 
-    this._items = [...this._items, ...newItems];
+    this._items = [...this._items, ...itemsToAdd];
     this.notify();
   }
 
