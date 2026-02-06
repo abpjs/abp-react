@@ -1,18 +1,11 @@
 /**
  * Route name keys for the Setting Management module.
- * These keys are used for route localization and identification.
+ * Re-exported from config/enums for backward compatibility.
+ *
  * @since 2.7.0
+ * @since 3.0.0 - Re-exports from config subpackage
  */
-export const eSettingManagementRouteNames = {
-  /**
-   * Settings route name key.
-   * Used for the main settings management route.
-   */
-  Settings: 'AbpSettingManagement::Settings',
-} as const;
-
-/**
- * Type for setting management route name key values
- */
-export type SettingManagementRouteNameKey =
-  (typeof eSettingManagementRouteNames)[keyof typeof eSettingManagementRouteNames];
+export {
+  eSettingManagementRouteNames,
+  type SettingManagementRouteNameKey,
+} from '../config/enums/route-names';

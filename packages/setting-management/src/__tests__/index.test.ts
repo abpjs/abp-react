@@ -2,6 +2,36 @@ import { describe, it, expect } from 'vitest';
 import * as settingManagementExports from '../index';
 
 describe('@abpjs/setting-management package exports', () => {
+  describe('config (v3.0.0)', () => {
+    it('should export SETTING_MANAGEMENT_ROUTE_PROVIDERS', () => {
+      expect(settingManagementExports.SETTING_MANAGEMENT_ROUTE_PROVIDERS).toBeDefined();
+      expect(typeof settingManagementExports.SETTING_MANAGEMENT_ROUTE_PROVIDERS).toBe('object');
+    });
+
+    it('should export configureRoutes', () => {
+      expect(settingManagementExports.configureRoutes).toBeDefined();
+      expect(typeof settingManagementExports.configureRoutes).toBe('function');
+    });
+
+    it('should export hideRoutes', () => {
+      expect(settingManagementExports.hideRoutes).toBeDefined();
+      expect(typeof settingManagementExports.hideRoutes).toBe('function');
+    });
+
+    it('should export initializeSettingManagementRoutes', () => {
+      expect(settingManagementExports.initializeSettingManagementRoutes).toBeDefined();
+      expect(typeof settingManagementExports.initializeSettingManagementRoutes).toBe('function');
+    });
+
+    it('should export eSettingManagementRouteNames from config', () => {
+      // This is re-exported from config/enums for v3.0.0
+      expect(settingManagementExports.eSettingManagementRouteNames).toBeDefined();
+      expect(settingManagementExports.eSettingManagementRouteNames.Settings).toBe(
+        'AbpSettingManagement::Settings'
+      );
+    });
+  });
+
   describe('enums (v2.7.0)', () => {
     it('should export eSettingManagementComponents', () => {
       expect(settingManagementExports.eSettingManagementComponents).toBeDefined();
@@ -72,7 +102,13 @@ describe('@abpjs/setting-management package exports', () => {
   });
 
   describe('export completeness', () => {
-    it('should export all required v2.7.0 functionality', () => {
+    it('should export all required v3.0.0 functionality', () => {
+      // Config (v3.0.0)
+      expect(settingManagementExports).toHaveProperty('SETTING_MANAGEMENT_ROUTE_PROVIDERS');
+      expect(settingManagementExports).toHaveProperty('configureRoutes');
+      expect(settingManagementExports).toHaveProperty('hideRoutes');
+      expect(settingManagementExports).toHaveProperty('initializeSettingManagementRoutes');
+
       // Enums
       expect(settingManagementExports).toHaveProperty('eSettingManagementComponents');
       expect(settingManagementExports).toHaveProperty('eSettingManagementRouteNames');

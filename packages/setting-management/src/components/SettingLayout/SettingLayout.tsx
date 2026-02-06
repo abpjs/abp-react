@@ -1,11 +1,11 @@
 /**
  * Setting Layout Component
- * Translated from @abp/ng.setting-management v0.9.0
+ * Translated from @abp/ng.setting-management v3.0.0
  */
 
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import type { SettingTab } from '@abpjs/theme-shared';
+import type { SettingTab } from '../../models';
 import { useSettingManagement } from '../../hooks';
 
 export interface SettingLayoutProps {
