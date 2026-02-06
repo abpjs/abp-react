@@ -6,6 +6,7 @@
  * @updated 2.4.0 - Added apiName property, eLanguageManagementComponents enum
  * @updated 2.7.0 - Added eLanguageManagementRouteNames, LanguageManagementComponentKey/RouteNameKey types
  * @updated 2.9.0 - Internal Angular changes (no new React features)
+ * @updated 3.0.0 - Added config subpackage (policy names, route providers), extension tokens, extension guards
  */
 import { useState } from 'react'
 import { useRestService } from '@abpjs/core'
@@ -21,12 +22,410 @@ import {
   eLanguageManagementRouteNames,
   type LanguageManagementComponentKey,
   type LanguageManagementRouteNameKey,
+  // v3.0.0 Config exports
+  eLanguageManagementPolicyNames,
+  configureRoutes,
+  initializeLanguageManagementRoutes,
+  LANGUAGE_MANAGEMENT_ROUTE_PROVIDERS,
+  // v3.0.0 Token exports
+  DEFAULT_LANGUAGES_ENTITY_ACTIONS,
+  DEFAULT_LANGUAGE_TEXTS_ENTITY_ACTIONS,
+  DEFAULT_LANGUAGE_MANAGEMENT_ENTITY_ACTIONS,
+  DEFAULT_LANGUAGES_TOOLBAR_ACTIONS,
+  DEFAULT_LANGUAGE_MANAGEMENT_TOOLBAR_ACTIONS,
+  DEFAULT_LANGUAGES_ENTITY_PROPS,
+  DEFAULT_LANGUAGE_MANAGEMENT_ENTITY_PROPS,
+  DEFAULT_LANGUAGES_CREATE_FORM_PROPS,
+  DEFAULT_LANGUAGES_EDIT_FORM_PROPS,
+  DEFAULT_LANGUAGE_MANAGEMENT_CREATE_FORM_PROPS,
+  DEFAULT_LANGUAGE_MANAGEMENT_EDIT_FORM_PROPS,
+  LANGUAGE_MANAGEMENT_ENTITY_ACTION_CONTRIBUTORS,
+  LANGUAGE_MANAGEMENT_TOOLBAR_ACTION_CONTRIBUTORS,
+  LANGUAGE_MANAGEMENT_ENTITY_PROP_CONTRIBUTORS,
+  LANGUAGE_MANAGEMENT_CREATE_FORM_PROP_CONTRIBUTORS,
+  LANGUAGE_MANAGEMENT_EDIT_FORM_PROP_CONTRIBUTORS,
+  // v3.0.0 Guard exports
+  languageManagementExtensionsGuard,
+  useLanguageManagementExtensionsGuard,
+  LanguageManagementExtensionsGuard,
 } from '@abpjs/language-management'
 import type { LanguageManagement } from '@abpjs/language-management'
 
 // Type annotation to ensure LanguageManagementStateService is used
 const _stateServiceType: typeof LanguageManagementStateService | null = null
 void _stateServiceType
+
+/**
+ * Test section for v3.0.0 features: config subpackage, extension tokens, extension guards
+ */
+function TestV300Features() {
+  const [guardResult, setGuardResult] = useState<{ isLoaded: boolean; loading: boolean } | null>(null)
+  const [guardFnResult, setGuardFnResult] = useState<boolean | null>(null)
+
+  const testGuardHook = () => {
+    const result = useLanguageManagementExtensionsGuard()
+    setGuardResult(result)
+  }
+
+  const testGuardFunction = async () => {
+    const result = await languageManagementExtensionsGuard()
+    setGuardFnResult(result)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.0.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      {/* Config Subpackage */}
+      <div className="test-card">
+        <h3>Config Subpackage (v3.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New config subpackage with policy names, route names, and route providers.
+        </p>
+
+        <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>eLanguageManagementPolicyNames</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eLanguageManagementPolicyNames).map(([key, value]) => (
+              <tr key={key} style={{ borderBottom: '1px solid #222' }}>
+                <td style={{ padding: '8px' }}><code>{key}</code></td>
+                <td style={{ padding: '8px', fontSize: '12px' }}><code>{value}</code></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>Route Providers</h4>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #4ade80', fontSize: '12px' }}>
+            configureRoutes: {typeof configureRoutes}
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #4ade80', fontSize: '12px' }}>
+            initializeLanguageManagementRoutes: {typeof initializeLanguageManagementRoutes}
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #60a5fa', fontSize: '12px' }}>
+            LANGUAGE_MANAGEMENT_ROUTE_PROVIDERS: {typeof LANGUAGE_MANAGEMENT_ROUTE_PROVIDERS}
+          </div>
+        </div>
+
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Config imports
+import {
+  eLanguageManagementPolicyNames,
+  configureRoutes,
+  initializeLanguageManagementRoutes,
+  LANGUAGE_MANAGEMENT_ROUTE_PROVIDERS,
+} from '@abpjs/language-management';
+
+// Check permission
+const canEditLanguages = checkPolicy(eLanguageManagementPolicyNames.LanguagesEdit);
+
+// Initialize routes
+initializeLanguageManagementRoutes(router);`}
+        </pre>
+      </div>
+
+      {/* Extension Tokens */}
+      <div className="test-card">
+        <h3>Extension Tokens (v3.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Default entity actions, toolbar actions, entity props, and form props for extensibility.
+        </p>
+
+        <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>Default Entity Actions</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Token</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_LANGUAGES_ENTITY_ACTIONS</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                {DEFAULT_LANGUAGES_ENTITY_ACTIONS.map(a => a.text.split('::')[1]).join(', ')}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_LANGUAGE_TEXTS_ENTITY_ACTIONS</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                {DEFAULT_LANGUAGE_TEXTS_ENTITY_ACTIONS.map(a => a.text.split('::')[1]).join(', ')}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>Default Toolbar Actions</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Token</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_LANGUAGES_TOOLBAR_ACTIONS</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                {DEFAULT_LANGUAGES_TOOLBAR_ACTIONS.map(a => a.text.split('::')[1]).join(', ') || '(empty)'}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>Default Entity Props</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Token</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Props</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_LANGUAGES_ENTITY_PROPS</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                {DEFAULT_LANGUAGES_ENTITY_PROPS.map(p => p.name).join(', ')}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>Default Form Props</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Token</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Props</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_LANGUAGES_CREATE_FORM_PROPS</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                {DEFAULT_LANGUAGES_CREATE_FORM_PROPS.map(p => p.name).join(', ')}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_LANGUAGES_EDIT_FORM_PROPS</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}>
+                {DEFAULT_LANGUAGES_EDIT_FORM_PROPS.map(p => p.name).join(', ')}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>Contributor Token Symbols</h4>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #a78bfa', fontSize: '11px' }}>
+            ENTITY_ACTION_CONTRIBUTORS: {typeof LANGUAGE_MANAGEMENT_ENTITY_ACTION_CONTRIBUTORS}
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #a78bfa', fontSize: '11px' }}>
+            TOOLBAR_ACTION_CONTRIBUTORS: {typeof LANGUAGE_MANAGEMENT_TOOLBAR_ACTION_CONTRIBUTORS}
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #a78bfa', fontSize: '11px' }}>
+            ENTITY_PROP_CONTRIBUTORS: {typeof LANGUAGE_MANAGEMENT_ENTITY_PROP_CONTRIBUTORS}
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #a78bfa', fontSize: '11px' }}>
+            CREATE_FORM_PROP_CONTRIBUTORS: {typeof LANGUAGE_MANAGEMENT_CREATE_FORM_PROP_CONTRIBUTORS}
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #a78bfa', fontSize: '11px' }}>
+            EDIT_FORM_PROP_CONTRIBUTORS: {typeof LANGUAGE_MANAGEMENT_EDIT_FORM_PROP_CONTRIBUTORS}
+          </div>
+        </div>
+
+        <h4 style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>Component-Keyed Aggregates</h4>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #f59e0b', fontSize: '11px' }}>
+            DEFAULT_LANGUAGE_MANAGEMENT_ENTITY_ACTIONS: {Object.keys(DEFAULT_LANGUAGE_MANAGEMENT_ENTITY_ACTIONS).length} components
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #f59e0b', fontSize: '11px' }}>
+            DEFAULT_LANGUAGE_MANAGEMENT_TOOLBAR_ACTIONS: {Object.keys(DEFAULT_LANGUAGE_MANAGEMENT_TOOLBAR_ACTIONS).length} components
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #f59e0b', fontSize: '11px' }}>
+            DEFAULT_LANGUAGE_MANAGEMENT_ENTITY_PROPS: {Object.keys(DEFAULT_LANGUAGE_MANAGEMENT_ENTITY_PROPS).length} components
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #f59e0b', fontSize: '11px' }}>
+            DEFAULT_LANGUAGE_MANAGEMENT_CREATE_FORM_PROPS: {Object.keys(DEFAULT_LANGUAGE_MANAGEMENT_CREATE_FORM_PROPS).length} components
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #f59e0b', fontSize: '11px' }}>
+            DEFAULT_LANGUAGE_MANAGEMENT_EDIT_FORM_PROPS: {Object.keys(DEFAULT_LANGUAGE_MANAGEMENT_EDIT_FORM_PROPS).length} components
+          </div>
+        </div>
+      </div>
+
+      {/* Extension Guards */}
+      <div className="test-card">
+        <h3>Extension Guards (v3.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Guards for route protection and extension loading.
+        </p>
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+          <button onClick={() => testGuardHook()}>
+            Test useLanguageManagementExtensionsGuard Hook
+          </button>
+          <button onClick={() => testGuardFunction()}>
+            Test languageManagementExtensionsGuard Function
+          </button>
+        </div>
+
+        {guardResult && (
+          <div style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #333', marginBottom: '0.5rem' }}>
+            <strong>Hook Result:</strong> isLoaded={String(guardResult.isLoaded)}, loading={String(guardResult.loading)}
+          </div>
+        )}
+
+        {guardFnResult !== null && (
+          <div style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #333', marginBottom: '0.5rem' }}>
+            <strong>Function Result:</strong> {String(guardFnResult)}
+          </div>
+        )}
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #4ade80', fontSize: '12px' }}>
+            languageManagementExtensionsGuard: {typeof languageManagementExtensionsGuard}
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #4ade80', fontSize: '12px' }}>
+            useLanguageManagementExtensionsGuard: {typeof useLanguageManagementExtensionsGuard}
+          </div>
+          <div style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #60a5fa', fontSize: '12px' }}>
+            LanguageManagementExtensionsGuard: {typeof LanguageManagementExtensionsGuard}
+          </div>
+        </div>
+
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage - Guards
+import {
+  languageManagementExtensionsGuard,
+  useLanguageManagementExtensionsGuard,
+  LanguageManagementExtensionsGuard,
+} from '@abpjs/language-management';
+
+// Async guard function for route protection
+const canActivate = await languageManagementExtensionsGuard();
+
+// React hook for components
+const { isLoaded, loading } = useLanguageManagementExtensionsGuard();
+
+// Class-based guard
+const guard = new LanguageManagementExtensionsGuard();
+await guard.canActivate();`}
+        </pre>
+      </div>
+
+      {/* Breaking Changes */}
+      <div className="test-card">
+        <h3>v3.0.0 Breaking Changes</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Change</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Before (v2.x)</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>After (v3.0.0)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>Route Names - Administration</td>
+              <td style={{ padding: '8px', fontSize: '12px' }}><code>eLanguageManagementRouteNames.Administration</code></td>
+              <td style={{ padding: '8px', fontSize: '12px', color: '#ef4444' }}>Removed</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>Route Names - Languages Value</td>
+              <td style={{ padding: '8px', fontSize: '12px' }}><code>'LanguageManagement::Menu:Languages'</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}><code>'LanguageManagement::Languages'</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>Route Names - New Key</td>
+              <td style={{ padding: '8px', fontSize: '12px', color: '#888' }}>N/A</td>
+              <td style={{ padding: '8px', fontSize: '12px' }}><code>eLanguageManagementRouteNames.LanguageManagement</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}>State Service</td>
+              <td style={{ padding: '8px', fontSize: '12px' }}><code>getLanguagesTotalCount()</code></td>
+              <td style={{ padding: '8px', fontSize: '12px', color: '#ef4444' }}>Removed</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* v3.0.0 API Reference */}
+      <div className="test-card">
+        <h3>v3.0.0 API Reference</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Category</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }} rowSpan={4}>Config</td>
+              <td style={{ padding: '8px' }}><code>eLanguageManagementPolicyNames</code></td>
+              <td style={{ padding: '8px' }}>Const Object</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>configureRoutes</code></td>
+              <td style={{ padding: '8px' }}>Function</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>initializeLanguageManagementRoutes</code></td>
+              <td style={{ padding: '8px' }}>Function</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LANGUAGE_MANAGEMENT_ROUTE_PROVIDERS</code></td>
+              <td style={{ padding: '8px' }}>Object</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }} rowSpan={3}>Guards</td>
+              <td style={{ padding: '8px' }}><code>languageManagementExtensionsGuard</code></td>
+              <td style={{ padding: '8px' }}>Async Function</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>useLanguageManagementExtensionsGuard</code></td>
+              <td style={{ padding: '8px' }}>React Hook</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageManagementExtensionsGuard</code></td>
+              <td style={{ padding: '8px' }}>Class</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }} rowSpan={5}>Tokens</td>
+              <td style={{ padding: '8px' }}><code>DEFAULT_*_ENTITY_ACTIONS</code></td>
+              <td style={{ padding: '8px' }}>Array/Object</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_*_TOOLBAR_ACTIONS</code></td>
+              <td style={{ padding: '8px' }}>Array/Object</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_*_ENTITY_PROPS</code></td>
+              <td style={{ padding: '8px' }}>Array/Object</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_*_FORM_PROPS</code></td>
+              <td style={{ padding: '8px' }}>Array/Object</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LANGUAGE_MANAGEMENT_*_CONTRIBUTORS</code></td>
+              <td style={{ padding: '8px' }}>Symbol</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
 /**
  * Test section for v2.4.0 features: apiName property, eLanguageManagementComponents enum
@@ -120,6 +519,7 @@ componentRegistry[eLanguageManagementComponents.LanguageTexts] = LanguageTextsCo
 
 /**
  * Test section for v2.7.0 features: eLanguageManagementRouteNames, LanguageManagementComponentKey/RouteNameKey types
+ * Updated in v3.0.0: Route names changed - removed Administration, renamed Languages
  */
 function TestV270Features() {
   // Demo type-safe component lookup with LanguageManagementComponentKey
@@ -132,10 +532,11 @@ function TestV270Features() {
   }
 
   // Demo type-safe route lookup with LanguageManagementRouteNameKey
+  // v3.0.0: Updated route name values (removed Administration, renamed Languages)
   const getRouteDisplay = (key: LanguageManagementRouteNameKey): string => {
     const displays: Record<LanguageManagementRouteNameKey, string> = {
-      'AbpUiNavigation::Menu:Administration': 'Administration Menu',
-      'LanguageManagement::Menu:Languages': 'Languages Page',
+      'LanguageManagement::LanguageManagement': 'Language Management Root',
+      'LanguageManagement::Languages': 'Languages Page',
       'LanguageManagement::LanguageTexts': 'Language Texts Page',
     }
     return displays[key]
@@ -143,12 +544,14 @@ function TestV270Features() {
 
   return (
     <div className="test-section">
-      <h2>v2.7.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+      <h2>v2.7.0 Features <span style={{ fontSize: '14px', color: '#888' }}>(Updated in v3.0.0)</span></h2>
 
       <div className="test-card">
-        <h3>eLanguageManagementRouteNames Const Object (v2.7.0)</h3>
+        <h3>eLanguageManagementRouteNames Const Object (v2.7.0, Updated v3.0.0)</h3>
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
-          New const object for route name localization keys used in navigation configuration.
+          Route name localization keys used in navigation configuration.
+          <br />
+          <span style={{ color: '#f59e0b' }}>v3.0.0 Breaking Change:</span> Removed <code>Administration</code> key, renamed <code>Languages</code> value to <code>LanguageManagement::Languages</code>, added <code>LanguageManagement</code> key.
         </p>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -169,13 +572,17 @@ function TestV270Features() {
           </tbody>
         </table>
         <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
-{`// Usage - Navigation configuration
+{`// Usage - Navigation configuration (v3.0.0)
 import { eLanguageManagementRouteNames } from '@abpjs/language-management';
 
 const routes = [
+  { name: eLanguageManagementRouteNames.LanguageManagement, path: '/language-management' },
   { name: eLanguageManagementRouteNames.Languages, path: '/language-management/languages' },
   { name: eLanguageManagementRouteNames.LanguageTexts, path: '/language-management/language-texts' },
-];`}
+];
+
+// v3.0.0: Removed eLanguageManagementRouteNames.Administration
+// v3.0.0: Languages value changed from 'LanguageManagement::Menu:Languages' to 'LanguageManagement::Languages'`}
         </pre>
       </div>
 
@@ -278,7 +685,7 @@ const routes: Record<LanguageManagementRouteNameKey, string> = { ... };`}
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}><code>eLanguageManagementRouteNames</code></td>
               <td style={{ padding: '8px' }}>Const Object</td>
-              <td style={{ padding: '8px' }}>Route name localization keys (Administration, Languages, LanguageTexts)</td>
+              <td style={{ padding: '8px' }}>Route name localization keys (v3.0.0: LanguageManagement, Languages, LanguageTexts)</td>
             </tr>
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}><code>LanguageManagementComponentKey</code></td>
@@ -657,14 +1064,17 @@ function MyComponent() {
 function TestLanguageManagementStateServiceSection() {
   return (
     <div className="test-section">
-      <h2>LanguageManagementStateService (v2.0.0)</h2>
+      <h2>LanguageManagementStateService (v2.0.0, Updated v3.0.0)</h2>
 
       <div className="test-card">
         <h3>Overview</h3>
         <p>
           The <code>LanguageManagementStateService</code> provides a stateful facade over language management
           operations, maintaining internal state that mirrors the Angular NGXS store pattern.
-          It has <strong>10 dispatch methods</strong> and <strong>6 getter methods</strong>.
+          It has <strong>10 dispatch methods</strong> and <strong>5 getter methods</strong> (v3.0.0).
+        </p>
+        <p style={{ color: '#f59e0b', fontSize: '14px', marginTop: '0.5rem' }}>
+          ⚠️ v3.0.0 Breaking Change: <code>getLanguagesTotalCount()</code> has been removed.
         </p>
       </div>
 
@@ -742,10 +1152,10 @@ function TestLanguageManagementStateServiceSection() {
               <td style={{ padding: '8px' }}>Language[]</td>
               <td>Get languages from state</td>
             </tr>
-            <tr style={{ borderBottom: '1px solid #222' }}>
-              <td style={{ padding: '8px' }}>getLanguagesTotalCount()</td>
-              <td style={{ padding: '8px' }}>number</td>
-              <td>Get total count of languages</td>
+            <tr style={{ borderBottom: '1px solid #222', background: '#3b2020' }}>
+              <td style={{ padding: '8px', textDecoration: 'line-through', color: '#888' }}>getLanguagesTotalCount()</td>
+              <td style={{ padding: '8px', color: '#888' }}>number</td>
+              <td style={{ color: '#ef4444' }}>❌ Removed in v3.0.0</td>
             </tr>
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}>getLanguageTexts()</td>
@@ -786,7 +1196,8 @@ function MyComponent() {
 
   // Access the result from state
   const languages = stateService.getLanguages();
-  const totalCount = stateService.getLanguagesTotalCount();
+  // v3.0.0: getLanguagesTotalCount() has been REMOVED
+  // const totalCount = stateService.getLanguagesTotalCount(); // ❌ No longer available
 
   // Dispatch to fetch cultures and resources
   await stateService.dispatchGetLanguageCultures();
@@ -892,12 +1303,13 @@ function TestModels() {
 export function TestLanguageManagementPage() {
   return (
     <div>
-      <h1>@abpjs/language-management Tests (v2.9.0)</h1>
+      <h1>@abpjs/language-management Tests (v3.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing language management components, hooks, and services.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.9.0 - No new React features (internal Angular changes only)
+        Version 3.0.0 - New config subpackage, extension tokens, extension guards
       </p>
 
+      <TestV300Features />
       <TestV270Features />
       <TestV240Features />
       <TestLanguagesComponent />

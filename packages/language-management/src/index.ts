@@ -1,7 +1,16 @@
 /**
  * @abpjs/language-management
  * ABP Framework Language Management module for React
- * Translated from @volo/abp.ng.language-management v2.7.0
+ * Translated from @volo/abp.ng.language-management v3.0.0
+ *
+ * Changes in v3.0.0:
+ * - Added config subpackage with policy names, route names, and route providers
+ * - Added tokens subpackage with extension tokens for entity actions, toolbar actions, props
+ * - Added guards subpackage with extensions guard
+ * - Removed Administration from eLanguageManagementRouteNames
+ * - Changed Languages value from 'LanguageManagement::Menu:Languages' to 'LanguageManagement::Languages'
+ * - Added LanguageManagement key to eLanguageManagementRouteNames
+ * - Removed getLanguagesTotalCount() from LanguageManagementStateService
  *
  * Changes in v2.7.0:
  * - Changed eLanguageManagementComponents from enum to const object
@@ -24,8 +33,17 @@
  * - No functional code changes
  *
  * @since 2.0.0
- * @updated 2.7.0
+ * @updated 3.0.0
  */
+
+// Config (v3.0.0)
+export * from './config';
+
+// Guards (v3.0.0)
+export * from './guards';
+
+// Tokens (v3.0.0)
+export * from './tokens';
 
 // Models
 export * from './models';
