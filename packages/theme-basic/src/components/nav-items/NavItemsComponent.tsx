@@ -1,122 +1,84 @@
-import React, { useEffect, useCallback, useMemo } from 'react';
-import { Stack } from '@chakra-ui/react';
-import { useConfig, useAuth, useSession } from '@abpjs/core';
-import { useLayoutContext } from '../../contexts/layout.context';
-import { Layout } from '../../models';
-import { LanguageSelector } from '../blocks/sidebars/sidebar-with-collapsible/language-selector';
-import { UserProfile, UserProfileProps } from '../blocks/sidebars/sidebar-with-collapsible/user-profile';
-import { eNavigationElementNames } from '../../enums';
+import React, { useCallback } from 'react';
+import { Stack, Box } from '@chakra-ui/react';
+import { NavItem, useNavItems } from '@abpjs/theme-shared';
 
 /**
  * Props for the NavItemsComponent.
  * @since 2.7.0
+ * @updated 3.0.0 - Simplified to use NavItemsService from @abpjs/theme-shared
  */
 export interface NavItemsComponentProps {
   /** Whether the screen is small (mobile) */
   smallScreen?: boolean;
-  /** User profile action handlers */
-  userProfileProps?: UserProfileProps;
-  /** Whether to show language selector */
-  showLanguageSelector?: boolean;
-  /** Whether to show current user */
-  showCurrentUser?: boolean;
 }
 
 /**
- * Public API component for navigation items (language selector, user menu, custom elements).
- * Handles the registration of built-in navigation elements and renders custom elements.
+ * Public API component for navigation items.
+ * Uses NavItemsService from @abpjs/theme-shared to manage nav items.
  *
  * This component is part of the theme-basic public API and can be
  * replaced using the component replacement system with eThemeBasicComponents.NavItems.
  *
  * @since 2.7.0 - Added as public API component
+ * @updated 3.0.0 - Now uses NavItemsService from @abpjs/theme-shared
  *
  * @example
  * ```tsx
- * <NavItemsComponent
- *   showLanguageSelector={true}
- *   showCurrentUser={true}
- *   userProfileProps={{
- *     onLogout: () => logout(),
- *     onChangePassword: () => openChangePassword(),
- *   }}
- * />
+ * // Basic usage - nav items are configured via NavItemsService
+ * <NavItemsComponent />
+ *
+ * // For small screens
+ * <NavItemsComponent smallScreen />
  * ```
  */
 export function NavItemsComponent({
-  smallScreen: _smallScreen = false,
-  userProfileProps,
-  showLanguageSelector = true,
-  showCurrentUser = true,
+  smallScreen = false,
 }: NavItemsComponentProps): React.ReactElement {
-  const { localization } = useConfig();
-  useAuth();
-  const { language, setLanguage } = useSession();
-  const { state, service } = useLayoutContext();
+  // Get nav items from NavItemsService
+  const navItems = useNavItems();
 
-  // Get default language display name
-  const _defaultLanguage = useMemo(() => {
-    const lang = localization?.languages?.find((l) => l.cultureName === language);
-    return lang?.displayName || language || '';
-  }, [localization, language]);
+  // Track function for nav items
+  const trackByFn = useCallback((item: NavItem): string | number => {
+    return item.id;
+  }, []);
 
-  // Get other languages for dropdown
-  const _dropdownLanguages = useMemo(() => {
-    return localization?.languages?.filter((l) => l.cultureName !== language) || [];
-  }, [localization, language]);
-
-  // Handle language change
-  const _onChangeLang = useCallback(
-    (cultureName: string) => {
-      setLanguage(cultureName);
-      window.location.reload();
-    },
-    [setLanguage]
-  );
-
-  // Handle logout
-  const _logout = useCallback(() => {
-    userProfileProps?.onLogout?.();
-  }, [userProfileProps]);
-
-  // Register language element
-  useEffect(() => {
-    if (showLanguageSelector && localization?.languages && localization.languages.length > 1) {
-      service.addNavigationElement({
-        name: eNavigationElementNames.Language,
-        element: <LanguageSelector key="language-selector" />,
-        order: 2,
-      });
-
-      return () => {
-        service.removeNavigationElement(eNavigationElementNames.Language);
-      };
+  // Render a single nav item
+  const renderNavItem = useCallback((item: NavItem): React.ReactNode => {
+    // If a component is provided, render it
+    if (item.component) {
+      const Component = item.component;
+      return <Component key={item.id} />;
     }
-  }, [service, showLanguageSelector, localization?.languages]);
 
-  // Register user element
-  useEffect(() => {
-    if (showCurrentUser) {
-      service.addNavigationElement({
-        name: eNavigationElementNames.User,
-        element: <UserProfile key="user-profile" {...userProfileProps} />,
-        order: 3,
-      });
-
-      return () => {
-        service.removeNavigationElement(eNavigationElementNames.User);
-      };
+    // If HTML is provided, render it (with caution for XSS)
+    if (item.html) {
+      return (
+        <Box
+          key={item.id}
+          dangerouslySetInnerHTML={{ __html: item.html }}
+        />
+      );
     }
-  }, [service, showCurrentUser, userProfileProps]);
 
-  // Get sorted navigation elements
-  const navElements = state.navigationElements;
+    // If an action is provided, render a clickable element
+    if (item.action) {
+      return (
+        <Box
+          key={item.id}
+          as="button"
+          onClick={item.action}
+          cursor="pointer"
+          width="full"
+        />
+      );
+    }
+
+    return null;
+  }, []);
 
   return (
     <Stack gap={2} width="full">
-      {navElements.map((element: Layout.NavigationElement) => (
-        <React.Fragment key={element.name}>{element.element}</React.Fragment>
-      ))}
+      {navItems.map((item) => renderNavItem(item))}
     </Stack>
   );
 }

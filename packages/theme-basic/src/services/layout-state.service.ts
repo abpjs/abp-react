@@ -6,6 +6,11 @@ import { Layout } from '../models';
  * Provides methods to access and modify layout state.
  *
  * @since 2.7.0
+ * @deprecated This service was removed in Angular v3.0.0. Use NavItemsService from
+ * @abpjs/theme-shared instead. This export is kept for backwards compatibility
+ * and will be removed in a future version.
+ *
+ * @see {@link NavItemsService} from @abpjs/theme-shared
  */
 export interface LayoutStateService {
   /**
@@ -38,6 +43,11 @@ export interface LayoutStateService {
  * Provides a service-like interface matching the Angular LayoutStateService.
  *
  * @since 2.7.0
+ * @deprecated This hook was removed in Angular v3.0.0. Use NavItemsService from
+ * @abpjs/theme-shared instead. This export is kept for backwards compatibility
+ * and will be removed in a future version.
+ *
+ * @see {@link getNavItemsService} and {@link useNavItems} from @abpjs/theme-shared
  *
  * @example
  * ```tsx

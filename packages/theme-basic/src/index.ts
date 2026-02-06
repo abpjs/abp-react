@@ -2,9 +2,20 @@
  * @abpjs/theme-basic
  *
  * ABP Framework Theme Basic components for React.
- * Translated from @abp/ng.theme.basic v2.9.0
+ * Translated from @abp/ng.theme.basic v3.0.0
  *
  * This package provides the basic theme layout components for ABP React applications.
+ *
+ * Changes in v3.0.0:
+ * - Added CurrentUserComponent and LanguagesComponent as public API components
+ * - Added nav-item.provider and styles.provider for initialization
+ * - Added BASIC_THEME_NAV_ITEM_PROVIDERS and BASIC_THEME_STYLES_PROVIDERS
+ * - Added eThemeBasicComponents.CurrentUser and eThemeBasicComponents.Languages
+ * - NavItemsComponent now uses NavItemsService from @abpjs/theme-shared
+ * - Deprecated eNavigationElementNames (use NavItemsService instead)
+ * - Deprecated LayoutStateService (use NavItemsService instead)
+ * - Added bordered .datatable-body-row styles
+ * - Dependency update to @abp/ng.theme.shared v3.0.0
  *
  * Changes in v2.9.0:
  * - Removed isDropdownChildDynamic from ApplicationLayoutComponent
@@ -34,7 +45,7 @@
  * - Dependency update to @abp/ng.theme.shared v2.2.0
  * - No functional code changes
  *
- * @version 2.9.0
+ * @version 3.0.0
  * @since 2.0.0 - Removed legacy .abp-confirm styles (no impact on React - we use Chakra UI)
  * @since 2.1.0 - Angular: OAuthService replaced with AuthService (already using useAuth in React)
  *              - Angular: Added styles for loading, modal-backdrop, confirmation (handled by Chakra UI)
