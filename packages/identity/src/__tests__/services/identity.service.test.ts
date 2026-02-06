@@ -305,6 +305,64 @@ describe('IdentityService', () => {
       });
     });
 
+    describe('getUserAssignableRoles (v3.0.0)', () => {
+      it('should call request with correct parameters', async () => {
+        const expectedResponse: Identity.RoleResponse = {
+          items: [
+            { id: 'role-1', name: 'Admin', isDefault: false, isPublic: true, isStatic: false, concurrencyStamp: 'stamp1' },
+            { id: 'role-2', name: 'User', isDefault: true, isPublic: true, isStatic: false, concurrencyStamp: 'stamp2' },
+          ],
+          totalCount: 2,
+        };
+        mockRestService.request.mockResolvedValue(expectedResponse);
+
+        const result = await identityService.getUserAssignableRoles();
+
+        expect(mockRestService.request).toHaveBeenCalledWith({
+          method: 'GET',
+          url: '/api/identity/users/assignable-roles',
+        });
+        expect(result).toEqual(expectedResponse);
+      });
+
+      it('should return all assignable roles', async () => {
+        const expectedResponse: Identity.RoleResponse = {
+          items: [
+            { id: 'role-1', name: 'Admin', isDefault: false, isPublic: true, isStatic: false, concurrencyStamp: 'stamp1' },
+            { id: 'role-2', name: 'User', isDefault: true, isPublic: true, isStatic: false, concurrencyStamp: 'stamp2' },
+            { id: 'role-3', name: 'Moderator', isDefault: false, isPublic: false, isStatic: false, concurrencyStamp: 'stamp3' },
+          ],
+          totalCount: 3,
+        };
+        mockRestService.request.mockResolvedValue(expectedResponse);
+
+        const result = await identityService.getUserAssignableRoles();
+
+        expect(result.items).toHaveLength(3);
+        expect(result.totalCount).toBe(3);
+      });
+
+      it('should propagate errors from request', async () => {
+        const error = new Error('Failed to fetch assignable roles');
+        mockRestService.request.mockRejectedValue(error);
+
+        await expect(identityService.getUserAssignableRoles()).rejects.toThrow('Failed to fetch assignable roles');
+      });
+
+      it('should return empty list when no assignable roles exist', async () => {
+        const expectedResponse: Identity.RoleResponse = {
+          items: [],
+          totalCount: 0,
+        };
+        mockRestService.request.mockResolvedValue(expectedResponse);
+
+        const result = await identityService.getUserAssignableRoles();
+
+        expect(result.items).toHaveLength(0);
+        expect(result.totalCount).toBe(0);
+      });
+    });
+
     describe('createUser', () => {
       it('should create a new user', async () => {
         const newUser: Identity.UserSaveRequest = {

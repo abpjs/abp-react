@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 /**
  * Tests for enums barrel export
  * @since 2.7.0
+ * @updated 3.0.0 - eIdentityRouteNames no longer includes Administration
  */
 describe('enums barrel export', () => {
   it('should export eIdentityComponents from enums index', async () => {
@@ -12,10 +13,12 @@ describe('enums barrel export', () => {
     expect(eIdentityComponents.Users).toBe('Identity.UsersComponent');
   });
 
-  it('should export eIdentityRouteNames from enums index', async () => {
+  it('should export eIdentityRouteNames from enums index (v3.0.0 - without Administration)', async () => {
     const { eIdentityRouteNames } = await import('../../enums');
     expect(eIdentityRouteNames).toBeDefined();
-    expect(eIdentityRouteNames.Administration).toBe('AbpUiNavigation::Menu:Administration');
+    // v3.0.0: Administration key removed
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((eIdentityRouteNames as any).Administration).toBeUndefined();
     expect(eIdentityRouteNames.IdentityManagement).toBe('AbpIdentity::Menu:IdentityManagement');
     expect(eIdentityRouteNames.Roles).toBe('AbpIdentity::Roles');
     expect(eIdentityRouteNames.Users).toBe('AbpIdentity::Users');

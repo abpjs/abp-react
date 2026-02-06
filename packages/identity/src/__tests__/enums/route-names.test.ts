@@ -1,16 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { eIdentityRouteNames } from '../../enums/route-names';
+import { eIdentityRouteNames } from '../../enums';
 
 /**
  * Tests for eIdentityRouteNames enum
  * @since 2.7.0
+ * @updated 3.0.0 - Moved to config/enums, removed Administration key
  */
 describe('eIdentityRouteNames', () => {
   describe('enum values', () => {
-    it('should have Administration key with correct value', () => {
-      expect(eIdentityRouteNames.Administration).toBe('AbpUiNavigation::Menu:Administration');
-    });
-
     it('should have IdentityManagement key with correct value', () => {
       expect(eIdentityRouteNames.IdentityManagement).toBe('AbpIdentity::Menu:IdentityManagement');
     });
@@ -21,6 +18,11 @@ describe('eIdentityRouteNames', () => {
 
     it('should have Users key with correct value', () => {
       expect(eIdentityRouteNames.Users).toBe('AbpIdentity::Users');
+    });
+
+    it('should NOT have Administration key (removed in v3.0.0)', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((eIdentityRouteNames as any).Administration).toBeUndefined();
     });
   });
 
@@ -33,14 +35,13 @@ describe('eIdentityRouteNames', () => {
       expect(typeof eIdentityRouteNames).toBe('object');
     });
 
-    it('should have exactly 4 keys', () => {
+    it('should have exactly 3 keys (v3.0.0)', () => {
       const keys = Object.keys(eIdentityRouteNames);
-      expect(keys).toHaveLength(4);
+      expect(keys).toHaveLength(3);
     });
 
     it('should have all expected keys', () => {
       const keys = Object.keys(eIdentityRouteNames);
-      expect(keys).toContain('Administration');
       expect(keys).toContain('IdentityManagement');
       expect(keys).toContain('Roles');
       expect(keys).toContain('Users');
@@ -53,10 +54,6 @@ describe('eIdentityRouteNames', () => {
       Object.values(eIdentityRouteNames).forEach((value) => {
         expect(value).toMatch(/::/);
       });
-    });
-
-    it('should have Administration from AbpUiNavigation resource', () => {
-      expect(eIdentityRouteNames.Administration).toMatch(/^AbpUiNavigation::/);
     });
 
     it('should have IdentityManagement, Roles, Users from AbpIdentity resource', () => {
@@ -77,14 +74,12 @@ describe('eIdentityRouteNames', () => {
 
     it('should be usable for breadcrumb labels', () => {
       const breadcrumbs = [
-        { label: eIdentityRouteNames.Administration },
         { label: eIdentityRouteNames.IdentityManagement },
         { label: eIdentityRouteNames.Users },
       ];
-      expect(breadcrumbs).toHaveLength(3);
-      expect(breadcrumbs[0].label).toBe('AbpUiNavigation::Menu:Administration');
-      expect(breadcrumbs[1].label).toBe('AbpIdentity::Menu:IdentityManagement');
-      expect(breadcrumbs[2].label).toBe('AbpIdentity::Users');
+      expect(breadcrumbs).toHaveLength(2);
+      expect(breadcrumbs[0].label).toBe('AbpIdentity::Menu:IdentityManagement');
+      expect(breadcrumbs[1].label).toBe('AbpIdentity::Users');
     });
 
     it('should have unique values for each key', () => {
@@ -98,9 +93,6 @@ describe('eIdentityRouteNames', () => {
       let matched = '';
 
       switch (routeName) {
-        case eIdentityRouteNames.Administration:
-          matched = 'admin';
-          break;
         case eIdentityRouteNames.IdentityManagement:
           matched = 'identity';
           break;
