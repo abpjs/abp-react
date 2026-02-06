@@ -43,7 +43,8 @@
   },
   "devDependencies": {
     "@abp/ng.theme.shared": "2.9.0",
-    "@vitest/coverage-v8": "^3.2.0"
+    "@vitest/coverage-v8": "^1.6.0",
+    "vitest": "^1.6.0"
   },
   "author": "tekthar.com",
   "license": "LGPL-3.0",
