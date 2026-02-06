@@ -28,6 +28,10 @@ build/
 # Test coverage
 coverage/
 
+# Test reports (JUnit)
+test-report.junit.xml
+*.test-report.junit.xml
+
 # Misc
 .env
 .env.local

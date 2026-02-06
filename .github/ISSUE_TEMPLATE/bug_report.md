@@ -31,20 +31,28 @@ If applicable, add screenshots to help explain your problem.
 
 ## 🌍 Environment
 
-- **Package Version**: [e.g., @abpjs/core@0.8.0]
-- **Node.js Version**: [e.g., 18.0.0]
-- **pnpm Version**: [e.g., 8.15.0]
+- **Package Version**: [e.g., @abpjs/core@2.9.0]
+- **Node.js Version**: [e.g., 20.0.0]
+- **pnpm Version**: [e.g., 10.28.0]
 - **OS**: [e.g., Windows 10, macOS 13, Linux Ubuntu 22.04]
 - **Browser**: [e.g., Chrome 120, Firefox 121] (if applicable)
 
 ## 📦 Affected Packages
 
-- [ ] @abpjs/core
 - [ ] @abpjs/account
+- [ ] @abpjs/account-pro
+- [ ] @abpjs/audit-logging
+- [ ] @abpjs/chat
+- [ ] @abpjs/core
 - [ ] @abpjs/feature-management
 - [ ] @abpjs/identity
+- [ ] @abpjs/identity-pro
+- [ ] @abpjs/language-management
 - [ ] @abpjs/permission-management
+- [ ] @abpjs/saas
+- [ ] @abpjs/setting-management
 - [ ] @abpjs/tenant-management
+- [ ] @abpjs/text-template-management
 - [ ] @abpjs/theme-basic
 - [ ] @abpjs/theme-shared
 

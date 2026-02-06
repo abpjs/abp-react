@@ -1,6 +1,6 @@
 /**
  * Tests for Language Management Enums barrel export
- * @abpjs/language-management v2.7.0
+ * @abpjs/language-management v3.0.0
  */
 import { describe, it, expect } from 'vitest';
 import * as enums from '../../enums';
@@ -27,9 +27,9 @@ describe('enums barrel export', () => {
     expect(enums.eLanguageManagementComponents.LanguageTexts).toBe('LanguageManagement.LanguageTextsComponent');
   });
 
-  it('should have correct eLanguageManagementRouteNames values through barrel', () => {
-    expect(enums.eLanguageManagementRouteNames.Administration).toBe('AbpUiNavigation::Menu:Administration');
-    expect(enums.eLanguageManagementRouteNames.Languages).toBe('LanguageManagement::Menu:Languages');
+  it('should have correct eLanguageManagementRouteNames values through barrel (v3.0.0)', () => {
+    expect(enums.eLanguageManagementRouteNames.LanguageManagement).toBe('LanguageManagement::LanguageManagement');
+    expect(enums.eLanguageManagementRouteNames.Languages).toBe('LanguageManagement::Languages');
     expect(enums.eLanguageManagementRouteNames.LanguageTexts).toBe('LanguageManagement::LanguageTexts');
   });
 });
@@ -40,9 +40,9 @@ describe('named imports from enums', () => {
     expect(eLanguageManagementComponents.Languages).toBe('LanguageManagement.LanguagesComponent');
   });
 
-  it('should support named import of eLanguageManagementRouteNames', async () => {
+  it('should support named import of eLanguageManagementRouteNames (v3.0.0)', async () => {
     const { eLanguageManagementRouteNames } = await import('../../enums');
-    expect(eLanguageManagementRouteNames.Languages).toBe('LanguageManagement::Menu:Languages');
+    expect(eLanguageManagementRouteNames.Languages).toBe('LanguageManagement::Languages');
   });
 
   it('should support named import of LanguageManagementComponentKey type (compile-time check)', () => {
@@ -51,9 +51,9 @@ describe('named imports from enums', () => {
     expect(key).toBe(enums.eLanguageManagementComponents.Languages);
   });
 
-  it('should support named import of LanguageManagementRouteNameKey type (compile-time check)', () => {
+  it('should support named import of LanguageManagementRouteNameKey type (v3.0.0)', () => {
     // This is a compile-time check - if this compiles, the type is exported correctly
-    const key: enums.LanguageManagementRouteNameKey = 'LanguageManagement::Menu:Languages';
+    const key: enums.LanguageManagementRouteNameKey = 'LanguageManagement::Languages';
     expect(key).toBe(enums.eLanguageManagementRouteNames.Languages);
   });
 });

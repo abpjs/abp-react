@@ -24,12 +24,20 @@ Describe any alternative solutions or features you've considered.
 
 ## 📦 Affected Packages
 
-- [ ] @abpjs/core
 - [ ] @abpjs/account
+- [ ] @abpjs/account-pro
+- [ ] @abpjs/audit-logging
+- [ ] @abpjs/chat
+- [ ] @abpjs/core
 - [ ] @abpjs/feature-management
 - [ ] @abpjs/identity
+- [ ] @abpjs/identity-pro
+- [ ] @abpjs/language-management
 - [ ] @abpjs/permission-management
+- [ ] @abpjs/saas
+- [ ] @abpjs/setting-management
 - [ ] @abpjs/tenant-management
+- [ ] @abpjs/text-template-management
 - [ ] @abpjs/theme-basic
 - [ ] @abpjs/theme-shared
 
