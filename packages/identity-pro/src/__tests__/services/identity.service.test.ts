@@ -314,6 +314,50 @@ describe('IdentityService', () => {
       });
     });
 
+    describe('getUserOrganizationUnits (v2.9.0)', () => {
+      it('should fetch organization units for a user', async () => {
+        const expectedResponse = [
+          { id: 'unit-1', displayName: 'Engineering', code: '00001', parentId: null },
+          { id: 'unit-2', displayName: 'Frontend Team', code: '00001.00001', parentId: 'unit-1' },
+        ];
+        mockRestService.request.mockResolvedValue(expectedResponse);
+
+        const result = await identityService.getUserOrganizationUnits('user-1');
+
+        expect(mockRestService.request).toHaveBeenCalledWith({
+          method: 'GET',
+          url: '/api/identity/users/user-1/organization-units',
+        });
+        expect(result).toEqual(expectedResponse);
+        expect(result).toHaveLength(2);
+      });
+
+      it('should return empty array for user with no organization units', async () => {
+        mockRestService.request.mockResolvedValue([]);
+
+        const result = await identityService.getUserOrganizationUnits('user-without-units');
+
+        expect(mockRestService.request).toHaveBeenCalledWith({
+          method: 'GET',
+          url: '/api/identity/users/user-without-units/organization-units',
+        });
+        expect(result).toEqual([]);
+      });
+
+      it('should handle multiple organization units', async () => {
+        const expectedResponse = [
+          { id: 'unit-1', displayName: 'Engineering', code: '00001' },
+          { id: 'unit-2', displayName: 'Marketing', code: '00002' },
+          { id: 'unit-3', displayName: 'Sales', code: '00003' },
+        ];
+        mockRestService.request.mockResolvedValue(expectedResponse);
+
+        const result = await identityService.getUserOrganizationUnits('multi-unit-user');
+
+        expect(result).toHaveLength(3);
+      });
+    });
+
     describe('createUser', () => {
       it('should create a new user', async () => {
         const newUser: Identity.UserSaveRequest = {
@@ -326,6 +370,7 @@ describe('IdentityService', () => {
           lockoutEnabled: true,
           password: 'Password123!',
           roleNames: ['User'],
+          organizationUnitIds: [],
         };
         const expectedResponse: Identity.UserItem = {
           id: 'new-user-id',
@@ -367,6 +412,7 @@ describe('IdentityService', () => {
           lockoutEnabled: false,
           password: 'NewPassword123!',
           roleNames: ['Admin'],
+          organizationUnitIds: [],
         };
         const expectedResponse: Identity.UserItem = {
           id: 'user-1',

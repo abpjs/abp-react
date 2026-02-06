@@ -1,6 +1,6 @@
 /**
  * Tests for Identity Pro Component Identifiers
- * @abpjs/identity-pro v2.7.0
+ * @abpjs/identity-pro v2.9.0
  */
 import { describe, it, expect } from 'vitest';
 import { eIdentityComponents, IdentityComponentKey } from '../../enums';
@@ -17,6 +17,18 @@ describe('eIdentityComponents', () => {
 
     it('should have Users component identifier', () => {
       expect(eIdentityComponents.Users).toBe('Identity.UsersComponent');
+    });
+
+    it('should have OrganizationUnits component identifier (v2.9.0)', () => {
+      expect(eIdentityComponents.OrganizationUnits).toBe('Identity.OrganizationUnitsComponent');
+    });
+
+    it('should have OrganizationMembers component identifier (v2.9.0)', () => {
+      expect(eIdentityComponents.OrganizationMembers).toBe('Identity.OrganizationMembersComponent');
+    });
+
+    it('should have OrganizationRoles component identifier (v2.9.0)', () => {
+      expect(eIdentityComponents.OrganizationRoles).toBe('Identity.OrganizationRolesComponent');
     });
   });
 
@@ -49,7 +61,10 @@ describe('eIdentityComponents', () => {
       expect(keys).toContain('Claims');
       expect(keys).toContain('Roles');
       expect(keys).toContain('Users');
-      expect(keys).toHaveLength(3);
+      expect(keys).toContain('OrganizationUnits');
+      expect(keys).toContain('OrganizationMembers');
+      expect(keys).toContain('OrganizationRoles');
+      expect(keys).toHaveLength(6);
     });
 
     it('should have correct values', () => {
@@ -57,7 +72,10 @@ describe('eIdentityComponents', () => {
       expect(values).toContain('Identity.ClaimsComponent');
       expect(values).toContain('Identity.RolesComponent');
       expect(values).toContain('Identity.UsersComponent');
-      expect(values).toHaveLength(3);
+      expect(values).toContain('Identity.OrganizationUnitsComponent');
+      expect(values).toContain('Identity.OrganizationMembersComponent');
+      expect(values).toContain('Identity.OrganizationRolesComponent');
+      expect(values).toHaveLength(6);
     });
 
     it('should have unique values for each component', () => {
@@ -72,7 +90,7 @@ describe('eIdentityComponents', () => {
     });
   });
 
-  describe('v2.7.0 const object pattern', () => {
+  describe('v2.9.0 const object pattern', () => {
     it('should follow Module.ComponentName pattern', () => {
       Object.values(eIdentityComponents).forEach((value) => {
         expect(value).toMatch(/^Identity\.\w+Component$/);
@@ -85,6 +103,9 @@ describe('eIdentityComponents', () => {
           [eIdentityComponents.Claims]: 'ClaimsComponent',
           [eIdentityComponents.Roles]: 'RolesComponent',
           [eIdentityComponents.Users]: 'UsersComponent',
+          [eIdentityComponents.OrganizationUnits]: 'OrganizationUnitsComponent',
+          [eIdentityComponents.OrganizationMembers]: 'OrganizationMembersComponent',
+          [eIdentityComponents.OrganizationRoles]: 'OrganizationRolesComponent',
         };
         return components[key];
       };
@@ -92,6 +113,9 @@ describe('eIdentityComponents', () => {
       expect(getComponent(eIdentityComponents.Claims)).toBe('ClaimsComponent');
       expect(getComponent(eIdentityComponents.Roles)).toBe('RolesComponent');
       expect(getComponent(eIdentityComponents.Users)).toBe('UsersComponent');
+      expect(getComponent(eIdentityComponents.OrganizationUnits)).toBe('OrganizationUnitsComponent');
+      expect(getComponent(eIdentityComponents.OrganizationMembers)).toBe('OrganizationMembersComponent');
+      expect(getComponent(eIdentityComponents.OrganizationRoles)).toBe('OrganizationRolesComponent');
     });
   });
 });
@@ -101,10 +125,16 @@ describe('IdentityComponentKey type', () => {
     const claimsKey: IdentityComponentKey = 'Identity.ClaimsComponent';
     const rolesKey: IdentityComponentKey = 'Identity.RolesComponent';
     const usersKey: IdentityComponentKey = 'Identity.UsersComponent';
+    const orgUnitsKey: IdentityComponentKey = 'Identity.OrganizationUnitsComponent';
+    const orgMembersKey: IdentityComponentKey = 'Identity.OrganizationMembersComponent';
+    const orgRolesKey: IdentityComponentKey = 'Identity.OrganizationRolesComponent';
 
     expect(claimsKey).toBe(eIdentityComponents.Claims);
     expect(rolesKey).toBe(eIdentityComponents.Roles);
     expect(usersKey).toBe(eIdentityComponents.Users);
+    expect(orgUnitsKey).toBe(eIdentityComponents.OrganizationUnits);
+    expect(orgMembersKey).toBe(eIdentityComponents.OrganizationMembers);
+    expect(orgRolesKey).toBe(eIdentityComponents.OrganizationRoles);
   });
 
   it('should work with eIdentityComponents values', () => {
@@ -120,6 +150,9 @@ describe('IdentityComponentKey type', () => {
     expect(isValidKey(eIdentityComponents.Claims)).toBe(true);
     expect(isValidKey(eIdentityComponents.Roles)).toBe(true);
     expect(isValidKey(eIdentityComponents.Users)).toBe(true);
+    expect(isValidKey(eIdentityComponents.OrganizationUnits)).toBe(true);
+    expect(isValidKey(eIdentityComponents.OrganizationMembers)).toBe(true);
+    expect(isValidKey(eIdentityComponents.OrganizationRoles)).toBe(true);
   });
 
   it('should work with Record type', () => {
@@ -127,10 +160,16 @@ describe('IdentityComponentKey type', () => {
       'Identity.ClaimsComponent': 'Claims',
       'Identity.RolesComponent': 'Roles',
       'Identity.UsersComponent': 'Users',
+      'Identity.OrganizationUnitsComponent': 'OrganizationUnits',
+      'Identity.OrganizationMembersComponent': 'OrganizationMembers',
+      'Identity.OrganizationRolesComponent': 'OrganizationRoles',
     };
 
     expect(componentNames[eIdentityComponents.Claims]).toBe('Claims');
     expect(componentNames[eIdentityComponents.Roles]).toBe('Roles');
     expect(componentNames[eIdentityComponents.Users]).toBe('Users');
+    expect(componentNames[eIdentityComponents.OrganizationUnits]).toBe('OrganizationUnits');
+    expect(componentNames[eIdentityComponents.OrganizationMembers]).toBe('OrganizationMembers');
+    expect(componentNames[eIdentityComponents.OrganizationRoles]).toBe('OrganizationRoles');
   });
 });

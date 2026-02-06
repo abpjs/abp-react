@@ -5,6 +5,7 @@
  * @updated 2.2.0 - Added unlockUser, openPermissionsModal for users and roles
  * @updated 2.4.0 - Added apiName property, getAllRoles method, eIdentityComponents enum
  * @updated 2.7.0 - Added changePassword method, eIdentityRouteNames enum, IdentityComponentKey/IdentityRouteNameKey types
+ * @updated 2.9.0 - Added Organization Units support, OrganizationUnitService, TreeAdapter utility
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -15,12 +16,18 @@ import {
   useUsers,
   useRoles,
   IdentityService,
+  OrganizationUnitService,
+  TreeAdapter,
   eIdentityComponents,
   eIdentityRouteNames,
+  createOrganizationUnitWithDetailsDto,
+  createOrganizationUnitCreateDto,
+  createGetOrganizationUnitInput,
   type Identity,
   type IdentityStateService,
   type IdentityComponentKey,
   type IdentityRouteNameKey,
+  type OrganizationUnitWithDetailsDto,
 } from '@abpjs/identity-pro'
 
 function TestClaimsComponent() {
@@ -1029,6 +1036,9 @@ function TestV270Features() {
       'Identity.ClaimsComponent': 'Claims Management',
       'Identity.RolesComponent': 'Roles Management',
       'Identity.UsersComponent': 'Users Management',
+      'Identity.OrganizationUnitsComponent': 'Organization Units Management',
+      'Identity.OrganizationMembersComponent': 'Organization Members Management',
+      'Identity.OrganizationRolesComponent': 'Organization Roles Management',
     }
     return displays[key]
   }
@@ -1041,6 +1051,7 @@ function TestV270Features() {
       'AbpIdentity::Roles': 'Roles Page',
       'AbpIdentity::Users': 'Users Page',
       'AbpIdentity::ClaimTypes': 'Claim Types Page',
+      'AbpIdentity::OrganizationUnits': 'Organization Units Page',
     }
     return displays[key]
   }
@@ -1278,6 +1289,574 @@ const routes: Record<IdentityRouteNameKey, string> = { ... };`}
               <td style={{ padding: '8px' }}><code>eIdentityComponents</code></td>
               <td style={{ padding: '8px' }}>Const Object</td>
               <td style={{ padding: '8px' }}>Changed from enum to const object for better tree-shaking</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Test section for v2.9.0 features: Organization Units, OrganizationUnitService, TreeAdapter
+ */
+function TestV290Features() {
+  const { isAuthenticated } = useAuth()
+  const restService = useRestService()
+  const [orgUnitService] = useState(() => new OrganizationUnitService(restService))
+  const [identityService] = useState(() => new IdentityService(restService))
+
+  const [orgUnits, setOrgUnits] = useState<OrganizationUnitWithDetailsDto[]>([])
+  const [isLoadingOrgUnits, setIsLoadingOrgUnits] = useState(false)
+  const [orgUnitsError, setOrgUnitsError] = useState<string | null>(null)
+  const [totalCount, setTotalCount] = useState(0)
+
+  // Create org unit state
+  const [newOrgUnitName, setNewOrgUnitName] = useState('')
+  const [newOrgUnitParentId, setNewOrgUnitParentId] = useState('')
+  const [createResult, setCreateResult] = useState<string | null>(null)
+
+  // User organization units state
+  const [userId, setUserId] = useState('')
+  const [userOrgUnits, setUserOrgUnits] = useState<OrganizationUnitWithDetailsDto[]>([])
+
+  // TreeAdapter demo
+  const [treeAdapterDemo, setTreeAdapterDemo] = useState<string>('')
+
+  const {
+    users,
+    fetchUsers,
+  } = useUsers()
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchUsers()
+    }
+  }, [isAuthenticated, fetchUsers])
+
+  const handleFetchOrgUnits = async () => {
+    setIsLoadingOrgUnits(true)
+    setOrgUnitsError(null)
+    try {
+      const input = createGetOrganizationUnitInput({
+        maxResultCount: 50,
+      })
+      const response = await orgUnitService.getListByInput(input)
+      setOrgUnits(response.items || [])
+      setTotalCount(response.totalCount || 0)
+    } catch (err) {
+      setOrgUnitsError(err instanceof Error ? err.message : 'Failed to fetch organization units')
+    } finally {
+      setIsLoadingOrgUnits(false)
+    }
+  }
+
+  const handleCreateOrgUnit = async () => {
+    if (!newOrgUnitName) return
+
+    setCreateResult(null)
+    try {
+      const createDto = createOrganizationUnitCreateDto({
+        displayName: newOrgUnitName,
+        parentId: newOrgUnitParentId || undefined,
+      })
+      const result = await orgUnitService.createByInput(createDto)
+      setCreateResult(`Created organization unit: ${result.displayName} (ID: ${result.id})`)
+      setNewOrgUnitName('')
+      setNewOrgUnitParentId('')
+      // Refresh list
+      handleFetchOrgUnits()
+    } catch (err) {
+      setCreateResult(`Error: ${err instanceof Error ? err.message : 'Failed to create organization unit'}`)
+    }
+  }
+
+  const handleGetUserOrgUnits = async () => {
+    if (!userId) return
+
+    try {
+      const response = await identityService.getUserOrganizationUnits(userId)
+      setUserOrgUnits(response.items || [])
+    } catch (err) {
+      console.error('Failed to fetch user organization units:', err)
+    }
+  }
+
+  const handleTreeAdapterDemo = () => {
+    // Create sample hierarchical data
+    const sampleData = [
+      createOrganizationUnitWithDetailsDto({
+        id: 'unit-1',
+        displayName: 'Company',
+        code: '00001',
+        parentId: undefined,
+      }),
+      createOrganizationUnitWithDetailsDto({
+        id: 'unit-2',
+        displayName: 'Engineering',
+        code: '00001.00001',
+        parentId: 'unit-1',
+      }),
+      createOrganizationUnitWithDetailsDto({
+        id: 'unit-3',
+        displayName: 'Marketing',
+        code: '00001.00002',
+        parentId: 'unit-1',
+      }),
+      createOrganizationUnitWithDetailsDto({
+        id: 'unit-4',
+        displayName: 'Frontend Team',
+        code: '00001.00001.00001',
+        parentId: 'unit-2',
+      }),
+      createOrganizationUnitWithDetailsDto({
+        id: 'unit-5',
+        displayName: 'Backend Team',
+        code: '00001.00001.00002',
+        parentId: 'unit-2',
+      }),
+    ]
+
+    const adapter = new TreeAdapter<OrganizationUnitWithDetailsDto>({
+      getKey: (node) => node.id,
+      getParentKey: (node) => node.parentId,
+      getChildren: (node) => (node as any).children || [],
+      setChildren: (node, children) => ({ ...node, children }),
+    })
+
+    const tree = adapter.toTree(sampleData)
+    const flattened = adapter.flattenTree(tree)
+    const rootNodes = adapter.getRootNodes(sampleData)
+
+    setTreeAdapterDemo(`TreeAdapter Demo Results:
+
+Input Data: ${sampleData.length} flat items
+- Company (root)
+  - Engineering
+    - Frontend Team
+    - Backend Team
+  - Marketing
+
+Tree Structure: ${tree.length} root nodes
+Flattened: ${flattened.length} items
+Root Nodes: ${rootNodes.map(n => n.displayName).join(', ')}
+
+TreeAdapter Methods:
+- toTree(items): Convert flat array to tree
+- flattenTree(tree): Convert tree back to flat array
+- getRootNodes(items): Get items without parents
+- findNode(tree, key): Find node by key
+- getAncestors(items, key): Get all ancestors
+- getDescendants(items, key): Get all descendants`)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v2.9.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      <div className="test-card">
+        <h3>OrganizationUnitService (v2.9.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New service for managing organization units. Uses <code>/api/identity/organization-units</code> endpoints.
+        </p>
+        {!isAuthenticated ? (
+          <p style={{ color: '#f88' }}>You must be authenticated to test this feature</p>
+        ) : (
+          <>
+            <div style={{ marginBottom: '1rem' }}>
+              <button onClick={handleFetchOrgUnits} disabled={isLoadingOrgUnits}>
+                {isLoadingOrgUnits ? 'Loading...' : 'Fetch Organization Units'}
+              </button>
+            </div>
+            {orgUnitsError && (
+              <p style={{ color: '#f88', marginTop: '0.5rem' }}>{orgUnitsError}</p>
+            )}
+            {orgUnits.length > 0 && (
+              <div style={{ marginTop: '0.5rem' }}>
+                <p style={{ fontSize: '14px', color: '#888' }}>Organization Units ({totalCount} total):</p>
+                <div style={{ maxHeight: '200px', overflow: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid #333' }}>
+                        <th style={{ textAlign: 'left', padding: '4px 8px' }}>Display Name</th>
+                        <th style={{ textAlign: 'left', padding: '4px 8px' }}>Code</th>
+                        <th style={{ textAlign: 'left', padding: '4px 8px' }}>Parent ID</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orgUnits.map((unit) => (
+                        <tr key={unit.id} style={{ borderBottom: '1px solid #222' }}>
+                          <td style={{ padding: '4px 8px' }}>{unit.displayName}</td>
+                          <td style={{ padding: '4px 8px', fontFamily: 'monospace' }}>{unit.code}</td>
+                          <td style={{ padding: '4px 8px', fontSize: '11px' }}>{unit.parentId || '(root)'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage
+const service = new OrganizationUnitService(restService);
+const response = await service.getListByInput({ maxResultCount: 50 });
+console.log(response.items); // Organization units`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Create Organization Unit (v2.9.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Create a new organization unit. Uses <code>POST /api/identity/organization-units</code>
+        </p>
+        {!isAuthenticated ? (
+          <p style={{ color: '#f88' }}>You must be authenticated to test this feature</p>
+        ) : (
+          <>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <input
+                type="text"
+                placeholder="Display Name"
+                value={newOrgUnitName}
+                onChange={(e) => setNewOrgUnitName(e.target.value)}
+                style={{
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #333',
+                }}
+              />
+              <input
+                type="text"
+                placeholder="Parent ID (optional for root unit)"
+                value={newOrgUnitParentId}
+                onChange={(e) => setNewOrgUnitParentId(e.target.value)}
+                style={{
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #333',
+                }}
+              />
+              <button
+                onClick={handleCreateOrgUnit}
+                disabled={!newOrgUnitName}
+              >
+                Create Organization Unit
+              </button>
+            </div>
+            {createResult && (
+              <p style={{ fontSize: '14px', color: createResult.startsWith('Error') ? '#f88' : '#4ade80' }}>
+                {createResult}
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>getUserOrganizationUnits (v2.9.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Get organization units for a user. Uses <code>GET /api/identity/users/:id/organization-units</code>
+        </p>
+        {!isAuthenticated ? (
+          <p style={{ color: '#f88' }}>You must be authenticated to test this feature</p>
+        ) : (
+          <>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <input
+                type="text"
+                placeholder="User ID"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                style={{
+                  padding: '8px',
+                  borderRadius: '4px',
+                  border: '1px solid #333',
+                  flex: 1,
+                }}
+              />
+              <button onClick={handleGetUserOrgUnits} disabled={!userId}>
+                Get User Org Units
+              </button>
+            </div>
+            {users.length > 0 && (
+              <div style={{ marginBottom: '0.5rem' }}>
+                <p style={{ fontSize: '12px', color: '#888' }}>Available users:</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+                  {users.slice(0, 5).map((user) => (
+                    <button
+                      key={user.id}
+                      onClick={() => setUserId(user.id)}
+                      style={{ padding: '2px 6px', fontSize: '11px' }}
+                    >
+                      {user.userName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {userOrgUnits.length > 0 && (
+              <div style={{ marginTop: '0.5rem' }}>
+                <p style={{ fontSize: '14px', color: '#888' }}>User's Organization Units:</p>
+                <ul style={{ margin: '0.25rem 0', paddingLeft: '1.5rem' }}>
+                  {userOrgUnits.map((unit) => (
+                    <li key={unit.id}>{unit.displayName} ({unit.code})</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>TreeAdapter Utility (v2.9.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Utility class for converting flat arrays to tree structures and vice versa.
+        </p>
+        <button onClick={handleTreeAdapterDemo}>
+          Run TreeAdapter Demo
+        </button>
+        {treeAdapterDemo && (
+          <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px', whiteSpace: 'pre-wrap' }}>
+            {treeAdapterDemo}
+          </pre>
+        )}
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage
+import { TreeAdapter } from '@abpjs/identity-pro';
+
+const adapter = new TreeAdapter<OrgUnit>({
+  getKey: (node) => node.id,
+  getParentKey: (node) => node.parentId,
+  getChildren: (node) => node.children || [],
+  setChildren: (node, children) => ({ ...node, children }),
+});
+
+// Convert flat array to tree
+const tree = adapter.toTree(flatItems);
+
+// Convert tree back to flat array
+const flat = adapter.flattenTree(tree);
+
+// Find a specific node
+const node = adapter.findNode(tree, 'unit-1');
+
+// Get ancestors/descendants
+const ancestors = adapter.getAncestors(items, 'unit-5');
+const descendants = adapter.getDescendants(items, 'unit-1');`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>New eIdentityComponents (v2.9.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New component identifiers added for Organization Units.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>OrganizationUnits</code></td>
+              <td style={{ padding: '8px' }}><code>{eIdentityComponents.OrganizationUnits}</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>OrganizationMembers</code></td>
+              <td style={{ padding: '8px' }}><code>{eIdentityComponents.OrganizationMembers}</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>OrganizationRoles</code></td>
+              <td style={{ padding: '8px' }}><code>{eIdentityComponents.OrganizationRoles}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>New eIdentityRouteNames (v2.9.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New route name added for Organization Units.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>OrganizationUnits</code></td>
+              <td style={{ padding: '8px' }}><code>{eIdentityRouteNames.OrganizationUnits}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Identity.State with organizationUnits (v2.9.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          The <code>Identity.State</code> interface now includes <code>organizationUnits</code> property.
+        </p>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`interface State {
+  roles: PagedResultDto<RoleItem>;
+  users: PagedResultDto<UserItem>;
+  selectedRole: RoleItem;
+  selectedUser: UserItem;
+  selectedUserRoles: RoleItem[];
+  claimTypes: ClaimType[];
+  claims: PagedResultDto<ClaimType>;
+  selectedClaim: ClaimType;
+  organizationUnits: PagedResultDto<OrganizationUnitWithDetailsDto>; // v2.9.0
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>UserSaveRequest with organizationUnitIds (v2.9.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          The <code>UserSaveRequest</code> interface now includes <code>organizationUnitIds</code> property.
+        </p>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`interface UserSaveRequest {
+  userName: string;
+  name: string;
+  surname: string;
+  email: string;
+  phoneNumber: string;
+  twoFactorEnabled: boolean;
+  lockoutEnabled: boolean;
+  password: string;
+  roleNames: string[];
+  organizationUnitIds: string[]; // v2.9.0
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v2.9.0 API Reference</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>OrganizationUnitService</code></td>
+              <td style={{ padding: '8px' }}>Service</td>
+              <td style={{ padding: '8px' }}>Full CRUD operations for organization units</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>TreeAdapter</code></td>
+              <td style={{ padding: '8px' }}>Utility</td>
+              <td style={{ padding: '8px' }}>Convert flat arrays to/from tree structures</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>getUserOrganizationUnits(id)</code></td>
+              <td style={{ padding: '8px' }}>Method</td>
+              <td style={{ padding: '8px' }}>Get organization units for a user</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eIdentityComponents.OrganizationUnits</code></td>
+              <td style={{ padding: '8px' }}>Const</td>
+              <td style={{ padding: '8px' }}>Organization Units component identifier</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eIdentityComponents.OrganizationMembers</code></td>
+              <td style={{ padding: '8px' }}>Const</td>
+              <td style={{ padding: '8px' }}>Organization Members component identifier</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eIdentityComponents.OrganizationRoles</code></td>
+              <td style={{ padding: '8px' }}>Const</td>
+              <td style={{ padding: '8px' }}>Organization Roles component identifier</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eIdentityRouteNames.OrganizationUnits</code></td>
+              <td style={{ padding: '8px' }}>Const</td>
+              <td style={{ padding: '8px' }}>Organization Units route name</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Identity.State.organizationUnits</code></td>
+              <td style={{ padding: '8px' }}>Property</td>
+              <td style={{ padding: '8px' }}>Organization units in state</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>UserSaveRequest.organizationUnitIds</code></td>
+              <td style={{ padding: '8px' }}>Property</td>
+              <td style={{ padding: '8px' }}>Organization unit IDs for user creation/update</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>OrganizationUnitService Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>getListByInput(input?)</code></td>
+              <td style={{ padding: '8px' }}>Get paginated list of organization units</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>getById(id)</code></td>
+              <td style={{ padding: '8px' }}>Get organization unit by ID</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>createByInput(input)</code></td>
+              <td style={{ padding: '8px' }}>Create a new organization unit</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>updateByIdAndInput(input, id)</code></td>
+              <td style={{ padding: '8px' }}>Update an organization unit</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>deleteById(id)</code></td>
+              <td style={{ padding: '8px' }}>Delete an organization unit</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>moveByIdAndInput(input, id)</code></td>
+              <td style={{ padding: '8px' }}>Move an organization unit to a new parent</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>getRolesById(params, id)</code></td>
+              <td style={{ padding: '8px' }}>Get roles for an organization unit</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>getMembersById(params, id)</code></td>
+              <td style={{ padding: '8px' }}>Get members for an organization unit</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>addRolesByIdAndInput(input, id)</code></td>
+              <td style={{ padding: '8px' }}>Add roles to an organization unit</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>addMembersByIdAndInput(input, id)</code></td>
+              <td style={{ padding: '8px' }}>Add members to an organization unit</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>removeRoleByIdAndRoleId(id, roleId)</code></td>
+              <td style={{ padding: '8px' }}>Remove a role from an organization unit</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>removeMemberByIdAndMemberId(id, memberId)</code></td>
+              <td style={{ padding: '8px' }}>Remove a member from an organization unit</td>
             </tr>
           </tbody>
         </table>
@@ -1628,15 +2207,16 @@ function TestProHookMethods() {
 export function TestIdentityProPage() {
   return (
     <div>
-      <h1>@abpjs/identity-pro Tests (v2.7.0)</h1>
+      <h1>@abpjs/identity-pro Tests (v2.9.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing identity pro components, hooks, and services for claim type management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.7.0 - Added changePassword method, eIdentityRouteNames enum, IdentityComponentKey/IdentityRouteNameKey types
+        Version 2.9.0 - Added Organization Units support, OrganizationUnitService, TreeAdapter utility, getUserOrganizationUnits method
       </p>
       <p style={{ color: '#6f6', fontSize: '14px' }}>
-        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods, user unlock, permissions modal, getAllRoles, component identifiers, route names, change password
+        Pro features: Claim type management, user/role claims, IdentityStateService with 17 dispatch methods, user unlock, permissions modal, getAllRoles, component identifiers, route names, change password, organization units
       </p>
 
+      <TestV290Features />
       <TestV270Features />
       <TestV240Features />
       <TestV220Features />

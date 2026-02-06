@@ -1,4 +1,5 @@
-import { ABP } from '@abpjs/core';
+import { ABP, PagedResultDto } from '@abpjs/core';
+import { OrganizationUnitWithDetailsDto } from './organization-unit-with-details-dto';
 
 /**
  * Identity namespace containing all types related to identity management.
@@ -7,8 +8,10 @@ import { ABP } from '@abpjs/core';
  * Pro features include:
  * - Claim type management
  * - User/Role claims management
+ * - Organization unit management (v2.9.0)
  *
  * @since 0.7.2
+ * @updated 2.9.0 - Added organization units support
  */
 export namespace Identity {
   /**
@@ -26,6 +29,8 @@ export namespace Identity {
     claims: ClaimResponse;
     /** Pro: Selected claim type for editing */
     selectedClaim: ClaimType;
+    /** Pro: Organization units (v2.9.0) */
+    organizationUnits: PagedResultDto<OrganizationUnitWithDetailsDto>;
   }
 
   /**
@@ -83,10 +88,13 @@ export namespace Identity {
 
   /**
    * Request payload for creating/updating a user
+   * @updated 2.9.0 - Added organizationUnitIds
    */
   export interface UserSaveRequest extends User {
     password: string;
     roleNames: string[];
+    /** Organization unit IDs the user belongs to (v2.9.0) */
+    organizationUnitIds: string[];
   }
 
   /**

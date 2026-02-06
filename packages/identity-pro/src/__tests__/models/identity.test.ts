@@ -1,9 +1,9 @@
 /**
  * Tests for Identity Pro Models
- * @abpjs/identity-pro v2.7.0
+ * @abpjs/identity-pro v2.9.0
  */
 import { describe, it, expect } from 'vitest';
-import { Identity } from '../../models';
+import { Identity, createOrganizationUnitWithDetailsDto } from '../../models';
 
 describe('Identity namespace', () => {
   describe('ChangePasswordRequest (v2.7.0)', () => {
@@ -55,6 +55,7 @@ describe('Identity namespace', () => {
         lockoutEnabled: true,
         password: 'Password123!',
         roleNames: ['User'],
+        organizationUnitIds: [],
       };
 
       // ChangePasswordRequest only has newPassword
@@ -137,6 +138,113 @@ describe('Identity namespace', () => {
       expect(Identity.ClaimValueType.Int).toBe(1);
       expect(Identity.ClaimValueType.Boolean).toBe(2);
       expect(Identity.ClaimValueType.DateTime).toBe(3);
+    });
+  });
+
+  describe('UserSaveRequest with organizationUnitIds (v2.9.0)', () => {
+    it('should include organizationUnitIds property', () => {
+      const userRequest: Identity.UserSaveRequest = {
+        userName: 'testuser',
+        name: 'Test',
+        surname: 'User',
+        email: 'test@example.com',
+        phoneNumber: '',
+        twoFactorEnabled: false,
+        lockoutEnabled: true,
+        password: 'Password123!',
+        roleNames: ['User'],
+        organizationUnitIds: ['unit-1', 'unit-2'],
+      };
+
+      expect(userRequest.organizationUnitIds).toHaveLength(2);
+      expect(userRequest.organizationUnitIds).toContain('unit-1');
+      expect(userRequest.organizationUnitIds).toContain('unit-2');
+    });
+
+    it('should accept empty organizationUnitIds array', () => {
+      const userRequest: Identity.UserSaveRequest = {
+        userName: 'testuser',
+        name: 'Test',
+        surname: 'User',
+        email: 'test@example.com',
+        phoneNumber: '',
+        twoFactorEnabled: false,
+        lockoutEnabled: true,
+        password: 'Password123!',
+        roleNames: [],
+        organizationUnitIds: [],
+      };
+
+      expect(userRequest.organizationUnitIds).toEqual([]);
+    });
+
+    it('should work with user creation containing multiple organization units', () => {
+      const createUserData: Identity.UserSaveRequest = {
+        userName: 'newemployee',
+        name: 'New',
+        surname: 'Employee',
+        email: 'new.employee@company.com',
+        phoneNumber: '+1234567890',
+        twoFactorEnabled: false,
+        lockoutEnabled: true,
+        password: 'InitialPassword123!',
+        roleNames: ['Employee', 'TeamMember'],
+        organizationUnitIds: ['engineering', 'frontend-team', 'project-x'],
+      };
+
+      expect(createUserData.organizationUnitIds).toHaveLength(3);
+      expect(createUserData.roleNames).toHaveLength(2);
+    });
+  });
+
+  describe('State with organizationUnits (v2.9.0)', () => {
+    it('should include organizationUnits in State interface', () => {
+      const state: Identity.State = {
+        roles: { items: [], totalCount: 0 },
+        users: { items: [], totalCount: 0 },
+        selectedRole: {} as Identity.RoleItem,
+        selectedUser: {} as Identity.UserItem,
+        selectedUserRoles: [],
+        claimTypes: [],
+        claims: { items: [], totalCount: 0 },
+        selectedClaim: {} as Identity.ClaimType,
+        organizationUnits: { items: [], totalCount: 0 },
+      };
+
+      expect(state.organizationUnits).toBeDefined();
+      expect(state.organizationUnits.items).toEqual([]);
+      expect(state.organizationUnits.totalCount).toBe(0);
+    });
+
+    it('should store organization units with full details', () => {
+      const orgUnits = [
+        createOrganizationUnitWithDetailsDto({
+          id: 'unit-1',
+          displayName: 'Engineering',
+          code: '00001',
+        }),
+        createOrganizationUnitWithDetailsDto({
+          id: 'unit-2',
+          displayName: 'Marketing',
+          code: '00002',
+        }),
+      ];
+
+      const state: Identity.State = {
+        roles: { items: [], totalCount: 0 },
+        users: { items: [], totalCount: 0 },
+        selectedRole: {} as Identity.RoleItem,
+        selectedUser: {} as Identity.UserItem,
+        selectedUserRoles: [],
+        claimTypes: [],
+        claims: { items: [], totalCount: 0 },
+        selectedClaim: {} as Identity.ClaimType,
+        organizationUnits: { items: orgUnits, totalCount: 2 },
+      };
+
+      expect(state.organizationUnits.items).toHaveLength(2);
+      expect(state.organizationUnits.items[0].displayName).toBe('Engineering');
+      expect(state.organizationUnits.items[1].displayName).toBe('Marketing');
     });
   });
 });

@@ -1,5 +1,5 @@
 import { RestService, ABP } from '@abpjs/core';
-import { Identity } from '../models';
+import { Identity, OrganizationUnitWithDetailsDto } from '../models';
 
 /**
  * Service for managing identity-related API operations.
@@ -143,6 +143,19 @@ export class IdentityService {
     return this.rest.request<null, Identity.RoleResponse>({
       method: 'GET',
       url: `/api/identity/users/${id}/roles`,
+    });
+  }
+
+  /**
+   * Get organization units assigned to a user
+   * @since 2.9.0
+   * @param id - The user ID
+   * @returns Promise with the user's organization units
+   */
+  getUserOrganizationUnits(id: string): Promise<OrganizationUnitWithDetailsDto[]> {
+    return this.rest.request<null, OrganizationUnitWithDetailsDto[]>({
+      method: 'GET',
+      url: `/api/identity/users/${id}/organization-units`,
     });
   }
 
