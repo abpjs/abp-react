@@ -1,0 +1,94 @@
+# Codecov configuration for monorepo
+# Components isolate coverage by package path - no flags needed at upload time
+# See: https://docs.codecov.com/docs/components
+# Path fixing: https://docs.codecov.com/docs/fixing-paths
+
+fixes:
+  # Strip GitHub Actions workspace prefix so paths match git structure
+  - "/home/runner/work/abp-react/abp-react/::"
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+    patch:
+      default:
+        target: auto
+
+comment:
+  layout: "condensed_header, diff, flags, components"
+  behavior: default
+
+component_management:
+  default_rules:
+    statuses:
+      - type: project
+        target: auto
+        branches:
+          - "!main"
+  individual_components:
+    - component_id: account
+      name: account
+      paths:
+        - packages/account/**
+    - component_id: account_pro
+      name: account-pro
+      paths:
+        - packages/account-pro/**
+    - component_id: audit_logging
+      name: audit-logging
+      paths:
+        - packages/audit-logging/**
+    - component_id: chat
+      name: chat
+      paths:
+        - packages/chat/**
+    - component_id: core
+      name: core
+      paths:
+        - packages/core/**
+    - component_id: feature_management
+      name: feature-management
+      paths:
+        - packages/feature-management/**
+    - component_id: identity
+      name: identity
+      paths:
+        - packages/identity/**
+    - component_id: identity_pro
+      name: identity-pro
+      paths:
+        - packages/identity-pro/**
+    - component_id: language_management
+      name: language-management
+      paths:
+        - packages/language-management/**
+    - component_id: permission_management
+      name: permission-management
+      paths:
+        - packages/permission-management/**
+    - component_id: saas
+      name: saas
+      paths:
+        - packages/saas/**
+    - component_id: setting_management
+      name: setting-management
+      paths:
+        - packages/setting-management/**
+    - component_id: tenant_management
+      name: tenant-management
+      paths:
+        - packages/tenant-management/**
+    - component_id: text_template_management
+      name: text-template-management
+      paths:
+        - packages/text-template-management/**
+    - component_id: theme_basic
+      name: theme-basic
+      paths:
+        - packages/theme-basic/**
+    - component_id: theme_shared
+      name: theme-shared
+      paths:
+        - packages/theme-shared/**
