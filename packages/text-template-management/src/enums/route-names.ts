@@ -1,24 +1,18 @@
 /**
- * Route name keys for the Text Template Management module.
- * These keys are used for route localization and identification.
+ * Text Template Management Route Names
+ * Translated from @volo/abp.ng.text-template-management v3.0.0
+ *
+ * Re-exports from config subpackage for backwards compatibility.
+ *
  * @since 2.7.0
+ * @updated 3.0.0 - Moved to config/enums, this file now re-exports
+ *
+ * Breaking changes in v3.0.0:
+ * - Removed 'Administration' key
  */
-export const eTextTemplateManagementRouteNames = {
-  /**
-   * Administration route name key.
-   * Used for the administration menu group.
-   */
-  Administration: 'AbpUiNavigation::Menu:Administration',
 
-  /**
-   * Text Templates route name key.
-   * Used for the text templates management route.
-   */
-  TextTemplates: 'TextTemplateManagement::Menu:TextTemplates',
-} as const;
-
-/**
- * Type for text template management route name key values
- */
-export type TextTemplateManagementRouteNameKey =
-  (typeof eTextTemplateManagementRouteNames)[keyof typeof eTextTemplateManagementRouteNames];
+// Re-export from config for backwards compatibility
+export {
+  eTextTemplateManagementRouteNames,
+  type TextTemplateManagementRouteNameKey,
+} from '../config/enums/route-names';
