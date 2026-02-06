@@ -5,11 +5,13 @@
  * @updated 2.4.0 - InitialService change (no React impact - uses Chakra UI)
  * @updated 2.7.0 - New public API components, enums, and LayoutStateService
  * @updated 2.9.0 - Removed isDropdownChildDynamic prop, RTL support via Chakra UI
+ * @updated 3.0.0 - NavItemsService, CurrentUserComponent, LanguagesComponent, providers
  */
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { selectRoutes, useConfig, useAuth, useEnvironment } from '@abpjs/core'
+import { getNavItemsService, useNavItems } from '@abpjs/theme-shared'
 import {
   useLayoutService,
   useNavigationElements,
@@ -19,6 +21,12 @@ import {
   eNavigationElementNames,
   LogoComponent,
   LayoutApplication,
+  CurrentUserComponent,
+  LanguagesComponent,
+  initializeThemeBasicNavItems,
+  initializeThemeBasicStyles,
+  BASIC_THEME_NAV_ITEM_PROVIDERS,
+  BASIC_THEME_STYLES_PROVIDERS,
 } from '@abpjs/theme-basic'
 
 // These are displayed in code examples but not rendered directly
@@ -282,7 +290,198 @@ function TestApplicationInfo() {
   )
 }
 
-// v2.7.0: Test new public API components and services
+// v3.0.0: Test new NavItemsService, components, and providers
+function TestV300Features() {
+  const navItems = useNavItems()
+  const navItemsService = getNavItemsService()
+
+  const addCustomNavItem = () => {
+    navItemsService.addItems([{
+      id: 'custom-v300-' + Date.now(),
+      html: `<span style="background:#ec4899;color:white;padding:4px 8px;border-radius:4px;font-size:12px">v3.0.0 Item</span>`,
+      order: 50,
+    }])
+  }
+
+  const removeLastNavItem = () => {
+    const customItems = navItems.filter(item => String(item.id).startsWith('custom-v300-'))
+    if (customItems.length > 0) {
+      navItemsService.removeItem(customItems[customItems.length - 1].id)
+    }
+  }
+
+  const clearNavItems = () => {
+    navItemsService.clear()
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.0.0: NavItemsService & New Components</h2>
+
+      <div className="test-card">
+        <h3>New Component Keys (v3.0.0)</h3>
+        <p>Two new component keys added to <code>eThemeBasicComponents</code>:</p>
+        <ul>
+          <li><code>CurrentUser</code>: {eThemeBasicComponents.CurrentUser}</li>
+          <li><code>Languages</code>: {eThemeBasicComponents.Languages}</li>
+        </ul>
+        <p style={{ color: '#888', fontSize: '12px', marginTop: '8px' }}>
+          These can be used for component replacement.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>NavItemsService (from @abpjs/theme-shared)</h3>
+        <p>New singleton service for managing nav items (replaces Layout state approach):</p>
+        <div style={{ marginBottom: '1rem' }}>
+          <button onClick={addCustomNavItem} style={{ marginRight: '8px' }}>
+            Add Nav Item
+          </button>
+          <button onClick={removeLastNavItem} style={{ marginRight: '8px' }}>
+            Remove Last
+          </button>
+          <button onClick={clearNavItems}>
+            Clear All
+          </button>
+        </div>
+        <p>Current nav items ({navItems.length}):</p>
+        {navItems.length > 0 ? (
+          <ul>
+            {navItems.map((item) => (
+              <li key={item.id}>
+                <strong>{String(item.id)}</strong> (order: {item.order ?? 0})
+                {item.component && ' [Component]'}
+                {item.html && ' [HTML]'}
+                {item.action && ' [Action]'}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p style={{ color: '#888' }}>No nav items registered.</p>
+        )}
+        <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// v3.0.0 NavItemsService usage
+import { getNavItemsService, useNavItems } from '@abpjs/theme-shared';
+
+// Get service instance
+const navItemsService = getNavItemsService();
+
+// Add items
+navItemsService.addItems([
+  { id: 'my-item', component: MyComponent, order: 1 },
+  { id: 'html-item', html: '<span>HTML</span>', order: 2 },
+  { id: 'action-item', action: () => console.log('clicked'), order: 3 },
+]);
+
+// Remove item
+navItemsService.removeItem('my-item');
+
+// Patch item
+navItemsService.patchItem('html-item', { order: 10 });
+
+// Clear all
+navItemsService.clear();
+
+// React hook for subscribing
+const navItems = useNavItems();`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>CurrentUserComponent</h3>
+        <p>New public API component for the current user nav item:</p>
+        <div style={{ padding: '1rem', background: '#1a1a2e', borderRadius: '4px', marginBottom: '1rem' }}>
+          <CurrentUserComponent />
+        </div>
+        <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`import { CurrentUserComponent } from '@abpjs/theme-basic';
+
+// Basic usage
+<CurrentUserComponent />
+
+// With custom URLs
+<CurrentUserComponent
+  loginUrl="/login"
+  profileUrl="/profile"
+  changePasswordUrl="/change-password"
+/>
+
+// With small screen mode
+<CurrentUserComponent smallScreen />`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>LanguagesComponent</h3>
+        <p>New public API component for the language selector:</p>
+        <div style={{ padding: '1rem', background: '#1a1a2e', borderRadius: '4px', marginBottom: '1rem' }}>
+          <LanguagesComponent />
+          {/* Show null case info */}
+          <p style={{ color: '#888', fontSize: '12px', marginTop: '8px' }}>
+            (Component returns null if less than 2 languages are configured)
+          </p>
+        </div>
+        <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`import { LanguagesComponent } from '@abpjs/theme-basic';
+
+// Basic usage
+<LanguagesComponent />
+
+// Compact mode (icon only)
+<LanguagesComponent compact />
+
+// With small screen mode
+<LanguagesComponent smallScreen />`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Providers (v3.0.0)</h3>
+        <p>New initialization functions for theme-basic:</p>
+        <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`import {
+  initializeThemeBasicNavItems,
+  initializeThemeBasicStyles,
+  BASIC_THEME_NAV_ITEM_PROVIDERS,
+  BASIC_THEME_STYLES_PROVIDERS,
+} from '@abpjs/theme-basic';
+
+// Initialize nav items (adds Languages and CurrentUser)
+initializeThemeBasicNavItems();
+
+// Initialize global CSS styles
+initializeThemeBasicStyles();
+
+// Or use the providers for custom setup
+const configFn = BASIC_THEME_NAV_ITEM_PROVIDERS.configureNavItems(navItemsService);
+configFn();
+
+const stylesFn = BASIC_THEME_STYLES_PROVIDERS.configureStyles();
+stylesFn();`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Deprecations in v3.0.0</h3>
+        <div style={{ padding: '0.75rem', background: '#2e2a1a', borderRadius: '4px', border: '1px solid #4a3e2e' }}>
+          <p style={{ color: '#fa6', margin: 0, fontSize: '14px' }}>
+            <strong>Deprecated:</strong> The following are deprecated in v3.0.0:
+          </p>
+          <ul style={{ color: '#fa6', fontSize: '13px', marginBottom: 0 }}>
+            <li><code>eNavigationElementNames</code> - Use NavItemsService instead</li>
+            <li><code>useLayoutStateService</code> - Use NavItemsService instead</li>
+            <li><code>LayoutStateService</code> - Use NavItemsService instead</li>
+          </ul>
+        </div>
+        <p style={{ color: '#888', fontSize: '12px', marginTop: '8px' }}>
+          These are kept for backwards compatibility but will be removed in a future version.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// v2.7.0: Test new public API components and services (some deprecated in v3.0.0)
 function TestV270Features() {
   const layoutStateService = useLayoutStateService()
   const navigationElements = layoutStateService.getNavigationElements()
@@ -466,6 +665,47 @@ function TestVersionInfo() {
       <h2>Version Info</h2>
 
       <div className="test-card">
+        <h3>What's New in v3.0.0</h3>
+        <p>Version 3.0.0 introduces the NavItemsService architecture and new public API components.</p>
+        <ul>
+          <li><strong>New:</strong> <code>NavItemsService</code> from <code>@abpjs/theme-shared</code> for managing nav items</li>
+          <li><strong>New:</strong> <code>useNavItems</code> hook for subscribing to nav items changes</li>
+          <li><strong>New Component:</strong> <code>CurrentUserComponent</code> - User avatar and menu</li>
+          <li><strong>New Component:</strong> <code>LanguagesComponent</code> - Language selector dropdown</li>
+          <li><strong>New Enum Keys:</strong> <code>eThemeBasicComponents.CurrentUser</code> and <code>eThemeBasicComponents.Languages</code></li>
+          <li><strong>New Providers:</strong> <code>initializeThemeBasicNavItems()</code>, <code>initializeThemeBasicStyles()</code></li>
+          <li><strong>Deprecated:</strong> <code>eNavigationElementNames</code>, <code>useLayoutStateService</code>, <code>LayoutStateService</code></li>
+        </ul>
+        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#2e2a1a', borderRadius: '4px', border: '1px solid #4a3e2e' }}>
+          <p style={{ color: '#fa6', margin: 0, fontSize: '14px' }}>
+            <strong>Migration:</strong> Use <code>NavItemsService</code> from <code>@abpjs/theme-shared</code> instead of the deprecated <code>LayoutStateService</code>.
+          </p>
+        </div>
+        <div style={{ marginTop: '1rem' }}>
+          <h4>New NavItemsService API (v3.0.0)</h4>
+          <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`import { getNavItemsService, useNavItems } from '@abpjs/theme-shared';
+import { CurrentUserComponent, LanguagesComponent } from '@abpjs/theme-basic';
+
+// Get service instance
+const navItemsService = getNavItemsService();
+
+// Add custom nav items
+navItemsService.addItems([
+  { id: 'custom', component: MyComponent, order: 50 },
+]);
+
+// Use hook in components
+const navItems = useNavItems();
+
+// Use public API components directly
+<CurrentUserComponent loginUrl="/login" />
+<LanguagesComponent compact />`}
+          </pre>
+        </div>
+      </div>
+
+      <div className="test-card">
         <h3>What's New in v2.9.0</h3>
         <p>Version 2.9.0 simplifies the API by removing unused props and improves RTL support.</p>
         <ul>
@@ -601,13 +841,14 @@ interface RoutesComponentProps {
 export function TestThemeBasicPage() {
   return (
     <div>
-      <h1>@abpjs/theme-basic Tests (v2.9.0)</h1>
-      <p>Testing layouts, navigation, and layout service.</p>
+      <h1>@abpjs/theme-basic Tests (v3.0.0)</h1>
+      <p>Testing layouts, navigation, NavItemsService, and new components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.9.0 - API simplification: removed isDropdownChildDynamic prop
+        Version 3.0.0 - NavItemsService, CurrentUserComponent, LanguagesComponent, providers
       </p>
 
       <TestVersionInfo />
+      <TestV300Features />
       <TestV270Features />
       <TestLayoutService />
       <TestApplicationInfo />
