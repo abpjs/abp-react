@@ -1,6 +1,6 @@
 /**
  * useTextTemplates Hook
- * Translated from @volo/abp.ng.text-template-management v2.7.0
+ * Translated from @volo/abp.ng.text-template-management v2.9.0
  *
  * Provides a React hook for managing text templates with state management.
  */

@@ -2,6 +2,7 @@
  * Test page for @abpjs/text-template-management package
  * Tests: TextTemplatesComponent, TemplateContentsComponent, useTextTemplates hook
  * @since 2.7.0
+ * @updated 2.9.0 - Internal Angular changes (no new React features)
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -558,11 +559,10 @@ function TestApiEndpoints() {
 export function TestTextTemplateManagementPage() {
   return (
     <div>
-      <h1>@abpjs/text-template-management Tests (v2.7.0)</h1>
+      <h1>@abpjs/text-template-management Tests (v2.9.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing Text Template Management module for managing text templates and their content.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.7.0 - Initial release with TextTemplatesComponent, TemplateContentsComponent, useTextTemplates hook,
-        eTextTemplateManagementComponents, eTextTemplateManagementRouteNames
+        Version 2.9.0 - No new React features (internal Angular changes only)
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components and services for managing text templates used in email notifications,
