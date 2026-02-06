@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { ABP } from './common';
 
 export namespace Session {

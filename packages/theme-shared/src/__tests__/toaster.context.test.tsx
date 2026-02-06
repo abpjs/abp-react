@@ -7,7 +7,6 @@ import {
   useToasts,
   useToasterContext,
 } from '../contexts/toaster.context';
-import { Toaster } from '../models';
 
 describe('ToasterContext', () => {
   beforeEach(() => {

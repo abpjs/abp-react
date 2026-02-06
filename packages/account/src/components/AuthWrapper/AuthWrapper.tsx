@@ -80,7 +80,7 @@ export function AuthWrapper({
   mainContent,
   cancelContent,
   enableLocalLogin,
-  isMultiTenancyEnabled = true,
+  isMultiTenancyEnabled: _isMultiTenancyEnabled = true,
 }: AuthWrapperProps) {
   const { t } = useLocalization();
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * @abpjs/account-pro Models
  * Translated from @volo/abp.ng.account v2.4.0
@@ -12,43 +13,37 @@ export namespace Account {
    * Input props for TenantBox component
    * @since 2.0.0
    */
-  export interface TenantBoxComponentInputs {
-  }
+  export type TenantBoxComponentInputs = Record<string, never>;
 
   /**
    * Output callbacks for TenantBox component
    * @since 2.0.0
    */
-  export interface TenantBoxComponentOutputs {
-  }
+  export type TenantBoxComponentOutputs = Record<string, never>;
 
   /**
    * Input props for PersonalSettings component
    * @since 2.0.0
    */
-  export interface PersonalSettingsComponentInputs {
-  }
+  export type PersonalSettingsComponentInputs = Record<string, never>;
 
   /**
    * Output callbacks for PersonalSettings component
    * @since 2.0.0
    */
-  export interface PersonalSettingsComponentOutputs {
-  }
+  export type PersonalSettingsComponentOutputs = Record<string, never>;
 
   /**
    * Input props for ChangePassword component
    * @since 2.0.0
    */
-  export interface ChangePasswordComponentInputs {
-  }
+  export type ChangePasswordComponentInputs = Record<string, never>;
 
   /**
    * Output callbacks for ChangePassword component
    * @since 2.0.0
    */
-  export interface ChangePasswordComponentOutputs {
-  }
+  export type ChangePasswordComponentOutputs = Record<string, never>;
 }
 
 /**

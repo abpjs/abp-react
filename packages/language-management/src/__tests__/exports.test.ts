@@ -2,7 +2,7 @@
  * Tests for module exports
  * @abpjs/language-management v2.4.0
  */
-import { describe, it, expect, vi, beforeAll } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 
 // Mock external dependencies before any imports
 vi.mock('@abpjs/core', () => ({

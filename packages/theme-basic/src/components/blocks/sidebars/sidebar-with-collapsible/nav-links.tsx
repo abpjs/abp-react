@@ -1,5 +1,5 @@
 'use client'
-import { Badge, Button, Collapsible, HStack, Icon, Spacer, Stack, chakra }  from '@chakra-ui/react'
+import { Badge, Button, Collapsible, HStack, Stack, chakra } from '@chakra-ui/react'
 import { LuChevronDown } from 'react-icons/lu'
 import { SidebarLink } from './sidebar-link'
 import { useConfig, ABP, useDirection } from '@abpjs/core'

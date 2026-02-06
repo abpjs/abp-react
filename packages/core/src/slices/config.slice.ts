@@ -200,7 +200,7 @@ export const selectGrantedPolicy =
     if (!condition) return true;
 
     const keys = condition
-      .replace(/\(|\)|\!|\s/g, '')
+      .replace(/\(|\)|!|\s/g, '')
       .split(/\|\||&&/)
       .filter((key) => key);
 

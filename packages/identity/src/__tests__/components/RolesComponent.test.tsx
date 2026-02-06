@@ -145,12 +145,12 @@ vi.mock('@chakra-ui/react', () => ({
       {children}
     </div>
   ),
-  Flex: ({ children, justify, align, gap, py, ...props }: any) => (
+  Flex: ({ children, justify, align, _gap, _py, ...props }: any) => (
     <div data-testid="flex" data-justify={justify} data-align={align} {...props}>
       {children}
     </div>
   ),
-  Input: React.forwardRef(({ value, onChange, placeholder, maxW, maxLength, ...props }: any, ref: any) => (
+  Input: React.forwardRef(({ value, onChange, placeholder, maxW: _maxW, maxLength, ...props }: any, ref: any) => (
     <input
       ref={ref}
       value={value}
@@ -175,14 +175,14 @@ vi.mock('@chakra-ui/react', () => ({
       {children}
     </div>
   ),
-  Text: ({ children, fontSize, fontWeight, color, textAlign, ...props }: any) => (
+  Text: ({ children, fontSize: _fontSize, fontWeight, color, textAlign, ...props }: any) => (
     <span data-fontweight={fontWeight} data-color={color} data-textalign={textAlign} {...props}>
       {children}
     </span>
   ),
   Menu: {
     Root: ({ children }: any) => <div data-testid="menu">{children}</div>,
-    Trigger: ({ children, asChild }: any) => <div data-testid="menu-trigger">{children}</div>,
+    Trigger: ({ children, asChild: _asChild }: any) => <div data-testid="menu-trigger">{children}</div>,
     Positioner: ({ children }: any) => <div>{children}</div>,
     Content: ({ children }: any) => <div data-testid="menu-content">{children}</div>,
     Item: ({ children, value, onClick, color }: any) => (

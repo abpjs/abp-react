@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import type { Config } from '@abpjs/core';
 
 /**

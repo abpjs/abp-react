@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Feature Management Models
  * Translated from @abp/ng.feature-management v2.0.0

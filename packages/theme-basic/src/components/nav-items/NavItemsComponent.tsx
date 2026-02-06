@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback, useMemo } from 'react';
-import { HStack, Stack } from '@chakra-ui/react';
+import { Stack } from '@chakra-ui/react';
 import { useConfig, useAuth, useSession } from '@abpjs/core';
 import { useLayoutContext } from '../../contexts/layout.context';
 import { Layout } from '../../models';
@@ -44,29 +44,29 @@ export interface NavItemsComponentProps {
  * ```
  */
 export function NavItemsComponent({
-  smallScreen = false,
+  smallScreen: _smallScreen = false,
   userProfileProps,
   showLanguageSelector = true,
   showCurrentUser = true,
 }: NavItemsComponentProps): React.ReactElement {
-  const { currentUser, localization } = useConfig();
-  const { isAuthenticated } = useAuth();
+  const { localization } = useConfig();
+  useAuth();
   const { language, setLanguage } = useSession();
   const { state, service } = useLayoutContext();
 
   // Get default language display name
-  const defaultLanguage = useMemo(() => {
+  const _defaultLanguage = useMemo(() => {
     const lang = localization?.languages?.find((l) => l.cultureName === language);
     return lang?.displayName || language || '';
   }, [localization, language]);
 
   // Get other languages for dropdown
-  const dropdownLanguages = useMemo(() => {
+  const _dropdownLanguages = useMemo(() => {
     return localization?.languages?.filter((l) => l.cultureName !== language) || [];
   }, [localization, language]);
 
   // Handle language change
-  const onChangeLang = useCallback(
+  const _onChangeLang = useCallback(
     (cultureName: string) => {
       setLanguage(cultureName);
       window.location.reload();
@@ -75,7 +75,7 @@ export function NavItemsComponent({
   );
 
   // Handle logout
-  const logout = useCallback(() => {
+  const _logout = useCallback(() => {
     userProfileProps?.onLogout?.();
   }, [userProfileProps]);
 

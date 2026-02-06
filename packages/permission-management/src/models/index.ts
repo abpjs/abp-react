@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Permission Management module type definitions
  * Translated from @abp/ng.permission-management v1.0.0

@@ -31,7 +31,7 @@ export function usePermissions(conditions: string[]): Record<string, boolean> {
       }
 
       const keys = condition
-        .replace(/\(|\)|\!|\s/g, '')
+        .replace(/\(|\)|!|\s/g, '')
         .split(/\|\||&&/)
         .filter((key) => key);
 

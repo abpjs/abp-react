@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import React from 'react';
 import { useIdentity } from '../../hooks/useIdentity';
 
 // Mock IdentityService

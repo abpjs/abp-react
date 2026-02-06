@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Entity Change Models
  * Translated from @volo/abp.ng.audit-logging v2.7.0

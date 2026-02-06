@@ -118,8 +118,8 @@ export function AbpProvider({
   // Handle user manager events and initial user check
   useEffect(() => {
     if (!userManager) {
-      // No userManager configured, mark as checked immediately
-      setUserChecked(true);
+      // No userManager configured, mark as checked immediately (defer to avoid set-state-in-effect)
+      queueMicrotask(() => setUserChecked(true));
       return;
     }
 
@@ -147,7 +147,7 @@ export function AbpProvider({
       userManager.events.removeUserLoaded(handleUserLoaded);
       userManager.events.removeUserUnloaded(handleUserUnloaded);
     };
-  }, [userManager]);
+  }, [userManager, setUser]);
 
   // Track if configuration has been fetched to prevent duplicate calls
   const configFetchedRef = useRef(false);

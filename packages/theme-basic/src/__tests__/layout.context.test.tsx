@@ -7,7 +7,6 @@ import {
   useLayoutService,
   useNavigationElements,
 } from '../contexts/layout.context';
-import { Layout } from '../models/layout';
 
 // Test component that uses layout hooks
 function LayoutConsumer() {

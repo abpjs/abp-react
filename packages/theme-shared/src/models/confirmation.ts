@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Confirmation namespace containing types for confirmation dialogs.
  * Translated from @abp/ng.theme.shared/lib/models/confirmation.ts

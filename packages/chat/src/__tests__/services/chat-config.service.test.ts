@@ -182,7 +182,7 @@ describe('resetChatConfigService', () => {
   const mockGetAccessToken = vi.fn();
 
   it('should reset singleton instance', () => {
-    const service1 = getChatConfigService(mockRestService as any, mockGetAccessToken);
+    getChatConfigService(mockRestService as any, mockGetAccessToken);
     resetChatConfigService();
 
     // Should throw because instance was reset

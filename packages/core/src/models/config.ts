@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { ComponentType } from 'react';
 import { UserManagerSettings } from 'oidc-client-ts';
 

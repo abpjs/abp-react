@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Text Template Management Models
  * Translated from @volo/abp.ng.text-template-management v2.7.0
