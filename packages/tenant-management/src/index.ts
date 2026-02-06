@@ -1,7 +1,10 @@
 /**
  * @abpjs/tenant-management
  * ABP Framework Tenant Management module for React
- * Translated from @abp/ng.tenant-management v2.7.0
+ * Translated from @abp/ng.tenant-management v2.9.0
+ *
+ * Changes in v2.9.0:
+ * - Version bump only (dependency updates to @abp/ng.theme.shared v2.9.0, @abp/ng.feature-management v2.9.0)
  *
  * Changes in v2.7.0:
  * - Added eTenantManagementComponents enum for component replacement keys
