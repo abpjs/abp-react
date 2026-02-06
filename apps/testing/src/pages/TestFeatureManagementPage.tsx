@@ -1,6 +1,7 @@
 /**
  * Test page for @abpjs/feature-management package
  * Tests: FeatureManagementModal, useFeatureManagement hook
+ * @updated 2.9.0 - Version bump only (dependency updates)
  */
 import { useState, useMemo } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -507,9 +508,9 @@ console.log(service.apiName) // "default"`}</pre>
 export function TestFeatureManagementPage() {
   return (
     <div>
-      <h1>@abpjs/feature-management Tests (v2.7.0)</h1>
+      <h1>@abpjs/feature-management Tests (v2.9.0)</h1>
       <p>Testing feature management modal and hooks.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.7.0 - Added eFeatureManagementComponents enum for component replacement</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.9.0 - Dependency updates only (no new features)</p>
 
       {/* v2.7.0 Features - Highlighted at top */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
