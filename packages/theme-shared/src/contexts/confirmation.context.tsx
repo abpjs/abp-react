@@ -163,7 +163,7 @@ export function ConfirmationProvider({ children }: ConfirmationProviderProps): R
     if (!escapeListenerRef.current) return;
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && confirmation && confirmation.options?.closable !== false) {
+      if (event.key === 'Escape' && confirmation && confirmation.options?.dismissible !== false) {
         respond(Confirmation.Status.dismiss);
       }
     };

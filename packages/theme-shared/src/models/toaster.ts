@@ -3,7 +3,7 @@ import type { Config } from '@abpjs/core';
 
 /**
  * Toaster namespace containing types and interfaces for toast notifications.
- * Translated from @abp/ng.theme.shared/lib/models/toaster.ts
+ * Translated from @abp/ng.theme.shared/lib/models/toaster.ts v3.0.0
  *
  * @since 2.0.0 - Major changes:
  * - `Options` renamed to `ToastOptions`
@@ -11,7 +11,7 @@ import type { Config } from '@abpjs/core';
  * - `Severity` type changed: 'warn' → 'warning', added 'neutral'
  * - ToasterService methods now return number (toast ID) instead of Observable
  *
- * @since 2.1.0 - Status enum deprecated, use Confirmation.Status instead
+ * @since 3.0.0 - Status enum removed, use Confirmation.Status instead
  */
 export namespace Toaster {
   /**
@@ -57,49 +57,4 @@ export namespace Toaster {
    * @since 2.0.0 - Changed 'warn' to 'warning', added 'neutral'
    */
   export type Severity = 'neutral' | 'success' | 'info' | 'warning' | 'error';
-
-  /**
-   * Status values for toast/confirmation interactions.
-   * @deprecated Status will be removed from toaster model in v3.0. Use Confirmation.Status instead.
-   * @since 2.1.0 - Deprecated in favor of Confirmation.Status
-   */
-  export enum Status {
-    confirm = 'confirm',
-    reject = 'reject',
-    dismiss = 'dismiss',
-  }
-
-  /**
-   * @deprecated Use ToastOptions instead. Scheduled for removal in v3.0.0
-   * Preserved for backward compatibility.
-   */
-  export interface Options {
-    /** Unique identifier for the toast */
-    id?: string;
-    /** Whether the toast can be manually closed */
-    closable?: boolean;
-    /** Duration in milliseconds before auto-dismiss (default varies by implementation) */
-    life?: number;
-    /** If true, toast won't auto-dismiss */
-    sticky?: boolean;
-    /** Custom data to attach to the toast */
-    data?: unknown;
-    /** Parameters for localizing the message */
-    messageLocalizationParams?: string[];
-    /** Parameters for localizing the title */
-    titleLocalizationParams?: string[];
-  }
-
-  /**
-   * @deprecated Use Toast instead. Scheduled for removal in v3.0.0
-   * Preserved for backward compatibility.
-   */
-  export interface Message extends Options {
-    /** The message content (can be a localization key) */
-    message: string;
-    /** The title (can be a localization key) */
-    title?: string;
-    /** Severity level of the message */
-    severity: Severity;
-  }
 }

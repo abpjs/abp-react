@@ -6,6 +6,7 @@
  * @updated 2.4.0 - THEME_SHARED_APPEND_CONTENT token, Toaster.Status deprecation update
  * @updated 2.7.0 - ModalService, validation-utils, HTTP_ERROR_CONFIG, isHomeShow
  * @updated 2.9.0 - RTL support, LazyStyleHandler, NavItems, LAZY_STYLES token, dismissible
+ * @updated 3.0.0 - NavItemsService, eThemeSharedRouteNames, route providers, Toaster.Status removed
  */
 import { useState, useContext, useEffect } from 'react'
 import {
@@ -21,8 +22,6 @@ import {
   // v2.4.0: New append content token and context
   THEME_SHARED_APPEND_CONTENT,
   ThemeSharedAppendContentContext,
-  // v2.1.0: Deprecated in favor of Confirmation.Status (removal now in v3.0 per v2.4.0)
-  Toaster,
   // v2.7.0: New modal service context
   ModalProvider,
   useModal,
@@ -46,15 +45,176 @@ import {
   DEFAULT_LAZY_STYLES,
   LazyStylesContext,
   useLazyStyles,
-  // v2.9.0: Nav items management
-  addNavItem,
-  removeNavItem,
-  clearNavItems,
-  getNavItemsSync,
-  subscribeToNavItems,
+  // v3.0.0: NavItemsService (replaces v2.9.0 utility functions)
+  getNavItemsService,
+  // v3.0.0: Route names enum
+  eThemeSharedRouteNames,
+  // v3.0.0: Route providers
+  initializeThemeSharedRoutes,
 } from '@abpjs/theme-shared'
 import type { SettingsStore, NavItem } from '@abpjs/theme-shared'
 import { useAbp, useAuth } from '@abpjs/core'
+
+/**
+ * v3.0.0 Features Section
+ * Demonstrates:
+ * - NavItemsService (singleton service replacing utility functions)
+ * - NavItem now requires id property
+ * - NavItem.requiredPolicy (renamed from permission)
+ * - eThemeSharedRouteNames enum
+ * - THEME_SHARED_ROUTE_PROVIDERS
+ * - initializeThemeSharedRoutes()
+ * - Toaster.Status removed (use Confirmation.Status)
+ * - Confirmation.Options.closable removed (use dismissible)
+ */
+function TestV300Features() {
+  const [serviceItems, setServiceItems] = useState<NavItem[]>([])
+  const [serviceNextOrder, setServiceNextOrder] = useState(1)
+  const [initialized, setInitialized] = useState(false)
+
+  // Get the NavItemsService singleton
+  const navItemsService = getNavItemsService()
+
+  // Subscribe to service items
+  useEffect(() => {
+    const unsubscribe = navItemsService.subscribe((items) => {
+      setServiceItems([...items])
+    })
+    return unsubscribe
+  }, [navItemsService])
+
+  // Add item using NavItemsService
+  const handleServiceAddItem = () => {
+    navItemsService.addItems([
+      {
+        id: `service-item-${serviceNextOrder}`,
+        html: `<span>Service Item ${serviceNextOrder}</span>`,
+        order: serviceNextOrder * 10,
+        requiredPolicy: serviceNextOrder % 2 === 0 ? 'Admin.Access' : undefined,
+      },
+    ])
+    setServiceNextOrder((prev) => prev + 1)
+  }
+
+  // Remove item using NavItemsService
+  const handleServiceRemoveItem = () => {
+    if (serviceItems.length > 0) {
+      navItemsService.removeItem(serviceItems[serviceItems.length - 1].id)
+    }
+  }
+
+  // Patch item using NavItemsService
+  const handleServicePatchItem = () => {
+    if (serviceItems.length > 0) {
+      const firstItem = serviceItems[0]
+      navItemsService.patchItem(firstItem.id, {
+        order: (firstItem.order ?? 0) + 100,
+        html: `<span style="color: #f88">${firstItem.html} (patched)</span>`,
+      })
+    }
+  }
+
+  // Initialize routes
+  const handleInitializeRoutes = () => {
+    initializeThemeSharedRoutes()
+    setInitialized(true)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.0.0 New Features</h2>
+
+      <div className="test-card">
+        <h3>NavItemsService (Singleton)</h3>
+        <p>New service-based approach to managing navigation items, replacing utility functions.</p>
+        <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button onClick={handleServiceAddItem}>addItems()</button>
+          <button onClick={handleServiceRemoveItem} disabled={serviceItems.length === 0}>
+            removeItem()
+          </button>
+          <button onClick={handleServicePatchItem} disabled={serviceItems.length === 0}>
+            patchItem() (first item)
+          </button>
+          <button onClick={() => navItemsService.clear()} disabled={serviceItems.length === 0}>
+            clear()
+          </button>
+        </div>
+        <div style={{ marginTop: '0.75rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <p style={{ marginBottom: '0.25rem' }}>NavItemsService items ({serviceItems.length}):</p>
+          {serviceItems.length === 0 ? (
+            <p style={{ color: '#888' }}>No items</p>
+          ) : (
+            <ul style={{ marginLeft: '1rem', marginTop: '0.25rem' }}>
+              {serviceItems.map((item) => (
+                <li key={item.id} style={{ marginBottom: '0.25rem' }}>
+                  <code style={{ color: '#aaf' }}>id</code>: {item.id}
+                  , <code style={{ color: '#6cf' }}>order</code>: {item.order ?? 0}
+                  {item.html && <>, <code style={{ color: '#fc6' }}>html</code>: <span dangerouslySetInnerHTML={{ __html: item.html }} /></>}
+                  {item.requiredPolicy && <>, <code style={{ color: '#f88' }}>requiredPolicy</code>: {item.requiredPolicy}</>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
+          Methods: <code>getInstance()</code>, <code>addItems()</code>, <code>removeItem()</code>,{' '}
+          <code>patchItem()</code>, <code>clear()</code>, <code>subscribe()</code>, <code>items$</code>
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>NavItem Interface Changes</h3>
+        <p>NavItem now requires an <code>id</code> property and uses <code>requiredPolicy</code> instead of <code>permission</code>.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6f6' }}>id</code>: string | number (required in v3.0.0)<br />
+          <code style={{ color: '#fc6' }}>requiredPolicy</code>: string (renamed from permission)
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#f88' }}>
+          Breaking change: <code>permission</code> → <code>requiredPolicy</code>
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>eThemeSharedRouteNames Enum</h3>
+        <p>New enum for theme-shared route names used in route configuration.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6cf' }}>eThemeSharedRouteNames.Administration</code> = "{eThemeSharedRouteNames.Administration}"
+        </div>
+        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
+          Used by route providers to register the Administration menu item.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Route Providers</h3>
+        <p>New route configuration providers for theme-shared module initialization.</p>
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6cf' }}>THEME_SHARED_ROUTE_PROVIDERS</code>: {'{ configureRoutes: function }'}<br />
+          <code style={{ color: '#6cf' }}>initializeThemeSharedRoutes()</code>: Initializes routes
+        </div>
+        <button onClick={handleInitializeRoutes} disabled={initialized} style={{ marginTop: '0.5rem' }}>
+          {initialized ? 'Routes Initialized ✓' : 'Initialize Theme Shared Routes'}
+        </button>
+        {initialized && (
+          <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#6f6' }}>
+            Administration route has been registered with the RoutesService.
+          </p>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>Breaking Changes Summary</h3>
+        <ul style={{ marginLeft: '1.5rem', fontSize: '0.9rem', lineHeight: '1.6' }}>
+          <li><code style={{ color: '#f88' }}>Toaster.Status</code> removed → use <code style={{ color: '#6f6' }}>Confirmation.Status</code></li>
+          <li><code style={{ color: '#f88' }}>Confirmation.Options.closable</code> removed → use <code style={{ color: '#6f6' }}>dismissible</code></li>
+          <li><code style={{ color: '#f88' }}>NavItem.permission</code> renamed → <code style={{ color: '#6f6' }}>requiredPolicy</code></li>
+          <li><code style={{ color: '#f88' }}>NavItem</code> now requires <code style={{ color: '#6f6' }}>id</code> property</li>
+          <li><code style={{ color: '#f88' }}>setting-management</code> removed → moved to <code style={{ color: '#6f6' }}>@abpjs/core SettingTabsService</code></li>
+        </ul>
+      </div>
+    </div>
+  )
+}
 
 /**
  * v2.9.0 Features Section
@@ -65,9 +225,9 @@ import { useAbp, useAuth } from '@abpjs/core'
  * - getLoadedBootstrapDirection function
  * - initLazyStyleHandler for non-hook contexts
  * - LAZY_STYLES token and useLazyStyles hook
- * - NavItem management (addNavItem, removeNavItem, getNavItems, etc.)
  * - Confirmation.Options.dismissible property
  * - BOOTSTRAP constant
+ * Note: Nav items management moved to NavItemsService in v3.0.0
  */
 function TestV290Features() {
   const [navItems, setNavItems] = useState<NavItem[]>([])
@@ -81,41 +241,46 @@ function TestV290Features() {
   // useLazyStyles hook demo
   const lazyStyles = useLazyStyles()
 
-  // Subscribe to nav items changes
+  // v3.0.0: Use NavItemsService instead of utility functions
+  const navItemsService = getNavItemsService()
+
+  // Subscribe to nav items changes (v3.0.0: using NavItemsService)
   useEffect(() => {
-    const unsubscribe = subscribeToNavItems((items) => {
+    const unsubscribe = navItemsService.subscribe((items: NavItem[]) => {
       setNavItems([...items])
     })
     return unsubscribe
-  }, [])
+  }, [navItemsService])
 
-  // Add a test nav item
+  // Add a test nav item (v3.0.0: now requires id, uses requiredPolicy instead of permission)
   const handleAddNavItem = () => {
     const newItem: NavItem = {
+      id: `nav-item-${nextOrder}`,
       html: `<span>Nav Item ${nextOrder}</span>`,
       order: nextOrder * 10,
-      permission: nextOrder % 2 === 0 ? 'Admin.Access' : undefined,
+      requiredPolicy: nextOrder % 2 === 0 ? 'Admin.Access' : undefined,
     }
-    addNavItem(newItem)
+    navItemsService.addItems([newItem])
     setNextOrder((prev) => prev + 1)
   }
 
-  // Add nav item with component
+  // Add nav item with component (v3.0.0: now requires id)
   const handleAddComponentNavItem = () => {
     const MockComponent = () => <span style={{ color: '#6cf' }}>Component Nav #{nextOrder}</span>
     const newItem: NavItem = {
+      id: `component-nav-${nextOrder}`,
       component: MockComponent,
       order: nextOrder * 10,
     }
-    addNavItem(newItem)
+    navItemsService.addItems([newItem])
     setNextOrder((prev) => prev + 1)
   }
 
-  // Remove last nav item
+  // Remove last nav item (v3.0.0: using NavItemsService)
   const handleRemoveLastNavItem = () => {
-    const items = getNavItemsSync()
+    const items = navItemsService.items
     if (items.length > 0) {
-      removeNavItem(items[items.length - 1])
+      navItemsService.removeItem(items[items.length - 1].id)
     }
   }
 
@@ -236,15 +401,15 @@ function TestV290Features() {
       </div>
 
       <div className="test-card">
-        <h3>NavItem Management</h3>
-        <p>Functions for managing navigation items dynamically.</p>
+        <h3>NavItem Management (v3.0.0: Now uses NavItemsService)</h3>
+        <p>Managing navigation items using NavItemsService singleton.</p>
         <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button onClick={handleAddNavItem}>Add HTML NavItem</button>
           <button onClick={handleAddComponentNavItem}>Add Component NavItem</button>
           <button onClick={handleRemoveLastNavItem} disabled={navItems.length === 0}>
             Remove Last
           </button>
-          <button onClick={clearNavItems} disabled={navItems.length === 0}>
+          <button onClick={() => navItemsService.clear()} disabled={navItems.length === 0}>
             Clear All
           </button>
         </div>
@@ -254,20 +419,21 @@ function TestV290Features() {
             <p style={{ color: '#888' }}>No items</p>
           ) : (
             <ul style={{ marginLeft: '1rem', marginTop: '0.25rem' }}>
-              {navItems.map((item, index) => (
-                <li key={index} style={{ marginBottom: '0.25rem' }}>
-                  <code style={{ color: '#6cf' }}>order</code>: {item.order ?? 0}
+              {navItems.map((item) => (
+                <li key={item.id} style={{ marginBottom: '0.25rem' }}>
+                  <code style={{ color: '#aaf' }}>id</code>: {item.id}
+                  , <code style={{ color: '#6cf' }}>order</code>: {item.order ?? 0}
                   {item.html && <>, <code style={{ color: '#fc6' }}>html</code>: {item.html}</>}
                   {item.component && <>, <code style={{ color: '#6f6' }}>component</code>: defined</>}
-                  {item.permission && <>, <code style={{ color: '#f88' }}>permission</code>: {item.permission}</>}
+                  {item.requiredPolicy && <>, <code style={{ color: '#f88' }}>requiredPolicy</code>: {item.requiredPolicy}</>}
                 </li>
               ))}
             </ul>
           )}
         </div>
         <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#888' }}>
-          Functions: <code>addNavItem()</code>, <code>removeNavItem()</code>, <code>clearNavItems()</code>,{' '}
-          <code>getNavItemsSync()</code>, <code>subscribeToNavItems()</code>, <code>getNavItems()</code>
+          v3.0.0: Use <code>NavItemsService</code> methods: <code>addItems()</code>, <code>removeItem()</code>,{' '}
+          <code>patchItem()</code>, <code>clear()</code>, <code>subscribe()</code>
         </p>
       </div>
 
@@ -283,8 +449,8 @@ function TestV290Features() {
             Result: {dismissibleResult}
           </p>
         )}
-        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#f88' }}>
-          Note: <code>closable</code> is deprecated and will be removed in a future version.
+        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#6f6' }}>
+          Note: <code>closable</code> was removed in v3.0.0 - use <code>dismissible</code> instead.
         </p>
       </div>
 
@@ -553,7 +719,7 @@ function SkipCodesDemo() {
  * Demonstrates:
  * - THEME_SHARED_APPEND_CONTENT token
  * - ThemeSharedAppendContentContext
- * - Toaster.Status deprecation update (removal in v3.0)
+ * Note: Toaster.Status was removed in v3.0.0 - use Confirmation.Status instead
  */
 function TestV240Features() {
   const [appendCalled, setAppendCalled] = useState(false)
@@ -569,17 +735,6 @@ function TestV240Features() {
     setCustomAppendResult('Content appended successfully!')
     setAppendCalled(true)
   }
-
-  // Demonstrate Toaster.Status deprecation (still works but deprecated)
-  const demonstrateDeprecatedStatus = () => {
-    // These still work but are deprecated in favor of Confirmation.Status
-    const confirmStatus = Toaster.Status.confirm
-    const rejectStatus = Toaster.Status.reject
-    const dismissStatus = Toaster.Status.dismiss
-    return { confirmStatus, rejectStatus, dismissStatus }
-  }
-
-  const deprecatedStatuses = demonstrateDeprecatedStatus()
 
   return (
     <div className="test-section">
@@ -614,22 +769,18 @@ function TestV240Features() {
       </div>
 
       <div className="test-card">
-        <h3>Toaster.Status Deprecation Update</h3>
-        <p>
-          <code>Toaster.Status</code> deprecation notice updated: will be removed in <strong>v3.0</strong> (was v2.2).
+        <h3>Toaster.Status Removed (v3.0.0)</h3>
+        <p style={{ color: '#f88' }}>
+          <code>Toaster.Status</code> was <strong>removed</strong> in v3.0.0.
         </p>
-        <p style={{ fontSize: '0.85rem', color: '#f88', marginTop: '0.5rem' }}>
-          Use <code>Confirmation.Status</code> instead of <code>Toaster.Status</code>.
+        <p style={{ fontSize: '0.85rem', color: '#6f6', marginTop: '0.5rem' }}>
+          Use <code>Confirmation.Status</code> instead:
         </p>
-        <div style={{ marginTop: '0.75rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
-          <p style={{ marginBottom: '0.25rem' }}>Deprecated values (still work until v3.0):</p>
-          <code style={{ color: '#fc6' }}>Toaster.Status.confirm</code> = "{deprecatedStatuses.confirmStatus}"<br />
-          <code style={{ color: '#fc6' }}>Toaster.Status.reject</code> = "{deprecatedStatuses.rejectStatus}"<br />
-          <code style={{ color: '#fc6' }}>Toaster.Status.dismiss</code> = "{deprecatedStatuses.dismissStatus}"
+        <div style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#222', borderRadius: '4px', fontSize: '0.85rem' }}>
+          <code style={{ color: '#6f6' }}>Confirmation.Status.confirm</code> = "{Confirmation.Status.confirm}"<br />
+          <code style={{ color: '#6f6' }}>Confirmation.Status.reject</code> = "{Confirmation.Status.reject}"<br />
+          <code style={{ color: '#6f6' }}>Confirmation.Status.dismiss</code> = "{Confirmation.Status.dismiss}"
         </div>
-        <p style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: '#6f6' }}>
-          Migration: Replace <code>Toaster.Status</code> with <code>Confirmation.Status</code>
-        </p>
       </div>
 
       <div className="test-card">
@@ -1472,12 +1623,13 @@ function TestProfile() {
 export function TestThemeSharedPage() {
   return (
     <div>
-      <h1>@abpjs/theme-shared Tests (v2.9.0)</h1>
+      <h1>@abpjs/theme-shared Tests (v3.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing toast notifications, confirmation dialogs, modals, error handling, and shared components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.9.0 - RTL support, LazyStyleHandler, NavItems, LAZY_STYLES token, dismissible
+        Version 3.0.0 - NavItemsService, eThemeSharedRouteNames, route providers, breaking changes
       </p>
 
+      <TestV300Features />
       <TestV290Features />
       <TestV270Features />
       <TestV240Features />
