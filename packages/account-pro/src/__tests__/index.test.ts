@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as accountProExports from '../index';
 
-describe('package root exports (v2.7.0)', () => {
+describe('package root exports (v2.9.0)', () => {
   describe('enum exports', () => {
     it('should export eAccountComponents', () => {
       expect(accountProExports.eAccountComponents).toBeDefined();
@@ -34,6 +34,7 @@ describe('package root exports (v2.7.0)', () => {
       expect(eAccountComponents.PersonalSettings).toBe(
         'Account.PersonalSettingsComponent'
       );
+      expect(eAccountComponents.Logo).toBe('Account.LogoComponent');
     });
 
     it('should have all eAccountRouteNames keys accessible', () => {
@@ -88,6 +89,14 @@ describe('package root exports (v2.7.0)', () => {
 
     it('should export ResetPassword component', () => {
       expect(accountProExports.ResetPassword).toBeDefined();
+    });
+
+    it('should export Logo component (v2.9.0)', () => {
+      expect(accountProExports.Logo).toBeDefined();
+    });
+
+    it('should export Logo with correct componentKey (v2.9.0)', () => {
+      expect(accountProExports.Logo.componentKey).toBe('Account.LogoComponent');
     });
   });
 });

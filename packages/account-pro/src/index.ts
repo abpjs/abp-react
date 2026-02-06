@@ -1,7 +1,13 @@
 /**
  * @abpjs/account-pro
  * ABP Framework Account Pro module for React
- * Translated from @volo/abp.ng.account v2.7.0
+ * Translated from @volo/abp.ng.account v2.9.0
+ *
+ * Changes in v2.9.0:
+ * - Added Logo component key to eAccountComponents enum
+ * - Added LogoComponent for displaying application logo on account pages
+ * - LoginComponent: isSelfRegistrationEnabled is now derived from settings (observable pattern)
+ * - AccountComponent: Added logoKey property for Logo component replacement
  *
  * Changes in v2.7.0:
  * - Added eAccountComponents enum for component replacement keys
