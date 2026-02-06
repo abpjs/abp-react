@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/chat",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "description": "ABP Framework chat components for React - translated from @volo/abp.ng.chat",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

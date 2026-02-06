@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/text-template-management",
-  "version": "2.9.0",
+  "version": "3.0.0",
   "description": "ABP Framework text-template-management components for React - translated from @volo/abp.ng.text-template-management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
