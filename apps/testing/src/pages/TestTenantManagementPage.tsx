@@ -1630,9 +1630,9 @@ const localizedName = localize(eTenantManagementRouteNames.TenantManagement);`}
 export function TestTenantManagementPage() {
   return (
     <div>
-      <h1>@abpjs/tenant-management Tests v2.7.0</h1>
+      <h1>@abpjs/tenant-management Tests v2.9.0</h1>
       <p>Testing tenant management modal and hooks for creating, updating, and managing tenants.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.7.0 - Added component and route name enums, componentKey static property</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.9.0 - Dependency updates (version bump only)</p>
 
       <TestV270Features />
       <TestV240Features />
