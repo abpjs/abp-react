@@ -60,6 +60,7 @@ const DEFAULT_FILTER_STATE: FilterState = {
  * It displays a paginated table of audit logs with filtering capabilities.
  *
  * @since 0.7.2
+ * @updated 2.9.0 - Aligned with Angular's onQueryChange pattern (React already uses this via useEffect)
  */
 export function AuditLogsComponent({ onAuditLogSelected }: AuditLogsComponentProps) {
   const { t } = useLocalization();

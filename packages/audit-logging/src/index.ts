@@ -1,7 +1,13 @@
 /**
  * @abpjs/audit-logging
  * ABP Framework Audit Logging module for React
- * Translated from @volo/abp.ng.audit-logging v2.7.0
+ * Translated from @volo/abp.ng.audit-logging v2.9.0
+ *
+ * Changes in v2.9.0:
+ * - AuditLogsComponent: Removed ngOnInit lifecycle, replaced onPageChange with onQueryChange pattern
+ *   (React already uses this pattern via useEffect and query parameter building)
+ * - EntityChangesComponent: Removed DateAdapter class (React uses native Date handling)
+ * - Dependency updates to @abp/ng.theme.shared ~2.9.0, @volo/abp.commercial.ng.ui ~2.9.0
  *
  * Changes in v2.7.0:
  * - Added EntityChanges to eAuditLoggingComponents enum
