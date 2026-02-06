@@ -577,8 +577,8 @@ describe('IdentityService', () => {
 
   // Pro Features: Claim Type Operations
   describe('Pro: Claim Type Operations', () => {
-    describe('getClaimTypeNames', () => {
-      it('should fetch all claim type names', async () => {
+    describe('getRolesClaimTypes (v3.0.0)', () => {
+      it('should fetch claim types available for roles', async () => {
         const expectedResponse: Identity.ClaimTypeName[] = [
           { name: 'email' },
           { name: 'role' },
@@ -586,13 +586,62 @@ describe('IdentityService', () => {
         ];
         mockRestService.request.mockResolvedValue(expectedResponse);
 
-        const result = await identityService.getClaimTypeNames();
+        const result = await identityService.getRolesClaimTypes();
 
         expect(mockRestService.request).toHaveBeenCalledWith({
           method: 'GET',
-          url: '/api/identity/claim-types/all',
+          url: '/api/identity/roles/available-claim-types',
         });
         expect(result).toEqual(expectedResponse);
+      });
+
+      it('should return empty array when no claim types exist', async () => {
+        mockRestService.request.mockResolvedValue([]);
+
+        const result = await identityService.getRolesClaimTypes();
+
+        expect(result).toEqual([]);
+      });
+
+      it('should propagate errors when fetching fails', async () => {
+        const error = new Error('Failed to fetch role claim types');
+        mockRestService.request.mockRejectedValue(error);
+
+        await expect(identityService.getRolesClaimTypes()).rejects.toThrow('Failed to fetch role claim types');
+      });
+    });
+
+    describe('getUsersClaimTypes (v3.0.0)', () => {
+      it('should fetch claim types available for users', async () => {
+        const expectedResponse: Identity.ClaimTypeName[] = [
+          { name: 'email' },
+          { name: 'phone_number' },
+          { name: 'name' },
+        ];
+        mockRestService.request.mockResolvedValue(expectedResponse);
+
+        const result = await identityService.getUsersClaimTypes();
+
+        expect(mockRestService.request).toHaveBeenCalledWith({
+          method: 'GET',
+          url: '/api/identity/users/available-claim-types',
+        });
+        expect(result).toEqual(expectedResponse);
+      });
+
+      it('should return empty array when no claim types exist', async () => {
+        mockRestService.request.mockResolvedValue([]);
+
+        const result = await identityService.getUsersClaimTypes();
+
+        expect(result).toEqual([]);
+      });
+
+      it('should propagate errors when fetching fails', async () => {
+        const error = new Error('Failed to fetch user claim types');
+        mockRestService.request.mockRejectedValue(error);
+
+        await expect(identityService.getUsersClaimTypes()).rejects.toThrow('Failed to fetch user claim types');
       });
     });
 

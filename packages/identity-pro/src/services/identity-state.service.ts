@@ -1,11 +1,12 @@
 /**
  * Identity State Service
- * Translated from @volo/abp.ng.identity v2.0.0
+ * Translated from @volo/abp.ng.identity v3.0.0
  *
  * This service provides facade methods for dispatching identity actions.
  * In Angular, this uses NGXS store dispatch. In React, we wrap the API calls.
  *
  * @since 2.0.0
+ * @updated 3.0.0 - Removed getClaimTypeNames and dispatchGetClaimTypeNames
  */
 
 import type { RestService, ABP } from '@abpjs/core';
@@ -19,6 +20,7 @@ import { IdentityService } from './identity.service';
  * Pro features include all dispatch methods for roles, users, and claim types.
  *
  * @since 2.0.0
+ * @updated 3.0.0 - Removed claim type names state (use getRolesClaimTypes/getUsersClaimTypes instead)
  */
 export class IdentityStateService {
   private identityService: IdentityService;
@@ -30,7 +32,6 @@ export class IdentityStateService {
   private _usersTotalCount: number = 0;
   private _claimTypes: Identity.ClaimType[] = [];
   private _claimTypesTotalCount: number = 0;
-  private _claimTypeNames: Identity.ClaimTypeName[] = [];
 
   constructor(restService: RestService) {
     this.identityService = new IdentityService(restService);
@@ -80,13 +81,6 @@ export class IdentityStateService {
    */
   getClaimTypesTotalCount(): number {
     return this._claimTypesTotalCount;
-  }
-
-  /**
-   * Get the claim type names
-   */
-  getClaimTypeNames(): Identity.ClaimTypeName[] {
-    return this._claimTypeNames;
   }
 
   // ========================
@@ -218,17 +212,6 @@ export class IdentityStateService {
     const result = await this.identityService.updateClaimType(body);
     // Refresh claim types list after update
     await this.dispatchGetClaimTypes();
-    return result;
-  }
-
-  /**
-   * Dispatch get claim type names action
-   * @returns Promise resolving to the claim type names
-   * @since 2.0.0
-   */
-  async dispatchGetClaimTypeNames(): Promise<Identity.ClaimTypeName[]> {
-    const result = await this.identityService.getClaimTypeNames();
-    this._claimTypeNames = result || [];
     return result;
   }
 
