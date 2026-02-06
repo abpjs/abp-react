@@ -86,10 +86,9 @@ describe('usePasswordFlow', () => {
     expect(typeof result.current.clearError).toBe('function');
   });
 
-  it('should set isLoading to true during login', async () => {
-    mockAxiosInstance.post.mockImplementation(
-      () => new Promise((resolve) => setTimeout(resolve, 100))
-    );
+  it('should set isLoading to true during login', () => {
+    // Use a promise that never resolves so the async callback doesn't run after test ends
+    mockAxiosInstance.post.mockImplementation(() => new Promise(() => {}));
 
     const { result } = renderHook(() => usePasswordFlow(), { wrapper });
 
