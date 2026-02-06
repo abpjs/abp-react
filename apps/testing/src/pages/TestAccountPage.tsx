@@ -2,6 +2,7 @@
  * Test page for @abpjs/account package
  * Tests: LoginForm, RegisterForm, TenantBox, hooks
  * @updated 2.9.0 - Version bump only (dependency updates)
+ * @updated 3.0.0 - Config subpackage, route providers, accountOptionsFactory
  */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -27,6 +28,11 @@ import {
   // v2.7.0 additions
   eAccountComponents,
   eAccountRouteNames,
+  // v3.0.0 additions - Config subpackage
+  configureRoutes,
+  ACCOUNT_ROUTE_PROVIDERS,
+  initializeAccountRoutes,
+  accountOptionsFactory,
 } from '@abpjs/account'
 import type { Account } from '@abpjs/account'
 import { useAuth, useConfig } from '@abpjs/core'
@@ -950,6 +956,191 @@ const wrapperKey = LoginForm.authWrapperKey  // "Account.AuthWrapperComponent"
   )
 }
 
+function TestV300Features() {
+  const [routeProviderResult, setRouteProviderResult] = useState<string | null>(null)
+  const [optionsResult, setOptionsResult] = useState<string | null>(null)
+
+  const testAccountOptionsFactory = () => {
+    // Test with no options
+    const defaultOptions = accountOptionsFactory({})
+    // Test with custom redirectUrl
+    const customOptions = accountOptionsFactory({ redirectUrl: '/dashboard' })
+
+    setOptionsResult(JSON.stringify({
+      defaultOptions,
+      customOptions,
+    }, null, 2))
+  }
+
+  const testConfigureRoutes = () => {
+    // Create a mock routes service to demonstrate the function
+    const mockRoutes: unknown[] = []
+    const mockRoutesService = {
+      add: (routes: unknown[]) => {
+        mockRoutes.push(...routes)
+      },
+      items: [],
+    }
+
+    // Get the configure function
+    const addRoutes = configureRoutes(mockRoutesService as any)
+
+    // Call it to add routes
+    addRoutes()
+
+    setRouteProviderResult(JSON.stringify(mockRoutes, null, 2))
+  }
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.0.0</h2>
+
+      <div className="test-card">
+        <h3>Config Subpackage (Merged from @abp/ng.account.config)</h3>
+        <p>
+          In v3.0.0, the separate <code>@abp/ng.account.config</code> package has been merged into
+          the main <code>@abpjs/account</code> package. All config exports are now available from
+          the main package.
+        </p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`// v3.0.0 - All exports from one package
+import {
+  configureRoutes,
+  ACCOUNT_ROUTE_PROVIDERS,
+  initializeAccountRoutes,
+  eAccountRouteNames, // Now in config/enums
+} from '@abpjs/account';`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>configureRoutes Function</h3>
+        <p>Factory function that configures account routes with the RoutesService:</p>
+        <button onClick={testConfigureRoutes}>Test configureRoutes</button>
+        {routeProviderResult && (
+          <pre style={{ fontSize: '11px', maxHeight: '200px', overflow: 'auto', marginTop: '0.5rem' }}>
+            {routeProviderResult}
+          </pre>
+        )}
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', marginTop: '0.5rem' }}>
+{`import { configureRoutes, getRoutesService } from '@abpjs/account';
+
+// Get the routes service
+const routesService = getRoutesService();
+
+// Configure routes
+const addRoutes = configureRoutes(routesService);
+addRoutes();
+
+// Or use the helper function
+initializeAccountRoutes();`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>ACCOUNT_ROUTE_PROVIDERS</h3>
+        <p>Provider object for route configuration:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Property</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>configureRoutes</code></td>
+              <td style={{ padding: '8px' }}>Function</td>
+              <td style={{ padding: '8px' }}>Factory to configure routes</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+          Equivalent to Angular's <code>ACCOUNT_ROUTE_PROVIDERS</code> array.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>initializeAccountRoutes Helper</h3>
+        <p>One-liner to initialize all account routes:</p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`import { initializeAccountRoutes } from '@abpjs/account';
+
+// Call during app initialization
+initializeAccountRoutes();
+
+// This adds the following routes:
+// - /account (invisible parent)
+// - /account/login
+// - /account/register
+// - /account/manage-profile`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>accountOptionsFactory Function</h3>
+        <p>Factory function to create account options with defaults:</p>
+        <button onClick={testAccountOptionsFactory}>Test accountOptionsFactory</button>
+        {optionsResult && (
+          <pre style={{ fontSize: '11px', maxHeight: '150px', overflow: 'auto', marginTop: '0.5rem' }}>
+            {optionsResult}
+          </pre>
+        )}
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', marginTop: '0.5rem' }}>
+{`import { accountOptionsFactory } from '@abpjs/account';
+
+// Create options with defaults
+const options = accountOptionsFactory({});
+// Result: { redirectUrl: '/' }
+
+// Override with custom values
+const customOptions = accountOptionsFactory({ redirectUrl: '/dashboard' });
+// Result: { redirectUrl: '/dashboard' }`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>eAccountRouteNames (Moved to config/enums)</h3>
+        <p>
+          In v3.0.0, <code>eAccountRouteNames</code> was moved from <code>lib/enums</code> to{' '}
+          <code>config/enums</code>. It's re-exported from both locations for backward compatibility.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eAccountRouteNames).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px' }}><code>{key}</code></td>
+                <td style={{ padding: '8px', color: '#646cff' }}><code>{value}</code></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Migration from v2.9.0</h3>
+        <div style={{ padding: '0.75rem', background: '#1a2e1a', borderRadius: '4px', border: '1px solid #2e4a2e' }}>
+          <p style={{ color: '#6f6', margin: 0, fontSize: '14px' }}>
+            <strong>No breaking changes!</strong> All existing imports continue to work.
+          </p>
+        </div>
+        <ul style={{ marginTop: '0.5rem', fontSize: '0.9rem' }}>
+          <li><code>eAccountRouteNames</code> is re-exported from the same location</li>
+          <li>New exports are additive (config providers, accountOptionsFactory)</li>
+          <li>The <code>@abp/ng.account.config</code> dependency is no longer needed</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 function TestV240Features() {
   const accountService = useAccountService()
 
@@ -994,13 +1185,21 @@ console.log(accountService.apiName) // "default"`}</pre>
 export function TestAccountPage() {
   return (
     <div>
-      <h1>@abpjs/account Tests (v2.9.0)</h1>
+      <h1>@abpjs/account Tests (v3.0.0)</h1>
       <p>Testing login, register, tenant switching, and account-related features.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.9.0 - Dependency updates only (no new features)</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>
+        Version 3.0.0 - Config subpackage, route providers, accountOptionsFactory
+      </p>
 
-      {/* v2.7.0 Features - Highlighted at top */}
+      {/* v3.0.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #ec4899', paddingTop: '1rem' }}>
+        v3.0.0 New Features
+      </h2>
+      <TestV300Features />
+
+      {/* v2.7.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
-        v2.7.0 New Features
+        v2.7.0 Features
       </h2>
       <TestV270Features />
 
