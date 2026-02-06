@@ -6,6 +6,7 @@
  * @updated 2.7.0 - New public API components, enums, and LayoutStateService
  * @updated 2.9.0 - Removed isDropdownChildDynamic prop, RTL support via Chakra UI
  * @updated 3.0.0 - NavItemsService, CurrentUserComponent, LanguagesComponent, providers
+ * @updated 3.1.0 - Angular SubscriptionService added (no React impact - uses CSS breakpoints)
  */
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
@@ -661,6 +662,26 @@ function TestVersionInfo() {
       <h2>Version Info</h2>
 
       <div className="test-card">
+        <h3>What's New in v3.1.0</h3>
+        <p>Version 3.1.0 is an internal Angular update with no functional changes for React users.</p>
+        <ul>
+          <li><strong>Angular Change:</strong> Added <code>SubscriptionService</code> for managing window resize subscriptions</li>
+          <li><strong>Angular Change:</strong> <code>ApplicationLayoutComponent</code> now uses <code>SubscriptionService.trackAuto()</code></li>
+          <li><strong>React Status:</strong> No changes needed - React uses CSS breakpoints (<code>hideBelow</code>/<code>hideFrom</code>) via Chakra UI</li>
+        </ul>
+        <p style={{ color: '#888', fontSize: '14px', marginTop: '8px' }}>
+          The Angular <code>SubscriptionService</code> helps manage RxJS subscriptions for automatic cleanup.
+          In React, responsive behavior is handled declaratively through Chakra UI's CSS breakpoint system,
+          which is more efficient and doesn't require JavaScript event listeners or manual subscription management.
+        </p>
+        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#1a2e1a', borderRadius: '4px', border: '1px solid #2e4a2e' }}>
+          <p style={{ color: '#6f6', margin: 0, fontSize: '14px' }}>
+            <strong>No code changes required</strong> - React's Chakra UI breakpoints handle responsive layout automatically.
+          </p>
+        </div>
+      </div>
+
+      <div className="test-card">
         <h3>What's New in v3.0.0</h3>
         <p>Version 3.0.0 introduces the NavItemsService architecture and new public API components.</p>
         <ul>
@@ -837,10 +858,10 @@ interface RoutesComponentProps {
 export function TestThemeBasicPage() {
   return (
     <div>
-      <h1>@abpjs/theme-basic Tests (v3.0.0)</h1>
+      <h1>@abpjs/theme-basic Tests (v3.1.0)</h1>
       <p>Testing layouts, navigation, NavItemsService, and new components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.0.0 - NavItemsService, CurrentUserComponent, LanguagesComponent, providers
+        Version 3.1.0 - Internal Angular SubscriptionService (no React impact)
       </p>
 
       <TestVersionInfo />
