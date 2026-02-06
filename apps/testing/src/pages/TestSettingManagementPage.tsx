@@ -627,9 +627,9 @@ const localizedName = localize(eSettingManagementRouteNames.Settings);`}
 export function TestSettingManagementPage() {
   return (
     <div>
-      <h1>@abpjs/setting-management Tests v2.7.0</h1>
+      <h1>@abpjs/setting-management Tests v2.9.0</h1>
       <p>Testing setting management layout, hook, and services.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.7.0 - Added component and route name enums</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.9.0 - Dependency updates (version bump only)</p>
 
       <TestV270Features />
       <TestSettingLayoutComponent />
