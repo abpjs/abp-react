@@ -7,6 +7,8 @@
  * - Added sorting icon styles
  * - Added table scrollbar width styling
  *
+ * @since 2.9.0 - Added RTL support for data-tables-filter
+ *
  * @example
  * ```tsx
  * // Option 1: Use with a style tag in your app
@@ -25,6 +27,13 @@
  * // Copy the content of DEFAULT_STYLES to your styles.css
  * ```
  */
+
+/**
+ * Bootstrap CSS file pattern with direction placeholder.
+ * Use with createLazyStyleHref to get the correct bootstrap CSS for RTL/LTR.
+ * @since 2.9.0
+ */
+export const BOOTSTRAP = 'bootstrap-{{dir}}.min.css';
 export const DEFAULT_STYLES = `
 .is-invalid .form-control {
   border-color: #dc3545;
@@ -38,6 +47,11 @@ export const DEFAULT_STYLES = `
 
 .data-tables-filter {
   text-align: right;
+}
+
+/* RTL support - @since 2.9.0 */
+[dir=rtl] .data-tables-filter {
+  text-align: left;
 }
 
 .pointer {

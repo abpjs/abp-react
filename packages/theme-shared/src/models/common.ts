@@ -3,8 +3,15 @@
  * Translated from @abp/ng.theme.shared/lib/models/common.ts
  * @since 1.1.0
  * @since 2.7.0 - Added skipHandledErrorCodes, simplified forWhichErrors type
+ * @since 2.9.0 - Added LocaleDirection type
  */
 import type { ComponentType } from 'react';
+
+/**
+ * Locale direction for RTL/LTR support.
+ * @since 2.9.0
+ */
+export type LocaleDirection = 'ltr' | 'rtl';
 
 /**
  * Root parameters for ThemeSharedModule configuration.

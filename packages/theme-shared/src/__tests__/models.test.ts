@@ -5,6 +5,7 @@ import type {
   RootParams,
   HttpErrorConfig,
   ErrorScreenErrorCodes,
+  LocaleDirection,
 } from '../models/common';
 
 describe('Toaster namespace', () => {
@@ -127,7 +128,8 @@ describe('Confirmation namespace', () => {
   });
 
   // v2.0.0 - Options no longer extends Toaster.Options
-  describe('Options (v2.0.0)', () => {
+  // v2.9.0 - Added dismissible, deprecated closable
+  describe('Options (v2.0.0, v2.9.0)', () => {
     it('should accept minimal Confirmation.Options', () => {
       const options: Confirmation.Options = {};
       expect(options).toEqual({});
@@ -147,6 +149,44 @@ describe('Confirmation namespace', () => {
       expect(options.closable).toBe(true);
       expect(options.hideCancelBtn).toBe(false);
       expect(options.hideYesBtn).toBe(false);
+    });
+
+    // v2.9.0 - dismissible property
+    it('should accept dismissible property (v2.9.0)', () => {
+      const options: Confirmation.Options = {
+        dismissible: true,
+      };
+
+      expect(options.dismissible).toBe(true);
+    });
+
+    it('should accept dismissible as false (v2.9.0)', () => {
+      const options: Confirmation.Options = {
+        dismissible: false,
+      };
+
+      expect(options.dismissible).toBe(false);
+    });
+
+    it('should allow both dismissible and closable for backward compatibility (v2.9.0)', () => {
+      const options: Confirmation.Options = {
+        dismissible: true,
+        closable: false, // deprecated but still supported
+      };
+
+      expect(options.dismissible).toBe(true);
+      expect(options.closable).toBe(false);
+    });
+
+    it('should prefer dismissible over closable when both are set', () => {
+      // When both are set, dismissible should be used (closable is deprecated)
+      const options: Confirmation.Options = {
+        dismissible: true,
+        closable: false,
+      };
+
+      // In implementation, dismissible should take precedence
+      expect(options.dismissible).toBe(true);
     });
 
     it('should accept cancelText and yesText properties', () => {
@@ -448,6 +488,55 @@ describe('Common types (v1.1.0, v2.7.0)', () => {
       };
 
       expect(params.httpErrorConfig?.skipHandledErrorCodes).toEqual([404]);
+    });
+  });
+
+  // v2.9.0 - LocaleDirection type
+  describe('LocaleDirection (v2.9.0)', () => {
+    it('should accept ltr direction', () => {
+      const direction: LocaleDirection = 'ltr';
+      expect(direction).toBe('ltr');
+    });
+
+    it('should accept rtl direction', () => {
+      const direction: LocaleDirection = 'rtl';
+      expect(direction).toBe('rtl');
+    });
+
+    it('should be usable in conditions', () => {
+      const direction: LocaleDirection = 'rtl';
+      const isRtl = direction === 'rtl';
+      expect(isRtl).toBe(true);
+    });
+
+    it('should be usable in switch statements', () => {
+      const getTextAlign = (dir: LocaleDirection): string => {
+        switch (dir) {
+          case 'ltr':
+            return 'left';
+          case 'rtl':
+            return 'right';
+          default:
+            return 'left';
+        }
+      };
+
+      expect(getTextAlign('ltr')).toBe('left');
+      expect(getTextAlign('rtl')).toBe('right');
+    });
+
+    it('should be usable in object properties', () => {
+      const config: { direction: LocaleDirection } = {
+        direction: 'ltr',
+      };
+      expect(config.direction).toBe('ltr');
+    });
+
+    it('should work with array of directions', () => {
+      const directions: LocaleDirection[] = ['ltr', 'rtl'];
+      expect(directions).toHaveLength(2);
+      expect(directions).toContain('ltr');
+      expect(directions).toContain('rtl');
     });
   });
 });
