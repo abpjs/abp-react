@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * SaaS Models
  * Translated from @volo/abp.ng.saas v2.4.0

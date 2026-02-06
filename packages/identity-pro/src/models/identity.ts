@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { ABP, PagedResultDto } from '@abpjs/core';
 import { OrganizationUnitWithDetailsDto } from './organization-unit-with-details-dto';
 

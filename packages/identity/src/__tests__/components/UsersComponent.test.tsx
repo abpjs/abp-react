@@ -213,17 +213,17 @@ vi.mock('@abpjs/permission-management', () => ({
 
 // Mock @chakra-ui/react
 vi.mock('@chakra-ui/react', () => ({
-  Box: ({ children, id, className, p, mb, mt, fontSize, color, ...props }: any) => (
+  Box: ({ children, id, className, p, mb, mt, fontSize: _fontSize, color: _color, ...props }: any) => (
     <div id={id} className={className} data-p={p} data-mb={mb} data-mt={mt} {...props}>
       {children}
     </div>
   ),
-  Flex: ({ children, justify, align, gap, py, ...props }: any) => (
+  Flex: ({ children, justify, align, gap: _gap, py: _py, ...props }: any) => (
     <div data-testid="flex" data-justify={justify} data-align={align} {...props}>
       {children}
     </div>
   ),
-  Input: React.forwardRef(({ value, onChange, placeholder, type, maxW, maxLength, autoComplete, ...props }: any, ref: any) => (
+  Input: React.forwardRef(({ value, onChange, placeholder, type, maxW: _maxW, maxLength, autoComplete, ...props }: any, ref: any) => (
     <input
       ref={ref}
       value={value}
@@ -245,12 +245,12 @@ vi.mock('@chakra-ui/react', () => ({
     Cell: ({ children }: any) => <td>{children}</td>,
   },
   Spinner: ({ size }: any) => <div data-testid="spinner" data-size={size}>Loading...</div>,
-  VStack: ({ children, align, gap, pt, ...props }: any) => (
+  VStack: ({ children, align, gap, pt: _pt, ...props }: any) => (
     <div data-testid="vstack" data-align={align} data-gap={gap} {...props}>
       {children}
     </div>
   ),
-  Text: ({ children, fontSize, fontWeight, color, textAlign, ...props }: any) => (
+  Text: ({ children, fontSize: _fontSize, fontWeight, color, textAlign, ...props }: any) => (
     <span data-fontweight={fontWeight} data-color={color} data-textalign={textAlign} {...props}>
       {children}
     </span>
@@ -263,7 +263,7 @@ vi.mock('@chakra-ui/react', () => ({
   },
   Menu: {
     Root: ({ children }: any) => <div data-testid="menu">{children}</div>,
-    Trigger: ({ children, asChild }: any) => <div data-testid="menu-trigger">{children}</div>,
+    Trigger: ({ children, asChild: _asChild }: any) => <div data-testid="menu-trigger">{children}</div>,
     Positioner: ({ children }: any) => <div>{children}</div>,
     Content: ({ children }: any) => <div data-testid="menu-content">{children}</div>,
     Item: ({ children, value, onClick, color }: any) => (

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { ABP } from './common';
 
 export namespace ApplicationConfiguration {
@@ -86,14 +87,19 @@ export namespace ApplicationConfiguration {
   export type Features = Value;
 
   export interface CurrentUser {
-    isAuthenticated: boolean;
-    id: string;
-    tenantId: string;
-    userName: string;
     /**
      * User's email address
      * @since 2.9.0
      */
     email: string;
+    id: string;
+    isAuthenticated: boolean;
+    /**
+     * User's assigned roles
+     * @since 3.0.0
+     */
+    roles: string[];
+    tenantId: string;
+    userName: string;
   }
 }

@@ -5,7 +5,6 @@ import {
   getPasswordValidationRules,
   PASSWORD_SETTING_KEYS,
   type SettingsStore,
-  type PasswordSettings,
 } from '../utils/validation-utils';
 
 /**

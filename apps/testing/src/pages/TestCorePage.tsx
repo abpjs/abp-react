@@ -5,6 +5,7 @@
  * @updated 2.2.0 - Angular DI pattern changes (no React changes needed)
  * @updated 2.4.0 - Added DTOs, strategies, DomInsertionService, utility functions
  * @updated 2.7.0 - Added CurrentCulture, ABP.Option, utility types, form-utils, number-utils, generatePassword, DomInsertionService updates
+ * @updated 3.0.0 - Added RoutesService, tree-utils, array-utils, ABP.Nav, ABP.Tab, CurrentUser.roles
  */
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -34,6 +35,22 @@ import {
   sessionActions,
   configActions,
   eLayoutType,
+  // v3.0.0 additions
+  getRoutesService,
+  getSettingTabsService,
+  RoutesService,
+  SettingTabsService,
+  createTreeFromList,
+  createMapFromList,
+  findInTree,
+  flattenTree,
+  sortTree,
+  BaseTreeNode,
+  pushValueTo,
+  uniqueBy,
+  groupBy,
+  findRoute,
+  getRoutePath,
 } from '@abpjs/core'
 import type { ABP, ReplaceableComponents } from '@abpjs/core'
 import {
@@ -249,7 +266,7 @@ function TestLoader() {
     try {
       // This will automatically trigger LoaderStart/LoaderStop via the API interceptor
       await restService.get('/api/abp/application-configuration')
-    } catch (err) {
+    } catch {
       console.log('API call completed (may have failed, but loader should still work)')
     }
   }
@@ -263,7 +280,7 @@ function TestLoader() {
         restService.get('/api/abp/application-configuration'),
         restService.get('/api/abp/application-configuration'),
       ])
-    } catch (err) {
+    } catch {
       console.log('API calls completed')
     } finally {
       setManualLoading(false)
@@ -1236,6 +1253,493 @@ function TestV27Features() {
   )
 }
 
+function TestV30Features() {
+  const [routesServiceResults, setRoutesServiceResults] = useState<string[]>([])
+  const [treeUtilsResults, setTreeUtilsResults] = useState<string[]>([])
+  const [arrayUtilsResults, setArrayUtilsResults] = useState<string[]>([])
+  const [routeUtilsResults, setRouteUtilsResults] = useState<string[]>([])
+  const config = useConfig()
+
+  const testRoutesService = () => {
+    const results: string[] = []
+
+    // Reset and get fresh instance
+    RoutesService.resetInstance()
+    const routesService = getRoutesService()
+
+    results.push(`✓ RoutesService singleton:`)
+    results.push(`  - getInstance(): ${routesService ? 'Available' : 'Not available'}`)
+    results.push(`  - Same instance: ${routesService === getRoutesService()}`)
+    results.push(``)
+
+    // Add some test routes
+    const testRoutes: ABP.Route[] = [
+      { name: 'Dashboard', path: '/dashboard', order: 1 },
+      { name: 'Admin', path: '/admin', order: 2 },
+      { name: 'Users', path: '/admin/users', parentName: 'Admin', order: 1 },
+      { name: 'Roles', path: '/admin/roles', parentName: 'Admin', order: 2 },
+      { name: 'Settings', path: '/settings', order: 3 },
+      { name: 'Profile', path: '/settings/profile', parentName: 'Settings', order: 1, invisible: true },
+    ]
+
+    routesService.add(testRoutes)
+    results.push(`✓ Added ${testRoutes.length} routes`)
+    results.push(`  - flat count: ${routesService.flat.length}`)
+    results.push(`  - tree count (root): ${routesService.tree.length}`)
+    results.push(`  - visible count (root): ${routesService.visible.length}`)
+    results.push(``)
+
+    // Test find
+    const adminRoute = routesService.find((node) => node.name === 'Admin')
+    results.push(`✓ find((node) => node.name === 'Admin'):`)
+    results.push(`  - found: ${adminRoute ? 'Yes' : 'No'}`)
+    results.push(`  - children: ${adminRoute?.children.length || 0}`)
+    results.push(``)
+
+    // Test search
+    const usersRoute = routesService.search({ path: '/admin/users' })
+    results.push(`✓ search({ path: '/admin/users' }):`)
+    results.push(`  - found: ${usersRoute ? usersRoute.name : 'Not found'}`)
+    results.push(``)
+
+    // Test hasChildren
+    results.push(`✓ hasChildren():`)
+    results.push(`  - Admin: ${routesService.hasChildren('Admin')}`)
+    results.push(`  - Dashboard: ${routesService.hasChildren('Dashboard')}`)
+    results.push(``)
+
+    // Test hasInvisibleChild
+    results.push(`✓ hasInvisibleChild():`)
+    results.push(`  - Settings: ${routesService.hasInvisibleChild('Settings')}`)
+    results.push(`  - Admin: ${routesService.hasInvisibleChild('Admin')}`)
+    results.push(``)
+
+    // Test patch
+    routesService.patch('Dashboard', { order: 10 })
+    const patched = routesService.find((node) => node.name === 'Dashboard')
+    results.push(`✓ patch('Dashboard', { order: 10 }):`)
+    results.push(`  - new order: ${patched?.order}`)
+    results.push(``)
+
+    // Test remove
+    routesService.remove(['Roles'])
+    const rolesAfterRemove = routesService.find((node) => node.name === 'Roles')
+    results.push(`✓ remove(['Roles']):`)
+    results.push(`  - Roles exists: ${rolesAfterRemove ? 'Yes' : 'No'}`)
+    results.push(`  - flat count: ${routesService.flat.length}`)
+
+    // Test SettingTabsService
+    results.push(``)
+    SettingTabsService.resetInstance()
+    const settingTabsService = getSettingTabsService()
+    results.push(`✓ SettingTabsService singleton:`)
+    results.push(`  - Available: ${settingTabsService ? 'Yes' : 'No'}`)
+
+    // Add test tabs (component must be a React ComponentType)
+    const GeneralSettings = () => <div>General Settings</div>
+    const SecuritySettings = () => <div>Security Settings</div>
+    const testTabs: ABP.Tab[] = [
+      { name: 'General', component: GeneralSettings, order: 1 },
+      { name: 'Security', component: SecuritySettings, order: 2 },
+    ]
+    settingTabsService.add(testTabs)
+    results.push(`  - Added ${testTabs.length} tabs`)
+    results.push(`  - tree count: ${settingTabsService.tree.length}`)
+
+    setRoutesServiceResults(results)
+  }
+
+  const testTreeUtils = () => {
+    const results: string[] = []
+
+    // Test createTreeFromList
+    interface TestItem {
+      id: string
+      parentId: string | null
+      name: string
+    }
+
+    const items: TestItem[] = [
+      { id: '1', parentId: null, name: 'Root 1' },
+      { id: '2', parentId: null, name: 'Root 2' },
+      { id: '1-1', parentId: '1', name: 'Child 1-1' },
+      { id: '1-2', parentId: '1', name: 'Child 1-2' },
+      { id: '1-1-1', parentId: '1-1', name: 'Grandchild 1-1-1' },
+    ]
+
+    const tree = createTreeFromList(
+      items,
+      (item) => item.id,
+      (item) => item.parentId,
+      (item) => item
+    )
+
+    results.push(`✓ createTreeFromList():`)
+    results.push(`  - Input items: ${items.length}`)
+    results.push(`  - Root nodes: ${tree.length}`)
+    results.push(`  - Root 1 children: ${tree[0]?.children.length || 0}`)
+    results.push(`  - Root 1 -> Child 1-1 children: ${tree[0]?.children[0]?.children.length || 0}`)
+    results.push(``)
+
+    // Test createMapFromList
+    const map = createMapFromList(items, (item) => item.id, (item) => item)
+    results.push(`✓ createMapFromList():`)
+    results.push(`  - Map size: ${map.size}`)
+    results.push(`  - Has '1': ${map.has('1')}`)
+    results.push(`  - Get '1-1' name: ${map.get('1-1')?.name || 'N/A'}`)
+    results.push(``)
+
+    // Test findInTree
+    const found = findInTree(tree, (node) => node.name === 'Grandchild 1-1-1')
+    results.push(`✓ findInTree(tree, (node) => node.name === 'Grandchild 1-1-1'):`)
+    results.push(`  - Found: ${found ? 'Yes' : 'No'}`)
+    results.push(`  - ID: ${found?.id || 'N/A'}`)
+    results.push(``)
+
+    // Test flattenTree
+    const flattened = flattenTree(tree)
+    results.push(`✓ flattenTree():`)
+    results.push(`  - Flattened count: ${flattened.length}`)
+    results.push(`  - Names: ${flattened.map((n) => n.name).join(', ')}`)
+    results.push(``)
+
+    // Test sortTree
+    const unsortedItems = [
+      { id: 'c', parentId: null, name: 'Charlie', order: 3 },
+      { id: 'a', parentId: null, name: 'Alpha', order: 1 },
+      { id: 'b', parentId: null, name: 'Bravo', order: 2 },
+    ]
+    const unsortedTree = createTreeFromList(
+      unsortedItems,
+      (item) => item.id,
+      (item) => item.parentId,
+      (item) => item
+    )
+    const sorted = sortTree(unsortedTree, (a, b) => (a.order || 0) - (b.order || 0))
+    results.push(`✓ sortTree():`)
+    results.push(`  - Sorted order: ${sorted.map((n) => n.name).join(' -> ')}`)
+    results.push(``)
+
+    // Test BaseTreeNode
+    const node = BaseTreeNode.create({ id: 'test', name: 'Test Node' })
+    results.push(`✓ BaseTreeNode.create():`)
+    results.push(`  - id: ${node.id}`)
+    results.push(`  - isLeaf: ${node.isLeaf}`)
+    results.push(`  - children: ${node.children.length}`)
+
+    setTreeUtilsResults(results)
+  }
+
+  const testArrayUtils = () => {
+    const results: string[] = []
+
+    // Test pushValueTo
+    const items: string[] = []
+    const addItem = pushValueTo(items)
+    addItem('first')
+    addItem('second')
+    addItem('third')
+    results.push(`✓ pushValueTo():`)
+    results.push(`  - Items: [${items.join(', ')}]`)
+    results.push(`  - Length: ${items.length}`)
+    results.push(``)
+
+    // Test uniqueBy without key selector
+    const numbersWithDupes = [1, 2, 2, 3, 3, 3, 4]
+    const uniqueNumbers = uniqueBy(numbersWithDupes)
+    results.push(`✓ uniqueBy() - primitives:`)
+    results.push(`  - Input: [${numbersWithDupes.join(', ')}]`)
+    results.push(`  - Output: [${uniqueNumbers.join(', ')}]`)
+    results.push(``)
+
+    // Test uniqueBy with key selector
+    const objects = [
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+      { id: 1, name: 'Alice Duplicate' },
+      { id: 3, name: 'Charlie' },
+    ]
+    const uniqueObjects = uniqueBy(objects, (obj) => obj.id)
+    results.push(`✓ uniqueBy() - with keySelector:`)
+    results.push(`  - Input count: ${objects.length}`)
+    results.push(`  - Output count: ${uniqueObjects.length}`)
+    results.push(`  - Names: ${uniqueObjects.map((o) => o.name).join(', ')}`)
+    results.push(``)
+
+    // Test groupBy
+    const people = [
+      { department: 'Engineering', name: 'Alice' },
+      { department: 'Sales', name: 'Bob' },
+      { department: 'Engineering', name: 'Charlie' },
+      { department: 'Sales', name: 'Diana' },
+      { department: 'Marketing', name: 'Eve' },
+    ]
+    const grouped = groupBy(people, (p) => p.department)
+    results.push(`✓ groupBy():`)
+    results.push(`  - Groups: ${grouped.size}`)
+    grouped.forEach((group, key) => {
+      results.push(`  - ${key}: ${group.map((p) => p.name).join(', ')}`)
+    })
+
+    setArrayUtilsResults(results)
+  }
+
+  const testRouteUtilsV30 = () => {
+    const results: string[] = []
+
+    // Reset and setup RoutesService for testing
+    RoutesService.resetInstance()
+    const routesService = getRoutesService()
+    routesService.add([
+      { name: 'Home', path: '/home' },
+      { name: 'About', path: '/about' },
+      { name: 'Contact', path: '/contact' },
+    ])
+
+    // Test findRoute
+    const homeRoute = findRoute(routesService, '/home')
+    results.push(`✓ findRoute(routesService, '/home'):`)
+    results.push(`  - Found: ${homeRoute ? 'Yes' : 'No'}`)
+    results.push(`  - Name: ${homeRoute?.name || 'N/A'}`)
+    results.push(``)
+
+    const notFound = findRoute(routesService, '/nonexistent')
+    results.push(`✓ findRoute(routesService, '/nonexistent'):`)
+    results.push(`  - Found: ${notFound ? 'Yes' : 'No'}`)
+    results.push(``)
+
+    // Test getRoutePath
+    results.push(`✓ getRoutePath():`)
+    results.push(`  - '/users/list': ${getRoutePath('/users/list')}`)
+    results.push(`  - '/users?page=1': ${getRoutePath('/users?page=1')}`)
+    results.push(`  - '/docs#section': ${getRoutePath('/docs#section')}`)
+    results.push(`  - '/page?id=1#top': ${getRoutePath('/page?id=1#top')}`)
+    results.push(`  - '/users/': ${getRoutePath('/users/')}`)
+    results.push(`  - '/': ${getRoutePath('/')}`)
+
+    setRouteUtilsResults(results)
+  }
+
+  // Check CurrentUser.roles from config
+  const currentUser = config.currentUser
+  const userRoles = currentUser?.roles || []
+
+  return (
+    <div className="test-section">
+      <h2>v3.0.0 Features <span style={{ fontSize: '14px', color: '#f97316' }}>(NEW)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.2)' }}>
+        <h3>RoutesService & SettingTabsService (v3.0.0)</h3>
+        <p>New tree-based route management services replacing ConfigState route handling.</p>
+
+        <button onClick={testRoutesService} style={{ marginBottom: '1rem' }}>
+          Test Routes Services
+        </button>
+
+        {routesServiceResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '400px',
+            overflow: 'auto',
+          }}>
+            {routesServiceResults.join('\n')}
+          </pre>
+        )}
+
+        <div style={{ marginTop: '1rem' }}>
+          <strong>Key Features:</strong>
+          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem', fontSize: '14px' }}>
+            <li><code>getRoutesService()</code> - Get singleton RoutesService</li>
+            <li><code>getSettingTabsService()</code> - Get singleton SettingTabsService</li>
+            <li><code>add(routes)</code> - Add routes to the service</li>
+            <li><code>find(predicate)</code> - Find node by predicate</li>
+            <li><code>search(params)</code> - Search by partial properties</li>
+            <li><code>patch(id, props)</code> - Update a route</li>
+            <li><code>remove(ids)</code> - Remove routes by name</li>
+            <li><code>hasChildren(name)</code> - Check if route has children</li>
+            <li><code>hasInvisibleChild(name)</code> - Check for hidden children</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.2)' }}>
+        <h3>Tree Utilities (v3.0.0)</h3>
+        <p>New utility functions for tree data structure manipulation.</p>
+
+        <button onClick={testTreeUtils} style={{ marginBottom: '1rem' }}>
+          Test Tree Utils
+        </button>
+
+        {treeUtilsResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '350px',
+            overflow: 'auto',
+          }}>
+            {treeUtilsResults.join('\n')}
+          </pre>
+        )}
+
+        <div style={{ marginTop: '1rem' }}>
+          <strong>Available Functions:</strong>
+          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem', fontSize: '14px' }}>
+            <li><code>createTreeFromList(items, getId, getParentId, transform)</code></li>
+            <li><code>createMapFromList(items, getKey)</code></li>
+            <li><code>findInTree(tree, predicate)</code></li>
+            <li><code>flattenTree(tree)</code></li>
+            <li><code>sortTree(tree, comparator)</code></li>
+            <li><code>BaseTreeNode.create(data)</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.2)' }}>
+        <h3>Array Utilities (v3.0.0)</h3>
+        <p>New utility functions for array manipulation.</p>
+
+        <button onClick={testArrayUtils} style={{ marginBottom: '1rem' }}>
+          Test Array Utils
+        </button>
+
+        {arrayUtilsResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '300px',
+            overflow: 'auto',
+          }}>
+            {arrayUtilsResults.join('\n')}
+          </pre>
+        )}
+
+        <div style={{ marginTop: '1rem' }}>
+          <strong>Available Functions:</strong>
+          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem', fontSize: '14px' }}>
+            <li><code>pushValueTo(array)</code> - Returns function that pushes and returns array</li>
+            <li><code>uniqueBy(array, keySelector?)</code> - Remove duplicates</li>
+            <li><code>groupBy(array, keySelector)</code> - Group items into Map</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.2)' }}>
+        <h3>Route Utils Updates (v3.0.0)</h3>
+        <p>New route utility functions for RoutesService integration.</p>
+
+        <button onClick={testRouteUtilsV30} style={{ marginBottom: '1rem' }}>
+          Test Route Utils v3.0.0
+        </button>
+
+        {routeUtilsResults.length > 0 && (
+          <pre style={{
+            background: '#1a1a2e',
+            padding: '1rem',
+            borderRadius: '4px',
+            maxHeight: '250px',
+            overflow: 'auto',
+          }}>
+            {routeUtilsResults.join('\n')}
+          </pre>
+        )}
+
+        <div style={{ marginTop: '1rem' }}>
+          <strong>New Functions:</strong>
+          <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem', fontSize: '14px' }}>
+            <li><code>findRoute(routesService, path)</code> - Find route by path</li>
+            <li><code>getRoutePath(url)</code> - Extract clean path from URL</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.2)' }}>
+        <h3>ABP.Nav & ABP.Tab Interfaces (v3.0.0)</h3>
+        <p>New navigation interfaces. ABP.Route now extends ABP.Nav.</p>
+
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Interface</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key Properties</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ABP.Nav</code></td>
+              <td style={{ padding: '8px' }}>name, parentName, order, invisible, requiredPolicy</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ABP.Route</code></td>
+              <td style={{ padding: '8px' }}>extends Nav + path, iconClass, layout, etc.</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ABP.Tab</code></td>
+              <td style={{ padding: '8px' }}>extends Nav + component</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.2)' }}>
+        <h3>CurrentUser.roles (v3.0.0)</h3>
+        <p>CurrentUser interface now includes roles array.</p>
+
+        <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+          <p><strong>Current User Roles:</strong></p>
+          {userRoles.length > 0 ? (
+            <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+              {userRoles.map((role, idx) => (
+                <li key={idx}>{role}</li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ color: '#888' }}>No roles loaded. Login and refresh config to see roles.</p>
+          )}
+          <p style={{ marginTop: '1rem', fontSize: '12px', color: '#888' }}>
+            Access: <code>config.currentUser?.roles</code>
+          </p>
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.2)' }}>
+        <h3>Breaking Changes (v3.0.0)</h3>
+        <p>Important changes that may require code updates.</p>
+
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Change</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Migration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ABP.Root.requirements</code> removed</td>
+              <td style={{ padding: '8px' }}>Use <code>requiredPolicy</code> on individual routes</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ConfigStateService.getRoute()</code> deprecated</td>
+              <td style={{ padding: '8px' }}>Use <code>RoutesService</code> instead</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ABP.FullRoute</code> deprecated</td>
+              <td style={{ padding: '8px' }}>Use <code>ABP.Route</code> instead</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ListService</code> now generic</td>
+              <td style={{ padding: '8px' }}><code>ListService&lt;QueryParamsType&gt;</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestV24Features() {
   const [dtoResults, setDtoResults] = useState<string[]>([])
   const [strategyResults, setStrategyResults] = useState<string[]>([])
@@ -1772,12 +2276,13 @@ function TestDateExtensions() {
 export function TestCorePage() {
   return (
     <div>
-      <h1>@abpjs/core Tests (v2.7.0)</h1>
+      <h1>@abpjs/core Tests (v3.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing core hooks, services, and components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.7.0 - Added CurrentCulture, ABP.Option, form-utils, number-utils, generatePassword, DomInsertionService updates
+        Version 3.0.0 - Added RoutesService, tree-utils, array-utils, ABP.Nav, ABP.Tab, CurrentUser.roles
       </p>
 
+      <TestV30Features />
       <TestV27Features />
       <TestV24Features />
       <TestV21Features />

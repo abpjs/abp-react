@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ABP, Session } from '../models';
 
-export interface SessionState extends Session.State {}
+export type SessionState = Session.State;
 
 const SESSION_STORAGE_KEY = 'SessionState';
 

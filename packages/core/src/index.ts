@@ -1,7 +1,23 @@
 /**
  * @abpjs/core
  * ABP Framework Core module for React
- * Translated from @abp/ng.core v2.9.0
+ * Translated from @abp/ng.core v3.0.0
+ *
+ * Changes in v3.0.0:
+ * - Added ApplicationConfiguration.CurrentUser.roles field
+ * - Added ABP.Nav interface - base interface for navigation items
+ * - Added ABP.Tab interface - for tab components
+ * - Updated ABP.Route to extend ABP.Nav interface
+ * - Removed deprecated ABP.Root.requirements property
+ * - Deprecated ABP.FullRoute - use RoutesService instead
+ * - Added RoutesService for tree-based route management (replaces ConfigState route handling)
+ * - Added SettingTabsService for managing setting page tabs
+ * - Added AbstractTreeService and AbstractNavTreeService base classes
+ * - Added tree-utils: TreeNode type, BaseTreeNode, createTreeFromList, createMapFromList, findInTree, flattenTree, sortTree
+ * - Added array-utils: pushValueTo, uniqueBy, groupBy
+ * - Added route-utils: findRoute, getRoutePath (new v3.0 approach)
+ * - Made ListService generic with QueryParamsType parameter
+ * - Deprecated ConfigStateService.getRoute() - use RoutesService instead
  *
  * Changes in v2.9.0:
  * - Added ApplicationConfiguration.CurrentUser.email field
@@ -31,7 +47,6 @@
  * - Added Config.hmr flag for Hot Module Replacement
  * - Added Config.ApiConfig type for better API configuration typing
  * - Added Rest.Config.apiName for specifying API name in requests
- * - Deprecated ABP.Root.requirements (to be deleted in v3.0)
  * - Added new DTO classes (EntityDto, AuditedEntityDto, FullAuditedEntityDto, etc.)
  * - Added new strategies (DOM, Loading, Content, CrossOrigin, ContentSecurity)
  * - Added DomInsertionService for tracking DOM insertions
@@ -45,7 +60,7 @@
  * - Added @angular/localize dependency (Angular-specific, not applicable to React)
  *
  * @since 0.7.6
- * @updated 2.9.0
+ * @updated 3.0.0
  */
 
 // Models

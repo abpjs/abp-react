@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { DomInsertionService, getDomInsertionService } from './dom-insertion.service';
-import { CONTENT_STRATEGY, StyleContentStrategy } from '../strategies/content.strategy';
+import { CONTENT_STRATEGY } from '../strategies/content.strategy';
 
 describe('DomInsertionService (v2.7.0)', () => {
   let service: DomInsertionService;

@@ -28,7 +28,7 @@ vi.mock('@abpjs/core', () => ({
 
 // Mock @chakra-ui/react
 vi.mock('@chakra-ui/react', () => ({
-  Box: ({ children, className, py, pt, ...props }: any) => (
+  Box: ({ children, className, py: _py, pt: _pt, ...props }: any) => (
     <div className={className} data-testid="box" {...props}>{children}</div>
   ),
   Container: ({ children, maxW, ...props }: any) => (

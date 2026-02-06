@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Setting Management Models
  * Translated from @abp/ng.setting-management v1.1.0

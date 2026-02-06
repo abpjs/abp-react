@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Account module type definitions
  */
@@ -30,51 +31,37 @@ export namespace Account {
   /**
    * Outputs for AuthWrapper component
    */
-  export interface AuthWrapperComponentOutputs {
-    // No outputs currently defined
-  }
+  export type AuthWrapperComponentOutputs = Record<string, never>;
 
   /**
    * Inputs for TenantBox component
    */
-  export interface TenantBoxComponentInputs {
-    // No inputs currently defined
-  }
+  export type TenantBoxComponentInputs = Record<string, never>;
 
   /**
    * Outputs for TenantBox component
    */
-  export interface TenantBoxComponentOutputs {
-    // No outputs currently defined
-  }
+  export type TenantBoxComponentOutputs = Record<string, never>;
 
   /**
    * Inputs for PersonalSettings component
    */
-  export interface PersonalSettingsComponentInputs {
-    // No inputs currently defined
-  }
+  export type PersonalSettingsComponentInputs = Record<string, never>;
 
   /**
    * Outputs for PersonalSettings component
    */
-  export interface PersonalSettingsComponentOutputs {
-    // No outputs currently defined
-  }
+  export type PersonalSettingsComponentOutputs = Record<string, never>;
 
   /**
    * Inputs for ChangePassword component
    */
-  export interface ChangePasswordComponentInputs {
-    // No inputs currently defined
-  }
+  export type ChangePasswordComponentInputs = Record<string, never>;
 
   /**
    * Outputs for ChangePassword component
    */
-  export interface ChangePasswordComponentOutputs {
-    // No outputs currently defined
-  }
+  export type ChangePasswordComponentOutputs = Record<string, never>;
 }
 
 // ============================================================================

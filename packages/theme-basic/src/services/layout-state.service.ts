@@ -1,4 +1,4 @@
-import { useLayoutContext, LayoutService } from '../contexts/layout.context';
+import { useLayoutContext } from '../contexts/layout.context';
 import { Layout } from '../models';
 
 /**

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Language Management Models
  * Translated from @volo/abp.ng.language-management v2.0.0

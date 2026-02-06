@@ -1,6 +1,38 @@
 import { ABP } from '../models';
+import { RoutesService } from '../services/routes.service';
+import { TreeNode } from './tree-utils';
 
 /**
+ * Find a route in the RoutesService by path
+ * @param routes - The RoutesService instance
+ * @param path - The path to find
+ * @returns The found TreeNode or null
+ * @since 3.0.0
+ */
+export function findRoute(
+  routes: RoutesService,
+  path: string
+): TreeNode<ABP.Route> | null {
+  return routes.find((node) => node.path === path);
+}
+
+/**
+ * Get the current route path from a URL
+ * @param url - The URL to parse (e.g., from window.location.pathname)
+ * @returns The route path
+ * @since 3.0.0
+ */
+export function getRoutePath(url: string): string {
+  // Remove query string and hash
+  const cleanUrl = url.split('?')[0].split('#')[0];
+  // Remove trailing slash
+  return cleanUrl.endsWith('/') && cleanUrl.length > 1
+    ? cleanUrl.slice(0, -1)
+    : cleanUrl;
+}
+
+/**
+ * @deprecated Use RoutesService instead. Will be removed in v4.0.0
  * Organize routes by setting up parent-child relationships
  */
 export function organizeRoutes(

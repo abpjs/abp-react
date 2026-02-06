@@ -141,11 +141,13 @@ export function RolesComponent({
   // Update form when selectedRole changes
   useEffect(() => {
     if (selectedRole) {
-      setFormState({
-        name: selectedRole.name || '',
-        isDefault: selectedRole.isDefault || false,
-        isPublic: selectedRole.isPublic || false,
-      });
+      queueMicrotask(() =>
+        setFormState({
+          name: selectedRole.name || '',
+          isDefault: selectedRole.isDefault || false,
+          isPublic: selectedRole.isPublic || false,
+        })
+      );
     }
   }, [selectedRole]);
 

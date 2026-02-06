@@ -146,7 +146,7 @@ describe('AuthWrapper', () => {
   });
 
   it('should render empty when no content provided', () => {
-    const { container } = render(<AuthWrapper />);
+    render(<AuthWrapper />);
 
     // Should still render the wrapper structure
     expect(screen.getByTestId('flex')).toBeInTheDocument();

@@ -41,7 +41,7 @@ const initialState: ConfigState = {
   },
   auth: { policies: {}, grantedPolicies: {} },
   setting: { values: {} },
-  currentUser: { isAuthenticated: false, id: '', tenantId: '', userName: '', email: '' },
+  currentUser: { isAuthenticated: false, id: '', tenantId: '', userName: '', email: '', roles: [] },
   features: { values: {} },
 };
 
@@ -200,7 +200,7 @@ export const selectGrantedPolicy =
     if (!condition) return true;
 
     const keys = condition
-      .replace(/\(|\)|\!|\s/g, '')
+      .replace(/\(|\)|!|\s/g, '')
       .split(/\|\||&&/)
       .filter((key) => key);
 

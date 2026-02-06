@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Heading, Text, VStack, Button, Container } from '@chakra-ui/react';
 
 export interface ErrorComponentProps {

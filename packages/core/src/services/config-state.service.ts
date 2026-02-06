@@ -46,6 +46,7 @@ export class ConfigStateService {
   }
 
   /**
+   * @deprecated Use RoutesService instead. Will be removed in v4.0.0
    * Find a route by path, name, or url
    * @param path - Optional path to match
    * @param name - Optional name to match
@@ -53,7 +54,7 @@ export class ConfigStateService {
    * @since 1.1.0
    */
   getRoute(path?: string, name?: string, url?: string): ABP.FullRoute | undefined {
-    return this.findRouteDeep(this.getState().config.routes, path, name, url);
+    return this.findRouteDeep(this.getState().config.routes || [], path, name, url);
   }
 
   private findRouteDeep(
@@ -108,7 +109,7 @@ export class ConfigStateService {
 
     const state = this.getState().config;
     const keys = condition
-      .replace(/\(|\)|\!|\s/g, '')
+      .replace(/\(|\)|!|\s/g, '')
       .split(/\|\||&&/)
       .filter((key) => key);
 

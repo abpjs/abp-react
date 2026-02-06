@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { LazyLoadService } from './lazy-load.service';
-import { ScriptLoadingStrategy, LOADING_STRATEGY } from '../strategies/loading.strategy';
+import { LOADING_STRATEGY } from '../strategies/loading.strategy';
 
 describe('LazyLoadService', () => {
   let service: LazyLoadService;

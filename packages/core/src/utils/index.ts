@@ -1,3 +1,4 @@
+export * from './array-utils';
 export * from './common-utils';
 export * from './form-utils';
 export * from './generator-utils';
@@ -6,6 +7,7 @@ export * from './localization-utils';
 export * from './number-utils';
 export * from './route-utils';
 export * from './rtl';
+export * from './tree-utils';
 
 // Import date extensions to add toLocalISOString to Date prototype
 import './date-extensions';

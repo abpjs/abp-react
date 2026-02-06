@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-namespace */
 import { ResponseType } from 'axios';
 
 export namespace Rest {

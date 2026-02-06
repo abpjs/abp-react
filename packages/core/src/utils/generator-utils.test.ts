@@ -204,7 +204,7 @@ describe('generator-utils', () => {
       let hasSpecial = false;
       for (let i = 0; i < 10; i++) {
         const password = generatePassword(100);
-        if (/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(password)) {
+        if (/[!@#$%^&*()_+\-=\x5B\x5D{}|;:,.<>?]/.test(password)) {
           hasSpecial = true;
           break;
         }

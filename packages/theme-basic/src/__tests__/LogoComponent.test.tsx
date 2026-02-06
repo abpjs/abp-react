@@ -10,7 +10,7 @@ import { BrandingProvider } from '../contexts/branding.context';
 
 // Mock Chakra UI
 vi.mock('@chakra-ui/react', () => ({
-  Box: ({ children, asChild, ...props }: any) => (
+  Box: ({ children, asChild: _asChild, ...props }: any) => (
     <div data-testid="box" {...props}>
       {children}
     </div>

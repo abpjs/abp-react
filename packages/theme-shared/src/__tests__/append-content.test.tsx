@@ -36,11 +36,15 @@ describe('append-content constants (v2.4.0)', () => {
 
     it('should accept a function as context value', async () => {
       const mockAppendContent = vi.fn().mockResolvedValue(undefined);
-      let capturedFn: (() => Promise<void>) | undefined;
 
       const TestComponent = () => {
-        capturedFn = useContext(ThemeSharedAppendContentContext);
-        return <div data-testid="captured">{capturedFn ? 'has-function' : 'no-function'}</div>;
+        const appendContent = useContext(ThemeSharedAppendContentContext);
+        return (
+          <div>
+            <span data-testid="captured">{appendContent ? 'has-function' : 'no-function'}</span>
+            <button data-testid="call" onClick={() => appendContent?.()} />
+          </div>
+        );
       };
 
       render(
@@ -50,7 +54,10 @@ describe('append-content constants (v2.4.0)', () => {
       );
 
       expect(screen.getByTestId('captured').textContent).toBe('has-function');
-      expect(capturedFn).toBe(mockAppendContent);
+      await act(async () => {
+        screen.getByTestId('call').click();
+      });
+      expect(mockAppendContent).toHaveBeenCalledTimes(1);
     });
 
     it('should allow calling the provided append content function', async () => {
@@ -137,11 +144,15 @@ describe('append-content constants (v2.4.0)', () => {
     it('should support nested providers with override', async () => {
       const outerFn = vi.fn().mockResolvedValue(undefined);
       const innerFn = vi.fn().mockResolvedValue(undefined);
-      let capturedFn: (() => Promise<void>) | undefined;
 
       const TestComponent = () => {
-        capturedFn = useContext(ThemeSharedAppendContentContext);
-        return <div data-testid="nested">{capturedFn ? 'has-function' : 'no-function'}</div>;
+        const appendContent = useContext(ThemeSharedAppendContentContext);
+        return (
+          <div>
+            <span data-testid="nested">{appendContent ? 'has-function' : 'no-function'}</span>
+            <button data-testid="call-nested" onClick={() => appendContent?.()} />
+          </div>
+        );
       };
 
       render(
@@ -152,8 +163,12 @@ describe('append-content constants (v2.4.0)', () => {
         </ThemeSharedAppendContentContext.Provider>
       );
 
-      expect(capturedFn).toBe(innerFn);
-      expect(capturedFn).not.toBe(outerFn);
+      expect(screen.getByTestId('nested').textContent).toBe('has-function');
+      await act(async () => {
+        screen.getByTestId('call-nested').click();
+      });
+      expect(innerFn).toHaveBeenCalledTimes(1);
+      expect(outerFn).not.toHaveBeenCalled();
     });
   });
 });
