@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
   eTenantManagementRouteNames,
   type TenantManagementRouteNameKey,
-} from '../../enums/route-names';
+} from '../../../config/enums/route-names';
 
-describe('eTenantManagementRouteNames', () => {
+describe('config/enums/route-names - eTenantManagementRouteNames', () => {
   describe('enum values', () => {
     it('should have TenantManagement key with correct value', () => {
       expect(eTenantManagementRouteNames.TenantManagement).toBe(
@@ -28,7 +28,7 @@ describe('eTenantManagementRouteNames', () => {
       expect('Tenants' in eTenantManagementRouteNames).toBe(true);
     });
 
-    it('should not contain Administration key (removed in v3.0.0)', () => {
+    it('should NOT contain Administration key (removed in v3.0.0)', () => {
       expect('Administration' in eTenantManagementRouteNames).toBe(false);
     });
   });
@@ -54,6 +54,12 @@ describe('eTenantManagementRouteNames', () => {
         expect(value).toMatch(/^[\w]+::([\w]+:)?[\w]+$/);
       });
     });
+
+    it('should use AbpTenantManagement prefix for all values', () => {
+      Object.values(eTenantManagementRouteNames).forEach((value) => {
+        expect(value.startsWith('AbpTenantManagement::')).toBe(true);
+      });
+    });
   });
 
   describe('type safety', () => {
@@ -70,24 +76,25 @@ describe('eTenantManagementRouteNames', () => {
 
   describe('usage patterns', () => {
     it('should work in switch statements', () => {
-      // Use a function to get the value to avoid TypeScript narrowing
-      const getRouteName = (): TenantManagementRouteNameKey =>
-        eTenantManagementRouteNames.Tenants;
-      const routeName = getRouteName();
-      let result = '';
+      const getRouteDescription = (
+        routeName: TenantManagementRouteNameKey
+      ): string => {
+        switch (routeName) {
+          case eTenantManagementRouteNames.TenantManagement:
+            return 'Tenant Management Menu';
+          case eTenantManagementRouteNames.Tenants:
+            return 'Tenants Page';
+          default:
+            return 'Unknown';
+        }
+      };
 
-      switch (routeName) {
-        case eTenantManagementRouteNames.TenantManagement:
-          result = 'tenant-management';
-          break;
-        case eTenantManagementRouteNames.Tenants:
-          result = 'tenants';
-          break;
-        default:
-          result = 'unknown';
-      }
-
-      expect(result).toBe('tenants');
+      expect(
+        getRouteDescription(eTenantManagementRouteNames.TenantManagement)
+      ).toBe('Tenant Management Menu');
+      expect(getRouteDescription(eTenantManagementRouteNames.Tenants)).toBe(
+        'Tenants Page'
+      );
     });
 
     it('should work with Object.entries', () => {
@@ -124,7 +131,6 @@ describe('eTenantManagementRouteNames', () => {
     });
 
     it('should be usable for localization keys', () => {
-      // Simulate localization lookup
       const localizations: Record<string, string> = {
         'AbpTenantManagement::Menu:TenantManagement': 'Tenant Management',
         'AbpTenantManagement::Tenants': 'Tenants',
@@ -138,16 +144,6 @@ describe('eTenantManagementRouteNames', () => {
   });
 
   describe('localization key format', () => {
-    it('should use AbpTenantManagement for TenantManagement prefix', () => {
-      const value = eTenantManagementRouteNames.TenantManagement;
-      expect(value.startsWith('AbpTenantManagement::')).toBe(true);
-    });
-
-    it('should use AbpTenantManagement for Tenants prefix', () => {
-      const value = eTenantManagementRouteNames.Tenants;
-      expect(value.startsWith('AbpTenantManagement::')).toBe(true);
-    });
-
     it('should use Menu: prefix for menu items', () => {
       expect(eTenantManagementRouteNames.TenantManagement).toContain('Menu:');
     });
@@ -155,14 +151,53 @@ describe('eTenantManagementRouteNames', () => {
     it('should not use Menu: prefix for non-menu items', () => {
       expect(eTenantManagementRouteNames.Tenants).not.toContain('Menu:');
     });
+
+    it('should use :: separator for localization keys', () => {
+      Object.values(eTenantManagementRouteNames).forEach((value) => {
+        expect(value).toContain('::');
+      });
+    });
   });
 
-  describe('v3.0.0 migration notes', () => {
+  describe('v3.0.0 breaking changes', () => {
     it('should document that Administration was removed', () => {
       // In v3.0.0, Administration was removed from eTenantManagementRouteNames
       // Users should use 'AbpUiNavigation::Menu:Administration' directly
       const administrationValue = 'AbpUiNavigation::Menu:Administration';
       expect(typeof administrationValue).toBe('string');
+      expect(administrationValue).toBe('AbpUiNavigation::Menu:Administration');
+    });
+
+    it('should only have 2 keys after v3.0.0 migration', () => {
+      const keys = Object.keys(eTenantManagementRouteNames);
+      // v2.x had 3 keys (Administration, TenantManagement, Tenants)
+      // v3.0.0 has 2 keys (TenantManagement, Tenants)
+      expect(keys).toHaveLength(2);
+      expect(keys).not.toContain('Administration');
+    });
+  });
+
+  describe('route configuration usage', () => {
+    it('should be suitable for route name configuration', () => {
+      const routeConfig = {
+        path: '/tenant-management',
+        name: eTenantManagementRouteNames.TenantManagement,
+        parentName: 'AbpUiNavigation::Menu:Administration',
+      };
+
+      expect(routeConfig.name).toBe('AbpTenantManagement::Menu:TenantManagement');
+      expect(routeConfig.parentName).toBe('AbpUiNavigation::Menu:Administration');
+    });
+
+    it('should be suitable for child route configuration', () => {
+      const routeConfig = {
+        path: '/tenant-management/tenants',
+        name: eTenantManagementRouteNames.Tenants,
+        parentName: eTenantManagementRouteNames.TenantManagement,
+      };
+
+      expect(routeConfig.name).toBe('AbpTenantManagement::Tenants');
+      expect(routeConfig.parentName).toBe('AbpTenantManagement::Menu:TenantManagement');
     });
   });
 });

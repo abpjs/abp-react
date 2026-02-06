@@ -13,6 +13,11 @@ import {
   TENANT_MANAGEMENT_POLICIES,
   eTenantManagementComponents,
   eTenantManagementRouteNames,
+  // v3.0.0 config exports
+  eTenantManagementPolicyNames,
+  TENANT_MANAGEMENT_ROUTE_PROVIDERS,
+  configureRoutes,
+  initializeTenantManagementRoutes,
 } from '@abpjs/tenant-management'
 import { FeatureManagementModal } from '@abpjs/feature-management'
 
@@ -1499,6 +1504,216 @@ await tenantService.create(request);`}
   )
 }
 
+function TestV300Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.0.0</h2>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>Config Route Providers</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          New in v3.0.0: Route configuration providers for tenant management routes.
+          Matches Angular's pattern for configuring routes at application startup.
+        </p>
+
+        <h4 style={{ marginTop: '16px' }}>TENANT_MANAGEMENT_ROUTE_PROVIDERS</h4>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Object containing route configuration functions:
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`// TENANT_MANAGEMENT_ROUTE_PROVIDERS object:
+{
+  configureRoutes: typeof configureRoutes
+}
+
+// configureRoutes is: ${typeof configureRoutes}
+// TENANT_MANAGEMENT_ROUTE_PROVIDERS has configureRoutes: ${!!TENANT_MANAGEMENT_ROUTE_PROVIDERS.configureRoutes}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>configureRoutes Function</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Configures the tenant management module routes. Returns a function that adds routes to RoutesService.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import { configureRoutes } from '@abpjs/tenant-management';
+import { getRoutesService } from '@abpjs/core';
+
+// Configure routes
+const routes = getRoutesService();
+const addRoutes = configureRoutes(routes);
+addRoutes();
+
+// Routes configured:
+// 1. /tenant-management (main menu item)
+//    - name: 'AbpTenantManagement::Menu:TenantManagement'
+//    - parentName: 'AbpUiNavigation::Menu:Administration'
+//    - layout: eLayoutType.application
+//    - iconClass: 'bi bi-people'
+//    - order: 2
+//    - requiredPolicy: 'AbpTenantManagement.Tenants'
+//
+// 2. /tenant-management/tenants (child route)
+//    - name: 'AbpTenantManagement::Tenants'
+//    - parentName: 'AbpTenantManagement::Menu:TenantManagement'
+//    - requiredPolicy: 'AbpTenantManagement.Tenants'`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>initializeTenantManagementRoutes Helper</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Convenience function that initializes tenant management routes using global services.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import { initializeTenantManagementRoutes } from '@abpjs/tenant-management';
+
+// In your app initialization:
+initializeTenantManagementRoutes();
+
+// This is equivalent to:
+// const routes = getRoutesService();
+// const addRoutes = configureRoutes(routes);
+// addRoutes();
+
+// initializeTenantManagementRoutes is: ${typeof initializeTenantManagementRoutes}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>eTenantManagementPolicyNames Enum</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          New in v3.0.0: Policy name constants for permission checks.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>
+                <code>TenantManagement</code>
+              </td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+                  {eTenantManagementPolicyNames.TenantManagement}
+                </code>
+              </td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>
+                <code>Tenants</code>
+              </td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+                  {eTenantManagementPolicyNames.Tenants}
+                </code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', marginTop: '1rem' }}>
+{`import { eTenantManagementPolicyNames } from '@abpjs/tenant-management';
+
+// Use for policy checks
+const canManageTenants = userPolicies.includes(
+  eTenantManagementPolicyNames.TenantManagement
+);
+
+// Use in route configuration
+const route = {
+  path: '/tenant-management',
+  requiredPolicy: eTenantManagementPolicyNames.TenantManagement,
+};`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>eTenantManagementRouteNames Changes</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          <strong style={{ color: '#f87171' }}>Breaking Change:</strong> The <code>Administration</code> key has been removed from <code>eTenantManagementRouteNames</code>.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
+              <td style={{ padding: '8px' }}>
+                <code style={{ textDecoration: 'line-through' }}>Administration</code>
+              </td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+                  AbpUiNavigation::Menu:Administration
+                </code>
+              </td>
+              <td style={{ padding: '8px', color: '#f87171' }}>REMOVED in v3.0.0</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>
+                <code>TenantManagement</code>
+              </td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+                  {eTenantManagementRouteNames.TenantManagement}
+                </code>
+              </td>
+              <td style={{ padding: '8px', color: '#22c55e' }}>Available</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>
+                <code>Tenants</code>
+              </td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+                  {eTenantManagementRouteNames.Tenants}
+                </code>
+              </td>
+              <td style={{ padding: '8px', color: '#22c55e' }}>Available</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style={{ marginTop: '1rem', padding: '12px', background: 'rgba(248,113,113,0.1)', borderRadius: '4px' }}>
+          <p style={{ margin: 0, fontSize: '14px' }}>
+            <strong>Migration:</strong> If you were using <code>eTenantManagementRouteNames.Administration</code>,
+            use the string literal <code>'AbpUiNavigation::Menu:Administration'</code> directly.
+          </p>
+        </div>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.2)' }}>
+        <h3>Config Subpackage Location</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          The <code>eTenantManagementRouteNames</code> enum is now defined in the config subpackage
+          and re-exported from the main package for backward compatibility.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`// Both imports work:
+import { eTenantManagementRouteNames } from '@abpjs/tenant-management';
+// or from config (v3.0.0):
+import { eTenantManagementRouteNames } from '@abpjs/tenant-management/config/enums/route-names';
+
+// New exports only available from main package:
+import {
+  eTenantManagementPolicyNames,
+  TENANT_MANAGEMENT_ROUTE_PROVIDERS,
+  configureRoutes,
+  initializeTenantManagementRoutes,
+} from '@abpjs/tenant-management';`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 function TestV270Features() {
   return (
     <div className="test-section">
@@ -1535,6 +1750,7 @@ function TestV270Features() {
         <h3>eTenantManagementRouteNames Enum</h3>
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
           Route name keys for the Tenant Management module. Used for route localization and identification.
+          <br/><strong style={{ color: '#f87171' }}>Note:</strong> <code>Administration</code> was removed in v3.0.0.
         </p>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -1544,16 +1760,6 @@ function TestV270Features() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td style={{ padding: '8px' }}>
-                <code>Administration</code>
-              </td>
-              <td style={{ padding: '8px' }}>
-                <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
-                  {eTenantManagementRouteNames.Administration}
-                </code>
-              </td>
-            </tr>
             <tr>
               <td style={{ padding: '8px' }}>
                 <code>TenantManagement</code>
@@ -1603,12 +1809,15 @@ function TestV270Features() {
 const componentKey = eTenantManagementComponents.Tenants;
 // => 'TenantManagement.TenantsComponent'
 
-// Route localization keys
-const adminKey = eTenantManagementRouteNames.Administration;
-// => 'AbpUiNavigation::Menu:Administration'
-
+// Route localization keys (v3.0.0: Administration removed)
 const tenantsKey = eTenantManagementRouteNames.Tenants;
 // => 'AbpTenantManagement::Tenants'
+
+const tenantMgmtKey = eTenantManagementRouteNames.TenantManagement;
+// => 'AbpTenantManagement::Menu:TenantManagement'
+
+// For Administration, use string literal directly (v3.0.0)
+const adminKey = 'AbpUiNavigation::Menu:Administration';
 
 // Static componentKey on the modal
 console.log(TenantManagementModal.componentKey);
@@ -1630,10 +1839,11 @@ const localizedName = localize(eTenantManagementRouteNames.TenantManagement);`}
 export function TestTenantManagementPage() {
   return (
     <div>
-      <h1>@abpjs/tenant-management Tests v2.9.0</h1>
+      <h1>@abpjs/tenant-management Tests v3.0.0</h1>
       <p>Testing tenant management modal and hooks for creating, updating, and managing tenants.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.9.0 - Dependency updates (version bump only)</p>
+      <p style={{ color: '#22c55e', fontSize: '0.9rem' }}>Version 3.0.0 - Config route providers, policy names, Administration removed</p>
 
+      <TestV300Features />
       <TestV270Features />
       <TestV240Features />
       <TestTenantModal />
