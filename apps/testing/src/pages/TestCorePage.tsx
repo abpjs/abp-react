@@ -6,6 +6,7 @@
  * @updated 2.4.0 - Added DTOs, strategies, DomInsertionService, utility functions
  * @updated 2.7.0 - Added CurrentCulture, ABP.Option, utility types, form-utils, number-utils, generatePassword, DomInsertionService updates
  * @updated 3.0.0 - Added RoutesService, tree-utils, array-utils, ABP.Nav, ABP.Tab, CurrentUser.roles
+ * @updated 3.1.0 - Added MultiTenancyService, SubscriptionService, AuthFlowStrategy, utility functions, FindTenantResultDto
  */
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -77,6 +78,24 @@ import {
   mapEnumToOptions,
   isNumber,
   generatePassword,
+  // v3.1.0 Services
+  SubscriptionService,
+  // v3.1.0 Strategies
+  AUTH_FLOW_STRATEGY,
+  getAuthFlowType,
+  // v3.1.0 Utils
+  isNullOrUndefined,
+  exists,
+  isObject,
+  isArray,
+  isObjectAndNotArray,
+  deepMerge,
+  createTokenParser,
+  getShortDateFormat,
+  getShortTimeFormat,
+  getShortDateShortTimeFormat,
+  // v3.1.0 Models
+  FindTenantResultDto,
 } from '@abpjs/core'
 import { useDispatch } from 'react-redux'
 
@@ -1253,6 +1272,320 @@ function TestV27Features() {
   )
 }
 
+function TestV31Features() {
+  const [utilityResults, setUtilityResults] = useState<string[]>([])
+  const [subscriptionResults, setSubscriptionResults] = useState<string[]>([])
+  const [authFlowResults, setAuthFlowResults] = useState<string[]>([])
+  const [modelResults, setModelResults] = useState<string[]>([])
+  const { configService } = useAbp()
+
+  const testUtilityFunctions = () => {
+    const results: string[] = []
+
+    // Test isNullOrUndefined
+    results.push(`✓ isNullOrUndefined():`)
+    results.push(`  - null: ${isNullOrUndefined(null)}`)
+    results.push(`  - undefined: ${isNullOrUndefined(undefined)}`)
+    results.push(`  - '': ${isNullOrUndefined('')}`)
+    results.push(`  - 0: ${isNullOrUndefined(0)}`)
+    results.push(`  - false: ${isNullOrUndefined(false)}`)
+    results.push(``)
+
+    // Test exists
+    results.push(`✓ exists():`)
+    results.push(`  - null: ${exists(null)}`)
+    results.push(`  - undefined: ${exists(undefined)}`)
+    results.push(`  - '': ${exists('')}`)
+    results.push(`  - 0: ${exists(0)}`)
+    results.push(`  - {}: ${exists({})}`)
+    results.push(``)
+
+    // Test isObject, isArray, isObjectAndNotArray
+    results.push(`✓ Type checking functions:`)
+    results.push(`  - isObject({}): ${isObject({})}`)
+    results.push(`  - isObject([]): ${isObject([])}`)
+    results.push(`  - isObject(null): ${isObject(null)}`)
+    results.push(`  - isArray([]): ${isArray([])}`)
+    results.push(`  - isArray({}): ${isArray({})}`)
+    results.push(`  - isObjectAndNotArray({}): ${isObjectAndNotArray({})}`)
+    results.push(`  - isObjectAndNotArray([]): ${isObjectAndNotArray([])}`)
+    results.push(``)
+
+    // Test deepMerge
+    const target = { a: 1, b: { x: 10, y: 20 }, c: [1, 2] } as Record<string, unknown>
+    const source = { b: { y: 25, z: 30 }, c: [3, 4, 5], d: 'new' }
+    const merged = deepMerge(target, source)
+    results.push(`✓ deepMerge():`)
+    results.push(`  - target: ${JSON.stringify(target)}`)
+    results.push(`  - source: ${JSON.stringify(source)}`)
+    results.push(`  - result: ${JSON.stringify(merged)}`)
+    results.push(`  - target unchanged: ${JSON.stringify(target) === '{"a":1,"b":{"x":10,"y":20},"c":[1,2]}'}`)
+    results.push(``)
+
+    // Test createTokenParser
+    const parser = createTokenParser('{0}.{1}')
+    const parsed = parser('tenant.user')
+    results.push(`✓ createTokenParser('{0}.{1}'):`)
+    results.push(`  - parse('tenant.user'): ${JSON.stringify(parsed)}`)
+
+    const urlParser = createTokenParser('api/{0}/resources/{1}')
+    const urlParsed = urlParser('api/v1/resources/users')
+    results.push(`✓ createTokenParser('api/{0}/resources/{1}'):`)
+    results.push(`  - parse('api/v1/resources/users'): ${JSON.stringify(urlParsed)}`)
+    results.push(``)
+
+    // Test date format utilities
+    results.push(`✓ Date format utilities:`)
+    results.push(`  - getShortDateFormat(): ${getShortDateFormat(configService)}`)
+    results.push(`  - getShortTimeFormat(): ${getShortTimeFormat(configService)}`)
+    results.push(`  - getShortDateShortTimeFormat(): ${getShortDateShortTimeFormat(configService)}`)
+
+    setUtilityResults(results)
+  }
+
+  const testSubscriptionService = () => {
+    const results: string[] = []
+
+    // Create new SubscriptionService
+    const service = new SubscriptionService()
+    results.push(`✓ SubscriptionService created`)
+    results.push(`  - isClosed: ${service.isClosed}`)
+    results.push(``)
+
+    // Add subscriptions
+    let cleanup1Called = false
+    let cleanup2Called = false
+
+    const sub1 = service.addOne(() => {
+      results.push(`  [Setup] Subscription 1 initialized`)
+      return () => { cleanup1Called = true }
+    })
+    const sub2 = service.addOne(() => {
+      results.push(`  [Setup] Subscription 2 initialized`)
+      return () => { cleanup2Called = true }
+    })
+
+    results.push(`✓ Added 2 subscriptions`)
+    results.push(`  - isClosed: ${service.isClosed}`)
+    results.push(`  - sub1.closed: ${sub1.closed}`)
+    results.push(`  - sub2.closed: ${sub2.closed}`)
+    results.push(``)
+
+    // Close one subscription
+    service.closeOne(sub1)
+    results.push(`✓ closeOne(sub1):`)
+    results.push(`  - sub1.closed: ${sub1.closed}`)
+    results.push(`  - cleanup1Called: ${cleanup1Called}`)
+    results.push(`  - isClosed: ${service.isClosed}`)
+    results.push(``)
+
+    // Close all remaining
+    service.closeAll()
+    results.push(`✓ closeAll():`)
+    results.push(`  - sub2.closed: ${sub2.closed}`)
+    results.push(`  - cleanup2Called: ${cleanup2Called}`)
+    results.push(`  - isClosed: ${service.isClosed}`)
+
+    setSubscriptionResults(results)
+  }
+
+  const testAuthFlowStrategy = () => {
+    const results: string[] = []
+
+    // Test getAuthFlowType
+    results.push(`✓ getAuthFlowType():`)
+    results.push(`  - { response_type: 'code' }: ${getAuthFlowType({ response_type: 'code' })}`)
+    results.push(`  - { response_type: 'code id_token' }: ${getAuthFlowType({ response_type: 'code id_token' })}`)
+    results.push(`  - { response_type: 'token' }: ${getAuthFlowType({ response_type: 'token' })}`)
+    results.push(`  - {}: ${getAuthFlowType({})}`)
+    results.push(``)
+
+    // Test AUTH_FLOW_STRATEGY factory
+    results.push(`✓ AUTH_FLOW_STRATEGY factory:`)
+    results.push(`  - Code: ${typeof AUTH_FLOW_STRATEGY.Code}`)
+    results.push(`  - Password: ${typeof AUTH_FLOW_STRATEGY.Password}`)
+    results.push(``)
+
+    // Create strategies (without userManager for testing)
+    const codeStrategy = AUTH_FLOW_STRATEGY.Code()
+    const passwordStrategy = AUTH_FLOW_STRATEGY.Password()
+
+    results.push(`✓ AuthCodeFlowStrategy:`)
+    results.push(`  - isInternalAuth: ${codeStrategy.isInternalAuth}`)
+    results.push(`  - checkIfInternalAuth(): ${codeStrategy.checkIfInternalAuth()}`)
+    results.push(``)
+
+    results.push(`✓ AuthPasswordFlowStrategy:`)
+    results.push(`  - isInternalAuth: ${passwordStrategy.isInternalAuth}`)
+    results.push(`  - checkIfInternalAuth(): ${passwordStrategy.checkIfInternalAuth()}`)
+
+    // Cleanup
+    codeStrategy.destroy()
+    passwordStrategy.destroy()
+
+    setAuthFlowResults(results)
+  }
+
+  const testModels = () => {
+    const results: string[] = []
+
+    // Test FindTenantResultDto
+    results.push(`✓ FindTenantResultDto:`)
+
+    const emptyDto = new FindTenantResultDto()
+    results.push(`  - new FindTenantResultDto():`)
+    results.push(`    success: ${emptyDto.success}`)
+    results.push(`    name: '${emptyDto.name}'`)
+    results.push(`    tenantId: ${emptyDto.tenantId}`)
+    results.push(``)
+
+    const successDto = new FindTenantResultDto({
+      success: true,
+      name: 'Acme Corp',
+      tenantId: 'acme-123',
+    })
+    results.push(`  - new FindTenantResultDto({ success: true, name: 'Acme Corp', tenantId: 'acme-123' }):`)
+    results.push(`    success: ${successDto.success}`)
+    results.push(`    name: '${successDto.name}'`)
+    results.push(`    tenantId: ${successDto.tenantId}`)
+    results.push(``)
+
+    const failedDto = new FindTenantResultDto({ success: false })
+    results.push(`  - new FindTenantResultDto({ success: false }):`)
+    results.push(`    success: ${failedDto.success}`)
+    results.push(`    name: '${failedDto.name}'`)
+    results.push(`    tenantId: ${failedDto.tenantId}`)
+    results.push(``)
+
+    // Test ABP.Lookup (type only - demonstrate usage)
+    const lookups: ABP.Lookup[] = [
+      { id: '1', displayName: 'Option One' },
+      { id: '2', displayName: 'Option Two' },
+      { id: '3', displayName: 'Option Three' },
+    ]
+    results.push(`✓ ABP.Lookup interface:`)
+    results.push(`  - Example lookups: ${lookups.length} items`)
+    results.push(`  - First: { id: '${lookups[0].id}', displayName: '${lookups[0].displayName}' }`)
+    results.push(`  - find by id '2': ${lookups.find(l => l.id === '2')?.displayName}`)
+
+    setModelResults(results)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.1.0 Features</h2>
+
+      <div className="test-card">
+        <h3>Utility Functions</h3>
+        <p>New utility functions: isNullOrUndefined, exists, isObject, isArray, isObjectAndNotArray, deepMerge, createTokenParser, date formats.</p>
+        <button onClick={testUtilityFunctions}>Test Utility Functions</button>
+        {utilityResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '400px', overflow: 'auto', marginTop: '1rem' }}>
+            {utilityResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>SubscriptionService</h3>
+        <p>Service for managing multiple subscriptions/cleanups. React equivalent of Angular's SubscriptionService.</p>
+        <button onClick={testSubscriptionService}>Test SubscriptionService</button>
+        {subscriptionResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '300px', overflow: 'auto', marginTop: '1rem' }}>
+            {subscriptionResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>AuthFlowStrategy</h3>
+        <p>Authentication flow strategies for OAuth: Code flow (external/SSO) and Password flow (internal).</p>
+        <button onClick={testAuthFlowStrategy}>Test AuthFlowStrategy</button>
+        {authFlowResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '300px', overflow: 'auto', marginTop: '1rem' }}>
+            {authFlowResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>New Models</h3>
+        <p>FindTenantResultDto and ABP.Lookup interface for multi-tenancy and dropdown lookups.</p>
+        <button onClick={testModels}>Test Models</button>
+        {modelResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '300px', overflow: 'auto', marginTop: '1rem' }}>
+            {modelResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>MultiTenancyService (API Integration)</h3>
+        <p>Service for multi-tenancy operations including findTenantByName and findTenantById.</p>
+        <p style={{ fontSize: '12px', color: '#888' }}>
+          Note: MultiTenancyService requires RestService - use with useAbp() in real applications.
+        </p>
+        <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem' }}>
+{`// Usage example:
+const { restService } = useAbp()
+const multiTenancyService = new MultiTenancyService(restService)
+
+// Find tenant by name
+const result = await multiTenancyService.findTenantByName('TenantName')
+if (result.success) {
+  console.log('Tenant ID:', result.tenantId)
+  console.log('Tenant Name:', result.name)
+}
+
+// Find tenant by ID
+const result2 = await multiTenancyService.findTenantById('tenant-guid')
+
+// Domain tenant management
+multiTenancyService.domainTenant = { id: 'id', name: 'name' }
+multiTenancyService.isTenantBoxVisible = true`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>ConfigStateService.getFeature()</h3>
+        <p>New method to access feature flag values from configuration.</p>
+        <button onClick={() => {
+          const feature = configService.getFeature('SomeFeature')
+          alert(`Feature value: ${feature ?? 'undefined (not configured)'}`)
+        }}>Test getFeature()</button>
+        <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem' }}>
+{`// Usage:
+const { configService } = useAbp()
+const featureValue = configService.getFeature('MyFeature.Enabled')
+// Returns the feature value or undefined if not found`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Profile.Response Enhancements</h3>
+        <p>New properties added to Profile.Response for v3.1.0:</p>
+        <ul style={{ marginLeft: '1.5rem', marginTop: '0.5rem' }}>
+          <li><code>isExternal</code> - Whether user authenticated via external provider</li>
+          <li><code>hasPassword</code> - Whether user has a password set</li>
+          <li><code>emailConfirmed</code> - Whether email is confirmed</li>
+          <li><code>phoneNumberConfirmed</code> - Whether phone number is confirmed</li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>Config.Environment Enhancements</h3>
+        <p>New configuration options in v3.1.0:</p>
+        <ul style={{ marginLeft: '1.5rem', marginTop: '0.5rem' }}>
+          <li><code>remoteEnv</code> - Remote environment configuration with merge strategies</li>
+          <li><code>ApiConfig.rootNamespace</code> - Root namespace for API</li>
+          <li><code>Application.baseUrl</code> - Base URL of the application</li>
+          <li><code>ABP.Root.cultureNameLocaleFileMap</code> - Map culture names to locale files</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 function TestV30Features() {
   const [routesServiceResults, setRoutesServiceResults] = useState<string[]>([])
   const [treeUtilsResults, setTreeUtilsResults] = useState<string[]>([])
@@ -2276,12 +2609,13 @@ function TestDateExtensions() {
 export function TestCorePage() {
   return (
     <div>
-      <h1>@abpjs/core Tests (v3.0.0)</h1>
+      <h1>@abpjs/core Tests (v3.1.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing core hooks, services, and components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.0.0 - Added RoutesService, tree-utils, array-utils, ABP.Nav, ABP.Tab, CurrentUser.roles
+        Version 3.1.0 - Added MultiTenancyService, SubscriptionService, AuthFlowStrategy, utility functions, FindTenantResultDto
       </p>
 
+      <TestV31Features />
       <TestV30Features />
       <TestV27Features />
       <TestV24Features />

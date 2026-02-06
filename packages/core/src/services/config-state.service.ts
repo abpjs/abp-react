@@ -104,6 +104,15 @@ export class ConfigStateService {
     return this.getState().config.environment.apis?.[key]?.url || '';
   }
 
+  /**
+   * Get a feature value by key
+   * @param key - The feature key to look up
+   * @since 3.1.0
+   */
+  getFeature(key: string): string | undefined {
+    return this.getState().config.features?.values?.[key];
+  }
+
   getGrantedPolicy(condition: string = ''): boolean {
     if (!condition) return true;
 

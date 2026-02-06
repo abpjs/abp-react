@@ -227,6 +227,50 @@ describe('ConfigStateService', () => {
     });
   });
 
+  describe('getFeature (v3.1.0)', () => {
+    it('should return feature value by key', () => {
+      expect(service.getFeature('Feature.A')).toBe('true');
+    });
+
+    it('should return undefined for non-existent feature', () => {
+      expect(service.getFeature('NonExistent.Feature')).toBeUndefined();
+    });
+
+    it('should return undefined when features is undefined', () => {
+      mockState.config.features = undefined as any;
+      expect(service.getFeature('Feature.A')).toBeUndefined();
+    });
+
+    it('should return undefined when features.values is undefined', () => {
+      mockState.config.features = { values: undefined as any };
+      expect(service.getFeature('Feature.A')).toBeUndefined();
+    });
+
+    it('should handle multiple feature values', () => {
+      mockState.config.features = {
+        values: {
+          'Feature.A': 'true',
+          'Feature.B': 'false',
+          'Feature.C': 'custom-value',
+        },
+      };
+
+      expect(service.getFeature('Feature.A')).toBe('true');
+      expect(service.getFeature('Feature.B')).toBe('false');
+      expect(service.getFeature('Feature.C')).toBe('custom-value');
+    });
+
+    it('should return empty string if feature value is empty string', () => {
+      mockState.config.features = {
+        values: {
+          'Feature.Empty': '',
+        },
+      };
+
+      expect(service.getFeature('Feature.Empty')).toBe('');
+    });
+  });
+
   describe('getGrantedPolicy', () => {
     it('should return true for empty condition', () => {
       expect(service.getGrantedPolicy('')).toBe(true);
