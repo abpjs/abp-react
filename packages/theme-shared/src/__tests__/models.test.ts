@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Toaster } from '../models/toaster';
 import { Confirmation } from '../models/confirmation';
+import type { NavItem } from '../models/nav-item';
 import type {
   RootParams,
   HttpErrorConfig,
@@ -9,26 +10,15 @@ import type {
 } from '../models/common';
 
 describe('Toaster namespace', () => {
-  // v2.1.0 - Toaster.Status is deprecated, use Confirmation.Status instead
-  // v2.4.0 - Deprecation notice updated: will be removed in v3.0 (was v2.2)
-  describe('Status enum (deprecated in v2.1.0, removal in v3.0)', () => {
-    it('should have confirm status', () => {
-      expect(Toaster.Status.confirm).toBe('confirm');
-    });
-
-    it('should have reject status', () => {
-      expect(Toaster.Status.reject).toBe('reject');
-    });
-
-    it('should have dismiss status', () => {
-      expect(Toaster.Status.dismiss).toBe('dismiss');
-    });
-
-    it('should be equal to Confirmation.Status values (backward compatibility)', () => {
-      // Toaster.Status and Confirmation.Status have the same values
-      expect(Toaster.Status.confirm).toBe(Confirmation.Status.confirm);
-      expect(Toaster.Status.reject).toBe(Confirmation.Status.reject);
-      expect(Toaster.Status.dismiss).toBe(Confirmation.Status.dismiss);
+  // v3.0.0 - Toaster.Status was removed, use Confirmation.Status instead
+  describe('Removed in v3.0.0', () => {
+    it('should document that Status enum was removed (use Confirmation.Status instead)', () => {
+      // Status was removed in v3.0.0 - this is a documentation test
+      // The Toaster namespace now only contains types (no runtime values)
+      // Users should use Confirmation.Status instead
+      expect(Confirmation.Status.confirm).toBe('confirm');
+      expect(Confirmation.Status.reject).toBe('reject');
+      expect(Confirmation.Status.dismiss).toBe('dismiss');
     });
   });
 
@@ -39,13 +29,12 @@ describe('Toaster namespace', () => {
       expect(severities).toHaveLength(5);
     });
 
-    it('should accept valid Options', () => {
-      const options: Toaster.Options = {
+    it('should accept valid ToastOptions', () => {
+      const options: Toaster.ToastOptions = {
         id: 'test-id',
         closable: true,
         life: 5000,
         sticky: false,
-        data: { custom: 'data' },
         messageLocalizationParams: ['param1'],
         titleLocalizationParams: ['param2'],
       };
@@ -54,35 +43,32 @@ describe('Toaster namespace', () => {
       expect(options.closable).toBe(true);
       expect(options.life).toBe(5000);
       expect(options.sticky).toBe(false);
-      expect(options.data).toEqual({ custom: 'data' });
     });
 
-    it('should accept minimal Options', () => {
-      const options: Toaster.Options = {};
-      expect(options).toEqual({});
+    it('should accept minimal ToastOptions with required id', () => {
+      const options: Toaster.ToastOptions = { id: 'test' };
+      expect(options.id).toBe('test');
     });
 
-    it('should accept valid Message', () => {
-      const message: Toaster.Message = {
+    it('should accept valid Toast', () => {
+      const toast: Toaster.Toast = {
         message: 'Test message',
         title: 'Test title',
         severity: 'success',
-        id: 'msg-1',
-        closable: true,
+        options: { id: 'toast-1', closable: true },
       };
 
-      expect(message.message).toBe('Test message');
-      expect(message.severity).toBe('success');
+      expect(toast.message).toBe('Test message');
+      expect(toast.severity).toBe('success');
     });
 
-    it('should accept Message without optional fields', () => {
-      const message: Toaster.Message = {
+    it('should accept Toast without optional fields', () => {
+      const toast: Toaster.Toast = {
         message: 'Test message',
-        severity: 'info',
       };
 
-      expect(message.message).toBe('Test message');
-      expect(message.title).toBeUndefined();
+      expect(toast.message).toBe('Test message');
+      expect(toast.title).toBeUndefined();
     });
   });
 });
@@ -129,7 +115,8 @@ describe('Confirmation namespace', () => {
 
   // v2.0.0 - Options no longer extends Toaster.Options
   // v2.9.0 - Added dismissible, deprecated closable
-  describe('Options (v2.0.0, v2.9.0)', () => {
+  // v3.0.0 - Removed closable
+  describe('Options (v3.0.0)', () => {
     it('should accept minimal Confirmation.Options', () => {
       const options: Confirmation.Options = {};
       expect(options).toEqual({});
@@ -138,7 +125,7 @@ describe('Confirmation namespace', () => {
     it('should accept confirmation-specific options', () => {
       const options: Confirmation.Options = {
         id: 'confirm-1',
-        closable: true,
+        dismissible: true,
         hideCancelBtn: false,
         hideYesBtn: false,
         messageLocalizationParams: ['param1'],
@@ -146,13 +133,13 @@ describe('Confirmation namespace', () => {
       };
 
       expect(options.id).toBe('confirm-1');
-      expect(options.closable).toBe(true);
+      expect(options.dismissible).toBe(true);
       expect(options.hideCancelBtn).toBe(false);
       expect(options.hideYesBtn).toBe(false);
     });
 
-    // v2.9.0 - dismissible property
-    it('should accept dismissible property (v2.9.0)', () => {
+    // v3.0.0 - dismissible is the only property for dismissal control
+    it('should accept dismissible property', () => {
       const options: Confirmation.Options = {
         dismissible: true,
       };
@@ -160,7 +147,7 @@ describe('Confirmation namespace', () => {
       expect(options.dismissible).toBe(true);
     });
 
-    it('should accept dismissible as false (v2.9.0)', () => {
+    it('should accept dismissible as false', () => {
       const options: Confirmation.Options = {
         dismissible: false,
       };
@@ -168,25 +155,14 @@ describe('Confirmation namespace', () => {
       expect(options.dismissible).toBe(false);
     });
 
-    it('should allow both dismissible and closable for backward compatibility (v2.9.0)', () => {
+    // v3.0.0 - closable was removed
+    it('should not have closable property (removed in v3.0.0)', () => {
       const options: Confirmation.Options = {
         dismissible: true,
-        closable: false, // deprecated but still supported
       };
 
-      expect(options.dismissible).toBe(true);
-      expect(options.closable).toBe(false);
-    });
-
-    it('should prefer dismissible over closable when both are set', () => {
-      // When both are set, dismissible should be used (closable is deprecated)
-      const options: Confirmation.Options = {
-        dismissible: true,
-        closable: false,
-      };
-
-      // In implementation, dismissible should take precedence
-      expect(options.dismissible).toBe(true);
+      // @ts-expect-error - closable was removed in v3.0.0
+      expect(options.closable).toBeUndefined();
     });
 
     it('should accept cancelText and yesText properties', () => {
@@ -537,6 +513,262 @@ describe('Common types (v1.1.0, v2.7.0)', () => {
       expect(directions).toHaveLength(2);
       expect(directions).toContain('ltr');
       expect(directions).toContain('rtl');
+    });
+  });
+});
+
+describe('NavItem interface (v3.0.0)', () => {
+  describe('id property (required)', () => {
+    it('should accept string id', () => {
+      const item: NavItem = {
+        id: 'profile',
+      };
+
+      expect(item.id).toBe('profile');
+    });
+
+    it('should accept numeric id', () => {
+      const item: NavItem = {
+        id: 123,
+      };
+
+      expect(item.id).toBe(123);
+    });
+
+    it('should accept empty string id', () => {
+      const item: NavItem = {
+        id: '',
+      };
+
+      expect(item.id).toBe('');
+    });
+
+    it('should accept zero as id', () => {
+      const item: NavItem = {
+        id: 0,
+      };
+
+      expect(item.id).toBe(0);
+    });
+  });
+
+  describe('component property (optional)', () => {
+    it('should accept a React component', () => {
+      const MockComponent = () => null;
+      const item: NavItem = {
+        id: 'test',
+        component: MockComponent,
+      };
+
+      expect(item.component).toBe(MockComponent);
+    });
+
+    it('should accept component with props', () => {
+      const MockComponent = ({ name }: { name: string }) => null;
+      const item: NavItem = {
+        id: 'test',
+        component: MockComponent,
+      };
+
+      expect(item.component).toBe(MockComponent);
+    });
+
+    it('should be undefined when not provided', () => {
+      const item: NavItem = { id: 'test' };
+
+      expect(item.component).toBeUndefined();
+    });
+  });
+
+  describe('html property (optional)', () => {
+    it('should accept html string', () => {
+      const item: NavItem = {
+        id: 'test',
+        html: '<span>Hello</span>',
+      };
+
+      expect(item.html).toBe('<span>Hello</span>');
+    });
+
+    it('should accept empty html string', () => {
+      const item: NavItem = {
+        id: 'test',
+        html: '',
+      };
+
+      expect(item.html).toBe('');
+    });
+
+    it('should be undefined when not provided', () => {
+      const item: NavItem = { id: 'test' };
+
+      expect(item.html).toBeUndefined();
+    });
+  });
+
+  describe('action property (optional)', () => {
+    it('should accept a function', () => {
+      const mockAction = vi.fn();
+      const item: NavItem = {
+        id: 'test',
+        action: mockAction,
+      };
+
+      expect(item.action).toBe(mockAction);
+    });
+
+    it('should be callable', () => {
+      const mockAction = vi.fn();
+      const item: NavItem = {
+        id: 'test',
+        action: mockAction,
+      };
+
+      item.action?.();
+
+      expect(mockAction).toHaveBeenCalledTimes(1);
+    });
+
+    it('should be undefined when not provided', () => {
+      const item: NavItem = { id: 'test' };
+
+      expect(item.action).toBeUndefined();
+    });
+  });
+
+  describe('order property (optional)', () => {
+    it('should accept positive number', () => {
+      const item: NavItem = {
+        id: 'test',
+        order: 100,
+      };
+
+      expect(item.order).toBe(100);
+    });
+
+    it('should accept negative number', () => {
+      const item: NavItem = {
+        id: 'test',
+        order: -10,
+      };
+
+      expect(item.order).toBe(-10);
+    });
+
+    it('should accept zero', () => {
+      const item: NavItem = {
+        id: 'test',
+        order: 0,
+      };
+
+      expect(item.order).toBe(0);
+    });
+
+    it('should accept decimal number', () => {
+      const item: NavItem = {
+        id: 'test',
+        order: 1.5,
+      };
+
+      expect(item.order).toBe(1.5);
+    });
+
+    it('should be undefined when not provided', () => {
+      const item: NavItem = { id: 'test' };
+
+      expect(item.order).toBeUndefined();
+    });
+  });
+
+  describe('requiredPolicy property (v3.0.0 - renamed from permission)', () => {
+    it('should accept policy string', () => {
+      const item: NavItem = {
+        id: 'test',
+        requiredPolicy: 'AbpIdentity.Users',
+      };
+
+      expect(item.requiredPolicy).toBe('AbpIdentity.Users');
+    });
+
+    it('should accept empty policy string', () => {
+      const item: NavItem = {
+        id: 'test',
+        requiredPolicy: '',
+      };
+
+      expect(item.requiredPolicy).toBe('');
+    });
+
+    it('should accept complex policy string', () => {
+      const item: NavItem = {
+        id: 'test',
+        requiredPolicy: 'AbpIdentity.Users.Create || AbpIdentity.Users.Update',
+      };
+
+      expect(item.requiredPolicy).toBe('AbpIdentity.Users.Create || AbpIdentity.Users.Update');
+    });
+
+    it('should be undefined when not provided', () => {
+      const item: NavItem = { id: 'test' };
+
+      expect(item.requiredPolicy).toBeUndefined();
+    });
+  });
+
+  describe('full NavItem object', () => {
+    it('should accept all properties', () => {
+      const MockComponent = () => null;
+      const mockAction = vi.fn();
+      const item: NavItem = {
+        id: 'full-item',
+        component: MockComponent,
+        html: '<span>Full Item</span>',
+        action: mockAction,
+        order: 50,
+        requiredPolicy: 'Admin.Access',
+      };
+
+      expect(item.id).toBe('full-item');
+      expect(item.component).toBe(MockComponent);
+      expect(item.html).toBe('<span>Full Item</span>');
+      expect(item.action).toBe(mockAction);
+      expect(item.order).toBe(50);
+      expect(item.requiredPolicy).toBe('Admin.Access');
+    });
+
+    it('should accept minimal NavItem with only id', () => {
+      const item: NavItem = { id: 'minimal' };
+
+      expect(item.id).toBe('minimal');
+      expect(item.component).toBeUndefined();
+      expect(item.html).toBeUndefined();
+      expect(item.action).toBeUndefined();
+      expect(item.order).toBeUndefined();
+      expect(item.requiredPolicy).toBeUndefined();
+    });
+  });
+
+  describe('v3.0.0 migration - permission to requiredPolicy', () => {
+    it('should use requiredPolicy instead of permission', () => {
+      const item: NavItem = {
+        id: 'test',
+        requiredPolicy: 'SomePolicy',
+      };
+
+      // @ts-expect-error - permission was renamed to requiredPolicy in v3.0.0
+      expect(item.permission).toBeUndefined();
+      expect(item.requiredPolicy).toBe('SomePolicy');
+    });
+
+    it('should document migration from v2.9.0 permission to v3.0.0 requiredPolicy', () => {
+      // v2.9.0 had: permission?: string
+      // v3.0.0 has: requiredPolicy?: string
+      const item: NavItem = {
+        id: 'migrated',
+        requiredPolicy: 'AbpIdentity.Roles',
+      };
+
+      expect(item.requiredPolicy).toBe('AbpIdentity.Roles');
     });
   });
 });

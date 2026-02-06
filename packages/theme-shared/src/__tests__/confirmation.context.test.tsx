@@ -528,7 +528,8 @@ describe('ConfirmationContext', () => {
         expect(result.current.state.confirmation).toBeNull();
       });
 
-      it('should not dismiss when closable is false', async () => {
+      // v3.0.0 - closable renamed to dismissible
+      it('should not dismiss when dismissible is false (v3.0.0)', async () => {
         const { result } = renderHook(
           () => ({
             confirmation: useConfirmation(),
@@ -542,7 +543,7 @@ describe('ConfirmationContext', () => {
         });
 
         act(() => {
-          result.current.confirmation.info('Test message', 'Test', { closable: false });
+          result.current.confirmation.info('Test message', 'Test', { dismissible: false });
         });
 
         expect(result.current.state.confirmation).not.toBeNull();

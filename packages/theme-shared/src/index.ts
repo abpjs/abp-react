@@ -2,10 +2,23 @@
  * @abpjs/theme-shared
  *
  * ABP Framework Theme Shared components for React.
- * Translated from @abp/ng.theme.shared v2.9.0
+ * Translated from @abp/ng.theme.shared v3.0.0
  *
  * This package provides shared UI components, services, and utilities
  * for theme/modal management in ABP Framework React applications.
+ *
+ * Changes in v3.0.0:
+ * - Added NavItemsService (replaces nav-items utility functions)
+ * - Added NavItem.id property (required unique identifier)
+ * - Changed NavItem.permission to NavItem.requiredPolicy
+ * - Added eThemeSharedRouteNames enum for route names
+ * - Added THEME_SHARED_ROUTE_PROVIDERS and configureRoutes
+ * - Added initializeThemeSharedRoutes for easy route setup
+ * - Removed Toaster.Status enum (use Confirmation.Status instead)
+ * - Removed Confirmation.Options.closable (use dismissible instead)
+ * - Removed setting-management model (use @abpjs/core SettingTabsService)
+ * - Removed nav-items utils (use NavItemsService)
+ * - Dependency updates to @abp/ng.core v3.0.0
  *
  * Changes in v2.9.0:
  * - Added LocaleDirection type for RTL/LTR support
@@ -98,3 +111,9 @@ export * from './utils';
 
 // Theme
 export * from './theme';
+
+// Enums (new in v3.0.0)
+export * from './enums';
+
+// Services (new in v3.0.0)
+export * from './services';
