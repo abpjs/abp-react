@@ -1,13 +1,16 @@
 /**
  * Tests for eChatRouteNames enum
- * @abpjs/chat v2.9.0
+ * @abpjs/chat v3.0.0
+ *
+ * Note: In v3.0.0, the route name value changed from 'AbpChat::Chat' to 'Chat'
  */
 import { describe, it, expect } from 'vitest';
 import { eChatRouteNames, ChatRouteNameKey } from '../../enums/route-names';
 
 describe('eChatRouteNames', () => {
   it('should have Chat route name key', () => {
-    expect(eChatRouteNames.Chat).toBe('AbpChat::Chat');
+    // v3.0.0: Changed from 'AbpChat::Chat' to 'Chat'
+    expect(eChatRouteNames.Chat).toBe('Chat');
   });
 
   it('should have exactly 1 route name key', () => {
@@ -15,11 +18,9 @@ describe('eChatRouteNames', () => {
     expect(keys).toHaveLength(1);
   });
 
-  it('should have all keys starting with AbpChat prefix', () => {
-    const values = Object.values(eChatRouteNames);
-    values.forEach((value) => {
-      expect(value).toMatch(/^AbpChat::/);
-    });
+  it('should have expected route name values', () => {
+    // v3.0.0: Route names no longer use AbpChat:: prefix
+    expect(eChatRouteNames.Chat).toBe('Chat');
   });
 
   it('ChatRouteNameKey type should be valid for all route name keys', () => {
