@@ -6,6 +6,7 @@
  * @updated 2.2.0 - Added openFeaturesModal for editions and tenants
  * @updated 2.4.0 - Added apiName property, eSaasComponents enum, updated CreateTenantRequest/UpdateTenantRequest
  * @updated 2.7.0 - Changed eSaasComponents to const object, added eSaasRouteNames, SaasComponentKey, SaasRouteNameKey types
+ * @updated 2.9.0 - Internal Angular changes (no new React features)
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -1294,10 +1295,10 @@ function TestApiEndpoints() {
 export function TestSaasPage() {
   return (
     <div>
-      <h1>@abpjs/saas Tests (v2.7.0)</h1>
+      <h1>@abpjs/saas Tests (v2.9.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing SaaS module for tenant and edition management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 2.7.0 - Changed eSaasComponents to const object, added eSaasRouteNames, SaasComponentKey, SaasRouteNameKey types
+        Version 2.9.0 - No new React features (internal Angular changes only)
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components for multi-tenant SaaS applications with tenant management,
