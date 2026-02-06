@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/language-management",
-  "version": "2.7.0",
+  "version": "2.9.0",
   "description": "ABP Framework language-management components for React - translated from @volo/abp.ng.language-management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
