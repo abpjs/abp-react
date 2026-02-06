@@ -230,6 +230,7 @@ export function UsersComponent({
       lockoutEnabled: formState.lockoutEnabled,
       twoFactorEnabled: formState.twoFactorEnabled,
       roleNames: formState.roleNames,
+      organizationUnitIds: [], // v2.9.0: Organization unit assignment (can be extended with UI)
     };
 
     let result;

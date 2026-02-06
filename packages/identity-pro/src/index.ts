@@ -2,25 +2,44 @@
  * @abpjs/identity-pro
  *
  * ABP Framework identity pro components for React.
- * Translated from @volo/abp.ng.identity version 2.7.0.
+ * Translated from @volo/abp.ng.identity version 2.9.0.
  *
  * This package provides:
- * - Identity models (User, Role, ClaimType, etc.)
+ * - Identity models (User, Role, ClaimType, OrganizationUnit, etc.)
  * - Identity service for API operations
+ * - Organization unit service for hierarchy management (v2.9.0)
  * - Identity state service with dispatch methods (v2.0.0)
  * - React hooks for state management (useRoles, useUsers, useIdentity, useClaims)
  * - UI components for role, user, and claim type management
  * - Route constants for navigation
  * - Component identifiers enum (v2.4.0)
  * - Route names enum for localization (v2.7.0)
+ * - TreeAdapter utility for hierarchical data (v2.9.0)
  *
  * Pro features:
  * - Claim type management (ClaimsComponent)
  * - User/Role claims management (ClaimModal)
+ * - Organization unit management (v2.9.0)
  * - ClaimType, ClaimTypeName, ClaimRequest models
  * - useClaims hook for claim operations
  * - IdentityStateService with 17 dispatch methods (v2.0.0)
  * - Admin password change for users (v2.7.0)
+ *
+ * Changes in v2.9.0:
+ * - Added OrganizationUnitService for managing organization unit hierarchy
+ * - Added OrganizationUnitWithDetailsDto, OrganizationUnitCreateDto, OrganizationUnitUpdateDto models
+ * - Added OrganizationUnitMoveInput, OrganizationUnitRoleInput, OrganizationUnitUserInput models
+ * - Added GetOrganizationUnitInput for querying organization units
+ * - Added TreeAdapter utility for hierarchical data management
+ * - Added organizationUnits to Identity.State
+ * - Added organizationUnitIds to Identity.UserSaveRequest
+ * - Added getUserOrganizationUnits method to IdentityService
+ * - Added OrganizationUnits, OrganizationMembers, OrganizationRoles to eIdentityComponents
+ * - Added OrganizationUnits to eIdentityRouteNames
+ * - Dependency updates to @abp/ng.permission-management ~2.9.0
+ * - Dependency updates to @abp/ng.theme.shared ~2.9.0
+ * - Dependency updates to @volo/abp.commercial.ng.ui ~2.9.0
+ * - Dependency updates to @volo/abp.ng.identity.config ~2.9.0
  *
  * Changes in v2.7.0:
  * - Added eIdentityRouteNames enum for route name localization keys
@@ -75,7 +94,7 @@
  *
  * @packageDocumentation
  * @since 2.0.0
- * @updated 2.7.0
+ * @updated 2.9.0
  */
 
 // Models
@@ -95,3 +114,6 @@ export * from './components';
 
 // Constants
 export * from './constants';
+
+// Utils
+export * from './utils';

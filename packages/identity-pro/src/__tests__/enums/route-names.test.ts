@@ -1,6 +1,6 @@
 /**
  * Tests for Identity Pro Route Names
- * @abpjs/identity-pro v2.7.0
+ * @abpjs/identity-pro v2.9.0
  */
 import { describe, it, expect } from 'vitest';
 import { eIdentityRouteNames, IdentityRouteNameKey } from '../../enums';
@@ -25,6 +25,10 @@ describe('eIdentityRouteNames', () => {
 
     it('should have ClaimTypes route name', () => {
       expect(eIdentityRouteNames.ClaimTypes).toBe('AbpIdentity::ClaimTypes');
+    });
+
+    it('should have OrganizationUnits route name (v2.9.0)', () => {
+      expect(eIdentityRouteNames.OrganizationUnits).toBe('AbpIdentity::OrganizationUnits');
     });
   });
 
@@ -63,7 +67,8 @@ describe('eIdentityRouteNames', () => {
       expect(keys).toContain('Roles');
       expect(keys).toContain('Users');
       expect(keys).toContain('ClaimTypes');
-      expect(keys).toHaveLength(5);
+      expect(keys).toContain('OrganizationUnits');
+      expect(keys).toHaveLength(6);
     });
 
     it('should have correct values', () => {
@@ -73,7 +78,8 @@ describe('eIdentityRouteNames', () => {
       expect(values).toContain('AbpIdentity::Roles');
       expect(values).toContain('AbpIdentity::Users');
       expect(values).toContain('AbpIdentity::ClaimTypes');
-      expect(values).toHaveLength(5);
+      expect(values).toContain('AbpIdentity::OrganizationUnits');
+      expect(values).toHaveLength(6);
     });
 
     it('should have unique values for each route', () => {
@@ -118,6 +124,7 @@ describe('eIdentityRouteNames', () => {
       expect(eIdentityRouteNames.Roles).not.toContain('Menu:');
       expect(eIdentityRouteNames.Users).not.toContain('Menu:');
       expect(eIdentityRouteNames.ClaimTypes).not.toContain('Menu:');
+      expect(eIdentityRouteNames.OrganizationUnits).not.toContain('Menu:');
     });
   });
 });
@@ -129,12 +136,14 @@ describe('IdentityRouteNameKey type', () => {
     const rolesKey: IdentityRouteNameKey = 'AbpIdentity::Roles';
     const usersKey: IdentityRouteNameKey = 'AbpIdentity::Users';
     const claimsKey: IdentityRouteNameKey = 'AbpIdentity::ClaimTypes';
+    const orgUnitsKey: IdentityRouteNameKey = 'AbpIdentity::OrganizationUnits';
 
     expect(adminKey).toBe(eIdentityRouteNames.Administration);
     expect(identityKey).toBe(eIdentityRouteNames.IdentityManagement);
     expect(rolesKey).toBe(eIdentityRouteNames.Roles);
     expect(usersKey).toBe(eIdentityRouteNames.Users);
     expect(claimsKey).toBe(eIdentityRouteNames.ClaimTypes);
+    expect(orgUnitsKey).toBe(eIdentityRouteNames.OrganizationUnits);
   });
 
   it('should work with eIdentityRouteNames values', () => {
@@ -152,6 +161,7 @@ describe('IdentityRouteNameKey type', () => {
     expect(isValidRouteKey(eIdentityRouteNames.Roles)).toBe(true);
     expect(isValidRouteKey(eIdentityRouteNames.Users)).toBe(true);
     expect(isValidRouteKey(eIdentityRouteNames.ClaimTypes)).toBe(true);
+    expect(isValidRouteKey(eIdentityRouteNames.OrganizationUnits)).toBe(true);
   });
 
   it('should work with Record type for route configuration', () => {
@@ -161,6 +171,7 @@ describe('IdentityRouteNameKey type', () => {
       'AbpIdentity::Roles': '/admin/identity/roles',
       'AbpIdentity::Users': '/admin/identity/users',
       'AbpIdentity::ClaimTypes': '/admin/identity/claim-types',
+      'AbpIdentity::OrganizationUnits': '/admin/identity/organization-units',
     };
 
     expect(routePaths[eIdentityRouteNames.Administration]).toBe('/admin');
@@ -168,6 +179,7 @@ describe('IdentityRouteNameKey type', () => {
     expect(routePaths[eIdentityRouteNames.Roles]).toBe('/admin/identity/roles');
     expect(routePaths[eIdentityRouteNames.Users]).toBe('/admin/identity/users');
     expect(routePaths[eIdentityRouteNames.ClaimTypes]).toBe('/admin/identity/claim-types');
+    expect(routePaths[eIdentityRouteNames.OrganizationUnits]).toBe('/admin/identity/organization-units');
   });
 
   it('should be usable for localization lookups', () => {
@@ -178,6 +190,7 @@ describe('IdentityRouteNameKey type', () => {
         'AbpIdentity::Roles': 'Roles',
         'AbpIdentity::Users': 'Users',
         'AbpIdentity::ClaimTypes': 'Claim Types',
+        'AbpIdentity::OrganizationUnits': 'Organization Units',
       };
       return translations[key];
     };
@@ -187,5 +200,6 @@ describe('IdentityRouteNameKey type', () => {
     expect(mockLocalize(eIdentityRouteNames.Roles)).toBe('Roles');
     expect(mockLocalize(eIdentityRouteNames.Users)).toBe('Users');
     expect(mockLocalize(eIdentityRouteNames.ClaimTypes)).toBe('Claim Types');
+    expect(mockLocalize(eIdentityRouteNames.OrganizationUnits)).toBe('Organization Units');
   });
 });
