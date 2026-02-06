@@ -1,6 +1,6 @@
-import { useState, ReactNode } from 'react';
-import { useLocalization } from '@abpjs/core';
-import { Box, Container, Heading, Stack, Tabs } from '@chakra-ui/react';
+import { useState, useEffect, ReactNode } from 'react';
+import { useLocalization, useProfile } from '@abpjs/core';
+import { Box, Container, Heading, Stack, Tabs, Spinner, Center } from '@chakra-ui/react';
 import { PersonalSettingsForm } from '../PersonalSettingsForm';
 import { ChangePasswordForm } from '../ChangePasswordForm';
 import { eAccountComponents } from '../../enums';
@@ -33,6 +33,15 @@ export interface ManageProfileProps {
    * Custom tabs to add/replace default tabs
    */
   customTabs?: ProfileTab[];
+
+  /**
+   * Whether to hide the change password tab.
+   * When undefined, this is automatically determined based on the user's profile.
+   * External users (social login) don't see the change password tab by default.
+   *
+   * @since 3.1.0
+   */
+  hideChangePasswordTab?: boolean;
 }
 
 /**
@@ -44,6 +53,7 @@ export interface ManageProfileProps {
  *
  * @since 1.1.0
  * @since 2.7.0 - Added changePasswordKey and personalSettingsKey static properties for component replacement system
+ * @since 3.1.0 - Added hideChangePasswordTab prop and loading state; external users don't see change password tab
  *
  * @example
  * ```tsx
@@ -51,18 +61,46 @@ export interface ManageProfileProps {
  *   defaultTabIndex={0}
  *   onTabChange={(index) => console.log('Tab changed to', index)}
  * />
+ *
+ * // Force hide change password tab
+ * <ManageProfile hideChangePasswordTab={true} />
  * ```
  */
 export function ManageProfile({
   defaultTabIndex = 0,
   onTabChange,
   customTabs,
+  hideChangePasswordTab: hideChangePasswordTabProp,
 }: ManageProfileProps) {
   const { t } = useLocalization();
+  const { profile, loading: profileLoading, fetchProfile } = useProfile();
+
+  // v3.1.0: Loading state until profile is fetched
+  const [isProfileLoaded, setIsProfileLoaded] = useState(false);
   const [selectedTab, setSelectedTab] = useState(defaultTabIndex);
 
+  // v3.1.0: Fetch profile on mount and determine tab visibility
+  useEffect(() => {
+    fetchProfile().then(() => {
+      setIsProfileLoaded(true);
+    });
+  }, [fetchProfile]);
+
+  // v3.1.0: Determine if change password tab should be hidden
+  // External users (social login) don't have passwords to change
+  const shouldHideChangePasswordTab = hideChangePasswordTabProp ?? profile?.isExternal ?? false;
+
+  // v3.1.0: If change password tab is hidden and default tab is 0, show personal settings instead
+  useEffect(() => {
+    if (isProfileLoaded && shouldHideChangePasswordTab && selectedTab === 0) {
+      // Find the personal settings tab index
+      const personalSettingsIndex = 0; // personal-settings is first after filtering
+      setSelectedTab(personalSettingsIndex);
+    }
+  }, [isProfileLoaded, shouldHideChangePasswordTab, selectedTab]);
+
   // Default tabs matching Angular's implementation
-  const defaultTabs: ProfileTab[] = [
+  const allTabs: ProfileTab[] = [
     {
       id: 'personal-settings',
       label: t('AbpAccount::PersonalSettings') || 'Personal Settings',
@@ -71,9 +109,15 @@ export function ManageProfile({
     {
       id: 'change-password',
       label: t('AbpAccount::ChangePassword') || 'Change Password',
-      content: <ChangePasswordForm />,
+      // v3.1.0: Pass hideCurrentPassword based on profile.hasPassword
+      content: <ChangePasswordForm hideCurrentPassword={profile?.hasPassword === false} />,
     },
   ];
+
+  // v3.1.0: Filter out change password tab for external users
+  const defaultTabs = shouldHideChangePasswordTab
+    ? allTabs.filter((tab) => tab.id !== 'change-password')
+    : allTabs;
 
   const tabs = customTabs || defaultTabs;
 
@@ -84,6 +128,19 @@ export function ManageProfile({
       onTabChange?.(index);
     }
   };
+
+  // v3.1.0: Show loading state until profile is loaded
+  if (!isProfileLoaded || profileLoading) {
+    return (
+      <Box className="manage-profile" py={{ base: '8', md: '12' }}>
+        <Container maxW="2xl">
+          <Center minH="400px">
+            <Spinner size="xl" />
+          </Center>
+        </Container>
+      </Box>
+    );
+  }
 
   return (
     <Box className="manage-profile" py={{ base: '8', md: '12' }}>

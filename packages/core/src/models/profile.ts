@@ -35,7 +35,11 @@ export namespace Profile {
   }
 
   export interface ChangePasswordRequest {
-    currentPassword: string;
+    /**
+     * The current password. Optional for users without a password (e.g., social login users).
+     * @since 3.1.0 - Made optional for social login users
+     */
+    currentPassword?: string;
     newPassword: string;
   }
 }

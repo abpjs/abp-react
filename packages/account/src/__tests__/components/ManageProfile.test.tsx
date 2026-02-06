@@ -12,6 +12,17 @@ vi.mock('../../components/ChangePasswordForm', () => ({
   ChangePasswordForm: () => <div data-testid="change-password-form">Change Password Form</div>,
 }));
 
+// Mock profile data
+const mockProfile = {
+  userName: 'test-user',
+  email: 'test@example.com',
+  name: 'Test',
+  surname: 'User',
+  phoneNumber: '',
+  isExternal: false,
+  hasPassword: true,
+};
+
 // Mock @abpjs/core
 vi.mock('@abpjs/core', () => ({
   useLocalization: () => ({
@@ -23,6 +34,11 @@ vi.mock('@abpjs/core', () => ({
       };
       return translations[key] || key;
     },
+  }),
+  useProfile: () => ({
+    profile: mockProfile,
+    loading: false,
+    fetchProfile: vi.fn().mockResolvedValue(mockProfile),
   }),
 }));
 
@@ -39,6 +55,12 @@ vi.mock('@chakra-ui/react', () => ({
   ),
   Stack: ({ children, gap, ...props }: any) => (
     <div data-testid="stack" data-gap={gap} {...props}>{children}</div>
+  ),
+  Spinner: ({ size, ...props }: any) => (
+    <div data-testid="spinner" data-size={size} {...props}>Loading...</div>
+  ),
+  Center: ({ children, minH, ...props }: any) => (
+    <div data-testid="center" data-minh={minH} {...props}>{children}</div>
   ),
   Tabs: {
     Root: ({ children, value, onValueChange, variant, ...props }: any) => (
@@ -89,50 +111,67 @@ describe('ManageProfile', () => {
     vi.clearAllMocks();
   });
 
-  it('should render with heading', () => {
+  it('should render with heading', async () => {
     render(<ManageProfile />);
 
-    expect(screen.getByText('Manage Your Account')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Manage Your Account')).toBeInTheDocument();
+    });
   });
 
-  it('should render tabs with default tabs', () => {
+  it('should render tabs with default tabs', async () => {
     render(<ManageProfile />);
 
-    expect(screen.getByRole('tablist')).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Personal Settings' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Change Password' })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('tablist')).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Personal Settings' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Change Password' })).toBeInTheDocument();
+    });
   });
 
-  it('should render PersonalSettingsForm in first tab', () => {
+  it('should render PersonalSettingsForm in first tab', async () => {
     render(<ManageProfile />);
 
-    expect(screen.getByTestId('personal-settings-form')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('personal-settings-form')).toBeInTheDocument();
+    });
   });
 
-  it('should render ChangePasswordForm in second tab', () => {
+  it('should render ChangePasswordForm in second tab', async () => {
     render(<ManageProfile />);
 
-    expect(screen.getByTestId('change-password-form')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('change-password-form')).toBeInTheDocument();
+    });
   });
 
-  it('should start with first tab selected by default', () => {
+  it('should start with first tab selected by default', async () => {
     render(<ManageProfile />);
 
-    const tabsRoot = screen.getByTestId('tabs-root');
-    expect(tabsRoot).toHaveAttribute('data-value', 'personal-settings');
+    await waitFor(() => {
+      const tabsRoot = screen.getByTestId('tabs-root');
+      expect(tabsRoot).toHaveAttribute('data-value', 'personal-settings');
+    });
   });
 
-  it('should start with specified defaultTabIndex', () => {
+  it('should start with specified defaultTabIndex', async () => {
     render(<ManageProfile defaultTabIndex={1} />);
 
-    const tabsRoot = screen.getByTestId('tabs-root');
-    expect(tabsRoot).toHaveAttribute('data-value', 'change-password');
+    await waitFor(() => {
+      const tabsRoot = screen.getByTestId('tabs-root');
+      expect(tabsRoot).toHaveAttribute('data-value', 'change-password');
+    });
   });
 
   it('should call onTabChange when tab is clicked', async () => {
     const onTabChange = vi.fn();
 
     render(<ManageProfile onTabChange={onTabChange} />);
+
+    // Wait for profile to load
+    await waitFor(() => {
+      expect(screen.getByTestId('tab-change-password')).toBeInTheDocument();
+    });
 
     const changePasswordTab = screen.getByTestId('tab-change-password');
     await user.click(changePasswordTab);
@@ -147,6 +186,11 @@ describe('ManageProfile', () => {
 
     render(<ManageProfile defaultTabIndex={1} onTabChange={onTabChange} />);
 
+    // Wait for profile to load
+    await waitFor(() => {
+      expect(screen.getByTestId('tab-personal-settings')).toBeInTheDocument();
+    });
+
     const personalSettingsTab = screen.getByTestId('tab-personal-settings');
     await user.click(personalSettingsTab);
 
@@ -155,7 +199,7 @@ describe('ManageProfile', () => {
     });
   });
 
-  it('should use custom tabs when provided', () => {
+  it('should use custom tabs when provided', async () => {
     const customTabs = [
       {
         id: 'custom-tab-1',
@@ -171,43 +215,56 @@ describe('ManageProfile', () => {
 
     render(<ManageProfile customTabs={customTabs} />);
 
-    expect(screen.getByRole('tab', { name: 'Custom Tab 1' })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Custom Tab 2' })).toBeInTheDocument();
-    expect(screen.getByTestId('custom-content-1')).toBeInTheDocument();
-    expect(screen.getByTestId('custom-content-2')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'Custom Tab 1' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Custom Tab 2' })).toBeInTheDocument();
+      expect(screen.getByTestId('custom-content-1')).toBeInTheDocument();
+      expect(screen.getByTestId('custom-content-2')).toBeInTheDocument();
 
-    // Default tabs should not be present
-    expect(screen.queryByTestId('personal-settings-form')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('change-password-form')).not.toBeInTheDocument();
+      // Default tabs should not be present
+      expect(screen.queryByTestId('personal-settings-form')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('change-password-form')).not.toBeInTheDocument();
+    });
   });
 
-  it('should render container with 2xl maxWidth', () => {
+  it('should render container with 2xl maxWidth', async () => {
     render(<ManageProfile />);
 
-    const container = screen.getByTestId('container');
-    expect(container).toHaveAttribute('data-maxw', '2xl');
+    await waitFor(() => {
+      const container = screen.getByTestId('container');
+      expect(container).toHaveAttribute('data-maxw', '2xl');
+    });
   });
 
-  it('should render tabs with enclosed variant', () => {
+  it('should render tabs with enclosed variant', async () => {
     render(<ManageProfile />);
 
-    const tabsRoot = screen.getByTestId('tabs-root');
-    expect(tabsRoot).toHaveAttribute('data-variant', 'enclosed');
+    await waitFor(() => {
+      const tabsRoot = screen.getByTestId('tabs-root');
+      expect(tabsRoot).toHaveAttribute('data-variant', 'enclosed');
+    });
   });
 
-  it('should have manage-profile className on root Box', () => {
+  it('should have manage-profile className on root Box', async () => {
     render(<ManageProfile />);
 
-    // Find the box with manage-profile class
-    const boxes = screen.getAllByTestId('box');
-    const rootBox = boxes.find(box => box.className === 'manage-profile');
-    expect(rootBox).toBeDefined();
+    await waitFor(() => {
+      // Find the box with manage-profile class
+      const boxes = screen.getAllByTestId('box');
+      const rootBox = boxes.find(box => box.className === 'manage-profile');
+      expect(rootBox).toBeDefined();
+    });
   });
 
   it('should handle switching between multiple tabs', async () => {
     const onTabChange = vi.fn();
 
     render(<ManageProfile onTabChange={onTabChange} />);
+
+    // Wait for profile to load
+    await waitFor(() => {
+      expect(screen.getByTestId('tab-change-password')).toBeInTheDocument();
+    });
 
     // Click change password tab
     await user.click(screen.getByTestId('tab-change-password'));
@@ -222,20 +279,27 @@ describe('ManageProfile', () => {
     });
   });
 
-  it('should handle defaultTabIndex out of bounds gracefully', () => {
+  it('should handle defaultTabIndex out of bounds gracefully', async () => {
     // When defaultTabIndex is out of bounds, it should still render
     render(<ManageProfile defaultTabIndex={99} />);
 
-    const tabsRoot = screen.getByTestId('tabs-root');
-    // When index is out of bounds, tabs[selectedTab]?.id is undefined
-    // The component still renders but value would be undefined
-    expect(tabsRoot).toBeInTheDocument();
+    await waitFor(() => {
+      const tabsRoot = screen.getByTestId('tabs-root');
+      // When index is out of bounds, tabs[selectedTab]?.id is undefined
+      // The component still renders but value would be undefined
+      expect(tabsRoot).toBeInTheDocument();
+    });
   });
 
   it('should not call onTabChange when same tab is clicked', async () => {
     const onTabChange = vi.fn();
 
     render(<ManageProfile onTabChange={onTabChange} defaultTabIndex={0} />);
+
+    // Wait for profile to load
+    await waitFor(() => {
+      expect(screen.getByTestId('tab-personal-settings')).toBeInTheDocument();
+    });
 
     // Click the already selected tab
     await user.click(screen.getByTestId('tab-personal-settings'));
@@ -245,11 +309,13 @@ describe('ManageProfile', () => {
     });
   });
 
-  it('should render all tab panels', () => {
+  it('should render all tab panels', async () => {
     render(<ManageProfile />);
 
-    expect(screen.getByTestId('tabpanel-personal-settings')).toBeInTheDocument();
-    expect(screen.getByTestId('tabpanel-change-password')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByTestId('tabpanel-personal-settings')).toBeInTheDocument();
+      expect(screen.getByTestId('tabpanel-change-password')).toBeInTheDocument();
+    });
   });
 
   // v2.7.0: Component key tests
@@ -268,6 +334,25 @@ describe('ManageProfile', () => {
 
     it('should have personalSettingsKey matching eAccountComponents.PersonalSettings', () => {
       expect(ManageProfile.personalSettingsKey).toBe('Account.PersonalSettingsComponent');
+    });
+  });
+
+  // v3.1.0: hideChangePasswordTab tests
+  describe('v3.1.0 hideChangePasswordTab', () => {
+    it('should hide change password tab when hideChangePasswordTab prop is true', async () => {
+      render(<ManageProfile hideChangePasswordTab={true} />);
+
+      await waitFor(() => {
+        expect(screen.queryByRole('tab', { name: 'Change Password' })).not.toBeInTheDocument();
+      });
+    });
+
+    it('should show change password tab when hideChangePasswordTab prop is false', async () => {
+      render(<ManageProfile hideChangePasswordTab={false} />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('tab', { name: 'Change Password' })).toBeInTheDocument();
+      });
     });
   });
 });
