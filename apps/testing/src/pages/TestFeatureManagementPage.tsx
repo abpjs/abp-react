@@ -2,6 +2,7 @@
  * Test page for @abpjs/feature-management package
  * Tests: FeatureManagementModal, useFeatureManagement hook
  * @updated 2.9.0 - Version bump only (dependency updates)
+ * @updated 3.0.0 - Angular visible getter/setter change (no React impact)
  */
 import { useState, useMemo } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -471,6 +472,60 @@ const key = eFeatureManagementComponents.FeatureManagement
   )
 }
 
+function TestV300Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.0.0</h2>
+
+      <div className="test-card">
+        <h3>Angular Internal Changes (No React Impact)</h3>
+        <p>
+          In Angular v3.0.0, the <code>visible</code> property was changed from a simple property
+          to a getter/setter pair for better two-way binding support.
+        </p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`// Angular v2.9.0
+visible: boolean;
+
+// Angular v3.0.0
+get visible(): boolean;
+set visible(value: boolean);`}
+        </pre>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+          This change has <strong>no impact on React</strong> because we already use the standard
+          React pattern of <code>visible</code> prop + <code>onVisibleChange</code> callback.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>React Implementation (Unchanged)</h3>
+        <p>The React component continues to work the same way:</p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`<FeatureManagementModal
+  providerName="T"
+  providerKey={tenantId}
+  visible={modalVisible}           // controlled visibility
+  onVisibleChange={setModalVisible} // callback when visibility changes
+  onSave={() => console.log('Saved!')}
+/>`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Dependency Updates</h3>
+        <ul>
+          <li>Updated to @abpjs/theme-shared@3.0.0</li>
+        </ul>
+        <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: '#1a2e1a', borderRadius: '4px', border: '1px solid #2e4a2e' }}>
+          <p style={{ color: '#6f6', margin: 0, fontSize: '14px' }}>
+            <strong>No breaking changes!</strong> All existing code continues to work without modifications.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function TestV240Features() {
   const restService = useRestService()
   const service = useMemo(() => new FeatureManagementService(restService), [restService])
@@ -508,13 +563,21 @@ console.log(service.apiName) // "default"`}</pre>
 export function TestFeatureManagementPage() {
   return (
     <div>
-      <h1>@abpjs/feature-management Tests (v2.9.0)</h1>
+      <h1>@abpjs/feature-management Tests (v3.0.0)</h1>
       <p>Testing feature management modal and hooks.</p>
-      <p style={{ color: '#888', fontSize: '0.9rem' }}>Version 2.9.0 - Dependency updates only (no new features)</p>
+      <p style={{ color: '#888', fontSize: '0.9rem' }}>
+        Version 3.0.0 - Angular internal changes (no React impact)
+      </p>
 
-      {/* v2.7.0 Features - Highlighted at top */}
+      {/* v3.0.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #ec4899', paddingTop: '1rem' }}>
+        v3.0.0 Changes
+      </h2>
+      <TestV300Features />
+
+      {/* v2.7.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
-        v2.7.0 New Features
+        v2.7.0 Features
       </h2>
       <TestV270Features />
 
