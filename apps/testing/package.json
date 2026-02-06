@@ -26,6 +26,7 @@
     "@abpjs/setting-management": "workspace:*",
     "@abpjs/theme-basic": "workspace:*",
     "@abpjs/theme-shared": "workspace:*",
+    "@abpjs/schematics": "workspace:*",
     "@reduxjs/toolkit": "^2.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
