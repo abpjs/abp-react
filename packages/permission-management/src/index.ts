@@ -1,7 +1,10 @@
 /**
  * @abpjs/permission-management
  * ABP Framework Permission Management module for React
- * Translated from @abp/ng.permission-management v2.7.0
+ * Translated from @abp/ng.permission-management v2.9.0
+ *
+ * Changes in v2.9.0:
+ * - Version bump only (dependency updates to @abp/ng.theme.shared v2.9.0)
  *
  * Changes in v2.7.0:
  * - Added ePermissionManagementComponents enum for component replacement keys
