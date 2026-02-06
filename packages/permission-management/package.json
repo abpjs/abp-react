@@ -48,7 +48,7 @@
     "@abpjs/theme-shared": "workspace:*"
   },
   "devDependencies": {
-    "@abp/ng.permission-management": "2.7.0",
+    "@abp/ng.permission-management": "2.9.0",
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^14.2.0",
     "@types/react": "^18.2.0",

@@ -781,9 +781,9 @@ function TestApiEndpoints() {
 export function TestPermissionManagementPage() {
   return (
     <div>
-      <h1>@abpjs/permission-management Tests v2.7.0</h1>
+      <h1>@abpjs/permission-management Tests v2.9.0</h1>
       <p>Testing permission management modal, hooks, and state service.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.7.0 - Added ePermissionManagementComponents enum for component replacement</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 2.9.0 - Dependency updates (version bump only)</p>
 
       {/* v2.7.0 Features - Highlighted at top */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
