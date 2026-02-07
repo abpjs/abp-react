@@ -9,6 +9,7 @@
  * @updated 3.0.0 - Added config subpackage, extension tokens, guards, new claim type methods
  * @updated 3.1.0 - Added SecurityLogs, IdentitySecurityLogService, UserLockDurationType, lockUser method
  * @updated 3.2.0 - Added eIdentityTwoFactorBehaviour enum, proxy subpackage with typed services
+ * @updated 4.0.0 - Identity.State uses proxy types, IdentityService deprecated, services cleanup
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -3073,18 +3074,142 @@ function TestProHookMethods() {
   )
 }
 
+/**
+ * Test section for v4.0.0 features:
+ * - Identity.State now references proxy DTOs (IdentityRoleDto, IdentityUserDto, ClaimTypeDto)
+ * - Identity.State no longer has claimTypes field
+ * - IdentityService deprecated (to be deleted in v5.0, use proxy services)
+ * - IdentitySecurityLogService in services/ deprecated (already in proxy/)
+ * - Angular DI refactoring (ConfigStateService, ApplicationConfigurationService) — React N/A
+ */
+function TestV400Features() {
+  return (
+    <div className="test-section">
+      <h2>v4.0.0 Features</h2>
+      <p>State type migration to proxy DTOs, service deprecations, Angular DI refactoring (N/A for React).</p>
+
+      <div className="test-card">
+        <h3>Identity.State — Proxy Type Migration</h3>
+        <p>The <code>Identity.State</code> interface now references proxy DTOs instead of deprecated namespace types:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '8px', fontSize: '14px' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid #555' }}>
+              <th style={{ padding: '4px 8px', textAlign: 'left' }}>Field</th>
+              <th style={{ padding: '4px 8px', textAlign: 'left' }}>v3.2.0 Type</th>
+              <th style={{ padding: '4px 8px', textAlign: 'left' }}>v4.0.0 Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <td style={{ padding: '4px 8px' }}>roles</td>
+              <td style={{ padding: '4px 8px', color: '#f88' }}>Identity.RoleResponse</td>
+              <td style={{ padding: '4px 8px', color: '#8f8' }}>PagedResultDto&lt;IdentityRoleDto&gt;</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <td style={{ padding: '4px 8px' }}>users</td>
+              <td style={{ padding: '4px 8px', color: '#f88' }}>Identity.UserResponse</td>
+              <td style={{ padding: '4px 8px', color: '#8f8' }}>PagedResultDto&lt;IdentityUserDto&gt;</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <td style={{ padding: '4px 8px' }}>selectedRole</td>
+              <td style={{ padding: '4px 8px', color: '#f88' }}>Identity.RoleItem</td>
+              <td style={{ padding: '4px 8px', color: '#8f8' }}>IdentityRoleDto</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <td style={{ padding: '4px 8px' }}>selectedUser</td>
+              <td style={{ padding: '4px 8px', color: '#f88' }}>Identity.UserItem</td>
+              <td style={{ padding: '4px 8px', color: '#8f8' }}>IdentityUserDto</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <td style={{ padding: '4px 8px' }}>selectedUserRoles</td>
+              <td style={{ padding: '4px 8px', color: '#f88' }}>Identity.RoleItem[]</td>
+              <td style={{ padding: '4px 8px', color: '#8f8' }}>IdentityRoleDto[]</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <td style={{ padding: '4px 8px' }}>claimTypes</td>
+              <td style={{ padding: '4px 8px', color: '#f88' }}>Identity.ClaimTypeName[]</td>
+              <td style={{ padding: '4px 8px', color: '#ff0' }}>Removed</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <td style={{ padding: '4px 8px' }}>claims</td>
+              <td style={{ padding: '4px 8px', color: '#f88' }}>Identity.ClaimResponse</td>
+              <td style={{ padding: '4px 8px', color: '#8f8' }}>PagedResultDto&lt;ClaimTypeDto&gt;</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <td style={{ padding: '4px 8px' }}>selectedClaim</td>
+              <td style={{ padding: '4px 8px', color: '#f88' }}>Identity.ClaimType</td>
+              <td style={{ padding: '4px 8px', color: '#8f8' }}>ClaimTypeDto</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Service Deprecations</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '8px', fontSize: '14px' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid #555' }}>
+              <th style={{ padding: '4px 8px', textAlign: 'left' }}>Deprecated Service</th>
+              <th style={{ padding: '4px 8px', textAlign: 'left' }}>Replacement</th>
+              <th style={{ padding: '4px 8px', textAlign: 'left' }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <td style={{ padding: '4px 8px' }}>IdentityService (services/)</td>
+              <td style={{ padding: '4px 8px' }}>IdentityRoleService, IdentityUserService, IdentityClaimTypeService (proxy/)</td>
+              <td style={{ padding: '4px 8px', color: '#ff0' }}>To be deleted in v5.0</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <td style={{ padding: '4px 8px' }}>IdentitySecurityLogService (services/)</td>
+              <td style={{ padding: '4px 8px' }}>IdentitySecurityLogService (proxy/identity/)</td>
+              <td style={{ padding: '4px 8px', color: '#ff0' }}>To be deleted in v5.0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Deprecated Types (kept for backward compatibility)</h3>
+        <p>The following types in the <code>Identity</code> namespace are deprecated and will be removed in v5.0:</p>
+        <ul style={{ fontSize: '14px', marginTop: '4px' }}>
+          <li><code>Identity.RoleResponse</code> → Use <code>PagedResultDto&lt;IdentityRoleDto&gt;</code></li>
+          <li><code>Identity.RoleSaveRequest</code> → Use <code>IdentityRoleCreateDto</code> / <code>IdentityRoleUpdateDto</code></li>
+          <li><code>Identity.RoleItem</code> → Use <code>IdentityRoleDto</code></li>
+          <li><code>Identity.UserResponse</code> → Use <code>PagedResultDto&lt;IdentityUserDto&gt;</code></li>
+          <li><code>Identity.User</code> → Use <code>IdentityUserCreateOrUpdateDtoBase</code></li>
+          <li><code>Identity.UserItem</code> → Use <code>IdentityUserDto</code></li>
+          <li><code>Identity.UserSaveRequest</code> → Use <code>IdentityUserCreateDto</code> / <code>IdentityUserUpdateDto</code></li>
+          <li><code>Identity.ClaimTypeName</code> → Use <code>ClaimTypeDto</code></li>
+          <li><code>Identity.ClaimType</code> → Use <code>ClaimTypeDto</code></li>
+          <li><code>Identity.ClaimRequest</code> → Use <code>IdentityUserClaimDto</code> / <code>IdentityRoleClaimDto</code></li>
+          <li><code>Identity.ClaimResponse</code> → Use <code>PagedResultDto&lt;ClaimTypeDto&gt;</code></li>
+          <li><code>Identity.ClaimValueType</code> → Use <code>IdentityClaimValueType</code></li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>Angular DI Refactoring (N/A for React)</h3>
+        <p>Angular v4.0.0 added <code>ConfigStateService</code> and <code>ApplicationConfigurationService</code> injections
+          to several components. This is an Angular-specific DI pattern change and does not apply to React.</p>
+      </div>
+    </div>
+  )
+}
+
 export function TestIdentityProPage() {
   return (
     <div>
-      <h1>@abpjs/identity-pro Tests (v3.2.0)</h1>
+      <h1>@abpjs/identity-pro Tests (v4.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing identity pro components, hooks, and services for claim type management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.2.0 - Added eIdentityTwoFactorBehaviour enum, proxy subpackage with typed services
+        Version 4.0.0 - Identity.State uses proxy types, IdentityService deprecated, services cleanup
       </p>
       <p style={{ color: '#6f6', fontSize: '14px' }}>
         Pro features: Claim type management, user/role claims, IdentityStateService, user unlock, permissions modal, getAllRoles, component identifiers, route names, change password, organization units, config/extensions, security logs, user lock, two-factor behaviour, proxy services
       </p>
 
+      <TestV400Features />
       <TestV320Features />
       <TestV310Features />
       <TestV300Features />

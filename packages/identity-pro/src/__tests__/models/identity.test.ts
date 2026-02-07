@@ -1,9 +1,12 @@
 /**
  * Tests for Identity Pro Models
- * @abpjs/identity-pro v3.1.0
+ * @abpjs/identity-pro v4.0.0
  */
 import { describe, it, expect } from 'vitest';
+import { PagedResultDto } from '@abpjs/core';
 import { Identity, createOrganizationUnitWithDetailsDto } from '../../models';
+import type { ClaimTypeDto, IdentityRoleDto, IdentityUserDto } from '../../proxy/identity/models';
+import { IdentityClaimValueType } from '../../proxy/identity/identity-claim-value-type.enum';
 
 describe('Identity namespace', () => {
   describe('ChangePasswordRequest (v2.7.0)', () => {
@@ -200,15 +203,14 @@ describe('Identity namespace', () => {
   describe('State with organizationUnits (v2.9.0)', () => {
     it('should include organizationUnits in State interface', () => {
       const state: Identity.State = {
-        roles: { items: [], totalCount: 0 },
-        users: { items: [], totalCount: 0 },
-        selectedRole: {} as Identity.RoleItem,
-        selectedUser: {} as Identity.UserItem,
+        roles: new PagedResultDto({ items: [], totalCount: 0 }),
+        users: new PagedResultDto({ items: [], totalCount: 0 }),
+        selectedRole: {} as IdentityRoleDto,
+        selectedUser: {} as IdentityUserDto,
         selectedUserRoles: [],
-        claimTypes: [],
-        claims: { items: [], totalCount: 0 },
-        selectedClaim: {} as Identity.ClaimType,
-        organizationUnits: { items: [], totalCount: 0 },
+        claims: new PagedResultDto({ items: [], totalCount: 0 }),
+        selectedClaim: {} as ClaimTypeDto,
+        organizationUnits: new PagedResultDto({ items: [], totalCount: 0 }),
       };
 
       expect(state.organizationUnits).toBeDefined();
@@ -231,20 +233,181 @@ describe('Identity namespace', () => {
       ];
 
       const state: Identity.State = {
-        roles: { items: [], totalCount: 0 },
-        users: { items: [], totalCount: 0 },
-        selectedRole: {} as Identity.RoleItem,
-        selectedUser: {} as Identity.UserItem,
+        roles: new PagedResultDto({ items: [], totalCount: 0 }),
+        users: new PagedResultDto({ items: [], totalCount: 0 }),
+        selectedRole: {} as IdentityRoleDto,
+        selectedUser: {} as IdentityUserDto,
         selectedUserRoles: [],
-        claimTypes: [],
-        claims: { items: [], totalCount: 0 },
-        selectedClaim: {} as Identity.ClaimType,
-        organizationUnits: { items: orgUnits, totalCount: 2 },
+        claims: new PagedResultDto({ items: [], totalCount: 0 }),
+        selectedClaim: {} as ClaimTypeDto,
+        organizationUnits: new PagedResultDto({ items: orgUnits, totalCount: 2 }),
       };
 
       expect(state.organizationUnits.items).toHaveLength(2);
-      expect(state.organizationUnits.items[0].displayName).toBe('Engineering');
-      expect(state.organizationUnits.items[1].displayName).toBe('Marketing');
+      expect(state.organizationUnits.items![0].displayName).toBe('Engineering');
+      expect(state.organizationUnits.items![1].displayName).toBe('Marketing');
+    });
+  });
+
+  describe('State v4.0.0 - proxy type references', () => {
+    it('should use PagedResultDto<IdentityRoleDto> for roles', () => {
+      const roles: IdentityRoleDto[] = [
+        {
+          id: 'role-1',
+          name: 'Admin',
+          isDefault: false,
+          isStatic: true,
+          isPublic: true,
+          concurrencyStamp: 'stamp-1',
+          extraProperties: {},
+        },
+      ];
+      const state: Identity.State = {
+        roles: new PagedResultDto({ items: roles, totalCount: 1 }),
+        users: new PagedResultDto({ items: [], totalCount: 0 }),
+        selectedRole: roles[0],
+        selectedUser: {} as IdentityUserDto,
+        selectedUserRoles: roles,
+        claims: new PagedResultDto({ items: [], totalCount: 0 }),
+        selectedClaim: {} as ClaimTypeDto,
+        organizationUnits: new PagedResultDto({ items: [], totalCount: 0 }),
+      };
+
+      expect(state.roles.items).toHaveLength(1);
+      expect(state.roles.items![0].name).toBe('Admin');
+      expect(state.selectedRole.isStatic).toBe(true);
+      expect(state.selectedUserRoles).toHaveLength(1);
+    });
+
+    it('should use PagedResultDto<IdentityUserDto> for users', () => {
+      const users: IdentityUserDto[] = [
+        {
+          id: 'user-1',
+          userName: 'admin',
+          email: 'admin@test.com',
+          name: 'Admin',
+          surname: 'User',
+          emailConfirmed: true,
+          phoneNumber: '',
+          phoneNumberConfirmed: false,
+          supportTwoFactor: true,
+          lockoutEnabled: true,
+          isLockedOut: false,
+          concurrencyStamp: 'stamp-1',
+          extraProperties: {},
+        },
+      ];
+      const state: Identity.State = {
+        roles: new PagedResultDto({ items: [], totalCount: 0 }),
+        users: new PagedResultDto({ items: users, totalCount: 1 }),
+        selectedRole: {} as IdentityRoleDto,
+        selectedUser: users[0],
+        selectedUserRoles: [],
+        claims: new PagedResultDto({ items: [], totalCount: 0 }),
+        selectedClaim: {} as ClaimTypeDto,
+        organizationUnits: new PagedResultDto({ items: [], totalCount: 0 }),
+      };
+
+      expect(state.users.items).toHaveLength(1);
+      expect(state.users.items![0].userName).toBe('admin');
+      expect(state.selectedUser.supportTwoFactor).toBe(true);
+    });
+
+    it('should use PagedResultDto<ClaimTypeDto> for claims', () => {
+      const claims: ClaimTypeDto[] = [
+        {
+          id: 'claim-1',
+          name: 'email',
+          required: true,
+          isStatic: true,
+          regex: '',
+          regexDescription: '',
+          description: 'Email claim',
+          valueType: IdentityClaimValueType.String,
+          valueTypeAsString: 'String',
+          extraProperties: {},
+        },
+      ];
+      const state: Identity.State = {
+        roles: new PagedResultDto({ items: [], totalCount: 0 }),
+        users: new PagedResultDto({ items: [], totalCount: 0 }),
+        selectedRole: {} as IdentityRoleDto,
+        selectedUser: {} as IdentityUserDto,
+        selectedUserRoles: [],
+        claims: new PagedResultDto({ items: claims, totalCount: 1 }),
+        selectedClaim: claims[0],
+        organizationUnits: new PagedResultDto({ items: [], totalCount: 0 }),
+      };
+
+      expect(state.claims.items).toHaveLength(1);
+      expect(state.claims.items![0].name).toBe('email');
+      expect(state.selectedClaim.valueType).toBe(IdentityClaimValueType.String);
+      expect(state.selectedClaim.valueTypeAsString).toBe('String');
+    });
+
+    it('should no longer have claimTypes field (removed in v4.0.0)', () => {
+      const state: Identity.State = {
+        roles: new PagedResultDto({ items: [], totalCount: 0 }),
+        users: new PagedResultDto({ items: [], totalCount: 0 }),
+        selectedRole: {} as IdentityRoleDto,
+        selectedUser: {} as IdentityUserDto,
+        selectedUserRoles: [],
+        claims: new PagedResultDto({ items: [], totalCount: 0 }),
+        selectedClaim: {} as ClaimTypeDto,
+        organizationUnits: new PagedResultDto({ items: [], totalCount: 0 }),
+      };
+
+      // claimTypes was removed in v4.0.0 State
+      expect(state).not.toHaveProperty('claimTypes');
+    });
+  });
+
+  describe('deprecated types backward compatibility (v4.0.0)', () => {
+    it('should still export RoleItem for backward compatibility', () => {
+      const role: Identity.RoleItem = {
+        id: 'role-1',
+        name: 'Admin',
+        isDefault: false,
+        isPublic: true,
+        isStatic: false,
+        concurrencyStamp: 'stamp',
+      };
+      expect(role.id).toBe('role-1');
+    });
+
+    it('should still export UserItem for backward compatibility', () => {
+      const user: Identity.UserItem = {
+        id: 'user-1',
+        userName: 'admin',
+        name: 'Admin',
+        surname: 'User',
+        email: 'admin@test.com',
+        phoneNumber: '',
+        twoFactorEnabled: false,
+        lockoutEnabled: true,
+        tenantId: '',
+        emailConfirmed: true,
+        phoneNumberConfirmed: false,
+        isLockedOut: false,
+        concurrencyStamp: 'stamp',
+      };
+      expect(user.id).toBe('user-1');
+    });
+
+    it('should still export ClaimValueType enum for backward compatibility', () => {
+      expect(Identity.ClaimValueType.String).toBe(0);
+      expect(Identity.ClaimValueType.Int).toBe(1);
+      expect(Identity.ClaimValueType.Boolean).toBe(2);
+      expect(Identity.ClaimValueType.DateTime).toBe(3);
+    });
+
+    it('should still export ClaimRequest for backward compatibility', () => {
+      const claim: Identity.ClaimRequest = {
+        userId: 'user-1',
+        claimType: 'email',
+        claimValue: 'admin@test.com',
+      };
+      expect(claim.claimType).toBe('email');
     });
   });
 });
