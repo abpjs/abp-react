@@ -1,29 +1,41 @@
-import { ABP } from '@abpjs/core';
+import { ABP, PagedResultDto } from '@abpjs/core';
+import type { IdentityRoleDto, IdentityUserDto } from '../proxy/identity/models';
 
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Identity namespace containing all types related to identity management.
  * Translated from @abp/ng.identity Identity namespace.
+ *
+ * Changes in v3.2.0:
+ * - State now uses PagedResultDto and new proxy DTOs (IdentityRoleDto, IdentityUserDto)
+ * - Legacy types (RoleResponse, RoleItem, UserResponse, UserItem, etc.) deprecated
  */
 export namespace Identity {
   /**
    * Identity state shape for state management
+   * @updated 3.2.0 - Now uses PagedResultDto and new proxy DTOs
    */
   export interface State {
-    roles: RoleResponse;
-    users: UserResponse;
-    selectedRole: RoleItem;
-    selectedUser: UserItem;
-    selectedUserRoles: RoleItem[];
+    roles: PagedResultDto<IdentityRoleDto>;
+    users: PagedResultDto<IdentityUserDto>;
+    selectedRole: IdentityRoleDto;
+    selectedUser: IdentityUserDto;
+    selectedUserRoles: IdentityRoleDto[];
   }
+
+  // ============================================================================
+  // Legacy Types (deprecated in v3.2.0, to be deleted in v4.0)
+  // ============================================================================
 
   /**
    * Paginated response for roles
+   * @deprecated To be deleted in v4.0. Use PagedResultDto<IdentityRoleDto> instead.
    */
   export type RoleResponse = ABP.PagedResponse<RoleItem>;
 
   /**
    * Request payload for creating/updating a role
+   * @deprecated To be deleted in v4.0. Use IdentityRoleCreateDto or IdentityRoleUpdateDto instead.
    */
   export interface RoleSaveRequest {
     name: string;
@@ -33,6 +45,7 @@ export namespace Identity {
 
   /**
    * Role item returned from the API
+   * @deprecated To be deleted in v4.0. Use IdentityRoleDto instead.
    */
   export interface RoleItem extends RoleSaveRequest {
     isStatic: boolean;
@@ -42,11 +55,13 @@ export namespace Identity {
 
   /**
    * Paginated response for users
+   * @deprecated To be deleted in v4.0. Use PagedResultDto<IdentityUserDto> instead.
    */
   export type UserResponse = ABP.PagedResponse<UserItem>;
 
   /**
    * Base user properties
+   * @deprecated To be deleted in v4.0. Use IdentityUserCreateOrUpdateDtoBase instead.
    */
   export interface User {
     userName: string;
@@ -60,6 +75,7 @@ export namespace Identity {
 
   /**
    * User item returned from the API
+   * @deprecated To be deleted in v4.0. Use IdentityUserDto instead.
    */
   export interface UserItem extends User {
     tenantId: string;
@@ -72,6 +88,7 @@ export namespace Identity {
 
   /**
    * Request payload for creating/updating a user
+   * @deprecated To be deleted in v4.0. Use IdentityUserCreateDto or IdentityUserUpdateDto instead.
    */
   export interface UserSaveRequest extends User {
     password: string;

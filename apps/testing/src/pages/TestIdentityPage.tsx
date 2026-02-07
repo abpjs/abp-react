@@ -2,6 +2,12 @@
  * Test page for @abpjs/identity package
  * Tests: RolesComponent, UsersComponent, useRoles, useUsers, useIdentity hooks
  *
+ * v3.2.0 Updates:
+ * - New proxy services: IdentityRoleService, IdentityUserService, IdentityUserLookupService, ProfileService
+ * - New proxy models: IdentityRoleDto, IdentityUserDto, ProfileDto, etc.
+ * - State interface updated to use PagedResultDto and new proxy DTOs
+ * - Legacy types deprecated (RoleItem, UserItem, etc.)
+ *
  * v3.1.0 Updates:
  * - Version bump only (internal Angular type reference updates, no functional changes)
  *
@@ -33,8 +39,22 @@ import {
   // v3.0.0 config exports
   eIdentityPolicyNames,
   configureRoutes,
+  // v3.2.0 proxy services
+  IdentityRoleService,
+  IdentityUserService,
+  IdentityUserLookupService,
+  ProfileService,
 } from '@abpjs/identity'
-import type { Identity, PasswordRule } from '@abpjs/identity'
+import type {
+  Identity,
+  PasswordRule,
+  // v3.2.0 proxy models
+  IdentityRoleDto,
+  IdentityUserDto,
+  GetIdentityUsersInput,
+  ProfileDto,
+  UserLookupCountInputDto,
+} from '@abpjs/identity'
 
 function TestRolesComponent() {
   const { isAuthenticated } = useAuth()
@@ -1852,14 +1872,417 @@ function TestV310Features() {
   )
 }
 
+function TestV320Features() {
+  const restService = useRestService()
+  const { isAuthenticated } = useAuth()
+
+  // Initialize proxy services
+  const roleService = useMemo(() => new IdentityRoleService(restService), [restService])
+  const userService = useMemo(() => new IdentityUserService(restService), [restService])
+  const userLookupService = useMemo(() => new IdentityUserLookupService(restService), [restService])
+  const profileService = useMemo(() => new ProfileService(restService), [restService])
+
+  // State for demo
+  const [proxyRoles, setProxyRoles] = useState<IdentityRoleDto[]>([])
+  const [proxyUsers, setProxyUsers] = useState<IdentityUserDto[]>([])
+  const [profileData, setProfileData] = useState<ProfileDto | null>(null)
+  const [lookupCount, setLookupCount] = useState<number | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Demo: Fetch roles using IdentityRoleService
+  const handleFetchProxyRoles = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const result = await roleService.getList({ skipCount: 0, maxResultCount: 10 })
+      setProxyRoles(result.items)
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch roles')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Demo: Fetch users using IdentityUserService
+  const handleFetchProxyUsers = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const input: GetIdentityUsersInput = { filter: '', skipCount: 0, maxResultCount: 10 }
+      const result = await userService.getList(input)
+      setProxyUsers(result.items)
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch users')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Demo: Fetch profile using ProfileService
+  const handleFetchProfile = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const result = await profileService.get()
+      setProfileData(result)
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch profile')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Demo: Get user count using IdentityUserLookupService
+  const handleFetchUserCount = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const input: UserLookupCountInputDto = { filter: '' }
+      const result = await userLookupService.getCount(input)
+      setLookupCount(result)
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch user count')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.2.0</h2>
+
+      <div className="test-card">
+        <h3>New Proxy Services</h3>
+        <p>v3.2.0 introduces typed proxy services for direct API access:</p>
+        <pre style={{ fontSize: '12px' }}>{`import {
+  IdentityRoleService,
+  IdentityUserService,
+  IdentityUserLookupService,
+  ProfileService,
+} from '@abpjs/identity'
+
+// Initialize with RestService
+const roleService = new IdentityRoleService(restService)
+const userService = new IdentityUserService(restService)
+const userLookupService = new IdentityUserLookupService(restService)
+const profileService = new ProfileService(restService)`}</pre>
+
+        <h4 style={{ marginTop: '1rem' }}>Service Properties:</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Service</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>apiName</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>IdentityRoleService</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{roleService.apiName}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>IdentityUserService</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{userService.apiName}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>IdentityUserLookupService</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{userLookupService.apiName}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>ProfileService</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{profileService.apiName}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>IdentityRoleService Methods</h3>
+        <p>Typed role management operations:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}><code>create(input)</code></td><td>Create a new role</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>delete(id)</code></td><td>Delete a role by ID</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>get(id)</code></td><td>Get a role by ID</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>getAllList()</code></td><td>Get all roles (no pagination)</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>getList(input)</code></td><td>Get paged roles list</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>update(id, input)</code></td><td>Update a role</td></tr>
+          </tbody>
+        </table>
+
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={handleFetchProxyRoles} disabled={isLoading || !isAuthenticated}>
+            {isLoading ? 'Loading...' : 'Fetch Roles via IdentityRoleService'}
+          </button>
+          {!isAuthenticated && (
+            <span style={{ marginLeft: '0.5rem', color: '#f88', fontSize: '12px' }}>(Login required)</span>
+          )}
+        </div>
+        {proxyRoles.length > 0 && (
+          <div style={{ marginTop: '0.5rem', fontSize: '12px' }}>
+            <strong>Fetched {proxyRoles.length} roles:</strong>
+            <ul style={{ margin: '0.25rem 0', paddingLeft: '1.5rem' }}>
+              {proxyRoles.slice(0, 3).map(role => (
+                <li key={role.id}>{role.name} (isStatic: {role.isStatic ? 'true' : 'false'})</li>
+              ))}
+              {proxyRoles.length > 3 && <li>... and {proxyRoles.length - 3} more</li>}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>IdentityUserService Methods</h3>
+        <p>Typed user management operations:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}><code>create(input)</code></td><td>Create a new user</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>delete(id)</code></td><td>Delete a user by ID</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>findByEmail(email)</code></td><td>Find user by email</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>findByUsername(userName)</code></td><td>Find user by username</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>get(id)</code></td><td>Get a user by ID</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>getAssignableRoles()</code></td><td>Get roles assignable to users</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>getList(input)</code></td><td>Get paged users list</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>getRoles(id)</code></td><td>Get roles for a user</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>update(id, input)</code></td><td>Update a user</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>updateRoles(id, input)</code></td><td>Update user roles</td></tr>
+          </tbody>
+        </table>
+
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={handleFetchProxyUsers} disabled={isLoading || !isAuthenticated}>
+            {isLoading ? 'Loading...' : 'Fetch Users via IdentityUserService'}
+          </button>
+        </div>
+        {proxyUsers.length > 0 && (
+          <div style={{ marginTop: '0.5rem', fontSize: '12px' }}>
+            <strong>Fetched {proxyUsers.length} users:</strong>
+            <ul style={{ margin: '0.25rem 0', paddingLeft: '1.5rem' }}>
+              {proxyUsers.slice(0, 3).map(user => (
+                <li key={user.id}>{user.userName} ({user.email})</li>
+              ))}
+              {proxyUsers.length > 3 && <li>... and {proxyUsers.length - 3} more</li>}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>IdentityUserLookupService Methods</h3>
+        <p>User lookup operations (for user pickers, autocomplete, etc.):</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}><code>findById(id)</code></td><td>Find user by ID</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>findByUserName(userName)</code></td><td>Find user by username</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>getCount(input)</code></td><td>Get total user count with filter</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>search(input)</code></td><td>Search users with pagination</td></tr>
+          </tbody>
+        </table>
+
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={handleFetchUserCount} disabled={isLoading || !isAuthenticated}>
+            {isLoading ? 'Loading...' : 'Get User Count via IdentityUserLookupService'}
+          </button>
+        </div>
+        {lookupCount !== null && (
+          <p style={{ marginTop: '0.5rem', fontSize: '14px' }}>
+            Total users: <strong>{lookupCount}</strong>
+          </p>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>ProfileService Methods</h3>
+        <p>Current user profile operations:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}><code>changePassword(input)</code></td><td>Change current user password</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>get()</code></td><td>Get current user profile</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>update(input)</code></td><td>Update current user profile</td></tr>
+          </tbody>
+        </table>
+
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={handleFetchProfile} disabled={isLoading || !isAuthenticated}>
+            {isLoading ? 'Loading...' : 'Fetch My Profile via ProfileService'}
+          </button>
+        </div>
+        {profileData && (
+          <div style={{ marginTop: '0.5rem', fontSize: '12px' }}>
+            <strong>Profile:</strong>
+            <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', marginTop: '0.25rem' }}>
+{JSON.stringify({
+  userName: profileData.userName,
+  email: profileData.email,
+  name: profileData.name,
+  surname: profileData.surname,
+  isExternal: profileData.isExternal,
+  hasPassword: profileData.hasPassword,
+}, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>New Proxy Models (DTOs)</h3>
+        <p>Typed DTOs for API requests and responses:</p>
+        <pre style={{ fontSize: '12px' }}>{`import type {
+  // Role DTOs
+  IdentityRoleDto,
+  IdentityRoleCreateDto,
+  IdentityRoleUpdateDto,
+
+  // User DTOs
+  IdentityUserDto,
+  IdentityUserCreateDto,
+  IdentityUserUpdateDto,
+  IdentityUserUpdateRolesDto,
+  GetIdentityUsersInput,
+
+  // Profile DTOs
+  ProfileDto,
+  UpdateProfileDto,
+  ChangePasswordInput,
+
+  // User Lookup DTOs
+  UserLookupCountInputDto,
+  UserLookupSearchInputDto,
+  UserData,
+} from '@abpjs/identity'`}</pre>
+      </div>
+
+      <div className="test-card">
+        <h3>New API Endpoints (v3.2.0)</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Endpoint</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>GET</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/users/by-email/:email</code></td>
+              <td>Find user by email</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>GET</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/users/by-username/:userName</code></td>
+              <td>Find user by username</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>PUT</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/users/:id/roles</code></td>
+              <td>Update user roles</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>GET</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/users/lookup/:id</code></td>
+              <td>Lookup user by ID</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>GET</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/users/lookup/by-username/:userName</code></td>
+              <td>Lookup user by username</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>GET</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/users/lookup/count</code></td>
+              <td>Get user count with filter</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>GET</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/users/lookup/search</code></td>
+              <td>Search users</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>GET</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/my-profile</code></td>
+              <td>Get current user profile</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>PUT</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/my-profile</code></td>
+              <td>Update current user profile</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>POST</code></td>
+              <td style={{ padding: '8px' }}><code>/api/identity/my-profile/change-password</code></td>
+              <td>Change password</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Deprecated Types</h3>
+        <p style={{ color: '#f88' }}>The following legacy types are deprecated in v3.2.0:</p>
+        <ul style={{ fontSize: '14px' }}>
+          <li><code>Identity.RoleItem</code> - Use <code>IdentityRoleDto</code> instead</li>
+          <li><code>Identity.UserItem</code> - Use <code>IdentityUserDto</code> instead</li>
+          <li><code>Identity.RoleSaveRequest</code> - Use <code>IdentityRoleCreateDto</code> or <code>IdentityRoleUpdateDto</code></li>
+          <li><code>Identity.UserSaveRequest</code> - Use <code>IdentityUserCreateDto</code> or <code>IdentityUserUpdateDto</code></li>
+        </ul>
+        <pre style={{ fontSize: '12px', marginTop: '0.5rem' }}>{`// Before (deprecated)
+import type { Identity } from '@abpjs/identity'
+const roles: Identity.RoleItem[] = []
+
+// After (v3.2.0)
+import type { IdentityRoleDto } from '@abpjs/identity'
+const roles: IdentityRoleDto[] = []`}</pre>
+      </div>
+
+      {error && (
+        <div className="test-card" style={{ borderColor: '#f44' }}>
+          <p style={{ color: '#f88' }}>Error: {error}</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function TestIdentityPage() {
   return (
     <div>
-      <h1>@abpjs/identity Tests v3.1.0</h1>
+      <h1>@abpjs/identity Tests v3.2.0</h1>
       <p>Testing identity management components and hooks for role and user management.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 3.1.0 - Version bump (no functional changes)</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 3.2.0 - New proxy services and typed DTOs</p>
 
-      {/* v3.1.0 Features - Highlighted at top */}
+      {/* v3.2.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #9333ea', paddingTop: '1rem' }}>
+        v3.2.0 New Features
+      </h2>
+      <TestV320Features />
+
+      {/* v3.1.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #f59e0b', paddingTop: '1rem' }}>
         v3.1.0 Changes
       </h2>
