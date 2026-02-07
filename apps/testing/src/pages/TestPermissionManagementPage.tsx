@@ -1,9 +1,9 @@
 /**
- * Test page for @abpjs/permission-management package
+ * Test page for @abpjs/permission-management package v3.1.0
  * Tests: PermissionManagementModal, usePermissionManagement hook, PermissionManagementStateService
  */
 import { useState } from 'react'
-import { useAuth, useConfig } from '@abpjs/core'
+import { useAuth, useConfig, useCurrentUserInfo } from '@abpjs/core'
 import {
   PermissionManagementModal,
   usePermissionManagement,
@@ -175,6 +175,7 @@ function TestPermissionHook() {
     isGranted,
     isGrantedByRole,
     isGrantedByOtherProviderName,
+    shouldFetchAppConfig,
     reset,
   } = usePermissionManagement()
 
@@ -321,6 +322,7 @@ function TestPermissionHook() {
             <tr><td style={{ padding: '8px' }}>isGranted</td><td>Check if permission is granted</td></tr>
             <tr><td style={{ padding: '8px' }}>isGrantedByRole</td><td>Check if permission is granted by a role (deprecated in v1.1.0)</td></tr>
             <tr style={{ background: 'rgba(100,108,255,0.1)' }}><td style={{ padding: '8px' }}>isGrantedByOtherProviderName</td><td>Check if permission is granted by another provider (v1.1.0)</td></tr>
+            <tr style={{ background: 'rgba(155,89,182,0.1)' }}><td style={{ padding: '8px' }}>shouldFetchAppConfig</td><td>Check if app config should be refreshed after saving (v3.1.0)</td></tr>
             <tr><td style={{ padding: '8px' }}>reset</td><td>Reset all state</td></tr>
           </tbody>
         </table>
@@ -742,6 +744,161 @@ console.log(\`\${count} permissions granted\`);`}
   )
 }
 
+function TestV310Features() {
+  const [testProviderKey, setTestProviderKey] = useState('')
+  const [testProviderName, setTestProviderName] = useState<'R' | 'U'>('R')
+  const currentUser = useCurrentUserInfo()
+
+  const { shouldFetchAppConfig } = usePermissionManagement()
+
+  // Calculate result based on current inputs
+  const result = testProviderKey ? shouldFetchAppConfig(testProviderKey, testProviderName) : null
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.1.0</h2>
+
+      <div className="test-card">
+        <h3>shouldFetchAppConfig(providerKey: string, providerName: string): boolean</h3>
+        <p>New method to determine whether the app configuration should be refreshed after saving permissions.</p>
+        <p>Returns <code>true</code> if:</p>
+        <ul>
+          <li>The provider is a <strong>role ('R')</strong> that the current user belongs to</li>
+          <li>The provider is the <strong>current user ('U')</strong></li>
+        </ul>
+
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px',
+          marginTop: '1rem'
+        }}>
+{`const { shouldFetchAppConfig, savePermissions } = usePermissionManagement();
+
+// After saving permissions
+const handleSave = async () => {
+  const result = await savePermissions(providerKey, providerName);
+  if (result.success && shouldFetchAppConfig(providerKey, providerName)) {
+    // Refresh app config to update current user's permissions in UI
+    await refreshAppConfig();
+  }
+};`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Interactive Demo</h3>
+
+        <div style={{ marginBottom: '1rem' }}>
+          <h4>Current User Info</h4>
+          <p>ID: <code style={{ background: 'rgba(50,50,50,0.3)', padding: '2px 6px', borderRadius: '3px' }}>{currentUser?.id || 'Not logged in'}</code></p>
+          <p>Roles: {currentUser?.roles?.length ? (
+            currentUser.roles.map((role, i) => (
+              <code key={i} style={{
+                background: 'rgba(100,108,255,0.2)',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                marginRight: '4px'
+              }}>{role}</code>
+            ))
+          ) : (
+            <span style={{ color: '#888' }}>No roles</span>
+          )}</p>
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
+          <select
+            value={testProviderName}
+            onChange={(e) => setTestProviderName(e.target.value as 'R' | 'U')}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333'
+            }}
+          >
+            <option value="R">Role (R)</option>
+            <option value="U">User (U)</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Provider Key (ID)"
+            value={testProviderKey}
+            onChange={(e) => setTestProviderKey(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+              flex: 1
+            }}
+          />
+        </div>
+
+        {currentUser?.id && testProviderName === 'U' && (
+          <button
+            style={{ marginBottom: '1rem', fontSize: '12px', padding: '4px 8px' }}
+            onClick={() => setTestProviderKey(currentUser.id)}
+          >
+            Use My User ID
+          </button>
+        )}
+
+        {currentUser?.roles?.length && testProviderName === 'R' && (
+          <div style={{ marginBottom: '1rem' }}>
+            <span style={{ fontSize: '12px', marginRight: '8px' }}>Quick select role:</span>
+            {currentUser.roles.map((role, i) => (
+              <button
+                key={i}
+                style={{ fontSize: '12px', padding: '4px 8px', marginRight: '4px' }}
+                onClick={() => setTestProviderKey(role)}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {testProviderKey && (
+          <div style={{
+            padding: '1rem',
+            borderRadius: '4px',
+            background: result ? 'rgba(46,204,113,0.2)' : 'rgba(231,76,60,0.2)',
+            marginTop: '1rem'
+          }}>
+            <p style={{ margin: 0 }}>
+              <strong>shouldFetchAppConfig("{testProviderKey}", "{testProviderName}")</strong>
+            </p>
+            <p style={{ margin: '0.5rem 0 0', fontSize: '1.2rem' }}>
+              Returns: <code style={{
+                background: result ? '#2ecc71' : '#e74c3c',
+                color: 'white',
+                padding: '2px 8px',
+                borderRadius: '3px'
+              }}>
+                {result ? 'true' : 'false'}
+              </code>
+            </p>
+            <p style={{ margin: '0.5rem 0 0', fontSize: '12px', color: '#888' }}>
+              {result
+                ? 'App config should be refreshed - permissions affect current user'
+                : 'No refresh needed - permissions do not affect current user'}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>Use Cases</h3>
+        <ul>
+          <li><strong>Permission UI Refresh:</strong> After modifying permissions, refresh the app config only when necessary</li>
+          <li><strong>Performance Optimization:</strong> Avoid unnecessary API calls when editing permissions for other users/roles</li>
+          <li><strong>Real-time Updates:</strong> Keep current user's permission state in sync after changes</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 function TestV270Features() {
   return (
     <div className="test-section">
@@ -929,13 +1086,19 @@ function TestApiEndpoints() {
 export function TestPermissionManagementPage() {
   return (
     <div>
-      <h1>@abpjs/permission-management Tests v3.0.0</h1>
+      <h1>@abpjs/permission-management Tests v3.1.0</h1>
       <p>Testing permission management modal, hooks, and state service.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 3.0.0 - Added getAssignedCount method</p>
+      <p style={{ color: '#9b59b6', fontSize: '0.9rem' }}>Version 3.1.0 - Added shouldFetchAppConfig method</p>
 
-      {/* v3.0.0 Features - Highlighted at top */}
+      {/* v3.1.0 Features - Highlighted at top */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #9b59b6', paddingTop: '1rem' }}>
-        v3.0.0 New Features
+        v3.1.0 New Features
+      </h2>
+      <TestV310Features />
+
+      {/* v3.0.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #8e44ad', paddingTop: '1rem' }}>
+        v3.0.0 Features
       </h2>
       <TestV300Features />
 

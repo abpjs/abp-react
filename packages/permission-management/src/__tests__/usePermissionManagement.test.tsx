@@ -16,8 +16,14 @@ vi.mock('../services', () => ({
 
 // Mock @abpjs/core
 const mockRestService = {};
+const mockCurrentUser = {
+  id: 'user-123',
+  userName: 'admin',
+  roles: ['admin-role', 'editor-role'],
+};
 vi.mock('@abpjs/core', () => ({
   useRestService: () => mockRestService,
+  useCurrentUserInfo: () => mockCurrentUser,
 }));
 
 // Import hook after mocks are set up
@@ -603,6 +609,53 @@ describe('usePermissionManagement', () => {
       expect(result.current.error).toBeNull();
       expect(result.current.selectThisTab).toBe(false);
       expect(result.current.selectAllTab).toBe(false);
+    });
+  });
+
+  describe('shouldFetchAppConfig (v3.1.0 feature)', () => {
+    it('should return true when modifying a role the current user belongs to', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      // mockCurrentUser has roles: ['admin-role', 'editor-role']
+      expect(result.current.shouldFetchAppConfig('admin-role', 'R')).toBe(true);
+      expect(result.current.shouldFetchAppConfig('editor-role', 'R')).toBe(true);
+    });
+
+    it('should return false when modifying a role the current user does not belong to', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      // mockCurrentUser has roles: ['admin-role', 'editor-role']
+      expect(result.current.shouldFetchAppConfig('other-role', 'R')).toBe(false);
+      expect(result.current.shouldFetchAppConfig('viewer-role', 'R')).toBe(false);
+    });
+
+    it('should return true when modifying the current user permissions', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      // mockCurrentUser has id: 'user-123'
+      expect(result.current.shouldFetchAppConfig('user-123', 'U')).toBe(true);
+    });
+
+    it('should return false when modifying a different user permissions', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      // mockCurrentUser has id: 'user-123'
+      expect(result.current.shouldFetchAppConfig('other-user-456', 'U')).toBe(false);
+      expect(result.current.shouldFetchAppConfig('another-user', 'U')).toBe(false);
+    });
+
+    it('should return false for unknown provider names', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      expect(result.current.shouldFetchAppConfig('some-key', 'T')).toBe(false); // Tenant
+      expect(result.current.shouldFetchAppConfig('some-key', 'C')).toBe(false); // Client
+      expect(result.current.shouldFetchAppConfig('some-key', '')).toBe(false);
+    });
+
+    it('should be available as a method on the hook return', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      expect(typeof result.current.shouldFetchAppConfig).toBe('function');
     });
   });
 });

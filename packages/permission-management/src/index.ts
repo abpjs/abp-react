@@ -1,7 +1,12 @@
 /**
  * @abpjs/permission-management
  * ABP Framework Permission Management module for React
- * Translated from @abp/ng.permission-management v3.0.0
+ * Translated from @abp/ng.permission-management v3.1.0
+ *
+ * Changes in v3.1.0:
+ * - Added shouldFetchAppConfig(providerKey, providerName) method to usePermissionManagement hook
+ *   Returns true if the app configuration should be refreshed after saving permissions
+ *   (when modifying current user's permissions or a role the current user belongs to)
  *
  * Changes in v3.0.0:
  * - Added getAssignedCount(groupName: string) method to usePermissionManagement hook
