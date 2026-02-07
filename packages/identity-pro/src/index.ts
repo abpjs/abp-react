@@ -2,7 +2,7 @@
  * @abpjs/identity-pro
  *
  * ABP Framework identity pro components for React.
- * Translated from @volo/abp.ng.identity version 3.1.0.
+ * Translated from @volo/abp.ng.identity version 3.2.0.
  *
  * This package provides:
  * - Identity models (User, Role, ClaimType, OrganizationUnit, etc.)
@@ -19,6 +19,7 @@
  * - Extension tokens for customizing entity actions, props, and forms (v3.0.0)
  * - Extensions guard for route protection (v3.0.0)
  * - Security logs service and models (v3.1.0)
+ * - Proxy subpackage with typed services and DTOs (v3.2.0)
  *
  * Pro features:
  * - Claim type management (ClaimsComponent)
@@ -29,6 +30,23 @@
  * - IdentityStateService with 17 dispatch methods (v2.0.0)
  * - Admin password change for users (v2.7.0)
  * - Security logs management (v3.1.0)
+ * - Two-factor authentication behaviour enum (v3.2.0)
+ *
+ * Changes in v3.2.0:
+ * - Added eIdentityTwoFactorBehaviour enum (Optional, Disabled, Forced)
+ * - Added proxy subpackage with typed services:
+ *   - IdentityClaimTypeService for claim type CRUD
+ *   - IdentityRoleService for role management
+ *   - IdentityUserService for user management with two-factor support
+ *   - IdentitySecurityLogService (proxy version)
+ *   - IdentitySettingsService for identity settings
+ *   - IdentityUserLookupService for user lookup
+ *   - OrganizationUnitService (proxy version)
+ *   - ProfileService for user profile
+ * - Added proxy/users subpackage with UserData interface
+ * - Added IdentityClaimValueType enum to proxy
+ * - Added typed DTOs in proxy/identity/models
+ * - Deprecated Identity namespace types (to be removed in v4.0)
  *
  * Changes in v3.1.0:
  * - Added IdentitySecurityLogService for querying security logs
@@ -127,11 +145,14 @@
  *
  * @packageDocumentation
  * @since 2.0.0
- * @updated 3.1.0
+ * @updated 3.2.0
  */
 
 // Config (v3.0.0)
 export * from './config';
+
+// Proxy (v3.2.0)
+export * from './proxy';
 
 // Models
 export * from './models';

@@ -8,6 +8,7 @@
  * @updated 2.9.0 - Added Organization Units support, OrganizationUnitService, TreeAdapter utility
  * @updated 3.0.0 - Added config subpackage, extension tokens, guards, new claim type methods
  * @updated 3.1.0 - Added SecurityLogs, IdentitySecurityLogService, UserLockDurationType, lockUser method
+ * @updated 3.2.0 - Added eIdentityTwoFactorBehaviour enum, proxy subpackage with typed services
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -18,7 +19,6 @@ import {
   useUsers,
   useRoles,
   IdentityService,
-  OrganizationUnitService,
   TreeAdapter,
   eIdentityComponents,
   eIdentityRouteNames,
@@ -42,19 +42,40 @@ import {
   identityExtensionsGuard,
   useIdentityExtensionsGuard,
   // v3.1.0 - Security Logs
-  IdentitySecurityLogService,
   createIdentitySecurityLogGetListInput,
   DEFAULT_SECURITY_LOGS_ENTITY_PROPS,
   DEFAULT_SECURITY_LOGS_ENTITY_ACTIONS,
   DEFAULT_SECURITY_LOGS_TOOLBAR_ACTIONS,
+  // v3.2.0 - Two-factor behaviour enum
+  eIdentityTwoFactorBehaviour,
+  identityTwoFactorBehaviourOptions,
+  // v3.2.0 - Proxy services
+  IdentityClaimTypeService,
+  IdentityRoleService,
+  IdentityUserService,
+  IdentitySettingsService,
+  IdentityUserLookupService,
+  OrganizationUnitService as ProxyOrganizationUnitService,
+  ProfileService,
+  // v3.2.0 - Claim value type enum
+  IdentityClaimValueType,
+  identityClaimValueTypeOptions,
   // Namespace import (as value, not type) for UserLockDurationType
   Identity,
   type BaseNode,
   type IdentityStateService,
   type IdentityComponentKey,
   type IdentityRouteNameKey,
-  type OrganizationUnitWithDetailsDto,
-  type IdentitySecurityLogDto,
+  // v3.2.0 - Proxy types
+  type ProfileDto,
+  type IdentitySettingsDto,
+  type ClaimTypeDto,
+  // v3.2.0 - Legacy service re-exports (for backwards compatibility in existing code)
+  LegacyIdentitySecurityLogService,
+  LegacyOrganizationUnitService,
+  // v3.2.0 - Legacy types for backwards compatibility
+  type LegacyIdentitySecurityLogDto,
+  type LegacyOrganizationUnitWithDetailsDto,
 } from '@abpjs/identity-pro'
 
 function TestClaimsComponent() {
@@ -1529,12 +1550,354 @@ function TestV300Features() {
 /**
  * Test section for v3.1.0 features: SecurityLogs, IdentitySecurityLogService, UserLockDurationType, lockUser
  */
+function TestV320Features() {
+  const { isAuthenticated } = useAuth()
+  const restService = useRestService()
+
+  // v3.2.0 - Proxy services
+  const [proxyClaimTypeService] = useState(() => new IdentityClaimTypeService(restService))
+  const [proxyRoleService] = useState(() => new IdentityRoleService(restService))
+  const [proxyUserService] = useState(() => new IdentityUserService(restService))
+  const [proxySettingsService] = useState(() => new IdentitySettingsService(restService))
+  const [proxyUserLookupService] = useState(() => new IdentityUserLookupService(restService))
+  const [proxyOrgUnitService] = useState(() => new ProxyOrganizationUnitService(restService))
+  const [proxyProfileService] = useState(() => new ProfileService(restService))
+
+  // State for testing
+  const [profile, setProfile] = useState<ProfileDto | null>(null)
+  const [settings, setSettings] = useState<IdentitySettingsDto | null>(null)
+  const [userCount, setUserCount] = useState<number | null>(null)
+  const [claimTypes, setClaimTypes] = useState<ClaimTypeDto[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchProfile = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await proxyProfileService.get()
+      setProfile(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch profile')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchSettings = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await proxySettingsService.get()
+      setSettings(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch settings')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchUserCount = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const count = await proxyUserLookupService.getCount({ filter: '' })
+      setUserCount(count)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch user count')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchClaimTypes = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await proxyClaimTypeService.getList({
+        filter: '',
+        sorting: 'name',
+        skipCount: 0,
+        maxResultCount: 10,
+      })
+      setClaimTypes(result.items ?? [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch claim types')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.2.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(Two-Factor Behaviour, Proxy Services)</span></h2>
+
+      <div className="test-card">
+        <h3>eIdentityTwoFactorBehaviour Enum</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          New enum for configuring two-factor authentication behaviour.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Behaviour</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Optional</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{eIdentityTwoFactorBehaviour.Optional}</td>
+              <td style={{ padding: '8px', color: '#888' }}>Users can choose to enable 2FA</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Disabled</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{eIdentityTwoFactorBehaviour.Disabled}</td>
+              <td style={{ padding: '8px', color: '#888' }}>2FA is disabled for all users</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Forced</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{eIdentityTwoFactorBehaviour.Forced}</td>
+              <td style={{ padding: '8px', color: '#888' }}>2FA is required for all users</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>identityTwoFactorBehaviourOptions</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          Pre-built options array for select/dropdown components.
+        </p>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {identityTwoFactorBehaviourOptions.map((option) => (
+            <span
+              key={option.value}
+              style={{
+                padding: '4px 12px',
+                backgroundColor: '#333',
+                borderRadius: '4px',
+                fontSize: '14px'
+              }}
+            >
+              {option.label}: {option.value}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>IdentityClaimValueType Enum</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          Enum for claim value types in the proxy subpackage.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>String</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{IdentityClaimValueType.String}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Int</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{IdentityClaimValueType.Int}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Boolean</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{IdentityClaimValueType.Boolean}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DateTime</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{IdentityClaimValueType.DateTime}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style={{ marginTop: '12px' }}>
+          <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>Options array:</p>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {identityClaimValueTypeOptions.map((option) => (
+              <span
+                key={option.value}
+                style={{
+                  padding: '4px 12px',
+                  backgroundColor: '#333',
+                  borderRadius: '4px',
+                  fontSize: '14px'
+                }}
+              >
+                {option.label}: {option.value}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>Proxy Services</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          New typed proxy services with consistent API patterns.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Service</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>apiName</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentityClaimTypeService</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{proxyClaimTypeService.apiName}</td>
+              <td style={{ padding: '8px', color: '#888' }}>Claim type CRUD operations</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentityRoleService</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{proxyRoleService.apiName}</td>
+              <td style={{ padding: '8px', color: '#888' }}>Role management with claims</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentityUserService</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{proxyUserService.apiName}</td>
+              <td style={{ padding: '8px', color: '#888' }}>User management with 2FA support</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentitySettingsService</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{proxySettingsService.apiName}</td>
+              <td style={{ padding: '8px', color: '#888' }}>Identity settings (password, lockout, etc.)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentityUserLookupService</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{proxyUserLookupService.apiName}</td>
+              <td style={{ padding: '8px', color: '#888' }}>User lookup and search</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>OrganizationUnitService</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{proxyOrgUnitService.apiName}</td>
+              <td style={{ padding: '8px', color: '#888' }}>Organization unit management (proxy)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>ProfileService</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{proxyProfileService.apiName}</td>
+              <td style={{ padding: '8px', color: '#888' }}>Current user profile management</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {isAuthenticated && (
+        <div className="test-card">
+          <h3>Test Proxy Services</h3>
+          <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+            Click buttons to test the new proxy service methods.
+          </p>
+
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <button onClick={fetchProfile} disabled={loading}>
+              {loading ? 'Loading...' : 'Fetch Profile'}
+            </button>
+            <button onClick={fetchSettings} disabled={loading}>
+              {loading ? 'Loading...' : 'Fetch Settings'}
+            </button>
+            <button onClick={fetchUserCount} disabled={loading}>
+              {loading ? 'Loading...' : 'Get User Count'}
+            </button>
+            <button onClick={fetchClaimTypes} disabled={loading}>
+              {loading ? 'Loading...' : 'Fetch Claim Types'}
+            </button>
+          </div>
+
+          {error && (
+            <p style={{ color: '#f88', marginBottom: '12px' }}>{error}</p>
+          )}
+
+          {profile && (
+            <div style={{ marginBottom: '16px' }}>
+              <h4 style={{ marginBottom: '8px' }}>Profile (ProfileService.get)</h4>
+              <pre style={{
+                backgroundColor: '#1a1a1a',
+                padding: '12px',
+                borderRadius: '4px',
+                overflow: 'auto',
+                fontSize: '13px'
+              }}>
+                {JSON.stringify(profile, null, 2)}
+              </pre>
+            </div>
+          )}
+
+          {settings && (
+            <div style={{ marginBottom: '16px' }}>
+              <h4 style={{ marginBottom: '8px' }}>Settings (IdentitySettingsService.get)</h4>
+              <pre style={{
+                backgroundColor: '#1a1a1a',
+                padding: '12px',
+                borderRadius: '4px',
+                overflow: 'auto',
+                fontSize: '13px'
+              }}>
+                {JSON.stringify(settings, null, 2)}
+              </pre>
+            </div>
+          )}
+
+          {userCount !== null && (
+            <div style={{ marginBottom: '16px' }}>
+              <h4 style={{ marginBottom: '8px' }}>User Count (IdentityUserLookupService.getCount)</h4>
+              <p style={{ color: '#4ade80', fontSize: '24px' }}>{userCount}</p>
+            </div>
+          )}
+
+          {claimTypes.length > 0 && (
+            <div style={{ marginBottom: '16px' }}>
+              <h4 style={{ marginBottom: '8px' }}>Claim Types (IdentityClaimTypeService.getList)</h4>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #333' }}>
+                    <th style={{ textAlign: 'left', padding: '8px' }}>Name</th>
+                    <th style={{ textAlign: 'left', padding: '8px' }}>Value Type</th>
+                    <th style={{ textAlign: 'left', padding: '8px' }}>Required</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {claimTypes.map((ct) => (
+                    <tr key={ct.id} style={{ borderBottom: '1px solid #222' }}>
+                      <td style={{ padding: '8px' }}>{ct.name}</td>
+                      <td style={{ padding: '8px' }}>{ct.valueTypeAsString}</td>
+                      <td style={{ padding: '8px' }}>{ct.required ? 'Yes' : 'No'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {!isAuthenticated && (
+        <div className="test-card">
+          <p style={{ color: '#f88' }}>
+            You must be authenticated to test proxy service methods.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function TestV310Features() {
   const { isAuthenticated } = useAuth()
   const restService = useRestService()
-  const [securityLogService] = useState(() => new IdentitySecurityLogService(restService))
+  // Use LegacyIdentitySecurityLogService for backwards compatibility with v3.1.0 API
+  const [securityLogService] = useState(() => new LegacyIdentitySecurityLogService(restService))
   const [identityService] = useState(() => new IdentityService(restService))
-  const [securityLogs, setSecurityLogs] = useState<IdentitySecurityLogDto[]>([])
+  const [securityLogs, setSecurityLogs] = useState<LegacyIdentitySecurityLogDto[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lockUserId, setLockUserId] = useState('')
@@ -1809,10 +2172,11 @@ function TestV310Features() {
 function TestV290Features() {
   const { isAuthenticated } = useAuth()
   const restService = useRestService()
-  const [orgUnitService] = useState(() => new OrganizationUnitService(restService))
+  // Use LegacyOrganizationUnitService for backwards compatibility with v2.9.0 API
+  const [orgUnitService] = useState(() => new LegacyOrganizationUnitService(restService))
   const [identityService] = useState(() => new IdentityService(restService))
 
-  const [orgUnits, setOrgUnits] = useState<OrganizationUnitWithDetailsDto[]>([])
+  const [orgUnits, setOrgUnits] = useState<LegacyOrganizationUnitWithDetailsDto[]>([])
   const [isLoadingOrgUnits, setIsLoadingOrgUnits] = useState(false)
   const [orgUnitsError, setOrgUnitsError] = useState<string | null>(null)
   const [totalCount, setTotalCount] = useState(0)
@@ -1824,7 +2188,7 @@ function TestV290Features() {
 
   // User organization units state
   const [userId, setUserId] = useState('')
-  const [userOrgUnits, setUserOrgUnits] = useState<OrganizationUnitWithDetailsDto[]>([])
+  const [userOrgUnits, setUserOrgUnits] = useState<LegacyOrganizationUnitWithDetailsDto[]>([])
 
   // TreeAdapter demo
   const [treeAdapterDemo, setTreeAdapterDemo] = useState<string>('')
@@ -1882,8 +2246,8 @@ function TestV290Features() {
 
     try {
       const response = await identityService.getUserOrganizationUnits(userId)
-      // getUserOrganizationUnits returns OrganizationUnitWithDetailsDto[] directly
-      setUserOrgUnits(response || [])
+      // getUserOrganizationUnits returns OrganizationUnitWithDetailsDto[] - cast for legacy state
+      setUserOrgUnits((response || []) as unknown as LegacyOrganizationUnitWithDetailsDto[])
     } catch (err) {
       console.error('Failed to fetch user organization units:', err)
     }
@@ -2000,10 +2364,13 @@ TreeAdapter Methods:
           </>
         )}
         <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
-{`// Usage
-const service = new OrganizationUnitService(restService);
-const response = await service.getListByInput({ maxResultCount: 50 });
-console.log(response.items); // Organization units`}
+{`// Usage (v3.2.0+ - use proxy service with new API)
+const service = new ProxyOrganizationUnitService(restService);
+const response = await service.getList({ filter: '', sorting: '', skipCount: 0, maxResultCount: 50 });
+
+// Legacy API (for backwards compatibility)
+const legacyService = new LegacyOrganizationUnitService(restService);
+const response = await legacyService.getListByInput({ maxResultCount: 50 });`}
         </pre>
       </div>
 
@@ -2709,15 +3076,16 @@ function TestProHookMethods() {
 export function TestIdentityProPage() {
   return (
     <div>
-      <h1>@abpjs/identity-pro Tests (v3.1.0)</h1>
+      <h1>@abpjs/identity-pro Tests (v3.2.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing identity pro components, hooks, and services for claim type management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.1.0 - Added SecurityLogs, IdentitySecurityLogService, UserLockDurationType, lockUser method
+        Version 3.2.0 - Added eIdentityTwoFactorBehaviour enum, proxy subpackage with typed services
       </p>
       <p style={{ color: '#6f6', fontSize: '14px' }}>
-        Pro features: Claim type management, user/role claims, IdentityStateService, user unlock, permissions modal, getAllRoles, component identifiers, route names, change password, organization units, config/extensions, security logs, user lock
+        Pro features: Claim type management, user/role claims, IdentityStateService, user unlock, permissions modal, getAllRoles, component identifiers, route names, change password, organization units, config/extensions, security logs, user lock, two-factor behaviour, proxy services
       </p>
 
+      <TestV320Features />
       <TestV310Features />
       <TestV300Features />
       <TestV290Features />

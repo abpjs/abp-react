@@ -1,17 +1,18 @@
 /**
- * Tests for IdentitySecurityLogService
+ * Tests for LegacyIdentitySecurityLogService
  * @abpjs/identity-pro v3.1.0
+ * @updated 3.2.0 - Tests legacy service (new proxy service has different API)
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { IdentitySecurityLogService } from '../../services/identity-security-log.service';
+import { LegacyIdentitySecurityLogService } from '../../services/identity-security-log.service';
 import type { RestService, PagedResultDto } from '@abpjs/core';
-import type { IdentitySecurityLogDto } from '../../models/identity-security-log';
+import type { LegacyIdentitySecurityLogDto } from '../../models/identity-security-log';
 
-describe('IdentitySecurityLogService', () => {
-  let service: IdentitySecurityLogService;
+describe('LegacyIdentitySecurityLogService', () => {
+  let service: LegacyIdentitySecurityLogService;
   let mockRest: RestService;
 
-  const mockSecurityLog: IdentitySecurityLogDto = {
+  const mockSecurityLog: LegacyIdentitySecurityLogDto = {
     id: 'log-123',
     tenantId: 'tenant-1',
     applicationName: 'MyApp',
@@ -27,7 +28,7 @@ describe('IdentitySecurityLogService', () => {
     extraProperties: { key: 'value' },
   };
 
-  const mockPagedResponse: PagedResultDto<IdentitySecurityLogDto> = {
+  const mockPagedResponse: PagedResultDto<LegacyIdentitySecurityLogDto> = {
     items: [mockSecurityLog],
     totalCount: 1,
   };
@@ -36,12 +37,12 @@ describe('IdentitySecurityLogService', () => {
     mockRest = {
       request: vi.fn(),
     } as unknown as RestService;
-    service = new IdentitySecurityLogService(mockRest);
+    service = new LegacyIdentitySecurityLogService(mockRest);
   });
 
   describe('constructor', () => {
     it('should create instance with RestService', () => {
-      expect(service).toBeInstanceOf(IdentitySecurityLogService);
+      expect(service).toBeInstanceOf(LegacyIdentitySecurityLogService);
     });
 
     it('should have default apiName', () => {
@@ -101,7 +102,7 @@ describe('IdentitySecurityLogService', () => {
     });
 
     it('should handle empty results', async () => {
-      const emptyResponse: PagedResultDto<IdentitySecurityLogDto> = {
+      const emptyResponse: PagedResultDto<LegacyIdentitySecurityLogDto> = {
         items: [],
         totalCount: 0,
       };
