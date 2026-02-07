@@ -1,5 +1,5 @@
 /**
- * Tests for styles.provider v3.0.0
+ * Tests for styles.provider v3.2.0
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
@@ -63,9 +63,9 @@ describe('styles.provider', () => {
       expect(THEME_BASIC_STYLES).toContain('border-top: 1px solid #eee');
     });
 
-    it('should contain abp-loading styles', () => {
+    it('should contain abp-loading styles (v3.2.0: reduced opacity)', () => {
       expect(THEME_BASIC_STYLES).toContain('.abp-loading');
-      expect(THEME_BASIC_STYLES).toContain('background: rgba(0, 0, 0, 0.1)');
+      expect(THEME_BASIC_STYLES).toContain('background: rgba(0, 0, 0, 0.05)');
     });
 
     it('should contain modal-backdrop styles', () => {
@@ -194,7 +194,7 @@ describe('styles.provider', () => {
       expect(THEME_BASIC_STYLES).toContain('/* Input validation styles */');
       expect(THEME_BASIC_STYLES).toContain('/* Table styles */');
       expect(THEME_BASIC_STYLES).toContain('/* Bordered datatable styles (added in v3.0.0) */');
-      expect(THEME_BASIC_STYLES).toContain('/* Loading overlay */');
+      expect(THEME_BASIC_STYLES).toContain('/* Loading overlay (v3.2.0: reduced opacity from 0.1 to 0.05) */');
       expect(THEME_BASIC_STYLES).toContain('/* Modal backdrop */');
     });
 
@@ -202,6 +202,49 @@ describe('styles.provider', () => {
       const openBraces = (THEME_BASIC_STYLES.match(/\{/g) || []).length;
       const closeBraces = (THEME_BASIC_STYLES.match(/\}/g) || []).length;
       expect(openBraces).toBe(closeBraces);
+    });
+  });
+
+  describe('v3.2.0 changes', () => {
+    it('should have reduced opacity for .abp-loading (0.05 instead of 0.1)', () => {
+      // v3.2.0 changed the opacity from 0.1 to 0.05 for better UX
+      expect(THEME_BASIC_STYLES).toContain('background: rgba(0, 0, 0, 0.05)');
+      // Ensure the old value is NOT present
+      expect(THEME_BASIC_STYLES).not.toContain('background: rgba(0, 0, 0, 0.1)');
+    });
+
+    it('should document the v3.2.0 change in the CSS comment', () => {
+      // The comment should document the version change
+      expect(THEME_BASIC_STYLES).toMatch(/Loading overlay.*v3\.2\.0.*reduced opacity/);
+    });
+
+    it('should have .abp-loading as a complete rule with proper background value', () => {
+      // Verify the complete rule structure
+      const abpLoadingMatch = THEME_BASIC_STYLES.match(/\.abp-loading\s*\{[^}]*\}/);
+      expect(abpLoadingMatch).not.toBeNull();
+      expect(abpLoadingMatch![0]).toContain('background: rgba(0, 0, 0, 0.05)');
+    });
+
+    it('should maintain the .abp-loading class selector format', () => {
+      // Ensure the selector is properly formatted
+      expect(THEME_BASIC_STYLES).toMatch(/\.abp-loading\s*\{/);
+    });
+
+    it('should have lighter loading overlay than modal backdrop', () => {
+      // .abp-loading should be lighter (0.05) than .modal-backdrop (0.6)
+      // Extract opacity values
+      const loadingMatch = THEME_BASIC_STYLES.match(/\.abp-loading[^}]*rgba\(0,\s*0,\s*0,\s*([\d.]+)\)/);
+      const backdropMatch = THEME_BASIC_STYLES.match(/\.modal-backdrop[^}]*rgba\(0,\s*0,\s*0,\s*([\d.]+)\)/);
+
+      expect(loadingMatch).not.toBeNull();
+      expect(backdropMatch).not.toBeNull();
+
+      const loadingOpacity = parseFloat(loadingMatch![1]);
+      const backdropOpacity = parseFloat(backdropMatch![1]);
+
+      expect(loadingOpacity).toBeLessThan(backdropOpacity);
+      expect(loadingOpacity).toBe(0.05);
+      expect(backdropOpacity).toBe(0.6);
     });
   });
 });
