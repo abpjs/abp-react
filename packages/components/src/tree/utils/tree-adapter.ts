@@ -105,10 +105,9 @@ export class TreeAdapter<T extends BaseNode = BaseNode> {
 
   /**
    * Handles a drop event by updating the node's parent
-   * @param node - The node that was dropped
+   * @param node - The node that was dropped (uses destructured { key, parentNode })
    */
-  handleDrop(node: TreeNode<T>): void {
-    const { key, parentNode } = node;
+  handleDrop({ key, parentNode }: TreeNode<T>): void {
     const index = this.list.findIndex(({ id }) => id === key);
 
     if (index !== -1) {
@@ -119,14 +118,48 @@ export class TreeAdapter<T extends BaseNode = BaseNode> {
 
   /**
    * Handles node removal by removing the node and all its descendants
-   * @param node - The node to remove
+   * @param node - The node to remove (uses destructured { key })
    */
-  handleRemove(node: TreeNode<T>): void {
-    const { key } = node;
+  handleRemove({ key }: TreeNode<T>): void {
     this.list = this.list.filter(
       ({ id, parentId }) => id !== key && parentId !== key
     );
     this.tree = createTreeFromList(this.list, this.nameResolver);
+  }
+
+  /**
+   * Handles updating a node's children
+   * Replaces children of the specified node with new children
+   * @param key - The key of the parent node
+   * @param children - New children to set
+   * @since v3.2.0
+   */
+  handleUpdate({ key, children }: { key: string; children: T[] }): void {
+    // Remove existing children of this node
+    this.list = this.list.filter(({ parentId }) => parentId !== key);
+
+    // Add new children with correct parentId
+    const newChildren = children.map((child) => ({
+      ...child,
+      parentId: key,
+    }));
+    this.list.push(...newChildren);
+
+    // Rebuild tree
+    this.tree = createTreeFromList(this.list, this.nameResolver);
+  }
+
+  /**
+   * Updates the tree from a new list
+   * Replaces the internal list and rebuilds the tree
+   * @param list - New list of nodes
+   * @returns The updated list
+   * @since v3.2.0
+   */
+  updateTreeFromList(list: T[]): T[] {
+    this.list = list;
+    this.tree = createTreeFromList(this.list, this.nameResolver);
+    return this.list;
   }
 
   /**
