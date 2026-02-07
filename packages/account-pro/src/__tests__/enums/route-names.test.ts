@@ -4,7 +4,7 @@ import {
   type AccountRouteNameKey,
 } from '../../enums/route-names';
 
-describe('eAccountRouteNames (v2.7.0)', () => {
+describe('eAccountRouteNames (v3.1.0)', () => {
   describe('enum values', () => {
     it('should have Account key with correct value', () => {
       expect(eAccountRouteNames.Account).toBe('AbpAccount::Menu:Account');
@@ -33,12 +33,24 @@ describe('eAccountRouteNames (v2.7.0)', () => {
         'AbpAccount::ManageYourProfile'
       );
     });
+
+    it('should have EmailConfirmation key with correct value (v3.1.0)', () => {
+      expect(eAccountRouteNames.EmailConfirmation).toBe(
+        'AbpAccount::EmailConfirmation'
+      );
+    });
+
+    it('should have MySecurityLogs key with correct value (v3.1.0)', () => {
+      expect(eAccountRouteNames.MySecurityLogs).toBe(
+        'AbpAccount::MySecurityLogs'
+      );
+    });
   });
 
   describe('enum structure', () => {
-    it('should have exactly 6 keys', () => {
+    it('should have exactly 8 keys', () => {
       const keys = Object.keys(eAccountRouteNames);
-      expect(keys).toHaveLength(6);
+      expect(keys).toHaveLength(8);
     });
 
     it('should have all expected keys', () => {
@@ -49,6 +61,8 @@ describe('eAccountRouteNames (v2.7.0)', () => {
       expect(keys).toContain('ForgotPassword');
       expect(keys).toContain('ResetPassword');
       expect(keys).toContain('ManageProfile');
+      expect(keys).toContain('EmailConfirmation');
+      expect(keys).toContain('MySecurityLogs');
     });
 
     it('should be immutable (const assertion)', () => {
@@ -68,6 +82,10 @@ describe('eAccountRouteNames (v2.7.0)', () => {
         eAccountRouteNames.ResetPassword;
       const manageProfileKey: AccountRouteNameKey =
         eAccountRouteNames.ManageProfile;
+      const emailConfirmationKey: AccountRouteNameKey =
+        eAccountRouteNames.EmailConfirmation;
+      const mySecurityLogsKey: AccountRouteNameKey =
+        eAccountRouteNames.MySecurityLogs;
 
       expect(accountKey).toBe('AbpAccount::Menu:Account');
       expect(loginKey).toBe('AbpAccount::Login');
@@ -75,6 +93,8 @@ describe('eAccountRouteNames (v2.7.0)', () => {
       expect(forgotPasswordKey).toBe('AbpAccount::ForgotPassword');
       expect(resetPasswordKey).toBe('AbpAccount::ResetPassword');
       expect(manageProfileKey).toBe('AbpAccount::ManageYourProfile');
+      expect(emailConfirmationKey).toBe('AbpAccount::EmailConfirmation');
+      expect(mySecurityLogsKey).toBe('AbpAccount::MySecurityLogs');
     });
 
     it('should preserve literal types', () => {
@@ -115,7 +135,7 @@ describe('eAccountRouteNames (v2.7.0)', () => {
   describe('usage patterns', () => {
     it('should allow iteration over all route name keys', () => {
       const allKeys = Object.values(eAccountRouteNames);
-      expect(allKeys).toHaveLength(6);
+      expect(allKeys).toHaveLength(8);
     });
 
     it('should allow lookup by key name', () => {
@@ -149,6 +169,12 @@ describe('eAccountRouteNames (v2.7.0)', () => {
         case eAccountRouteNames.ManageProfile:
           label = 'Manage Profile Page';
           break;
+        case eAccountRouteNames.EmailConfirmation:
+          label = 'Email Confirmation Page';
+          break;
+        case eAccountRouteNames.MySecurityLogs:
+          label = 'My Security Logs Page';
+          break;
         default:
           label = 'Unknown';
       }
@@ -166,12 +192,18 @@ describe('eAccountRouteNames (v2.7.0)', () => {
         },
         [eAccountRouteNames.ResetPassword]: { path: '/account/reset-password' },
         [eAccountRouteNames.ManageProfile]: { path: '/account/manage' },
+        [eAccountRouteNames.EmailConfirmation]: {
+          path: '/account/email-confirmation',
+        },
+        [eAccountRouteNames.MySecurityLogs]: {
+          path: '/account/my-security-logs',
+        },
       };
 
       expect(
         routeConfig[eAccountRouteNames.Login as AccountRouteNameKey].path
       ).toBe('/account/login');
-      expect(Object.keys(routeConfig)).toHaveLength(6);
+      expect(Object.keys(routeConfig)).toHaveLength(8);
     });
 
     it('should allow mapping to localized strings', () => {
@@ -182,6 +214,8 @@ describe('eAccountRouteNames (v2.7.0)', () => {
         [eAccountRouteNames.ForgotPassword]: 'Forgot your password?',
         [eAccountRouteNames.ResetPassword]: 'Reset password',
         [eAccountRouteNames.ManageProfile]: 'Manage your profile',
+        [eAccountRouteNames.EmailConfirmation]: 'Email Confirmation',
+        [eAccountRouteNames.MySecurityLogs]: 'My Security Logs',
       };
 
       expect(

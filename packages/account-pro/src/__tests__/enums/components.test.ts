@@ -4,7 +4,7 @@ import {
   type AccountComponentKey,
 } from '../../enums/components';
 
-describe('eAccountComponents (v2.9.0)', () => {
+describe('eAccountComponents (v3.1.0)', () => {
   describe('enum values', () => {
     it('should have Account key with correct value', () => {
       expect(eAccountComponents.Account).toBe('Account.AccountComponent');
@@ -55,12 +55,22 @@ describe('eAccountComponents (v2.9.0)', () => {
     it('should have Logo key with correct value (v2.9.0)', () => {
       expect(eAccountComponents.Logo).toBe('Account.LogoComponent');
     });
+
+    it('should have EmailConfirmation key with correct value (v3.1.0)', () => {
+      expect(eAccountComponents.EmailConfirmation).toBe(
+        'Account.EmailConfirmationComponent'
+      );
+    });
+
+    it('should have MySecurityLogs key with correct value (v3.1.0)', () => {
+      expect(eAccountComponents.MySecurityLogs).toBe('Account.MySecurityLogs');
+    });
   });
 
   describe('enum structure', () => {
-    it('should have exactly 10 keys', () => {
+    it('should have exactly 12 keys', () => {
       const keys = Object.keys(eAccountComponents);
-      expect(keys).toHaveLength(10);
+      expect(keys).toHaveLength(12);
     });
 
     it('should have all expected keys', () => {
@@ -75,6 +85,8 @@ describe('eAccountComponents (v2.9.0)', () => {
       expect(keys).toContain('ChangePassword');
       expect(keys).toContain('PersonalSettings');
       expect(keys).toContain('Logo');
+      expect(keys).toContain('EmailConfirmation');
+      expect(keys).toContain('MySecurityLogs');
     });
 
     it('should be immutable (const assertion)', () => {
@@ -102,6 +114,10 @@ describe('eAccountComponents (v2.9.0)', () => {
       const personalSettingsKey: AccountComponentKey =
         eAccountComponents.PersonalSettings;
       const logoKey: AccountComponentKey = eAccountComponents.Logo;
+      const emailConfirmationKey: AccountComponentKey =
+        eAccountComponents.EmailConfirmation;
+      const mySecurityLogsKey: AccountComponentKey =
+        eAccountComponents.MySecurityLogs;
 
       expect(accountKey).toBe('Account.AccountComponent');
       expect(loginKey).toBe('Account.LoginComponent');
@@ -113,6 +129,8 @@ describe('eAccountComponents (v2.9.0)', () => {
       expect(changePasswordKey).toBe('Account.ChangePasswordComponent');
       expect(personalSettingsKey).toBe('Account.PersonalSettingsComponent');
       expect(logoKey).toBe('Account.LogoComponent');
+      expect(emailConfirmationKey).toBe('Account.EmailConfirmationComponent');
+      expect(mySecurityLogsKey).toBe('Account.MySecurityLogs');
     });
 
     it('should preserve literal types', () => {
@@ -130,7 +148,7 @@ describe('eAccountComponents (v2.9.0)', () => {
   describe('usage patterns', () => {
     it('should allow iteration over all component keys', () => {
       const allKeys = Object.values(eAccountComponents);
-      expect(allKeys).toHaveLength(10);
+      expect(allKeys).toHaveLength(12);
       expect(allKeys.every((key) => key.startsWith('Account.'))).toBe(true);
     });
 
@@ -177,6 +195,12 @@ describe('eAccountComponents (v2.9.0)', () => {
         case eAccountComponents.Logo:
           label = 'Logo';
           break;
+        case eAccountComponents.EmailConfirmation:
+          label = 'Email Confirmation';
+          break;
+        case eAccountComponents.MySecurityLogs:
+          label = 'My Security Logs';
+          break;
         default:
           label = 'Unknown';
       }
@@ -196,12 +220,14 @@ describe('eAccountComponents (v2.9.0)', () => {
         [eAccountComponents.ChangePassword]: true,
         [eAccountComponents.PersonalSettings]: true,
         [eAccountComponents.Logo]: true,
+        [eAccountComponents.EmailConfirmation]: true,
+        [eAccountComponents.MySecurityLogs]: true,
       };
 
       expect(
         componentConfig[eAccountComponents.Login as AccountComponentKey]
       ).toBe(true);
-      expect(Object.keys(componentConfig)).toHaveLength(10);
+      expect(Object.keys(componentConfig)).toHaveLength(12);
     });
   });
 });

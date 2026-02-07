@@ -151,4 +151,90 @@ export class AccountProService {
       { skipHandleError: true }
     );
   }
+
+  /**
+   * Send email confirmation token to a new email address
+   * @since 3.1.0 (Pro feature)
+   *
+   * @param newEmail - The new email address to send confirmation to
+   * @returns Promise resolving when the token is sent
+   */
+  sendEmailConfirmationToken(newEmail: string): Promise<void> {
+    return this.rest.post<{ newEmail: string }, void>(
+      '/api/account/send-email-confirmation-token',
+      { newEmail },
+      { skipHandleError: true }
+    );
+  }
+
+  /**
+   * Confirm email address with token
+   * @since 3.1.0 (Pro feature)
+   *
+   * @param params - The confirmation parameters
+   * @param params.userId - The user ID
+   * @param params.token - The confirmation token
+   * @param params.tenantId - The tenant ID (optional)
+   * @returns Promise resolving when the email is confirmed
+   */
+  confirmEmail(params: {
+    userId: string;
+    token: string;
+    tenantId?: string;
+  }): Promise<void> {
+    return this.rest.post<typeof params, void>(
+      '/api/account/confirm-email',
+      params,
+      { skipHandleError: true }
+    );
+  }
+
+  /**
+   * Get security logs for the current user
+   * @since 3.1.0 (Pro feature)
+   *
+   * @param params - Query parameters for filtering and pagination
+   * @returns Promise resolving to paginated security logs
+   */
+  getMySecurityLogs(params?: {
+    startTime?: string;
+    endTime?: string;
+    applicationName?: string;
+    identity?: string;
+    action?: string;
+    clientId?: string;
+    correlationId?: string;
+    sorting?: string;
+    skipCount?: number;
+    maxResultCount?: number;
+  }): Promise<{
+    items: Array<{
+      id: string;
+      tenantId?: string;
+      applicationName?: string;
+      identity?: string;
+      action?: string;
+      userId?: string;
+      userName?: string;
+      tenantName?: string;
+      clientId?: string;
+      correlationId?: string;
+      clientIpAddress?: string;
+      browserInfo?: string;
+      creationTime: string;
+    }>;
+    totalCount: number;
+  }> {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, String(value));
+        }
+      });
+    }
+    const queryString = queryParams.toString();
+    const url = `/api/account/my-security-logs${queryString ? `?${queryString}` : ''}`;
+    return this.rest.get(url);
+  }
 }

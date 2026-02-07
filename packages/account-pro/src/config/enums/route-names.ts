@@ -21,6 +21,12 @@ export const eAccountRouteNames = {
   Register: 'AbpAccount::Register',
 
   /**
+   * EmailConfirmation route name key.
+   * @since 3.1.0
+   */
+  EmailConfirmation: 'AbpAccount::EmailConfirmation',
+
+  /**
    * ForgotPassword route name key.
    */
   ForgotPassword: 'AbpAccount::ForgotPassword',
@@ -34,6 +40,12 @@ export const eAccountRouteNames = {
    * ManageProfile route name key.
    */
   ManageProfile: 'AbpAccount::ManageYourProfile',
+
+  /**
+   * MySecurityLogs route name key.
+   * @since 3.1.0
+   */
+  MySecurityLogs: 'AbpAccount::MySecurityLogs',
 } as const;
 
 /**

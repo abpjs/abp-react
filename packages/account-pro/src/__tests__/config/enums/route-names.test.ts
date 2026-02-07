@@ -4,7 +4,7 @@ import {
   AccountRouteNameKey,
 } from '../../../config/enums/route-names';
 
-describe('eAccountRouteNames (v3.0.0)', () => {
+describe('eAccountRouteNames (v3.1.0)', () => {
   describe('enum values', () => {
     it('should have Account key with correct value', () => {
       expect(eAccountRouteNames.Account).toBe('AbpAccount::Menu:Account');
@@ -29,6 +29,14 @@ describe('eAccountRouteNames (v3.0.0)', () => {
     it('should have ManageProfile key with correct value', () => {
       expect(eAccountRouteNames.ManageProfile).toBe('AbpAccount::ManageYourProfile');
     });
+
+    it('should have EmailConfirmation key with correct value (v3.1.0)', () => {
+      expect(eAccountRouteNames.EmailConfirmation).toBe('AbpAccount::EmailConfirmation');
+    });
+
+    it('should have MySecurityLogs key with correct value (v3.1.0)', () => {
+      expect(eAccountRouteNames.MySecurityLogs).toBe('AbpAccount::MySecurityLogs');
+    });
   });
 
   describe('enum structure', () => {
@@ -39,9 +47,9 @@ describe('eAccountRouteNames (v3.0.0)', () => {
       expect(eAccountRouteNames).not.toBeNull();
     });
 
-    it('should have exactly 6 keys', () => {
+    it('should have exactly 8 keys', () => {
       const keys = Object.keys(eAccountRouteNames);
-      expect(keys).toHaveLength(6);
+      expect(keys).toHaveLength(8);
     });
 
     it('should contain all expected keys', () => {
@@ -52,6 +60,8 @@ describe('eAccountRouteNames (v3.0.0)', () => {
       expect(keys).toContain('ForgotPassword');
       expect(keys).toContain('ResetPassword');
       expect(keys).toContain('ManageProfile');
+      expect(keys).toContain('EmailConfirmation');
+      expect(keys).toContain('MySecurityLogs');
     });
 
     it('should have all values be strings', () => {
@@ -75,6 +85,8 @@ describe('eAccountRouteNames (v3.0.0)', () => {
       const forgotPasswordKey: AccountRouteNameKey = eAccountRouteNames.ForgotPassword;
       const resetPasswordKey: AccountRouteNameKey = eAccountRouteNames.ResetPassword;
       const manageProfileKey: AccountRouteNameKey = eAccountRouteNames.ManageProfile;
+      const emailConfirmationKey: AccountRouteNameKey = eAccountRouteNames.EmailConfirmation;
+      const mySecurityLogsKey: AccountRouteNameKey = eAccountRouteNames.MySecurityLogs;
 
       expect(accountKey).toBe('AbpAccount::Menu:Account');
       expect(loginKey).toBe('AbpAccount::Login');
@@ -82,6 +94,8 @@ describe('eAccountRouteNames (v3.0.0)', () => {
       expect(forgotPasswordKey).toBe('AbpAccount::ForgotPassword');
       expect(resetPasswordKey).toBe('AbpAccount::ResetPassword');
       expect(manageProfileKey).toBe('AbpAccount::ManageYourProfile');
+      expect(emailConfirmationKey).toBe('AbpAccount::EmailConfirmation');
+      expect(mySecurityLogsKey).toBe('AbpAccount::MySecurityLogs');
     });
   });
 
