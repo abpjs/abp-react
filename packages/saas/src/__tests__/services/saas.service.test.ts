@@ -1,8 +1,15 @@
+/**
+ * Tests for SaasService
+ * @abpjs/saas v4.0.0
+ *
+ * @updated 4.0.0 - SaasService deprecated (to be deleted in v5.0).
+ *                   Use proxy services (TenantService, EditionService) instead.
+ */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SaasService } from '../../services/saas.service';
 import { Saas } from '../../models';
 
-describe('SaasService', () => {
+describe('SaasService (deprecated - to be deleted in v5.0)', () => {
   let saasService: SaasService;
   let mockRestService: {
     request: ReturnType<typeof vi.fn>;
@@ -426,6 +433,41 @@ describe('SaasService', () => {
       await expect(saasService.getDefaultConnectionString('tenant-1')).rejects.toThrow(
         'Connection string operation failed'
       );
+    });
+  });
+
+  describe('v4.0.0 - Deprecation backward compatibility', () => {
+    it('should still be importable from services index', async () => {
+      // SaasService is deprecated but still exported for backward compatibility
+      const { SaasService: ImportedService } = await import('../../services');
+      expect(ImportedService).toBeDefined();
+      expect(typeof ImportedService).toBe('function');
+    });
+
+    it('should still be constructable with rest service', () => {
+      // Deprecated service should still work for consumers who haven't migrated
+      const service = new SaasService(mockRestService as any);
+      expect(service).toBeDefined();
+      expect(service.apiName).toBe('default');
+    });
+
+    it('should still support all existing operations', async () => {
+      // Verify all methods still exist for backward compatibility
+      expect(typeof saasService.getTenants).toBe('function');
+      expect(typeof saasService.getTenantById).toBe('function');
+      expect(typeof saasService.createTenant).toBe('function');
+      expect(typeof saasService.updateTenant).toBe('function');
+      expect(typeof saasService.deleteTenant).toBe('function');
+      expect(typeof saasService.getEditions).toBe('function');
+      expect(typeof saasService.getEditionById).toBe('function');
+      expect(typeof saasService.createEdition).toBe('function');
+      expect(typeof saasService.updateEdition).toBe('function');
+      expect(typeof saasService.deleteEdition).toBe('function');
+      expect(typeof saasService.getDefaultConnectionString).toBe('function');
+      expect(typeof saasService.updateDefaultConnectionString).toBe('function');
+      expect(typeof saasService.deleteDefaultConnectionString).toBe('function');
+      expect(typeof saasService.getUsageStatistics).toBe('function');
+      expect(typeof saasService.getLatestTenants).toBe('function');
     });
   });
 });

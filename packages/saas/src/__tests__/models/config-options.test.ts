@@ -1,6 +1,9 @@
 /**
  * Tests for SaaS Config Options
- * @abpjs/saas v3.0.0
+ * @abpjs/saas v4.0.0
+ *
+ * @updated 4.0.0 - Contributor types now use proxy DTOs (EditionDto, SaasTenantDto)
+ *                   instead of Saas.Edition/Saas.Tenant
  */
 import { describe, it, expect } from 'vitest';
 import type {
@@ -12,6 +15,7 @@ import type {
   SaasEditFormPropContributors,
 } from '../../models/config-options';
 import { eSaasComponents } from '../../enums/components';
+import type { EditionDto, SaasTenantDto } from '../../proxy/host/dtos/models';
 
 describe('SaasConfigOptions type', () => {
   it('should allow empty options object', () => {
@@ -245,5 +249,186 @@ describe('Contributor callback execution', () => {
 
     expect(result).toHaveLength(3);
     expect(result.map((p) => p.name)).toEqual(['field1', 'field2', 'field3']);
+  });
+});
+
+describe('v4.0.0 - Proxy DTO type migration', () => {
+  it('should use EditionDto for Editions entity action contributors', () => {
+    // v4.0.0: Contributors now use EditionDto instead of Saas.Edition
+    const editionDto: EditionDto = {
+      id: 'ed-1',
+      displayName: 'Pro',
+      creationTime: '2024-01-01T00:00:00Z',
+      creatorId: 'user-1',
+    };
+
+    const contributors: SaasEntityActionContributors = {
+      [eSaasComponents.Editions]: [
+        (actions) => [
+          ...actions,
+          {
+            text: 'Custom Action',
+            action: (record) => {
+              // record is EditionDto with proxy fields
+              expect(record.id).toBe('ed-1');
+              expect(record.creationTime).toBeDefined();
+            },
+          },
+        ],
+      ],
+    };
+
+    const callback = contributors[eSaasComponents.Editions]![0];
+    const result = callback([]);
+    result[0].action?.(editionDto);
+  });
+
+  it('should use SaasTenantDto for Tenants entity action contributors', () => {
+    // v4.0.0: Contributors now use SaasTenantDto instead of Saas.Tenant
+    const tenantDto: SaasTenantDto = {
+      id: 'tenant-1',
+      name: 'Test Tenant',
+      creationTime: '2024-01-01T00:00:00Z',
+      creatorId: 'user-1',
+      extraProperties: { customField: 'value' },
+    };
+
+    const contributors: SaasEntityActionContributors = {
+      [eSaasComponents.Tenants]: [
+        (actions) => [
+          ...actions,
+          {
+            text: 'Inspect',
+            action: (record) => {
+              // record is SaasTenantDto with proxy fields
+              expect(record.id).toBe('tenant-1');
+              expect(record.creationTime).toBeDefined();
+              expect(record.extraProperties).toBeDefined();
+            },
+          },
+        ],
+      ],
+    };
+
+    const callback = contributors[eSaasComponents.Tenants]![0];
+    const result = callback([]);
+    result[0].action?.(tenantDto);
+  });
+
+  it('should use EditionDto[] for Editions toolbar action contributors', () => {
+    const editions: EditionDto[] = [
+      { id: 'ed-1', displayName: 'Basic' },
+      { id: 'ed-2', displayName: 'Pro', creationTime: '2024-01-01' },
+    ];
+
+    const contributors: SaasToolbarActionContributors = {
+      [eSaasComponents.Editions]: [
+        (actions) => [
+          ...actions,
+          {
+            text: 'Export All',
+            action: (data) => {
+              expect(data).toHaveLength(2);
+            },
+          },
+        ],
+      ],
+    };
+
+    const callback = contributors[eSaasComponents.Editions]![0];
+    const result = callback([]);
+    result[0].action?.(editions);
+  });
+
+  it('should use SaasTenantDto[] for Tenants toolbar action contributors', () => {
+    const tenants: SaasTenantDto[] = [
+      { id: 'tenant-1', name: 'Tenant One' },
+      { id: 'tenant-2', name: 'Tenant Two', extraProperties: {} },
+    ];
+
+    const contributors: SaasToolbarActionContributors = {
+      [eSaasComponents.Tenants]: [
+        (actions) => [
+          ...actions,
+          {
+            text: 'Bulk Action',
+            action: (data) => {
+              expect(data).toHaveLength(2);
+            },
+          },
+        ],
+      ],
+    };
+
+    const callback = contributors[eSaasComponents.Tenants]![0];
+    const result = callback([]);
+    result[0].action?.(tenants);
+  });
+
+  it('should use EditionDto for entity prop value resolver', () => {
+    const editionDto: EditionDto = {
+      id: 'ed-1',
+      displayName: 'Enterprise',
+      creationTime: '2024-06-15T10:00:00Z',
+    };
+
+    const contributors: SaasEntityPropContributors = {
+      [eSaasComponents.Editions]: [
+        (props) => [
+          ...props,
+          {
+            name: 'creationTime',
+            displayName: 'Created',
+            valueResolver: (record) => record.creationTime as string,
+          },
+        ],
+      ],
+    };
+
+    const callback = contributors[eSaasComponents.Editions]![0];
+    const result = callback([]);
+    expect(result[0].valueResolver?.(editionDto)).toBe('2024-06-15T10:00:00Z');
+  });
+
+  it('should use SaasTenantDto for create form prop contributors', () => {
+    const contributors: SaasCreateFormPropContributors = {
+      [eSaasComponents.Tenants]: [
+        (props) => [
+          ...props,
+          {
+            name: 'extraProperties.customField',
+            displayName: 'Custom Field',
+            type: 'string' as const,
+          },
+        ],
+      ],
+    };
+
+    const callback = contributors[eSaasComponents.Tenants]![0];
+    const result = callback([]);
+    expect(result[0].name).toBe('extraProperties.customField');
+  });
+
+  it('should use EditionDto for edit form prop contributors', () => {
+    const contributors: SaasEditFormPropContributors = {
+      [eSaasComponents.Editions]: [
+        (props) => [
+          ...props,
+          {
+            name: 'displayName',
+            displayName: 'Edition Name',
+            type: 'string' as const,
+            validators: [
+              { type: 'required', message: 'Edition name is required' },
+              { type: 'maxLength', value: 256 },
+            ],
+          },
+        ],
+      ],
+    };
+
+    const callback = contributors[eSaasComponents.Editions]![0];
+    const result = callback([]);
+    expect(result[0].validators).toHaveLength(2);
   });
 });

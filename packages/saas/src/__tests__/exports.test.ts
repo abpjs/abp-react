@@ -1,6 +1,8 @@
 /**
  * Tests for module exports
- * @abpjs/saas v3.0.0
+ * @abpjs/saas v4.0.0
+ *
+ * @updated 4.0.0 - Proxy DTOs exported, SaasService deprecated
  */
 import { describe, it, expect, vi } from 'vitest';
 
@@ -264,6 +266,41 @@ describe('Module exports', () => {
       expect(typeof SAAS_ENTITY_PROP_CONTRIBUTORS).toBe('symbol');
       expect(typeof SAAS_CREATE_FORM_PROP_CONTRIBUTORS).toBe('symbol');
       expect(typeof SAAS_EDIT_FORM_PROP_CONTRIBUTORS).toBe('symbol');
+    });
+  });
+
+  describe('v4.0.0 exports', () => {
+    it('should export SaasService (deprecated) from index', async () => {
+      // SaasService deprecated in v4.0.0, to be deleted in v5.0
+      const { SaasService } = await import('../index');
+      expect(SaasService).toBeDefined();
+      expect(typeof SaasService).toBe('function');
+    });
+
+    it('should export SaasStateService from index', async () => {
+      const { SaasStateService } = await import('../index');
+      expect(SaasStateService).toBeDefined();
+      expect(typeof SaasStateService).toBe('function');
+    });
+
+    it('should export proxy TenantService from index', async () => {
+      const { TenantService } = await import('../index');
+      expect(TenantService).toBeDefined();
+      expect(typeof TenantService).toBe('function');
+    });
+
+    it('should export proxy EditionService from index', async () => {
+      const { EditionService } = await import('../index');
+      expect(EditionService).toBeDefined();
+      expect(typeof EditionService).toBe('function');
+    });
+
+    it('should export proxy DTOs from index (via proxy re-export)', async () => {
+      // v4.0.0: Proxy DTOs are the recommended replacement for Saas.* types
+      const saasModule = await import('../index');
+      // Proxy services and DTOs should be accessible from main index
+      expect(saasModule.TenantService).toBeDefined();
+      expect(saasModule.EditionService).toBeDefined();
     });
   });
 });
