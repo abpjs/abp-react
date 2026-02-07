@@ -1,6 +1,6 @@
 /**
  * Tests for Identity Pro Models
- * @abpjs/identity-pro v2.9.0
+ * @abpjs/identity-pro v3.1.0
  */
 import { describe, it, expect } from 'vitest';
 import { Identity, createOrganizationUnitWithDetailsDto } from '../../models';
@@ -245,6 +245,99 @@ describe('Identity namespace', () => {
       expect(state.organizationUnits.items).toHaveLength(2);
       expect(state.organizationUnits.items[0].displayName).toBe('Engineering');
       expect(state.organizationUnits.items[1].displayName).toBe('Marketing');
+    });
+  });
+});
+
+describe('Identity.UserLockDurationType (v3.1.0)', () => {
+  describe('enum values', () => {
+    it('should have Second value equal to 1', () => {
+      expect(Identity.UserLockDurationType.Second).toBe(1);
+    });
+
+    it('should have Minute value equal to 60', () => {
+      expect(Identity.UserLockDurationType.Minute).toBe(60);
+    });
+
+    it('should have Hour value equal to 3600', () => {
+      expect(Identity.UserLockDurationType.Hour).toBe(3600);
+    });
+
+    it('should have Day value equal to 86400', () => {
+      expect(Identity.UserLockDurationType.Day).toBe(86400);
+    });
+
+    it('should have Month value equal to 2592000', () => {
+      expect(Identity.UserLockDurationType.Month).toBe(2592000);
+    });
+
+    it('should have Year value equal to 31536000', () => {
+      expect(Identity.UserLockDurationType.Year).toBe(31536000);
+    });
+  });
+
+  describe('duration calculations', () => {
+    it('should correctly represent 1 minute as 60 seconds', () => {
+      expect(Identity.UserLockDurationType.Minute).toBe(1 * 60);
+    });
+
+    it('should correctly represent 1 hour as 3600 seconds', () => {
+      expect(Identity.UserLockDurationType.Hour).toBe(60 * 60);
+    });
+
+    it('should correctly represent 1 day as 86400 seconds', () => {
+      expect(Identity.UserLockDurationType.Day).toBe(24 * 60 * 60);
+    });
+
+    it('should correctly represent 1 month as 30 days', () => {
+      expect(Identity.UserLockDurationType.Month).toBe(30 * 24 * 60 * 60);
+    });
+
+    it('should correctly represent 1 year as 365 days', () => {
+      expect(Identity.UserLockDurationType.Year).toBe(365 * 24 * 60 * 60);
+    });
+  });
+
+  describe('usage in lock duration', () => {
+    it('should be usable for lockUser duration parameter', () => {
+      const lockDuration: number = Identity.UserLockDurationType.Hour;
+      expect(lockDuration).toBe(3600);
+    });
+
+    it('should allow multiplication for custom durations', () => {
+      // Lock for 2 hours
+      const twoHours = 2 * Identity.UserLockDurationType.Hour;
+      expect(twoHours).toBe(7200);
+
+      // Lock for 5 days
+      const fiveDays = 5 * Identity.UserLockDurationType.Day;
+      expect(fiveDays).toBe(432000);
+    });
+
+    it('should be usable in comparison operations', () => {
+      expect(Identity.UserLockDurationType.Second).toBeLessThan(Identity.UserLockDurationType.Minute);
+      expect(Identity.UserLockDurationType.Minute).toBeLessThan(Identity.UserLockDurationType.Hour);
+      expect(Identity.UserLockDurationType.Hour).toBeLessThan(Identity.UserLockDurationType.Day);
+      expect(Identity.UserLockDurationType.Day).toBeLessThan(Identity.UserLockDurationType.Month);
+      expect(Identity.UserLockDurationType.Month).toBeLessThan(Identity.UserLockDurationType.Year);
+    });
+  });
+
+  describe('all enum members', () => {
+    it('should have exactly 6 duration types', () => {
+      const numericValues = Object.values(Identity.UserLockDurationType).filter(
+        (v) => typeof v === 'number'
+      );
+      expect(numericValues).toHaveLength(6);
+    });
+
+    it('should have correct enum keys', () => {
+      expect(Identity.UserLockDurationType.Second).toBeDefined();
+      expect(Identity.UserLockDurationType.Minute).toBeDefined();
+      expect(Identity.UserLockDurationType.Hour).toBeDefined();
+      expect(Identity.UserLockDurationType.Day).toBeDefined();
+      expect(Identity.UserLockDurationType.Month).toBeDefined();
+      expect(Identity.UserLockDurationType.Year).toBeDefined();
     });
   });
 });

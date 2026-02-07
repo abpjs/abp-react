@@ -1,4 +1,5 @@
 export * from './identity';
+export * from './identity-security-log';
 export * from './get-organization-unit-input';
 export * from './organization-unit-create-dto';
 export * from './organization-unit-create-or-update-dto-base';

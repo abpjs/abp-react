@@ -2,10 +2,12 @@
  * Identity Extension Tokens
  * Provides extension points for customizing identity components.
  * @since 3.0.0
+ * @updated 3.1.0 - Added SecurityLogs extensions
  */
 
 import type { eIdentityComponents } from '../enums/components';
 import type { Identity } from '../models/identity';
+import type { IdentitySecurityLogDto } from '../models/identity-security-log';
 import type { OrganizationUnitWithDetailsDto } from '../models/organization-unit-with-details-dto';
 
 // ========================
@@ -192,6 +194,13 @@ export const DEFAULT_ORGANIZATION_ROLES_ENTITY_ACTIONS: EntityAction<Identity.Ro
 ];
 
 /**
+ * Default entity actions for Security Logs component.
+ * Security logs are read-only, so no actions by default.
+ * @since 3.1.0
+ */
+export const DEFAULT_SECURITY_LOGS_ENTITY_ACTIONS: EntityAction<IdentitySecurityLogDto>[] = [];
+
+/**
  * Combined default identity entity actions.
  */
 export const DEFAULT_IDENTITY_ENTITY_ACTIONS = {
@@ -200,6 +209,8 @@ export const DEFAULT_IDENTITY_ENTITY_ACTIONS = {
   'Identity.UsersComponent': DEFAULT_USERS_ENTITY_ACTIONS,
   'Identity.OrganizationMembersComponent': DEFAULT_ORGANIZATION_MEMBERS_ENTITY_ACTIONS,
   'Identity.OrganizationRolesComponent': DEFAULT_ORGANIZATION_ROLES_ENTITY_ACTIONS,
+  /** Security logs entity actions (v3.1.0) */
+  'Identity.SecurityLogs': DEFAULT_SECURITY_LOGS_ENTITY_ACTIONS,
 } as const;
 
 // ========================
@@ -251,6 +262,13 @@ export const DEFAULT_ORGANIZATION_UNITS_TOOLBAR_ACTIONS: ToolbarAction<Organizat
 ];
 
 /**
+ * Default toolbar actions for Security Logs component.
+ * Security logs are read-only, no create action by default.
+ * @since 3.1.0
+ */
+export const DEFAULT_SECURITY_LOGS_TOOLBAR_ACTIONS: ToolbarAction<IdentitySecurityLogDto[]>[] = [];
+
+/**
  * Combined default identity toolbar actions.
  */
 export const DEFAULT_IDENTITY_TOOLBAR_ACTIONS = {
@@ -258,6 +276,8 @@ export const DEFAULT_IDENTITY_TOOLBAR_ACTIONS = {
   'Identity.RolesComponent': DEFAULT_ROLES_TOOLBAR_ACTIONS,
   'Identity.UsersComponent': DEFAULT_USERS_TOOLBAR_ACTIONS,
   'Identity.OrganizationUnitsComponent': DEFAULT_ORGANIZATION_UNITS_TOOLBAR_ACTIONS,
+  /** Security logs toolbar actions (v3.1.0) */
+  'Identity.SecurityLogs': DEFAULT_SECURITY_LOGS_TOOLBAR_ACTIONS,
 } as const;
 
 // ========================
@@ -306,6 +326,19 @@ export const DEFAULT_ORGANIZATION_ROLES_ENTITY_PROPS: EntityProp<Identity.RoleIt
 ];
 
 /**
+ * Default entity props for Security Logs component.
+ * @since 3.1.0
+ */
+export const DEFAULT_SECURITY_LOGS_ENTITY_PROPS: EntityProp<IdentitySecurityLogDto>[] = [
+  { type: 'date', name: 'creationTime', displayName: 'AbpIdentity::CreationTime', sortable: true },
+  { type: 'string', name: 'action', displayName: 'AbpIdentity::Action', sortable: true },
+  { type: 'string', name: 'userName', displayName: 'AbpIdentity::UserName', sortable: true },
+  { type: 'string', name: 'applicationName', displayName: 'AbpIdentity::ApplicationName', sortable: true },
+  { type: 'string', name: 'identity', displayName: 'AbpIdentity::Identity', sortable: false },
+  { type: 'string', name: 'clientIpAddress', displayName: 'AbpIdentity::ClientIpAddress', sortable: false },
+];
+
+/**
  * Combined default identity entity props.
  */
 export const DEFAULT_IDENTITY_ENTITY_PROPS = {
@@ -314,6 +347,8 @@ export const DEFAULT_IDENTITY_ENTITY_PROPS = {
   'Identity.UsersComponent': DEFAULT_USERS_ENTITY_PROPS,
   'Identity.OrganizationMembersComponent': DEFAULT_ORGANIZATION_MEMBERS_ENTITY_PROPS,
   'Identity.OrganizationRolesComponent': DEFAULT_ORGANIZATION_ROLES_ENTITY_PROPS,
+  /** Security logs entity props (v3.1.0) */
+  'Identity.SecurityLogs': DEFAULT_SECURITY_LOGS_ENTITY_PROPS,
 } as const;
 
 // ========================
@@ -404,6 +439,7 @@ export const DEFAULT_IDENTITY_EDIT_FORM_PROPS = {
 
 /**
  * Entity action contributors type.
+ * @updated 3.1.0 - Added SecurityLogs
  */
 export type IdentityEntityActionContributors = Partial<{
   [eIdentityComponents.Claims]: EntityActionContributorCallback<Identity.ClaimType>[];
@@ -411,20 +447,24 @@ export type IdentityEntityActionContributors = Partial<{
   [eIdentityComponents.Users]: EntityActionContributorCallback<Identity.UserItem>[];
   [eIdentityComponents.OrganizationMembers]: EntityActionContributorCallback<Identity.UserItem>[];
   [eIdentityComponents.OrganizationRoles]: EntityActionContributorCallback<Identity.RoleItem>[];
+  [eIdentityComponents.SecurityLogs]: EntityActionContributorCallback<IdentitySecurityLogDto>[];
 }>;
 
 /**
  * Toolbar action contributors type.
+ * @updated 3.1.0 - Added SecurityLogs
  */
 export type IdentityToolbarActionContributors = Partial<{
   [eIdentityComponents.Claims]: ToolbarActionContributorCallback<Identity.ClaimType[]>[];
   [eIdentityComponents.Roles]: ToolbarActionContributorCallback<Identity.RoleItem[]>[];
   [eIdentityComponents.Users]: ToolbarActionContributorCallback<Identity.UserItem[]>[];
   [eIdentityComponents.OrganizationUnits]: ToolbarActionContributorCallback<OrganizationUnitWithDetailsDto[]>[];
+  [eIdentityComponents.SecurityLogs]: ToolbarActionContributorCallback<IdentitySecurityLogDto[]>[];
 }>;
 
 /**
  * Entity prop contributors type.
+ * @updated 3.1.0 - Added SecurityLogs
  */
 export type IdentityEntityPropContributors = Partial<{
   [eIdentityComponents.Claims]: EntityPropContributorCallback<Identity.ClaimType>[];
@@ -432,6 +472,7 @@ export type IdentityEntityPropContributors = Partial<{
   [eIdentityComponents.Users]: EntityPropContributorCallback<Identity.UserItem>[];
   [eIdentityComponents.OrganizationMembers]: EntityPropContributorCallback<Identity.UserItem>[];
   [eIdentityComponents.OrganizationRoles]: EntityPropContributorCallback<Identity.RoleItem>[];
+  [eIdentityComponents.SecurityLogs]: EntityPropContributorCallback<IdentitySecurityLogDto>[];
 }>;
 
 /**

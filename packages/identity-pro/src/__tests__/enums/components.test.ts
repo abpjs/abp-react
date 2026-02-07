@@ -1,6 +1,6 @@
 /**
  * Tests for Identity Pro Component Identifiers
- * @abpjs/identity-pro v2.9.0
+ * @abpjs/identity-pro v3.1.0
  */
 import { describe, it, expect } from 'vitest';
 import { eIdentityComponents, IdentityComponentKey } from '../../enums';
@@ -30,6 +30,10 @@ describe('eIdentityComponents', () => {
     it('should have OrganizationRoles component identifier (v2.9.0)', () => {
       expect(eIdentityComponents.OrganizationRoles).toBe('Identity.OrganizationRolesComponent');
     });
+
+    it('should have SecurityLogs component identifier (v3.1.0)', () => {
+      expect(eIdentityComponents.SecurityLogs).toBe('Identity.SecurityLogs');
+    });
   });
 
   describe('string usage', () => {
@@ -56,7 +60,7 @@ describe('eIdentityComponents', () => {
   });
 
   describe('object structure', () => {
-    it('should have correct keys', () => {
+    it('should have correct keys (v3.1.0 with SecurityLogs)', () => {
       const keys = Object.keys(eIdentityComponents);
       expect(keys).toContain('Claims');
       expect(keys).toContain('Roles');
@@ -64,10 +68,11 @@ describe('eIdentityComponents', () => {
       expect(keys).toContain('OrganizationUnits');
       expect(keys).toContain('OrganizationMembers');
       expect(keys).toContain('OrganizationRoles');
-      expect(keys).toHaveLength(6);
+      expect(keys).toContain('SecurityLogs');
+      expect(keys).toHaveLength(7);
     });
 
-    it('should have correct values', () => {
+    it('should have correct values (v3.1.0 with SecurityLogs)', () => {
       const values = Object.values(eIdentityComponents);
       expect(values).toContain('Identity.ClaimsComponent');
       expect(values).toContain('Identity.RolesComponent');
@@ -75,7 +80,8 @@ describe('eIdentityComponents', () => {
       expect(values).toContain('Identity.OrganizationUnitsComponent');
       expect(values).toContain('Identity.OrganizationMembersComponent');
       expect(values).toContain('Identity.OrganizationRolesComponent');
-      expect(values).toHaveLength(6);
+      expect(values).toContain('Identity.SecurityLogs');
+      expect(values).toHaveLength(7);
     });
 
     it('should have unique values for each component', () => {
@@ -90,10 +96,12 @@ describe('eIdentityComponents', () => {
     });
   });
 
-  describe('v2.9.0 const object pattern', () => {
-    it('should follow Module.ComponentName pattern', () => {
+  describe('v3.1.0 const object pattern', () => {
+    it('should follow Module.ComponentName or Module.Name pattern', () => {
       Object.values(eIdentityComponents).forEach((value) => {
-        expect(value).toMatch(/^Identity\.\w+Component$/);
+        // Most components follow Module.XyzComponent pattern
+        // SecurityLogs is an exception: Identity.SecurityLogs (matches Angular source)
+        expect(value).toMatch(/^Identity\.\w+$/);
       });
     });
 
@@ -106,6 +114,7 @@ describe('eIdentityComponents', () => {
           [eIdentityComponents.OrganizationUnits]: 'OrganizationUnitsComponent',
           [eIdentityComponents.OrganizationMembers]: 'OrganizationMembersComponent',
           [eIdentityComponents.OrganizationRoles]: 'OrganizationRolesComponent',
+          [eIdentityComponents.SecurityLogs]: 'SecurityLogsComponent',
         };
         return components[key];
       };
@@ -116,6 +125,7 @@ describe('eIdentityComponents', () => {
       expect(getComponent(eIdentityComponents.OrganizationUnits)).toBe('OrganizationUnitsComponent');
       expect(getComponent(eIdentityComponents.OrganizationMembers)).toBe('OrganizationMembersComponent');
       expect(getComponent(eIdentityComponents.OrganizationRoles)).toBe('OrganizationRolesComponent');
+      expect(getComponent(eIdentityComponents.SecurityLogs)).toBe('SecurityLogsComponent');
     });
   });
 });
@@ -128,6 +138,7 @@ describe('IdentityComponentKey type', () => {
     const orgUnitsKey: IdentityComponentKey = 'Identity.OrganizationUnitsComponent';
     const orgMembersKey: IdentityComponentKey = 'Identity.OrganizationMembersComponent';
     const orgRolesKey: IdentityComponentKey = 'Identity.OrganizationRolesComponent';
+    const securityLogsKey: IdentityComponentKey = 'Identity.SecurityLogs';
 
     expect(claimsKey).toBe(eIdentityComponents.Claims);
     expect(rolesKey).toBe(eIdentityComponents.Roles);
@@ -135,6 +146,7 @@ describe('IdentityComponentKey type', () => {
     expect(orgUnitsKey).toBe(eIdentityComponents.OrganizationUnits);
     expect(orgMembersKey).toBe(eIdentityComponents.OrganizationMembers);
     expect(orgRolesKey).toBe(eIdentityComponents.OrganizationRoles);
+    expect(securityLogsKey).toBe(eIdentityComponents.SecurityLogs);
   });
 
   it('should work with eIdentityComponents values', () => {
@@ -153,6 +165,7 @@ describe('IdentityComponentKey type', () => {
     expect(isValidKey(eIdentityComponents.OrganizationUnits)).toBe(true);
     expect(isValidKey(eIdentityComponents.OrganizationMembers)).toBe(true);
     expect(isValidKey(eIdentityComponents.OrganizationRoles)).toBe(true);
+    expect(isValidKey(eIdentityComponents.SecurityLogs)).toBe(true);
   });
 
   it('should work with Record type', () => {
@@ -163,6 +176,7 @@ describe('IdentityComponentKey type', () => {
       'Identity.OrganizationUnitsComponent': 'OrganizationUnits',
       'Identity.OrganizationMembersComponent': 'OrganizationMembers',
       'Identity.OrganizationRolesComponent': 'OrganizationRoles',
+      'Identity.SecurityLogs': 'SecurityLogs',
     };
 
     expect(componentNames[eIdentityComponents.Claims]).toBe('Claims');
@@ -171,5 +185,6 @@ describe('IdentityComponentKey type', () => {
     expect(componentNames[eIdentityComponents.OrganizationUnits]).toBe('OrganizationUnits');
     expect(componentNames[eIdentityComponents.OrganizationMembers]).toBe('OrganizationMembers');
     expect(componentNames[eIdentityComponents.OrganizationRoles]).toBe('OrganizationRoles');
+    expect(componentNames[eIdentityComponents.SecurityLogs]).toBe('SecurityLogs');
   });
 });

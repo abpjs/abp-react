@@ -846,4 +846,132 @@ describe('IdentityService', () => {
       });
     });
   });
+
+  // ========================
+  // v3.1.0 Features
+  // ========================
+
+  describe('getUserAvailableOrganizationUnits (v3.1.0)', () => {
+    it('should fetch available organization units for user assignment', async () => {
+      const expectedResponse = {
+        items: [
+          {
+            id: 'org-1',
+            parentId: null,
+            code: '00001',
+            displayName: 'Engineering',
+            roleCount: 3,
+            memberCount: 10,
+          },
+          {
+            id: 'org-2',
+            parentId: 'org-1',
+            code: '00001.00001',
+            displayName: 'Frontend',
+            roleCount: 2,
+            memberCount: 5,
+          },
+        ],
+        totalCount: 2,
+      };
+      mockRestService.request.mockResolvedValue(expectedResponse);
+
+      const result = await identityService.getUserAvailableOrganizationUnits();
+
+      expect(mockRestService.request).toHaveBeenCalledWith({
+        method: 'GET',
+        url: '/api/identity/users/available-organization-units',
+      });
+      expect(result).toEqual(expectedResponse);
+      expect(result.items).toHaveLength(2);
+    });
+
+    it('should return empty array when no organization units available', async () => {
+      const expectedResponse = {
+        items: [],
+        totalCount: 0,
+      };
+      mockRestService.request.mockResolvedValue(expectedResponse);
+
+      const result = await identityService.getUserAvailableOrganizationUnits();
+
+      expect(result.items).toHaveLength(0);
+      expect(result.totalCount).toBe(0);
+    });
+
+    it('should propagate errors when fetching fails', async () => {
+      const error = new Error('Failed to fetch organization units');
+      mockRestService.request.mockRejectedValue(error);
+
+      await expect(identityService.getUserAvailableOrganizationUnits()).rejects.toThrow(
+        'Failed to fetch organization units'
+      );
+    });
+  });
+
+  describe('lockUser (v3.1.0)', () => {
+    it('should lock a user for the specified duration', async () => {
+      mockRestService.request.mockResolvedValue(undefined);
+
+      await identityService.lockUser('user-123', 3600);
+
+      expect(mockRestService.request).toHaveBeenCalledWith({
+        method: 'PUT',
+        url: '/api/identity/users/user-123/lock',
+        body: { lockoutDurationInSeconds: 3600 },
+      });
+    });
+
+    it('should lock user for 1 minute (60 seconds)', async () => {
+      mockRestService.request.mockResolvedValue(undefined);
+
+      await identityService.lockUser('user-456', 60);
+
+      expect(mockRestService.request).toHaveBeenCalledWith({
+        method: 'PUT',
+        url: '/api/identity/users/user-456/lock',
+        body: { lockoutDurationInSeconds: 60 },
+      });
+    });
+
+    it('should lock user for 1 day (86400 seconds)', async () => {
+      mockRestService.request.mockResolvedValue(undefined);
+
+      await identityService.lockUser('user-789', 86400);
+
+      expect(mockRestService.request).toHaveBeenCalledWith({
+        method: 'PUT',
+        url: '/api/identity/users/user-789/lock',
+        body: { lockoutDurationInSeconds: 86400 },
+      });
+    });
+
+    it('should lock user for 1 month (2592000 seconds)', async () => {
+      mockRestService.request.mockResolvedValue(undefined);
+
+      await identityService.lockUser('user-abc', 2592000);
+
+      expect(mockRestService.request).toHaveBeenCalledWith({
+        method: 'PUT',
+        url: '/api/identity/users/user-abc/lock',
+        body: { lockoutDurationInSeconds: 2592000 },
+      });
+    });
+
+    it('should propagate errors when locking fails', async () => {
+      const error = new Error('User not found');
+      mockRestService.request.mockRejectedValue(error);
+
+      await expect(identityService.lockUser('invalid-user', 3600)).rejects.toThrow('User not found');
+    });
+
+    it('should handle permission errors', async () => {
+      const error = new Error('Forbidden: Insufficient permissions');
+      mockRestService.request.mockRejectedValue(error);
+
+      await expect(identityService.lockUser('user-123', 3600)).rejects.toThrow(
+        'Forbidden: Insufficient permissions'
+      );
+    });
+  });
 });

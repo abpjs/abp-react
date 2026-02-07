@@ -10,9 +10,12 @@ import { OrganizationUnitWithDetailsDto } from './organization-unit-with-details
  * - Claim type management
  * - User/Role claims management
  * - Organization unit management (v2.9.0)
+ * - Security logs (v3.1.0)
+ * - User lock functionality (v3.1.0)
  *
  * @since 0.7.2
  * @updated 2.9.0 - Added organization units support
+ * @updated 3.1.0 - Added UserLockDurationType enum
  */
 export namespace Identity {
   /**
@@ -174,5 +177,19 @@ export namespace Identity {
     Int = 1,
     Boolean = 2,
     DateTime = 3,
+  }
+
+  /**
+   * User lock duration type enumeration (values in seconds)
+   * Used for locking user accounts for a specified duration.
+   * @since 3.1.0
+   */
+  export enum UserLockDurationType {
+    Second = 1,
+    Minute = 60,
+    Hour = 3600,
+    Day = 86400,
+    Month = 2592000,
+    Year = 31536000,
   }
 }

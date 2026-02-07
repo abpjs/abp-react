@@ -2,6 +2,7 @@
  * Identity Route Names
  * Route names for the Identity module navigation.
  * @since 3.0.0
+ * @updated 3.1.0 - Added SecurityLogs
  */
 
 /**
@@ -12,6 +13,7 @@
  * Routes are now organized under IdentityManagement.
  *
  * @since 3.0.0
+ * @updated 3.1.0 - Added SecurityLogs
  */
 export const eIdentityRouteNames = {
   IdentityManagement: 'AbpIdentity::Menu:IdentityManagement',
@@ -19,6 +21,8 @@ export const eIdentityRouteNames = {
   Users: 'AbpIdentity::Users',
   ClaimTypes: 'AbpIdentity::ClaimTypes',
   OrganizationUnits: 'AbpIdentity::OrganizationUnits',
+  /** Security logs route name (v3.1.0) */
+  SecurityLogs: 'AbpIdentity::SecurityLogs',
 } as const;
 
 /**
