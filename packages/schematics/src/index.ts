@@ -1,6 +1,6 @@
 /**
  * @abpjs/schematics
- * Translated from @abp/ng.schematics v3.2.0
+ * Translated from @abp/ng.schematics v4.0.0
  *
  * ABP Framework schematics types and utilities for React.
  * This package provides types, interfaces, utilities, EJS templates,
@@ -11,6 +11,9 @@
  * - React Query (TanStack Query) hook generation
  * - TypeScript interface and enum generation
  * - CLI commands: proxy-add, proxy-refresh, proxy-remove
+ *
+ * Changes in v4.0.0:
+ * - Added isRequired field to PropertyDef interface
  *
  * Changes in v3.2.0:
  * - Updated PROXY_WARNING with important notice about npm module publishing

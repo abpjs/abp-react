@@ -3,7 +3,7 @@
  *
  * Demonstrates the schematics types, classes, and utilities for code generation.
  *
- * @updated 3.2.0 - PROXY_WARNING updated with npm module publishing notice
+ * @updated 4.0.0 - PropertyDef isRequired field, model generation with isRequired
  */
 
 import { useState } from 'react';
@@ -32,7 +32,10 @@ import {
   Signature,
   Body,
   Service,
+  // v4.0.0 - model generation with isRequired
+  createImportRefToInterfaceReducerCreator,
 } from '@abpjs/schematics';
+import type { PropertyDef, Type } from '@abpjs/schematics';
 
 // Demo of Enum Values
 function EnumDemo() {
@@ -396,10 +399,107 @@ function ServiceClassDemo() {
   );
 }
 
+// Demo of v4.0.0 PropertyDef isRequired field
+function V400PropertyDefDemo() {
+  // Demonstrate the new isRequired field on PropertyDef (v4.0.0)
+  const requiredProp: PropertyDef = {
+    name: 'UserName',
+    type: 'System.String',
+    typeSimple: 'string',
+    isRequired: true,
+  };
+
+  const optionalProp: PropertyDef = {
+    name: 'Email',
+    type: 'System.String',
+    typeSimple: 'string?',
+    isRequired: false,
+  };
+
+  // Type with mixed isRequired properties
+  const userType: Type = {
+    baseType: null,
+    isEnum: false,
+    enumNames: null,
+    enumValues: null,
+    genericArguments: null,
+    properties: [requiredProp, optionalProp],
+  };
+
+  // Demonstrate model generation using isRequired properties
+  const reducer = createImportRefToInterfaceReducerCreator({
+    solution: 'MyApp',
+    types: {
+      'MyApp.Users.CreateUserInput': {
+        baseType: null,
+        isEnum: false,
+        enumNames: null,
+        enumValues: null,
+        genericArguments: null,
+        properties: [
+          { name: 'UserName', type: 'System.String', typeSimple: 'string', isRequired: true },
+          { name: 'Email', type: 'System.String', typeSimple: 'string', isRequired: true },
+          { name: 'PhoneNumber', type: 'System.String', typeSimple: 'string?', isRequired: false },
+        ],
+      },
+    },
+  });
+
+  const generatedInterfaces = reducer([], 'MyApp.Users.CreateUserInput');
+  const generatedProps = generatedInterfaces[0]?.properties ?? [];
+
+  return (
+    <div className="test-card">
+      <h3>v4.0.0: PropertyDef isRequired</h3>
+      <p>
+        New in v4.0.0: <code>PropertyDef</code> now includes an <code>isRequired: boolean</code> field
+        indicating whether the property is required by the API.
+      </p>
+
+      <h4>PropertyDef Examples</h4>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: 'left', borderBottom: '1px solid #444', padding: '0.25rem' }}>Property</th>
+            <th style={{ textAlign: 'left', borderBottom: '1px solid #444', padding: '0.25rem' }}>typeSimple</th>
+            <th style={{ textAlign: 'left', borderBottom: '1px solid #444', padding: '0.25rem' }}>isRequired</th>
+          </tr>
+        </thead>
+        <tbody>
+          {userType.properties!.map((prop) => (
+            <tr key={prop.name}>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}><code>{prop.name}</code></td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}><code>{prop.typeSimple}</code></td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>
+                <span style={{ color: prop.isRequired ? '#6f6' : '#f66' }}>
+                  {prop.isRequired ? 'true' : 'false'}
+                </span>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <h4>Model Generation with isRequired</h4>
+      <p>
+        Generated interface for <code>CreateUserInput</code> ({generatedProps.length} properties):
+      </p>
+      <pre style={{ fontSize: '0.75rem', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`export interface CreateUserInput {
+${generatedProps.map((p) => `  ${p.name}${p.optional}: ${p.type};`).join('\n')}
+}`}
+      </pre>
+      <p style={{ fontSize: '0.85rem', color: '#888' }}>
+        Properties with <code>typeSimple</code> ending in "?" become optional in the generated interface.
+      </p>
+    </div>
+  );
+}
+
 export function TestSchematicsPage() {
   return (
     <div>
-      <h1>@abpjs/schematics v3.2.0</h1>
+      <h1>@abpjs/schematics v4.0.0</h1>
       <p>
         <Link to="/" style={{ color: '#646cff' }}>&larr; Back to Home</Link>
       </p>
@@ -408,8 +508,13 @@ export function TestSchematicsPage() {
         and classes for generating proxy services from ABP API definitions.
       </p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.2.0 - PROXY_WARNING updated with npm module publishing notice
+        Version 4.0.0 - Added isRequired field to PropertyDef interface
       </p>
+
+      <div className="test-section">
+        <h2>v4.0.0 Features</h2>
+        <V400PropertyDefDemo />
+      </div>
 
       <div className="test-section">
         <h2>Enums & Constants</h2>
