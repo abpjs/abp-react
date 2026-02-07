@@ -7,6 +7,7 @@
  * @updated 2.7.0 - Added EntityChanges component, eEntityChangeType, eAuditLoggingRouteNames, EntityChangeService
  * @updated 2.9.0 - AuditLogsComponent aligned with onQueryChange pattern, removed DateAdapter (React uses native Date)
  * @updated 3.0.0 - Added config subpackage, policy names, route providers, extensions tokens, guards
+ * @updated 3.1.0 - Internal Angular refactoring (OnDestroy → SubscriptionService), no public API changes
  */
 import { useState } from 'react'
 import {
@@ -1393,15 +1394,89 @@ const filter: Statistics.Filter = {
   )
 }
 
+function TestV310Features() {
+  return (
+    <div className="test-section">
+      <h2>v3.1.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(Current)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Internal Angular Refactoring <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.1.0)</span></h3>
+        <p>
+          Version 3.1.0 includes internal Angular refactoring that does not affect the React implementation.
+          No public API changes were made in this release.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Change</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Angular</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>React</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>Widget cleanup pattern</td>
+              <td style={{ padding: '8px' }}>OnDestroy → SubscriptionService</td>
+              <td style={{ padding: '8px' }}>useEffect cleanup (unchanged)</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>Type reference updates</td>
+              <td style={{ padding: '8px' }}>Internal type adjustments</td>
+              <td style={{ padding: '8px' }}>Not applicable</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>Dependencies</td>
+              <td style={{ padding: '8px' }}>@abp/ng.theme.shared ~3.1.0</td>
+              <td style={{ padding: '8px' }}>@abpjs/theme-shared workspace:*</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>React Cleanup Pattern <span style={{ color: '#4f4', fontSize: '12px' }}>(Already Implemented)</span></h3>
+        <p>
+          The React implementation already uses the standard <code>useEffect</code> cleanup pattern,
+          which is equivalent to Angular's SubscriptionService pattern for managing subscriptions.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`// React already uses useEffect cleanup pattern
+function AuditLogsWidget() {
+  useEffect(() => {
+    // Setup subscriptions/listeners
+    const subscription = someObservable.subscribe(handleData);
+
+    // Cleanup function - equivalent to Angular's SubscriptionService
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [dependencies]);
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v3.1.0 Summary</h3>
+        <p style={{ color: '#888' }}>
+          This release focused on internal Angular code quality improvements. All existing APIs
+          from v3.0.0 remain unchanged and fully compatible. The React translation did not require
+          any updates as it already follows React best practices for component lifecycle management.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function TestAuditLoggingPage() {
   return (
     <div>
-      <h1>@abpjs/audit-logging Tests (v3.0.0)</h1>
+      <h1>@abpjs/audit-logging Tests (v3.1.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing audit logging components, hooks, services, and enums.</p>
       <p style={{ fontSize: '14px', color: '#4f4', marginBottom: '16px' }}>
-        Version 3.0.0 - Config subpackage, policy names, route providers, extensions tokens, guards
+        Version 3.1.0 - Internal Angular refactoring (no public API changes)
       </p>
 
+      <TestV310Features />
       <TestV300Features />
       <TestV290Features />
       <TestV270Features />
