@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import {
   organizeRoutes,
   setChildRoute,
@@ -11,6 +11,7 @@ import {
   clearAbpRoutes,
   findRoute,
   getRoutePath,
+  reloadRoute,
 } from './route-utils';
 import { ABP } from '../models';
 import { RoutesService } from '../services/routes.service';
@@ -362,6 +363,50 @@ describe('route-utils', () => {
       const path = getRoutePath('users/list');
 
       expect(path).toBe('users/list');
+    });
+  });
+
+  describe('reloadRoute (v3.2.0)', () => {
+    let originalReload: typeof window.location.reload;
+
+    beforeEach(() => {
+      // Store original reload
+      originalReload = window.location.reload;
+      // Mock window.location.reload
+      Object.defineProperty(window, 'location', {
+        value: {
+          ...window.location,
+          reload: vi.fn(),
+        },
+        writable: true,
+      });
+    });
+
+    afterEach(() => {
+      // Restore original reload
+      Object.defineProperty(window, 'location', {
+        value: {
+          ...window.location,
+          reload: originalReload,
+        },
+        writable: true,
+      });
+    });
+
+    it('should call window.location.reload', () => {
+      reloadRoute();
+
+      expect(window.location.reload).toHaveBeenCalled();
+    });
+
+    it('should call reload exactly once', () => {
+      reloadRoute();
+
+      expect(window.location.reload).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not throw when called', () => {
+      expect(() => reloadRoute()).not.toThrow();
     });
   });
 });

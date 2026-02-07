@@ -92,13 +92,38 @@ export namespace ApplicationConfiguration {
      * @since 2.9.0
      */
     email: string;
+    /**
+     * Whether the user's email is verified
+     * @since 3.2.0
+     */
+    emailVerified: boolean;
     id: string;
     isAuthenticated: boolean;
+    /**
+     * User's first name
+     * @since 3.2.0
+     */
+    name: string;
+    /**
+     * User's phone number
+     * @since 3.2.0
+     */
+    phoneNumber: string;
+    /**
+     * Whether the user's phone number is verified
+     * @since 3.2.0
+     */
+    phoneNumberVerified: boolean;
     /**
      * User's assigned roles
      * @since 3.0.0
      */
     roles: string[];
+    /**
+     * User's surname/last name
+     * @since 3.2.0
+     */
+    surName: string;
     tenantId: string;
     userName: string;
   }

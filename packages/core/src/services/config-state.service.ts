@@ -139,6 +139,17 @@ export class ConfigStateService {
   }
 
   /**
+   * Get an entire localization resource by name
+   * @param resourceName - The resource name (e.g., 'AbpIdentity')
+   * @returns Object containing all key-value pairs for the resource
+   * @since 3.2.0
+   */
+  getLocalizationResource(resourceName: string): Record<string, string> {
+    const state = this.getState().config;
+    return state.localization?.values?.[resourceName] ?? {};
+  }
+
+  /**
    * Get a localized string by key with interpolation support
    * @param key - Localization key (string) or object with key and defaultValue
    * @param interpolateParams - Parameters to interpolate into the string

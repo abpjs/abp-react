@@ -47,8 +47,9 @@ import {
   DEFAULT_SECURITY_LOGS_ENTITY_PROPS,
   DEFAULT_SECURITY_LOGS_ENTITY_ACTIONS,
   DEFAULT_SECURITY_LOGS_TOOLBAR_ACTIONS,
+  // Namespace import (as value, not type) for UserLockDurationType
+  Identity,
   type BaseNode,
-  type Identity,
   type IdentityStateService,
   type IdentityComponentKey,
   type IdentityRouteNameKey,
@@ -1071,12 +1072,14 @@ function TestV270Features() {
       'Identity.OrganizationUnitsComponent': 'Organization Units Management',
       'Identity.OrganizationMembersComponent': 'Organization Members Management',
       'Identity.OrganizationRolesComponent': 'Organization Roles Management',
+      'Identity.SecurityLogs': 'Security Logs', // v3.1.0
     }
     return displays[key]
   }
 
   // Demo type-safe route lookup with IdentityRouteNameKey
   // v3.0.0: Administration was removed from eIdentityRouteNames
+  // v3.1.0: SecurityLogs was added
   const getRouteDisplay = (key: IdentityRouteNameKey): string => {
     const displays: Record<IdentityRouteNameKey, string> = {
       'AbpIdentity::Menu:IdentityManagement': 'Identity Management Menu',
@@ -1084,6 +1087,7 @@ function TestV270Features() {
       'AbpIdentity::Users': 'Users Page',
       'AbpIdentity::ClaimTypes': 'Claim Types Page',
       'AbpIdentity::OrganizationUnits': 'Organization Units Page',
+      'AbpIdentity::SecurityLogs': 'Security Logs Page', // v3.1.0
     }
     return displays[key]
   }
@@ -1543,7 +1547,7 @@ function TestV310Features() {
     try {
       const params = createIdentitySecurityLogGetListInput({ maxResultCount: 10 })
       const result = await securityLogService.getListByInput(params)
-      setSecurityLogs(result.items)
+      setSecurityLogs(result.items ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch security logs')
     } finally {

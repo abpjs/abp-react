@@ -41,7 +41,19 @@ const initialState: ConfigState = {
   },
   auth: { policies: {}, grantedPolicies: {} },
   setting: { values: {} },
-  currentUser: { isAuthenticated: false, id: '', tenantId: '', userName: '', email: '', roles: [] },
+  currentUser: {
+    isAuthenticated: false,
+    id: '',
+    tenantId: '',
+    userName: '',
+    email: '',
+    emailVerified: false,
+    name: '',
+    phoneNumber: '',
+    phoneNumberVerified: false,
+    surName: '',
+    roles: [],
+  },
   features: { values: {} },
 };
 

@@ -1,11 +1,19 @@
 /**
  * Tree Utilities
- * Translated from @abp/ng.core v3.0.0
+ * Translated from @abp/ng.core v3.2.0
  *
  * Provides utility classes and functions for working with tree structures.
  *
  * @since 3.0.0
+ * @updated 3.2.0 - Added NodeKey type, updated function signatures
  */
+
+/**
+ * NodeKey type - valid types for tree node keys
+ * Includes undefined and null to support root nodes without parents
+ * @since 3.2.0
+ */
+export type NodeKey = number | string | symbol | undefined | null;
 
 /**
  * TreeNode type - represents a node in a tree structure
@@ -51,11 +59,12 @@ export class BaseTreeNode<T extends object> {
  * @param valueMapper - Function to transform item to result type
  * @returns Array of root nodes
  * @since 3.0.0
+ * @updated 3.2.0 - Updated to use NodeKey type
  */
 export function createTreeFromList<T extends object, R extends object>(
   list: T[],
-  keySelector: (item: T) => number | string | symbol,
-  parentKeySelector: (item: T) => number | string | symbol | undefined | null,
+  keySelector: (item: T) => NodeKey,
+  parentKeySelector: (item: T) => NodeKey,
   valueMapper: (item: T) => R
 ): TreeNode<R>[] {
   const map = new Map<number | string | symbol, TreeNode<R>>();
@@ -64,6 +73,7 @@ export function createTreeFromList<T extends object, R extends object>(
   // First pass: create all nodes
   for (const item of list) {
     const key = keySelector(item);
+    if (key == null) continue; // Skip items with null/undefined keys
     const mapped = valueMapper(item);
     const node: TreeNode<R> = {
       ...mapped,
@@ -76,6 +86,7 @@ export function createTreeFromList<T extends object, R extends object>(
   // Second pass: build relationships
   for (const item of list) {
     const key = keySelector(item);
+    if (key == null) continue; // Skip items with null/undefined keys
     const parentKey = parentKeySelector(item);
     const node = map.get(key)!;
 
@@ -99,16 +110,18 @@ export function createTreeFromList<T extends object, R extends object>(
  * @param valueMapper - Function to transform item to result type
  * @returns Map of key to value
  * @since 3.0.0
+ * @updated 3.2.0 - Updated to use NodeKey type
  */
 export function createMapFromList<T extends object, R>(
   list: T[],
-  keySelector: (item: T) => number | string | symbol,
+  keySelector: (item: T) => NodeKey,
   valueMapper: (item: T) => R
 ): Map<string | number | symbol, R> {
   const map = new Map<string | number | symbol, R>();
 
   for (const item of list) {
     const key = keySelector(item);
+    if (key == null) continue; // Skip items with null/undefined keys
     const value = valueMapper(item);
     map.set(key, value);
   }
