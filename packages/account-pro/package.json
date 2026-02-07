@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/account-pro",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "ABP Framework Account Pro module for React - Translation of @volo/abp.ng.account",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

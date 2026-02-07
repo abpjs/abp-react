@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/schematics",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "ABP Framework schematics types and utilities for React - translated from @abp/ng.schematics",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
