@@ -1,7 +1,12 @@
 /**
  * @abpjs/audit-logging
  * ABP Framework Audit Logging module for React
- * Translated from @volo/abp.ng.audit-logging v3.0.0
+ * Translated from @volo/abp.ng.audit-logging v3.1.0
+ *
+ * Changes in v3.1.0:
+ * - Internal Angular refactoring (OnDestroy → SubscriptionService for widget cleanup)
+ * - Internal type reference updates (no public API changes)
+ * - Dependency updates to @abp/ng.theme.shared ~3.1.0, @volo/abp.commercial.ng.ui ~3.1.0
  *
  * Changes in v3.0.0:
  * - Added config subpackage with enums and providers (config/enums, config/providers, config/services)
