@@ -1,7 +1,14 @@
 /**
  * @abpjs/saas
  * ABP Framework SaaS module for React
- * Translated from @volo/abp.ng.saas v3.0.0
+ * Translated from @volo/abp.ng.saas v3.1.0
+ *
+ * Changes in v3.1.0:
+ * - Internal Angular changes (SubscriptionService pattern for lifecycle management)
+ * - Internal type reference updates (no functional changes)
+ * - Dependency updates to @abp/ng.feature-management ~3.1.0
+ * - Dependency updates to @abp/ng.theme.shared ~3.1.0
+ * - Dependency updates to @volo/abp.commercial.ng.ui ~3.1.0
  *
  * Changes in v3.0.0:
  * - Added config subpackage with policy names, route names, and route providers
@@ -38,7 +45,7 @@
  * - No functional code changes
  *
  * @since 2.0.0
- * @updated 3.0.0
+ * @updated 3.1.0
  */
 
 // Config subpackage (v3.0.0)
