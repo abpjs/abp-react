@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * SaaS Models
- * Translated from @volo/abp.ng.saas v3.2.0
+ * Translated from @volo/abp.ng.saas v4.0.0
  *
  * @updated 2.4.0 - Updated CreateTenantRequest and UpdateTenantRequest types
  * @updated 3.2.0 - Added deprecation notices for legacy types, state now uses proxy DTOs
+ * @updated 4.0.0 - Deprecated types kept for backward compatibility (to be deleted in v5.0)
  */
 
 import type { PagedResultDto } from '@abpjs/core';
@@ -22,7 +23,7 @@ import type { EditionDto, SaasTenantDto } from '../proxy/host/dtos/models';
  * - `EditionCreateDto` instead of `Saas.CreateEditionRequest`
  * - `EditionUpdateDto` instead of `Saas.UpdateEditionRequest`
  *
- * These legacy types will be removed in v4.0.0.
+ * These legacy types will be removed in v5.0.
  */
 export namespace Saas {
   /**
@@ -38,19 +39,19 @@ export namespace Saas {
 
   /**
    * Tenant response type alias
-   * @deprecated Use PagedResultDto<SaasTenantDto> instead. To be removed in v4.0.
+   * @deprecated Use PagedResultDto<SaasTenantDto> instead. To be deleted in v5.0.
    */
   export type TenantResponse = PagedResultDto<Tenant>;
 
   /**
    * Edition response type alias
-   * @deprecated Use PagedResultDto<EditionDto> instead. To be removed in v4.0.
+   * @deprecated Use PagedResultDto<EditionDto> instead. To be deleted in v5.0.
    */
   export type EditionResponse = PagedResultDto<Edition>;
 
   /**
    * Tenant interface
-   * @deprecated Use SaasTenantDto from proxy/host/dtos instead. To be removed in v4.0.
+   * @deprecated Use SaasTenantDto from proxy/host/dtos instead. To be deleted in v5.0.
    */
   export interface Tenant {
     id: string;
@@ -62,7 +63,7 @@ export namespace Saas {
 
   /**
    * Edition interface
-   * @deprecated Use EditionDto from proxy/host/dtos instead. To be removed in v4.0.
+   * @deprecated Use EditionDto from proxy/host/dtos instead. To be deleted in v5.0.
    */
   export interface Edition {
     id: string;
@@ -72,7 +73,7 @@ export namespace Saas {
 
   /**
    * Query parameters for fetching tenants
-   * @deprecated Use GetTenantsInput from proxy/host/dtos instead. To be removed in v4.0.
+   * @deprecated Use GetTenantsInput from proxy/host/dtos instead. To be deleted in v5.0.
    */
   export interface TenantsQueryParams {
     filter?: string;
@@ -85,7 +86,7 @@ export namespace Saas {
 
   /**
    * Query parameters for fetching editions
-   * @deprecated Use GetEditionsInput from proxy/host/dtos instead. To be removed in v4.0.
+   * @deprecated Use GetEditionsInput from proxy/host/dtos instead. To be deleted in v5.0.
    */
   export interface EditionsQueryParams {
     filter?: string;
@@ -96,7 +97,7 @@ export namespace Saas {
 
   /**
    * Create tenant request
-   * @deprecated Use SaasTenantCreateDto from proxy/host/dtos instead. To be removed in v4.0.
+   * @deprecated Use SaasTenantCreateDto from proxy/host/dtos instead. To be deleted in v5.0.
    * @updated 2.4.0 - adminEmailAddress and adminPassword are now required
    */
   export interface CreateTenantRequest {
@@ -108,14 +109,14 @@ export namespace Saas {
 
   /**
    * Update tenant request
-   * @deprecated Use SaasTenantUpdateDto from proxy/host/dtos instead. To be removed in v4.0.
+   * @deprecated Use SaasTenantUpdateDto from proxy/host/dtos instead. To be deleted in v5.0.
    * @updated 2.4.0 - Now uses Omit<Tenant, 'editionName'> pattern
    */
   export type UpdateTenantRequest = Omit<Tenant, 'editionName'>;
 
   /**
    * Create edition request
-   * @deprecated Use EditionCreateDto from proxy/host/dtos instead. To be removed in v4.0.
+   * @deprecated Use EditionCreateDto from proxy/host/dtos instead. To be deleted in v5.0.
    */
   export interface CreateEditionRequest {
     displayName: string;
@@ -123,7 +124,7 @@ export namespace Saas {
 
   /**
    * Update edition request
-   * @deprecated Use EditionUpdateDto from proxy/host/dtos instead. To be removed in v4.0.
+   * @deprecated Use EditionUpdateDto from proxy/host/dtos instead. To be deleted in v5.0.
    */
   export interface UpdateEditionRequest {
     id?: string;
@@ -133,7 +134,7 @@ export namespace Saas {
 
   /**
    * Default connection string request
-   * @deprecated Use TenantService.updateDefaultConnectionString(id, connectionString) instead. To be removed in v4.0.
+   * @deprecated Use TenantService.updateDefaultConnectionString(id, connectionString) instead. To be deleted in v5.0.
    */
   export interface DefaultConnectionStringRequest {
     id: string;
@@ -142,19 +143,19 @@ export namespace Saas {
 
   /**
    * Paginated response for tenants
-   * @deprecated Use PagedResultDto<SaasTenantDto> instead. To be removed in v4.0.
+   * @deprecated Use PagedResultDto<SaasTenantDto> instead. To be deleted in v5.0.
    */
   export type TenantsResponse = PagedResultDto<Tenant>;
 
   /**
    * Paginated response for editions
-   * @deprecated Use PagedResultDto<EditionDto> instead. To be removed in v4.0.
+   * @deprecated Use PagedResultDto<EditionDto> instead. To be deleted in v5.0.
    */
   export type EditionsResponse = PagedResultDto<Edition>;
 
   /**
    * Usage statistics response
-   * @deprecated Use GetEditionUsageStatisticsResult from proxy/host/models instead. To be removed in v4.0.
+   * @deprecated Use GetEditionUsageStatisticsResult from proxy/host/models instead. To be deleted in v5.0.
    */
   export interface UsageStatisticsResponse {
     data: Record<string, number>;
