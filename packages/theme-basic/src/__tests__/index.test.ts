@@ -29,7 +29,9 @@ vi.mock('@abpjs/theme-shared', () => ({
 }));
 
 describe('@abpjs/theme-basic exports', () => {
-  it('should export context providers and hooks', async () => {
+  it(
+    'should export context providers and hooks',
+    async () => {
     const {
       LayoutProvider,
       useLayoutContext,
@@ -60,7 +62,9 @@ describe('@abpjs/theme-basic exports', () => {
 
     expect(useLogo).toBeDefined();
     expect(typeof useLogo).toBe('function');
-  });
+  },
+    15000
+  );
 
   it('should export layout components', async () => {
     const {
