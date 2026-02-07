@@ -2,10 +2,11 @@
  * Language Management Extension Tokens
  * Provides extension points for customizing language management components.
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses proxy types (LanguageDto, LanguageTextDto)
  */
 
 import type { eLanguageManagementComponents } from '../enums/components';
-import type { LanguageManagement } from '../models/language-management';
+import type { LanguageDto, LanguageTextDto } from '../proxy/dto/models';
 
 // ========================
 // Extension Types
@@ -93,7 +94,7 @@ export type EditFormPropContributorCallback<T> = (
 /**
  * Default entity actions for Languages component.
  */
-export const DEFAULT_LANGUAGES_ENTITY_ACTIONS: EntityAction<LanguageManagement.Language>[] = [
+export const DEFAULT_LANGUAGES_ENTITY_ACTIONS: EntityAction<LanguageDto>[] = [
   {
     text: 'LanguageManagement::Edit',
     permission: 'LanguageManagement.Languages.Edit',
@@ -114,7 +115,7 @@ export const DEFAULT_LANGUAGES_ENTITY_ACTIONS: EntityAction<LanguageManagement.L
 /**
  * Default entity actions for LanguageTexts component.
  */
-export const DEFAULT_LANGUAGE_TEXTS_ENTITY_ACTIONS: EntityAction<LanguageManagement.LanguageText>[] = [
+export const DEFAULT_LANGUAGE_TEXTS_ENTITY_ACTIONS: EntityAction<LanguageTextDto>[] = [
   {
     text: 'LanguageManagement::Edit',
     permission: 'LanguageManagement.LanguageTexts.Edit',
@@ -142,7 +143,7 @@ export const DEFAULT_LANGUAGE_MANAGEMENT_ENTITY_ACTIONS = {
 /**
  * Default toolbar actions for Languages component.
  */
-export const DEFAULT_LANGUAGES_TOOLBAR_ACTIONS: ToolbarAction<LanguageManagement.Language[]>[] = [
+export const DEFAULT_LANGUAGES_TOOLBAR_ACTIONS: ToolbarAction<LanguageDto[]>[] = [
   {
     text: 'LanguageManagement::NewLanguage',
     permission: 'LanguageManagement.Languages.Create',
@@ -154,7 +155,7 @@ export const DEFAULT_LANGUAGES_TOOLBAR_ACTIONS: ToolbarAction<LanguageManagement
  * Default toolbar actions for LanguageTexts component.
  * Note: LanguageTexts typically doesn't have toolbar actions as texts are predefined.
  */
-export const DEFAULT_LANGUAGE_TEXTS_TOOLBAR_ACTIONS: ToolbarAction<LanguageManagement.LanguageText[]>[] = [];
+export const DEFAULT_LANGUAGE_TEXTS_TOOLBAR_ACTIONS: ToolbarAction<LanguageTextDto[]>[] = [];
 
 /**
  * Combined default language management toolbar actions.
@@ -171,7 +172,7 @@ export const DEFAULT_LANGUAGE_MANAGEMENT_TOOLBAR_ACTIONS = {
 /**
  * Default entity props for Languages component.
  */
-export const DEFAULT_LANGUAGES_ENTITY_PROPS: EntityProp<LanguageManagement.Language>[] = [
+export const DEFAULT_LANGUAGES_ENTITY_PROPS: EntityProp<LanguageDto>[] = [
   { type: 'string', name: 'displayName', displayName: 'LanguageManagement::DisplayName', sortable: true },
   { type: 'string', name: 'cultureName', displayName: 'LanguageManagement::CultureName', sortable: true },
   { type: 'string', name: 'uiCultureName', displayName: 'LanguageManagement::UiCultureName', sortable: true },
@@ -194,7 +195,7 @@ export const DEFAULT_LANGUAGE_MANAGEMENT_ENTITY_PROPS = {
 /**
  * Default create form props for Languages component.
  */
-export const DEFAULT_LANGUAGES_CREATE_FORM_PROPS: FormProp<LanguageManagement.Language>[] = [
+export const DEFAULT_LANGUAGES_CREATE_FORM_PROPS: FormProp<LanguageDto>[] = [
   { type: 'select', name: 'cultureName', displayName: 'LanguageManagement::CultureName' },
   { type: 'select', name: 'uiCultureName', displayName: 'LanguageManagement::UiCultureName' },
   { type: 'string', name: 'displayName', displayName: 'LanguageManagement::DisplayName' },
@@ -205,7 +206,7 @@ export const DEFAULT_LANGUAGES_CREATE_FORM_PROPS: FormProp<LanguageManagement.La
 /**
  * Default edit form props for Languages component.
  */
-export const DEFAULT_LANGUAGES_EDIT_FORM_PROPS: FormProp<LanguageManagement.Language>[] = [
+export const DEFAULT_LANGUAGES_EDIT_FORM_PROPS: FormProp<LanguageDto>[] = [
   { type: 'string', name: 'displayName', displayName: 'LanguageManagement::DisplayName' },
   { type: 'select', name: 'flagIcon', displayName: 'LanguageManagement::FlagIcon' },
   { type: 'boolean', name: 'isEnabled', displayName: 'LanguageManagement::IsEnabled' },
@@ -233,40 +234,40 @@ export const DEFAULT_LANGUAGE_MANAGEMENT_EDIT_FORM_PROPS = {
  * Entity action contributors type.
  */
 export type LanguageManagementEntityActionContributors = Partial<{
-  [eLanguageManagementComponents.Languages]: EntityActionContributorCallback<LanguageManagement.Language>[];
-  [eLanguageManagementComponents.LanguageTexts]: EntityActionContributorCallback<LanguageManagement.LanguageText>[];
+  [eLanguageManagementComponents.Languages]: EntityActionContributorCallback<LanguageDto>[];
+  [eLanguageManagementComponents.LanguageTexts]: EntityActionContributorCallback<LanguageTextDto>[];
 }>;
 
 /**
  * Toolbar action contributors type.
  */
 export type LanguageManagementToolbarActionContributors = Partial<{
-  [eLanguageManagementComponents.Languages]: ToolbarActionContributorCallback<LanguageManagement.Language[]>[];
-  [eLanguageManagementComponents.LanguageTexts]: ToolbarActionContributorCallback<LanguageManagement.LanguageText[]>[];
+  [eLanguageManagementComponents.Languages]: ToolbarActionContributorCallback<LanguageDto[]>[];
+  [eLanguageManagementComponents.LanguageTexts]: ToolbarActionContributorCallback<LanguageTextDto[]>[];
 }>;
 
 /**
  * Entity prop contributors type.
  */
 export type LanguageManagementEntityPropContributors = Partial<{
-  [eLanguageManagementComponents.Languages]: EntityPropContributorCallback<LanguageManagement.Language>[];
-  [eLanguageManagementComponents.LanguageTexts]: EntityPropContributorCallback<LanguageManagement.LanguageText>[];
+  [eLanguageManagementComponents.Languages]: EntityPropContributorCallback<LanguageDto>[];
+  [eLanguageManagementComponents.LanguageTexts]: EntityPropContributorCallback<LanguageTextDto>[];
 }>;
 
 /**
  * Create form prop contributors type.
  */
 export type LanguageManagementCreateFormPropContributors = Partial<{
-  [eLanguageManagementComponents.Languages]: CreateFormPropContributorCallback<LanguageManagement.Language>[];
-  [eLanguageManagementComponents.LanguageTexts]: CreateFormPropContributorCallback<LanguageManagement.LanguageText>[];
+  [eLanguageManagementComponents.Languages]: CreateFormPropContributorCallback<LanguageDto>[];
+  [eLanguageManagementComponents.LanguageTexts]: CreateFormPropContributorCallback<LanguageTextDto>[];
 }>;
 
 /**
  * Edit form prop contributors type.
  */
 export type LanguageManagementEditFormPropContributors = Partial<{
-  [eLanguageManagementComponents.Languages]: EditFormPropContributorCallback<LanguageManagement.Language>[];
-  [eLanguageManagementComponents.LanguageTexts]: EditFormPropContributorCallback<LanguageManagement.LanguageText>[];
+  [eLanguageManagementComponents.Languages]: EditFormPropContributorCallback<LanguageDto>[];
+  [eLanguageManagementComponents.LanguageTexts]: EditFormPropContributorCallback<LanguageTextDto>[];
 }>;
 
 // ========================
