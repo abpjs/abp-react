@@ -8,6 +8,7 @@
  * @updated 3.0.0 - Added RoutesService, tree-utils, array-utils, ABP.Nav, ABP.Tab, CurrentUser.roles
  * @updated 3.1.0 - Added MultiTenancyService, SubscriptionService, AuthFlowStrategy, utility functions, FindTenantResultDto
  * @updated 3.2.0 - Added ReplaceableComponentsService, InternalStore, downloadBlob, interpolate, oAuthStorage, clearOAuthStorage, getLocalizationResource, CurrentUser fields
+ * @updated 4.0.0 - Added PermissionService, EnvironmentService, proxy model DTOs, isNode, isObjectAndNotArrayNotNode, CurrentTenantDto
  */
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -54,7 +55,7 @@ import {
   findRoute,
   getRoutePath,
 } from '@abpjs/core'
-import type { ABP, ReplaceableComponents } from '@abpjs/core'
+import type { ABP, ReplaceableComponents, CurrentTenantDto, FindTenantResultDto, Environment } from '@abpjs/core'
 import {
   // v2.4.0 DTOs
   ListResultDto,
@@ -95,8 +96,6 @@ import {
   getShortDateFormat,
   getShortTimeFormat,
   getShortDateShortTimeFormat,
-  // v3.1.0 Models
-  FindTenantResultDto,
   // v3.2.0 Services
   ReplaceableComponentsService,
   replaceableComponentsService,
@@ -108,6 +107,12 @@ import {
   // v3.2.0 Strategies
   oAuthStorage,
   clearOAuthStorage,
+  // v4.0.0 Services
+  PermissionService,
+  EnvironmentService,
+  // v4.0.0 Utils
+  isNode,
+  isObjectAndNotArrayNotNode,
 } from '@abpjs/core'
 import { useDispatch } from 'react-redux'
 
@@ -1284,6 +1289,249 @@ function TestV27Features() {
   )
 }
 
+function TestV40Features() {
+  const { store } = useAbp()
+  const dispatch = useDispatch()
+  const [permissionResults, setPermissionResults] = useState<string[]>([])
+  const [environmentResults, setEnvironmentResults] = useState<string[]>([])
+  const [utilityResults, setUtilityResults] = useState<string[]>([])
+  const [proxyModelResults, setProxyModelResults] = useState<string[]>([])
+
+  const testPermissionService = () => {
+    const results: string[] = []
+
+    const permissionService = new PermissionService(() => store.getState())
+
+    // Test empty key
+    results.push(`✓ PermissionService:`)
+    results.push(`  - getGrantedPolicy('') → ${permissionService.getGrantedPolicy('')} (expected: true)`)
+    results.push(`  - getGrantedPolicy() → ${permissionService.getGrantedPolicy()} (expected: true)`)
+    results.push(``)
+
+    // Test with actual store policies
+    const state = store.getState()
+    const grantedPolicies = state.config.auth.grantedPolicies || {}
+    const policyKeys = Object.keys(grantedPolicies)
+    results.push(`✓ Current granted policies: ${policyKeys.length}`)
+    if (policyKeys.length > 0) {
+      policyKeys.slice(0, 5).forEach(key => {
+        results.push(`  - ${key}: ${permissionService.getGrantedPolicy(key)}`)
+      })
+    } else {
+      results.push(`  - (No policies configured in current state)`)
+    }
+    results.push(``)
+
+    // Test non-existent policy
+    results.push(`✓ Non-existent policy:`)
+    results.push(`  - getGrantedPolicy('NonExistent.Policy') → ${permissionService.getGrantedPolicy('NonExistent.Policy')} (expected: false)`)
+    results.push(``)
+
+    // Demonstrate boolean expression parsing
+    results.push(`✓ Boolean expression parsing (all against empty policies):`)
+    results.push(`  - 'A && B' → ${permissionService.getGrantedPolicy('A && B')} (expected: false)`)
+    results.push(`  - 'A || B' → ${permissionService.getGrantedPolicy('A || B')} (expected: false)`)
+    results.push(`  - '!A || B' → ${permissionService.getGrantedPolicy('!A || B')} (expected: true, !false=true)`)
+    results.push(`  - '   ' → ${permissionService.getGrantedPolicy('   ')} (expected: true, whitespace only)`)
+
+    setPermissionResults(results)
+  }
+
+  const testEnvironmentService = () => {
+    const results: string[] = []
+
+    const envService = new EnvironmentService(() => store.getState())
+
+    // Get current environment
+    const env = envService.getEnvironment()
+    results.push(`✓ EnvironmentService.getEnvironment():`)
+    results.push(`  - Type: ${typeof env}`)
+    results.push(`  - Has apis: ${env.apis ? 'Yes' : 'No'}`)
+    results.push(`  - Has application: ${env.application ? 'Yes' : 'No'}`)
+    if (env.application) {
+      results.push(`  - App name: ${env.application.name || '(not set)'}`)
+    }
+    results.push(``)
+
+    // Get API URL
+    const defaultApiUrl = envService.getApiUrl()
+    const specificApiUrl = envService.getApiUrl('default')
+    results.push(`✓ EnvironmentService.getApiUrl():`)
+    results.push(`  - Default: '${defaultApiUrl}'`)
+    results.push(`  - Explicit 'default': '${specificApiUrl}'`)
+    results.push(`  - Non-existent 'other': '${envService.getApiUrl('other')}'`)
+    results.push(``)
+
+    // Test setState error handling
+    try {
+      envService.setState({ apis: { default: { url: 'http://test' } } } as Environment)
+      results.push(`✓ setState without dispatch: Did not throw (unexpected)`)
+    } catch (e: any) {
+      results.push(`✓ setState without dispatch throws: "${e.message}"`)
+    }
+    results.push(``)
+
+    // Test with dispatch
+    const envServiceWithDispatch = new EnvironmentService(() => store.getState(), dispatch)
+    results.push(`✓ EnvironmentService with dispatch:`)
+    results.push(`  - getApiUrl(): '${envServiceWithDispatch.getApiUrl()}'`)
+
+    setEnvironmentResults(results)
+  }
+
+  const testNewUtilities = () => {
+    const results: string[] = []
+
+    // Test isNode
+    results.push(`✓ isNode() (v4.0.0):`)
+    results.push(`  - isNode({}) → ${isNode({})} (expected: false)`)
+    results.push(`  - isNode([]) → ${isNode([])} (expected: false)`)
+    results.push(`  - isNode(null) → ${isNode(null)} (expected: false)`)
+    results.push(`  - isNode('string') → ${isNode('string')} (expected: false)`)
+    results.push(`  - isNode(42) → ${isNode(42)} (expected: false)`)
+    if (typeof document !== 'undefined') {
+      const div = document.createElement('div')
+      results.push(`  - isNode(DOM element) → ${isNode(div)} (expected: true)`)
+      results.push(`  - isNode(document) → ${isNode(document)} (expected: true)`)
+    }
+    results.push(``)
+
+    // Test isObjectAndNotArrayNotNode
+    results.push(`✓ isObjectAndNotArrayNotNode() (v4.0.0):`)
+    results.push(`  - ({}) → ${isObjectAndNotArrayNotNode({})} (expected: true)`)
+    results.push(`  - ({ a: 1 }) → ${isObjectAndNotArrayNotNode({ a: 1 })} (expected: true)`)
+    results.push(`  - ([]) → ${isObjectAndNotArrayNotNode([])} (expected: false)`)
+    results.push(`  - (null) → ${isObjectAndNotArrayNotNode(null)} (expected: false)`)
+    results.push(`  - ('str') → ${isObjectAndNotArrayNotNode('str')} (expected: false)`)
+    results.push(`  - (42) → ${isObjectAndNotArrayNotNode(42)} (expected: false)`)
+    if (typeof document !== 'undefined') {
+      const div = document.createElement('div')
+      results.push(`  - (DOM node) → ${isObjectAndNotArrayNotNode(div)} (expected: false)`)
+    }
+
+    setUtilityResults(results)
+  }
+
+  const testProxyModels = () => {
+    const results: string[] = []
+
+    // Test FindTenantResultDto
+    const successTenant: FindTenantResultDto = { success: true, name: 'Acme', tenantId: 'acme-id' }
+    const failedTenant: FindTenantResultDto = { success: false }
+    results.push(`✓ FindTenantResultDto (proxy model):`)
+    results.push(`  - Success: { success: ${successTenant.success}, name: '${successTenant.name}', tenantId: '${successTenant.tenantId}' }`)
+    results.push(`  - Failed: { success: ${failedTenant.success} }`)
+    results.push(``)
+
+    // Test CurrentTenantDto
+    const tenant: CurrentTenantDto = { id: 'tenant-1', name: 'Test Tenant', isAvailable: true }
+    const minimalTenant: CurrentTenantDto = {}
+    results.push(`✓ CurrentTenantDto (v4.0.0):`)
+    results.push(`  - Full: { id: '${tenant.id}', name: '${tenant.name}', isAvailable: ${tenant.isAvailable} }`)
+    results.push(`  - Minimal (all optional): ${JSON.stringify(minimalTenant)}`)
+    results.push(``)
+
+    // Test Environment interface
+    const env: Partial<Environment> = {
+      apis: { default: { url: 'https://api.example.com', rootNamespace: 'MyApp' } },
+      application: { name: 'My App', baseUrl: 'https://example.com' },
+    }
+    results.push(`✓ Environment interface (v4.0.0):`)
+    results.push(`  - apis.default.url: '${env.apis?.default?.url}'`)
+    results.push(`  - apis.default.rootNamespace: '${env.apis?.default?.rootNamespace}'`)
+    results.push(`  - application.name: '${env.application?.name}'`)
+    results.push(`  - application.baseUrl: '${env.application?.baseUrl}'`)
+    results.push(`  - application is optional: Yes`)
+
+    setProxyModelResults(results)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v4.0.0 Features</h2>
+
+      <div className="test-card">
+        <h3>PermissionService</h3>
+        <p>New service for checking granted policies with boolean expression support (&&, ||, !, parentheses).</p>
+        <button onClick={testPermissionService}>Test PermissionService</button>
+        {permissionResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '400px', overflow: 'auto', marginTop: '1rem' }}>
+            {permissionResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>EnvironmentService</h3>
+        <p>New service for managing environment configuration: getEnvironment, getApiUrl, setState.</p>
+        <button onClick={testEnvironmentService}>Test EnvironmentService</button>
+        {environmentResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '400px', overflow: 'auto', marginTop: '1rem' }}>
+            {environmentResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>New Utility Functions</h3>
+        <p>isNode() and isObjectAndNotArrayNotNode() for refined type checking in deepMerge and other operations.</p>
+        <button onClick={testNewUtilities}>Test Utility Functions</button>
+        {utilityResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '400px', overflow: 'auto', marginTop: '1rem' }}>
+            {utilityResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>Proxy Models & DTOs</h3>
+        <p>New proxy model DTOs: FindTenantResultDto (interface), CurrentTenantDto with isAvailable, Environment with optional application.</p>
+        <button onClick={testProxyModels}>Test Proxy Models</button>
+        {proxyModelResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '400px', overflow: 'auto', marginTop: '1rem' }}>
+            {proxyModelResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>SessionStateService Updates</h3>
+        <p>SessionStateService now supports setTenant() and setLanguage() with dispatch.</p>
+        <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem' }}>
+{`// Usage:
+const { store } = useAbp()
+const dispatch = useDispatch()
+const sessionService = new SessionStateService(() => store.getState(), dispatch)
+
+// Set tenant (dispatches to Redux store)
+sessionService.setTenant({ id: 'tenant-id', name: 'Tenant', isAvailable: true })
+
+// Set language
+sessionService.setLanguage('tr')
+
+// Without dispatch, setTenant/setLanguage throw errors`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Config State: currentTenant</h3>
+        <p>Config slice now stores currentTenant from application configuration response.</p>
+        <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem' }}>
+{`// CurrentTenantDto replaces ABP.BasicItem for tenant info
+interface CurrentTenantDto {
+  id?: string
+  name?: string
+  isAvailable?: boolean  // New in v4.0.0
+}
+
+// Accessed via config state:
+const currentTenant = useSelector(state => state.config.currentTenant)`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 function TestV32Features() {
   const [replaceableResults, setReplaceableResults] = useState<string[]>([])
   const [fileUtilsResults, setFileUtilsResults] = useState<string[]>([])
@@ -1823,32 +2071,32 @@ function TestV31Features() {
   const testModels = () => {
     const results: string[] = []
 
-    // Test FindTenantResultDto
-    results.push(`✓ FindTenantResultDto:`)
+    // Test FindTenantResultDto (v4.0.0: now an interface, not a class)
+    results.push(`✓ FindTenantResultDto (interface):`)
 
-    const emptyDto = new FindTenantResultDto()
-    results.push(`  - new FindTenantResultDto():`)
+    const emptyDto: { success: boolean; name?: string; tenantId?: string } = { success: false }
+    results.push(`  - empty FindTenantResultDto:`)
     results.push(`    success: ${emptyDto.success}`)
     results.push(`    name: '${emptyDto.name}'`)
     results.push(`    tenantId: ${emptyDto.tenantId}`)
     results.push(``)
 
-    const successDto = new FindTenantResultDto({
+    const successDto = {
       success: true,
       name: 'Acme Corp',
       tenantId: 'acme-123',
-    })
-    results.push(`  - new FindTenantResultDto({ success: true, name: 'Acme Corp', tenantId: 'acme-123' }):`)
+    }
+    results.push(`  - FindTenantResultDto { success: true, name: 'Acme Corp', tenantId: 'acme-123' }:`)
     results.push(`    success: ${successDto.success}`)
     results.push(`    name: '${successDto.name}'`)
     results.push(`    tenantId: ${successDto.tenantId}`)
     results.push(``)
 
-    const failedDto = new FindTenantResultDto({ success: false })
-    results.push(`  - new FindTenantResultDto({ success: false }):`)
+    const failedDto = { success: false }
+    results.push(`  - FindTenantResultDto { success: false }:`)
     results.push(`    success: ${failedDto.success}`)
-    results.push(`    name: '${failedDto.name}'`)
-    results.push(`    tenantId: ${failedDto.tenantId}`)
+    results.push(`    name: '${(failedDto as any).name}'`)
+    results.push(`    tenantId: ${(failedDto as any).tenantId}`)
     results.push(``)
 
     // Test ABP.Lookup (type only - demonstrate usage)
@@ -2849,6 +3097,7 @@ function TestV21Features() {
         production: false,
         oAuthConfig: {} as any,
         apis: { default: { url: '' } },
+        application: { name: 'test' },
       })
       results.push(`✗ Expected an error but none was thrown`)
     } catch (err) {
@@ -3003,12 +3252,13 @@ function TestDateExtensions() {
 export function TestCorePage() {
   return (
     <div>
-      <h1>@abpjs/core Tests (v3.2.0)</h1>
+      <h1>@abpjs/core Tests (v4.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing core hooks, services, and components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.2.0 - Added ReplaceableComponentsService, InternalStore, downloadBlob, interpolate, oAuthStorage, getLocalizationResource, CurrentUser fields
+        Version 4.0.0 - Added PermissionService, EnvironmentService, proxy model DTOs, isNode, isObjectAndNotArrayNotNode, CurrentTenantDto
       </p>
 
+      <TestV40Features />
       <TestV32Features />
       <TestV31Features />
       <TestV30Features />

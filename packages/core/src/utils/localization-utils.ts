@@ -1,13 +1,20 @@
 /**
  * Localization Utilities
- * Translated from @abp/ng.core v2.9.0
+ * Translated from @abp/ng.core v4.0.0
  *
  * Utility functions for working with localization data.
  *
  * @since 2.9.0
+ * @updated 4.0.0 - Accept ApplicationLocalizationConfigurationDto
  */
 
-import { ApplicationConfiguration } from '../models/application-configuration';
+import { ApplicationLocalizationConfigurationDto } from '../models/proxy/application-configurations';
+
+/**
+ * Internal localization data type for functions that only need values.
+ * Accepts both ApplicationConfiguration.Localization and ApplicationLocalizationConfigurationDto.
+ */
+type LocalizationData = Pick<ApplicationLocalizationConfigurationDto, 'values'>;
 
 /**
  * RTL (Right-to-Left) locales
@@ -43,9 +50,10 @@ export function getLocaleDirection(locale: string): 'ltr' | 'rtl' {
  * @param localization - The localization configuration containing resource values
  * @returns A function that takes (resourceName, key, defaultValue) and returns the localized string
  * @since 2.9.0
+ * @updated 4.0.0 - Accepts ApplicationLocalizationConfigurationDto
  */
 export function createLocalizer(
-  localization: ApplicationConfiguration.Localization
+  localization: LocalizationData
 ): (resourceName: string, key: string, defaultValue: string) => string {
   return (resourceName: string, key: string, defaultValue: string): string => {
     if (!localization?.values) return defaultValue;
@@ -62,9 +70,10 @@ export function createLocalizer(
  * @param localization - The localization configuration containing resource values
  * @returns A function that takes (resourceNames[], keys[], defaultValue) and returns the localized string
  * @since 2.9.0
+ * @updated 4.0.0 - Accepts ApplicationLocalizationConfigurationDto
  */
 export function createLocalizerWithFallback(
-  localization: ApplicationConfiguration.Localization
+  localization: LocalizationData
 ): (resourceNames: string[], keys: string[], defaultValue: string) => string {
   return (resourceNames: string[], keys: string[], defaultValue: string): string => {
     if (!localization?.values) return defaultValue;
@@ -91,9 +100,10 @@ export function createLocalizerWithFallback(
  * @param localization - The localization configuration containing resource values
  * @returns A function that takes (resourceNames[], keys[], defaultKey) and returns the first found key or defaultKey
  * @since 2.9.0
+ * @updated 4.0.0 - Accepts ApplicationLocalizationConfigurationDto
  */
 export function createLocalizationPipeKeyGenerator(
-  localization: ApplicationConfiguration.Localization
+  localization: LocalizationData
 ): (resourceNames: string[], keys: string[], defaultKey: string) => string {
   return (resourceNames: string[], keys: string[], defaultKey: string): string => {
     if (!localization?.values) return defaultKey;

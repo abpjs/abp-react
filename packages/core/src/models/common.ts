@@ -1,11 +1,16 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { ComponentType, ReactNode } from 'react';
-import { Config } from './config';
+import { Environment } from './environment';
 import { eLayoutType } from '../enums';
 
 export namespace ABP {
   export interface Root {
-    environment: Partial<Config.Environment>;
+    environment: Partial<Environment>;
+    /**
+     * Function to register locale data for a given locale string
+     * @since 4.0.0
+     */
+    registerLocaleFn: (locale: string) => Promise<any>;
     /**
      * Skip fetching application configuration on initialization
      * @since 2.7.0
@@ -17,11 +22,6 @@ export namespace ABP {
      * @since 2.9.0
      */
     sendNullsAsQueryParam?: boolean;
-    /**
-     * Map culture names to locale file names
-     * @since 3.1.0
-     */
-    cultureNameLocaleFileMap?: Dictionary<string>;
   }
 
   /**

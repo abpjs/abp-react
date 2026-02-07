@@ -2,14 +2,25 @@
 import { ABP } from './common';
 
 export namespace ApplicationConfiguration {
+  /**
+   * @deprecated Use the ApplicationConfigurationDto interface instead. To be deleted in v5.0.
+   */
   export interface Response {
     localization: Localization;
     auth: Auth;
     setting: Value;
     currentUser: CurrentUser;
+    /**
+     * Current tenant information
+     * @since 4.0.0
+     */
+    currentTenant: CurrentTenant;
     features: Value;
   }
 
+  /**
+   * @deprecated Use the ApplicationLocalizationConfigurationDto interface instead. To be deleted in v5.0.
+   */
   export interface Localization {
     currentCulture: CurrentCulture;
     defaultResourceName: string;
@@ -19,6 +30,7 @@ export namespace ApplicationConfiguration {
 
   /**
    * Information about the current culture/locale
+   * @deprecated Use the CurrentCultureDto interface instead. To be deleted in v5.0.
    * @since 2.7.0
    */
   export interface CurrentCulture {
@@ -35,6 +47,7 @@ export namespace ApplicationConfiguration {
 
   /**
    * Date/time formatting information for the current culture
+   * @deprecated Use the DateTimeFormatDto interface instead. To be deleted in v5.0.
    * @since 2.7.0
    */
   export interface DateTimeFormat {
@@ -46,12 +59,18 @@ export namespace ApplicationConfiguration {
     shortTimePattern: string;
   }
 
+  /**
+   * @deprecated Use the Record<string, Record<string, string>> type instead. To be deleted in v5.0.
+   */
   export interface LocalizationValue {
     [key: string]: {
       [key: string]: string;
     };
   }
 
+  /**
+   * @deprecated Use the LanguageInfo interface instead. To be deleted in v5.0.
+   */
   export interface Language {
     cultureName: string;
     uiCultureName: string;
@@ -59,17 +78,24 @@ export namespace ApplicationConfiguration {
     flagIcon: string;
   }
 
+  /**
+   * @deprecated Use the ApplicationAuthConfigurationDto interface instead. To be deleted in v5.0.
+   */
   export interface Auth {
     policies: Policy;
     grantedPolicies: Policy;
   }
 
+  /**
+   * @deprecated Use the Record<string, boolean> type instead. To be deleted in v5.0.
+   */
   export interface Policy {
     [key: string]: boolean;
   }
 
   /**
    * Generic value container for settings and features
+   * @deprecated To be deleted in v5.0.
    * @since 1.0.0
    */
   export interface Value {
@@ -86,45 +112,31 @@ export namespace ApplicationConfiguration {
    */
   export type Features = Value;
 
+  /**
+   * @deprecated Use the CurrentUserDto interface instead. To be deleted in v5.0.
+   */
   export interface CurrentUser {
-    /**
-     * User's email address
-     * @since 2.9.0
-     */
     email: string;
-    /**
-     * Whether the user's email is verified
-     * @since 3.2.0
-     */
     emailVerified: boolean;
     id: string;
     isAuthenticated: boolean;
-    /**
-     * User's first name
-     * @since 3.2.0
-     */
     name: string;
-    /**
-     * User's phone number
-     * @since 3.2.0
-     */
     phoneNumber: string;
-    /**
-     * Whether the user's phone number is verified
-     * @since 3.2.0
-     */
     phoneNumberVerified: boolean;
-    /**
-     * User's assigned roles
-     * @since 3.0.0
-     */
     roles: string[];
-    /**
-     * User's surname/last name
-     * @since 3.2.0
-     */
     surName: string;
     tenantId: string;
     userName: string;
+  }
+
+  /**
+   * Current tenant information
+   * @deprecated Use the CurrentTenantDto interface instead. To be deleted in v5.0.
+   * @since 4.0.0
+   */
+  export interface CurrentTenant {
+    id: string;
+    name: string;
+    isAvailable?: boolean;
   }
 }

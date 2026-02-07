@@ -31,6 +31,7 @@ describe('config.slice', () => {
     auth: { policies: {}, grantedPolicies: {} },
     setting: { values: {} },
     currentUser: { isAuthenticated: false, id: '', tenantId: '', userName: '' },
+    currentTenant: { id: '', name: '' },
     features: { values: {} },
   };
 
@@ -351,6 +352,49 @@ describe('config.slice', () => {
         expect(state.auth.grantedPolicies['AbpIdentity.Users']).toBe(true);
         expect(state.currentUser.isAuthenticated).toBe(true);
         expect(state.currentUser.userName).toBe('admin');
+      });
+
+      it('should set currentTenant from application configuration (v4.0.0)', () => {
+        const appConfig = {
+          localization: { values: {}, languages: [] },
+          auth: { policies: {}, grantedPolicies: {} },
+          setting: { values: {} },
+          currentUser: { isAuthenticated: false, id: '', tenantId: '', userName: '' },
+          currentTenant: { id: 'tenant-abc', name: 'ABC Corp', isAvailable: true },
+          features: { values: {} },
+        };
+
+        const state = configReducer(
+          initialState,
+          configActions.setApplicationConfiguration(appConfig as any)
+        );
+
+        expect(state.currentTenant.id).toBe('tenant-abc');
+        expect(state.currentTenant.name).toBe('ABC Corp');
+        expect(state.currentTenant.isAvailable).toBe(true);
+      });
+
+      it('should preserve currentTenant when not provided in config (v4.0.0)', () => {
+        const stateWithTenant = {
+          ...initialState,
+          currentTenant: { id: 'existing', name: 'Existing Tenant' },
+        };
+
+        const appConfig = {
+          localization: { values: {}, languages: [] },
+          auth: { policies: {}, grantedPolicies: {} },
+          setting: { values: {} },
+          currentUser: { isAuthenticated: false, id: '', tenantId: '', userName: '' },
+          features: { values: {} },
+        };
+
+        const state = configReducer(
+          stateWithTenant,
+          configActions.setApplicationConfiguration(appConfig as any)
+        );
+
+        expect(state.currentTenant.id).toBe('existing');
+        expect(state.currentTenant.name).toBe('Existing Tenant');
       });
     });
   });

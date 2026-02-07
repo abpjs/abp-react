@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MultiTenancyService } from './multi-tenancy.service';
-import { FindTenantResultDto } from '../models/find-tenant-result-dto';
 import type { RestService } from './rest.service';
 
 describe('MultiTenancyService (v3.1.0)', () => {
@@ -85,7 +84,7 @@ describe('MultiTenancyService (v3.1.0)', () => {
 
       const result = await service.findTenantByName('TestTenant');
 
-      expect(result).toBeInstanceOf(FindTenantResultDto);
+      expect(result).toHaveProperty('success');
       expect(result.success).toBe(true);
       expect(result.name).toBe('TestTenant');
       expect(result.tenantId).toBe('id-123');
@@ -97,7 +96,7 @@ describe('MultiTenancyService (v3.1.0)', () => {
 
       const result = await service.findTenantByName('NonExistent');
 
-      expect(result).toBeInstanceOf(FindTenantResultDto);
+      expect(result).toHaveProperty('success');
       expect(result.success).toBe(false);
       expect(result.name).toBe('');
       expect(result.tenantId).toBeUndefined();
@@ -158,7 +157,7 @@ describe('MultiTenancyService (v3.1.0)', () => {
 
       const result = await service.findTenantById('id-123');
 
-      expect(result).toBeInstanceOf(FindTenantResultDto);
+      expect(result).toHaveProperty('success');
       expect(result.success).toBe(true);
       expect(result.name).toBe('TestTenant');
       expect(result.tenantId).toBe('id-123');
@@ -170,7 +169,7 @@ describe('MultiTenancyService (v3.1.0)', () => {
 
       const result = await service.findTenantById('non-existent-id');
 
-      expect(result).toBeInstanceOf(FindTenantResultDto);
+      expect(result).toHaveProperty('success');
       expect(result.success).toBe(false);
     });
 

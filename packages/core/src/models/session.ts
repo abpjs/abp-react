@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { ABP } from './common';
+import { CurrentTenantDto } from './proxy/multi-tenancy';
 
 export namespace Session {
   export interface State {
     language: string;
-    tenant: ABP.BasicItem;
+    /**
+     * @updated 4.0.0 - Changed from ABP.BasicItem to CurrentTenantDto
+     */
+    tenant: CurrentTenantDto;
     /**
      * Session detail information
      * @since 2.0.0
