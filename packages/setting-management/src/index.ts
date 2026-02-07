@@ -1,7 +1,11 @@
 /**
  * @abpjs/setting-management
  * ABP Framework Setting Management module for React
- * Translated from @abp/ng.setting-management v3.2.0
+ * Translated from @abp/ng.setting-management v4.0.0
+ *
+ * Changes in v4.0.0:
+ * - Parameter renames in route providers: routes → routesService, tabs → settingTabsService
+ * - Internal Angular type reference changes (no functional impact)
  *
  * Changes in v3.2.0:
  * - Version bump only (internal Angular type reference changes, no functional changes)

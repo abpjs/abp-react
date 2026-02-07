@@ -1,5 +1,5 @@
 /**
- * Test page for @abpjs/setting-management package v3.2.0
+ * Test page for @abpjs/setting-management package v4.0.0
  * Tests: SettingLayout, useSettingManagement hook, SettingManagementService
  */
 import { useState, useEffect } from 'react'
@@ -588,8 +588,8 @@ function TestV300Features() {
 import { getRoutesService } from '@abpjs/core';
 
 // Configure routes
-const routes = getRoutesService();
-const addRoutes = configureRoutes(routes);
+const routesService = getRoutesService();
+const addRoutes = configureRoutes(routesService);
 addRoutes();
 
 // Route configuration added:
@@ -613,9 +613,9 @@ addRoutes();
 import { getRoutesService, getSettingTabsService } from '@abpjs/core';
 
 // Conditionally hide routes
-const routes = getRoutesService();
-const tabs = getSettingTabsService();
-const hideIfEmpty = hideRoutes(routes, tabs);
+const routesService = getRoutesService();
+const settingTabsService = getSettingTabsService();
+const hideIfEmpty = hideRoutes(routesService, settingTabsService);
 hideIfEmpty();
 
 // If no visible tabs are registered, the route will be patched with:
@@ -636,11 +636,11 @@ hideIfEmpty();
 initializeSettingManagementRoutes();
 
 // This is equivalent to:
-// const routes = getRoutesService();
-// const tabs = getSettingTabsService();
-// const addRoutes = configureRoutes(routes);
+// const routesService = getRoutesService();
+// const settingTabsService = getSettingTabsService();
+// const addRoutes = configureRoutes(routesService);
 // addRoutes();
-// const hideIfEmpty = hideRoutes(routes, tabs);
+// const hideIfEmpty = hideRoutes(routesService, settingTabsService);
 // hideIfEmpty();
 
 // initializeSettingManagementRoutes is: ${typeof initializeSettingManagementRoutes}`}
@@ -841,12 +841,78 @@ function TestV320Features() {
   )
 }
 
+function TestV400Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v4.0.0</h2>
+
+      <div className="test-card" style={{ background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)' }}>
+        <h3>Parameter Renames in Route Providers</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          <strong style={{ color: '#ef4444' }}>v4.0.0:</strong> Parameter names in route provider functions were renamed for clarity.
+          This is a non-breaking change since parameters are positional, not named.
+        </p>
+
+        <h4 style={{ marginTop: '16px' }}>configureRoutes</h4>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`// Before (v3.2.0):
+// function configureRoutes(routes: RoutesService): () => void
+//
+// After (v4.0.0):
+// function configureRoutes(routesService: RoutesService): () => void
+
+import { configureRoutes } from '@abpjs/setting-management';
+import { getRoutesService } from '@abpjs/core';
+
+const routesService = getRoutesService();
+const addRoutes = configureRoutes(routesService);
+addRoutes();`}
+        </pre>
+
+        <h4 style={{ marginTop: '16px' }}>hideRoutes</h4>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`// Before (v3.2.0):
+// function hideRoutes(routes: RoutesService, tabs: SettingTabsService): () => void
+//
+// After (v4.0.0):
+// function hideRoutes(routesService: RoutesService, settingTabsService: SettingTabsService): () => void
+
+import { hideRoutes } from '@abpjs/setting-management';
+import { getRoutesService, getSettingTabsService } from '@abpjs/core';
+
+const routesService = getRoutesService();
+const settingTabsService = getSettingTabsService();
+const hideIfEmpty = hideRoutes(routesService, settingTabsService);
+hideIfEmpty();`}
+        </pre>
+
+        <h4 style={{ marginTop: '16px' }}>initializeSettingManagementRoutes</h4>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`// Internal variable renames (no external API change):
+// routes → routesService
+// tabs → settingTabsService
+//
+// Usage is unchanged:
+import { initializeSettingManagementRoutes } from '@abpjs/setting-management';
+initializeSettingManagementRoutes();`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 export function TestSettingManagementPage() {
   return (
     <div>
-      <h1>@abpjs/setting-management Tests v3.2.0</h1>
+      <h1>@abpjs/setting-management Tests v4.0.0</h1>
       <p>Testing setting management layout, hook, and services.</p>
-      <p style={{ color: '#3b82f6', fontSize: '0.9rem' }}>Version 3.2.0 - Version bump only (no functional changes)</p>
+      <p style={{ color: '#ef4444', fontSize: '0.9rem' }}>Version 4.0.0 - Parameter renames in route providers</p>
+
+      {/* v4.0.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #ef4444', paddingTop: '1rem' }}>
+        v4.0.0 Changes
+      </h2>
+      <TestV400Features />
 
       {/* v3.2.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #3b82f6', paddingTop: '1rem' }}>
