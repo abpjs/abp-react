@@ -1,23 +1,23 @@
+/**
+ * Identity Security Log Service
+ * @since 3.1.0
+ * @updated 3.2.0 - New proxy service re-exported, legacy service renamed
+ */
 import { RestService, PagedResultDto } from '@abpjs/core';
 import type {
-  IdentitySecurityLogDto,
+  LegacyIdentitySecurityLogDto,
   IdentitySecurityLogGetListInput,
 } from '../models/identity-security-log';
 
+// Re-export new proxy service
+export { IdentitySecurityLogService } from '../proxy/identity/identity-security-log.service';
+
 /**
- * Service for managing identity security log API operations.
- * Provides methods to query security logs for users in the identity module.
- *
- * Security logs track user authentication events such as:
- * - Login succeeded/failed
- * - Logout
- * - Password changes
- * - Two-factor authentication events
- *
- * Translated from @volo/abp.ng.identity IdentitySecurityLogService
+ * Legacy service for managing identity security log API operations.
+ * @deprecated Use IdentitySecurityLogService from proxy/identity instead
  * @since 3.1.0
  */
-export class IdentitySecurityLogService {
+export class LegacyIdentitySecurityLogService {
   /**
    * The API name used for REST requests.
    */
@@ -37,8 +37,8 @@ export class IdentitySecurityLogService {
    */
   getListByInput(
     params: Partial<IdentitySecurityLogGetListInput> = {}
-  ): Promise<PagedResultDto<IdentitySecurityLogDto>> {
-    return this.rest.request<null, PagedResultDto<IdentitySecurityLogDto>>({
+  ): Promise<PagedResultDto<LegacyIdentitySecurityLogDto>> {
+    return this.rest.request<null, PagedResultDto<LegacyIdentitySecurityLogDto>>({
       method: 'GET',
       url: '/api/identity/security-logs',
       params,
@@ -51,8 +51,8 @@ export class IdentitySecurityLogService {
    * @param id - The security log ID
    * @returns Promise with the security log details
    */
-  getById(id: string): Promise<IdentitySecurityLogDto> {
-    return this.rest.request<null, IdentitySecurityLogDto>({
+  getById(id: string): Promise<LegacyIdentitySecurityLogDto> {
+    return this.rest.request<null, LegacyIdentitySecurityLogDto>({
       method: 'GET',
       url: `/api/identity/security-logs/${id}`,
     });
@@ -67,8 +67,8 @@ export class IdentitySecurityLogService {
    */
   getMyListByInput(
     params: Partial<IdentitySecurityLogGetListInput> = {}
-  ): Promise<PagedResultDto<IdentitySecurityLogDto>> {
-    return this.rest.request<null, PagedResultDto<IdentitySecurityLogDto>>({
+  ): Promise<PagedResultDto<LegacyIdentitySecurityLogDto>> {
+    return this.rest.request<null, PagedResultDto<LegacyIdentitySecurityLogDto>>({
       method: 'GET',
       url: '/api/identity/security-logs/my',
       params,
@@ -81,8 +81,8 @@ export class IdentitySecurityLogService {
    * @param id - The security log ID
    * @returns Promise with the security log details
    */
-  getMyById(id: string): Promise<IdentitySecurityLogDto> {
-    return this.rest.request<null, IdentitySecurityLogDto>({
+  getMyById(id: string): Promise<LegacyIdentitySecurityLogDto> {
+    return this.rest.request<null, LegacyIdentitySecurityLogDto>({
       method: 'GET',
       url: `/api/identity/security-logs/my/${id}`,
     });

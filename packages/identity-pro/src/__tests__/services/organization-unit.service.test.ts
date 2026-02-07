@@ -1,9 +1,10 @@
 /**
- * Tests for OrganizationUnitService
+ * Tests for LegacyOrganizationUnitService
  * @abpjs/identity-pro v2.9.0
+ * @updated 3.2.0 - Changed to test LegacyOrganizationUnitService
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { OrganizationUnitService } from '../../services/organization-unit.service';
+import { LegacyOrganizationUnitService } from '../../services/organization-unit.service';
 import {
   createOrganizationUnitCreateDto,
   createOrganizationUnitUpdateDto,
@@ -19,13 +20,13 @@ const createMockRestService = () => ({
   request: vi.fn(),
 });
 
-describe('OrganizationUnitService', () => {
-  let service: OrganizationUnitService;
+describe('LegacyOrganizationUnitService', () => {
+  let service: LegacyOrganizationUnitService;
   let mockRestService: ReturnType<typeof createMockRestService>;
 
   beforeEach(() => {
     mockRestService = createMockRestService();
-    service = new OrganizationUnitService(mockRestService as any);
+    service = new LegacyOrganizationUnitService(mockRestService as any);
   });
 
   describe('constructor', () => {

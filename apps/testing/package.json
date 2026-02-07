@@ -17,6 +17,7 @@
     "@abpjs/components": "workspace:*",
     "@abpjs/core": "workspace:*",
     "@abpjs/feature-management": "workspace:*",
+    "@abpjs/file-management": "workspace:*",
     "@abpjs/identity": "workspace:*",
     "@abpjs/identity-pro": "workspace:*",
     "@abpjs/language-management": "workspace:*",

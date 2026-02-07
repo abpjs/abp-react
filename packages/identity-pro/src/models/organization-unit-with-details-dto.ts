@@ -2,13 +2,17 @@
  * Organization Unit With Details DTO
  * Translated from @volo/abp.ng.identity v2.9.0
  * @since 2.9.0
+ * @updated 3.2.0 - Re-exports from proxy/identity/models
  */
 
+// Re-export from proxy for new typed interface
+export type { OrganizationUnitWithDetailsDto } from '../proxy/identity/models';
+
 /**
- * Represents an organization unit with full details.
- * Used for displaying and managing organization units in the hierarchy.
+ * Legacy interface for backward compatibility.
+ * @deprecated Use OrganizationUnitWithDetailsDto from proxy/identity/models instead
  */
-export interface OrganizationUnitWithDetailsDto {
+export interface LegacyOrganizationUnitWithDetailsDto {
   /** Parent organization unit ID (null for root units) */
   parentId?: string;
   /** Hierarchical code of the organization unit (e.g., "00001.00002") */
@@ -41,10 +45,11 @@ export interface OrganizationUnitWithDetailsDto {
  * Factory function to create an OrganizationUnitWithDetailsDto with defaults.
  * @param initialValues - Partial values to initialize the DTO
  * @returns A new OrganizationUnitWithDetailsDto instance
+ * @deprecated Use the proxy types directly
  */
 export function createOrganizationUnitWithDetailsDto(
-  initialValues?: Partial<OrganizationUnitWithDetailsDto>
-): OrganizationUnitWithDetailsDto {
+  initialValues?: Partial<LegacyOrganizationUnitWithDetailsDto>
+): LegacyOrganizationUnitWithDetailsDto {
   return {
     parentId: undefined,
     code: '',

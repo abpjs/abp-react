@@ -1,15 +1,16 @@
 /**
  * Text Template Management Extension Tokens
- * Translated from @volo/abp.ng.text-template-management v3.0.0
+ * Translated from @volo/abp.ng.text-template-management v3.2.0
  *
  * Default entity actions, toolbar actions, and entity props
  * for the Text Template Management module extensibility system.
  *
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses proxy DTOs (TemplateDefinitionDto)
  */
 
 import { eTextTemplateManagementComponents } from '../enums/components';
-import type { TextTemplateManagement } from '../models/text-template-management';
+import type { TemplateDefinitionDto } from '../proxy/text-templates/models';
 
 /**
  * Entity action type for extensibility
@@ -55,8 +56,9 @@ export interface EntityProp<T = unknown> {
 /**
  * Default entity actions for TextTemplates component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses TemplateDefinitionDto from proxy
  */
-export const DEFAULT_TEXT_TEMPLATES_ENTITY_ACTIONS: EntityAction<TextTemplateManagement.TemplateDefinitionDto>[] =
+export const DEFAULT_TEXT_TEMPLATES_ENTITY_ACTIONS: EntityAction<TemplateDefinitionDto>[] =
   [
     {
       text: 'TextTemplateManagement::EditContents',
@@ -83,9 +85,10 @@ export const DEFAULT_TEXT_TEMPLATE_MANAGEMENT_ENTITY_ACTIONS = {
  * Note: Text Template Management typically doesn't have create functionality
  * as templates are defined in code
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses TemplateDefinitionDto from proxy
  */
 export const DEFAULT_TEXT_TEMPLATES_TOOLBAR_ACTIONS: ToolbarAction<
-  TextTemplateManagement.TemplateDefinitionDto[]
+  TemplateDefinitionDto[]
 >[] = [];
 
 /**
@@ -104,8 +107,9 @@ export const DEFAULT_TEXT_TEMPLATE_MANAGEMENT_TOOLBAR_ACTIONS = {
 /**
  * Default entity props for TextTemplates component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses TemplateDefinitionDto from proxy
  */
-export const DEFAULT_TEXT_TEMPLATES_ENTITY_PROPS: EntityProp<TextTemplateManagement.TemplateDefinitionDto>[] =
+export const DEFAULT_TEXT_TEMPLATES_ENTITY_PROPS: EntityProp<TemplateDefinitionDto>[] =
   [
     {
       name: 'name',

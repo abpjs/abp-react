@@ -1,7 +1,20 @@
 /**
  * @abpjs/saas
  * ABP Framework SaaS module for React
- * Translated from @volo/abp.ng.saas v3.1.0
+ * Translated from @volo/abp.ng.saas v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - Added proxy subpackage with typed DTOs and services:
+ *   - TenantService proxy for tenant CRUD operations
+ *   - EditionService proxy for edition CRUD operations
+ *   - SaasTenantCreateDto, SaasTenantUpdateDto, SaasTenantDto for tenant input/output
+ *   - EditionCreateDto, EditionUpdateDto, EditionDto for edition input/output
+ *   - GetTenantsInput, GetEditionsInput for query parameters
+ *   - GetEditionUsageStatisticsResult for usage statistics
+ * - State now uses new proxy types (PagedResultDto<SaasTenantDto>, PagedResultDto<EditionDto>)
+ * - SaasStateService now uses proxy services internally
+ * - Extension tokens now use proxy types (EditionDto, SaasTenantDto)
+ * - Deprecated Saas namespace types (to be removed in v4.0)
  *
  * Changes in v3.1.0:
  * - Internal Angular changes (SubscriptionService pattern for lifecycle management)
@@ -45,11 +58,14 @@
  * - No functional code changes
  *
  * @since 2.0.0
- * @updated 3.1.0
+ * @updated 3.2.0
  */
 
 // Config subpackage (v3.0.0)
 export * from './config';
+
+// Proxy subpackage (v3.2.0)
+export * from './proxy';
 
 // Models
 export * from './models';

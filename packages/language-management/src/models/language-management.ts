@@ -1,10 +1,19 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Language Management Models
- * Translated from @volo/abp.ng.language-management v2.0.0
+ * Translated from @volo/abp.ng.language-management v3.2.0
+ *
+ * @since 2.0.0
+ * @updated 3.2.0 - State now uses new proxy types, legacy types deprecated
  */
 
-import type { ABP } from '@abpjs/core';
+import type { ABP, ListResultDto, PagedResultDto } from '@abpjs/core';
+import type {
+  CultureInfoDto,
+  LanguageDto,
+  LanguageResourceDto,
+  LanguageTextDto,
+} from '../proxy/dto/models';
 
 /**
  * Language Management namespace containing all models
@@ -13,27 +22,31 @@ import type { ABP } from '@abpjs/core';
 export namespace LanguageManagement {
   /**
    * State interface for language management
+   * @updated 3.2.0 - Now uses new proxy types
    */
   export interface State {
-    languageResponse: LanguageResponse;
-    languageTextsResponse: LanguageTextResponse;
-    selectedItem: Language | null;
-    cultures: Culture[];
-    resources: Resource[];
+    languageResponse: ListResultDto<LanguageDto>;
+    languageTextsResponse: PagedResultDto<LanguageTextDto>;
+    selectedItem: LanguageDto | null;
+    cultures: CultureInfoDto[];
+    resources: LanguageResourceDto[];
   }
 
   /**
    * Paginated response of languages
+   * @deprecated To be deleted in v4.0. Use ListResultDto<LanguageDto> instead.
    */
   export type LanguageResponse = ABP.PagedResponse<Language>;
 
   /**
    * Paginated response of language texts
+   * @deprecated To be deleted in v4.0. Use PagedResultDto<LanguageTextDto> instead.
    */
   export type LanguageTextResponse = ABP.PagedResponse<LanguageText>;
 
   /**
    * Culture information for localization
+   * @deprecated To be deleted in v4.0. Use CultureInfoDto from proxy/dto instead.
    */
   export interface Culture {
     displayName: string;
@@ -42,6 +55,7 @@ export namespace LanguageManagement {
 
   /**
    * Resource containing localization strings
+   * @deprecated To be deleted in v4.0. Use LanguageResourceDto from proxy/dto instead.
    */
   export interface Resource {
     name: string;
@@ -49,6 +63,7 @@ export namespace LanguageManagement {
 
   /**
    * Language entity
+   * @deprecated To be deleted in v4.0. Use LanguageDto from proxy/dto instead.
    */
   export interface Language {
     id: string;
@@ -64,6 +79,7 @@ export namespace LanguageManagement {
 
   /**
    * Input for updating a language
+   * @deprecated To be deleted in v4.0. Use UpdateLanguageDto from proxy/dto instead.
    */
   export interface UpdateLanguageInput {
     isEnabled: boolean;
@@ -73,6 +89,7 @@ export namespace LanguageManagement {
 
   /**
    * Input for creating a new language
+   * @deprecated To be deleted in v4.0. Use CreateLanguageDto from proxy/dto instead.
    */
   export interface CreateLanguageInput extends UpdateLanguageInput {
     cultureName: string;
@@ -81,6 +98,7 @@ export namespace LanguageManagement {
 
   /**
    * Language text (localization string) entity
+   * @deprecated To be deleted in v4.0. Use LanguageTextDto from proxy/dto instead.
    */
   export interface LanguageText {
     resourceName: string;
@@ -93,6 +111,7 @@ export namespace LanguageManagement {
 
   /**
    * Query parameters for fetching language texts
+   * @deprecated To be deleted in v4.0. Use GetLanguagesTextsInput from proxy/dto instead.
    */
   export interface LanguageTextQueryParams extends ABP.PageQueryParams {
     resourceName?: string;
@@ -103,6 +122,7 @@ export namespace LanguageManagement {
 
   /**
    * Parameters for requesting a language text by name
+   * @deprecated To be deleted in v4.0. Use individual parameters instead.
    */
   export interface LanguageTextRequestByNameParams {
     resourceName: string;
@@ -112,6 +132,7 @@ export namespace LanguageManagement {
 
   /**
    * Parameters for updating a language text by name
+   * @deprecated To be deleted in v4.0. Use individual parameters instead.
    */
   export interface LanguageTextUpdateByNameParams extends LanguageTextRequestByNameParams {
     value?: string;

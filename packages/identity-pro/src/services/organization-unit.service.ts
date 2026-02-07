@@ -1,21 +1,27 @@
+/**
+ * Organization Unit Service
+ * @since 2.9.0
+ * @updated 3.2.0 - New proxy service re-exported, legacy service renamed
+ */
 import { RestService, ABP, PagedResultDto } from '@abpjs/core';
 import { Identity } from '../models/identity';
-import { GetOrganizationUnitInput } from '../models/get-organization-unit-input';
-import { OrganizationUnitCreateDto } from '../models/organization-unit-create-dto';
-import { OrganizationUnitMoveInput } from '../models/organization-unit-move-input';
-import { OrganizationUnitRoleInput } from '../models/organization-unit-role-input';
-import { OrganizationUnitUpdateDto } from '../models/organization-unit-update-dto';
-import { OrganizationUnitUserInput } from '../models/organization-unit-user-input';
-import { OrganizationUnitWithDetailsDto } from '../models/organization-unit-with-details-dto';
+import type { LegacyGetOrganizationUnitInput } from '../models/get-organization-unit-input';
+import type { LegacyOrganizationUnitCreateDto } from '../models/organization-unit-create-dto';
+import type { LegacyOrganizationUnitMoveInput } from '../models/organization-unit-move-input';
+import type { LegacyOrganizationUnitRoleInput } from '../models/organization-unit-role-input';
+import type { LegacyOrganizationUnitUpdateDto } from '../models/organization-unit-update-dto';
+import type { LegacyOrganizationUnitUserInput } from '../models/organization-unit-user-input';
+import type { LegacyOrganizationUnitWithDetailsDto } from '../models/organization-unit-with-details-dto';
+
+// Re-export new proxy service
+export { OrganizationUnitService } from '../proxy/identity/organization-unit.service';
 
 /**
- * Service for managing organization unit operations.
- * Handles CRUD operations for organization units hierarchy.
- *
- * Translated from @volo/abp.ng.identity OrganizationUnitService
+ * Legacy service for managing organization unit operations.
+ * @deprecated Use OrganizationUnitService from proxy/identity instead
  * @since 2.9.0
  */
-export class OrganizationUnitService {
+export class LegacyOrganizationUnitService {
   /**
    * The API name used for REST requests.
    */
@@ -33,8 +39,8 @@ export class OrganizationUnitService {
    * @param id - The organization unit ID
    * @returns Promise resolving when complete
    */
-  addRolesByIdAndInput(body: OrganizationUnitRoleInput, id: string): Promise<void> {
-    return this.rest.request<OrganizationUnitRoleInput, void>({
+  addRolesByIdAndInput(body: LegacyOrganizationUnitRoleInput, id: string): Promise<void> {
+    return this.rest.request<LegacyOrganizationUnitRoleInput, void>({
       method: 'POST',
       url: `/api/identity/organization-units/${id}/roles`,
       body,
@@ -47,8 +53,8 @@ export class OrganizationUnitService {
    * @param id - The organization unit ID
    * @returns Promise resolving when complete
    */
-  addMembersByIdAndInput(body: OrganizationUnitUserInput, id: string): Promise<void> {
-    return this.rest.request<OrganizationUnitUserInput, void>({
+  addMembersByIdAndInput(body: LegacyOrganizationUnitUserInput, id: string): Promise<void> {
+    return this.rest.request<LegacyOrganizationUnitUserInput, void>({
       method: 'POST',
       url: `/api/identity/organization-units/${id}/members`,
       body,
@@ -60,8 +66,8 @@ export class OrganizationUnitService {
    * @param body - The organization unit data
    * @returns Promise with the created organization unit
    */
-  createByInput(body: OrganizationUnitCreateDto): Promise<OrganizationUnitWithDetailsDto> {
-    return this.rest.request<OrganizationUnitCreateDto, OrganizationUnitWithDetailsDto>({
+  createByInput(body: LegacyOrganizationUnitCreateDto): Promise<LegacyOrganizationUnitWithDetailsDto> {
+    return this.rest.request<LegacyOrganizationUnitCreateDto, LegacyOrganizationUnitWithDetailsDto>({
       method: 'POST',
       url: '/api/identity/organization-units',
       body,
@@ -85,8 +91,8 @@ export class OrganizationUnitService {
    * @param id - The organization unit ID
    * @returns Promise with the organization unit
    */
-  getById(id: string): Promise<OrganizationUnitWithDetailsDto> {
-    return this.rest.request<null, OrganizationUnitWithDetailsDto>({
+  getById(id: string): Promise<LegacyOrganizationUnitWithDetailsDto> {
+    return this.rest.request<null, LegacyOrganizationUnitWithDetailsDto>({
       method: 'GET',
       url: `/api/identity/organization-units/${id}`,
     });
@@ -97,8 +103,8 @@ export class OrganizationUnitService {
    * @param params - Query parameters for filtering and pagination
    * @returns Promise with paginated organization units
    */
-  getListByInput(params?: GetOrganizationUnitInput): Promise<PagedResultDto<OrganizationUnitWithDetailsDto>> {
-    return this.rest.request<null, PagedResultDto<OrganizationUnitWithDetailsDto>>({
+  getListByInput(params?: LegacyGetOrganizationUnitInput): Promise<PagedResultDto<LegacyOrganizationUnitWithDetailsDto>> {
+    return this.rest.request<null, PagedResultDto<LegacyOrganizationUnitWithDetailsDto>>({
       method: 'GET',
       url: '/api/identity/organization-units',
       params: params as unknown as Record<string, unknown>,
@@ -139,8 +145,8 @@ export class OrganizationUnitService {
    * @param id - The organization unit ID to move
    * @returns Promise resolving when complete
    */
-  moveByIdAndInput(body: OrganizationUnitMoveInput, id: string): Promise<void> {
-    return this.rest.request<OrganizationUnitMoveInput, void>({
+  moveByIdAndInput(body: LegacyOrganizationUnitMoveInput, id: string): Promise<void> {
+    return this.rest.request<LegacyOrganizationUnitMoveInput, void>({
       method: 'PUT',
       url: `/api/identity/organization-units/${id}/move`,
       body,
@@ -153,8 +159,8 @@ export class OrganizationUnitService {
    * @param id - The organization unit ID to update
    * @returns Promise with the updated organization unit
    */
-  updateByIdAndInput(body: OrganizationUnitUpdateDto, id: string): Promise<OrganizationUnitWithDetailsDto> {
-    return this.rest.request<OrganizationUnitUpdateDto, OrganizationUnitWithDetailsDto>({
+  updateByIdAndInput(body: LegacyOrganizationUnitUpdateDto, id: string): Promise<LegacyOrganizationUnitWithDetailsDto> {
+    return this.rest.request<LegacyOrganizationUnitUpdateDto, LegacyOrganizationUnitWithDetailsDto>({
       method: 'PUT',
       url: `/api/identity/organization-units/${id}`,
       body,
