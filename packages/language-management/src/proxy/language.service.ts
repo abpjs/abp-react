@@ -1,14 +1,15 @@
 /**
  * Language Service (Proxy)
- * Translated from @volo/abp.ng.language-management v3.2.0
+ * Translated from @volo/abp.ng.language-management v4.0.0
  *
  * New typed proxy service for language management operations.
  * This service uses the new DTO types from proxy/dto/models.
  *
  * @since 3.2.0
+ * @updated 4.0.0 - getList return type changed from ListResultDto to PagedResultDto
  */
 
-import type { RestService, ListResultDto } from '@abpjs/core';
+import type { RestService, ListResultDto, PagedResultDto } from '@abpjs/core';
 import type {
   CreateLanguageDto,
   CultureInfoDto,
@@ -115,10 +116,11 @@ export class LanguageService {
   /**
    * Get languages with optional filtering
    * @param input - Query parameters for filtering
-   * @returns Promise with list of languages
+   * @returns Promise with paginated list of languages
+   * @updated 4.0.0 - Return type changed from ListResultDto to PagedResultDto
    */
-  getList(input?: GetLanguagesTextsInput): Promise<ListResultDto<LanguageDto>> {
-    return this.restService.request<null, ListResultDto<LanguageDto>>({
+  getList(input?: GetLanguagesTextsInput): Promise<PagedResultDto<LanguageDto>> {
+    return this.restService.request<null, PagedResultDto<LanguageDto>>({
       method: 'GET',
       url: '/api/language-management/languages',
       params: input as unknown as Record<string, unknown>,

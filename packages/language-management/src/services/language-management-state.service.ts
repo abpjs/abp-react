@@ -1,6 +1,6 @@
 /**
  * Language Management State Service
- * Translated from @volo/abp.ng.language-management v3.2.0
+ * Translated from @volo/abp.ng.language-management v4.0.0
  *
  * Provides a stateful facade over language management operations,
  * maintaining internal state that mirrors the Angular NGXS store pattern.
@@ -8,6 +8,7 @@
  * @since 2.0.0
  * @updated 3.0.0 - Removed getLanguagesTotalCount() method
  * @updated 3.2.0 - Now uses new proxy services and types
+ * @updated 4.0.0 - Re-added getLanguagesTotalCount(), languageResponse now PagedResultDto
  */
 
 import type { RestService } from '@abpjs/core';
@@ -47,7 +48,7 @@ export class LanguageManagementStateService {
   private languageService: LanguageService;
   private languageTextService: LanguageTextService;
   private state: LanguageManagement.State = {
-    languageResponse: { items: [] },
+    languageResponse: { items: [], totalCount: 0 },
     languageTextsResponse: { items: [], totalCount: 0 },
     selectedItem: null,
     cultures: [],
@@ -71,7 +72,16 @@ export class LanguageManagementStateService {
     return this.state.languageResponse?.items ?? [];
   }
 
-  // Note: getLanguagesTotalCount() was removed in v3.0.0
+  /**
+   * Get the total count of languages from state
+   * @returns The total count of languages
+   * @since 2.0.0
+   * @removed 3.0.0
+   * @restored 4.0.0
+   */
+  getLanguagesTotalCount(): number {
+    return this.state.languageResponse?.totalCount ?? 0;
+  }
 
   /**
    * Get the current list of language texts from state
