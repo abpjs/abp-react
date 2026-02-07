@@ -1,11 +1,20 @@
-import { ABP } from '@abpjs/core';
-import type { Identity } from '../models';
-import { IdentityService } from './identity.service';
+import type { PagedAndSortedResultRequestDto, PagedResultDto, ListResultDto } from '@abpjs/core';
+import type {
+  IdentityRoleDto,
+  IdentityRoleCreateDto,
+  IdentityRoleUpdateDto,
+  IdentityUserDto,
+  IdentityUserCreateDto,
+  IdentityUserUpdateDto,
+  GetIdentityUsersInput,
+} from '../proxy/identity/models';
+import { IdentityRoleService } from '../proxy/identity/identity-role.service';
+import { IdentityUserService } from '../proxy/identity/identity-user.service';
 
 /**
  * IdentityStateService - A stateful service facade for identity operations.
  *
- * This service provides a stateful wrapper around IdentityService, maintaining
+ * This service provides a stateful wrapper around the proxy services, maintaining
  * local state for roles and users. It's the React equivalent of Angular's
  * IdentityStateService which wraps NGXS store operations.
  *
@@ -13,15 +22,17 @@ import { IdentityService } from './identity.service';
  * instead of this class. This class is provided for programmatic/non-hook scenarios.
  *
  * @since 2.0.0
+ * @updated 4.0.0 - Migrated from deprecated IdentityService to IdentityRoleService/IdentityUserService
  *
  * @example
  * ```typescript
- * import { IdentityStateService, IdentityService } from '@abpjs/identity';
+ * import { IdentityStateService, IdentityRoleService, IdentityUserService } from '@abpjs/identity';
  * import { RestService } from '@abpjs/core';
  *
  * const rest = new RestService();
- * const identityService = new IdentityService(rest);
- * const stateService = new IdentityStateService(identityService);
+ * const roleService = new IdentityRoleService(rest);
+ * const userService = new IdentityUserService(rest);
+ * const stateService = new IdentityStateService(roleService, userService);
  *
  * // Fetch and get roles
  * await stateService.dispatchGetRoles();
@@ -29,16 +40,18 @@ import { IdentityService } from './identity.service';
  * ```
  */
 export class IdentityStateService {
-  private identityService: IdentityService;
+  private identityRoleService: IdentityRoleService;
+  private identityUserService: IdentityUserService;
 
   // Internal state
-  private roles: Identity.RoleItem[] = [];
+  private roles: IdentityRoleDto[] = [];
   private rolesTotalCount: number = 0;
-  private users: Identity.UserItem[] = [];
+  private users: IdentityUserDto[] = [];
   private usersTotalCount: number = 0;
 
-  constructor(identityService: IdentityService) {
-    this.identityService = identityService;
+  constructor(identityRoleService: IdentityRoleService, identityUserService: IdentityUserService) {
+    this.identityRoleService = identityRoleService;
+    this.identityUserService = identityUserService;
   }
 
   // ========================
@@ -47,8 +60,9 @@ export class IdentityStateService {
 
   /**
    * Get the current roles from state
+   * @updated 4.0.0 - Returns IdentityRoleDto[] instead of Identity.RoleItem[]
    */
-  getRoles(): Identity.RoleItem[] {
+  getRoles(): IdentityRoleDto[] {
     return this.roles;
   }
 
@@ -61,8 +75,9 @@ export class IdentityStateService {
 
   /**
    * Get the current users from state
+   * @updated 4.0.0 - Returns IdentityUserDto[] instead of Identity.UserItem[]
    */
-  getUsers(): Identity.UserItem[] {
+  getUsers(): IdentityUserDto[] {
     return this.users;
   }
 
@@ -79,12 +94,12 @@ export class IdentityStateService {
 
   /**
    * Fetch roles and update internal state
-   * @param params - Optional query parameters for pagination/filtering
+   * @param params - Optional pagination/sorting parameters
    */
-  async dispatchGetRoles(params?: ABP.PageQueryParams): Promise<Identity.RoleResponse> {
-    const response = await this.identityService.getRoles(params);
-    this.roles = response.items;
-    this.rolesTotalCount = response.totalCount;
+  async dispatchGetRoles(params?: PagedAndSortedResultRequestDto): Promise<PagedResultDto<IdentityRoleDto>> {
+    const response = await this.identityRoleService.getList(params || {} as PagedAndSortedResultRequestDto);
+    this.roles = response.items ?? [];
+    this.rolesTotalCount = response.totalCount ?? 0;
     return response;
   }
 
@@ -92,27 +107,26 @@ export class IdentityStateService {
    * Fetch a role by ID
    * @param id - The role ID
    */
-  async dispatchGetRoleById(id: string): Promise<Identity.RoleItem> {
-    return this.identityService.getRoleById(id);
+  async dispatchGetRoleById(id: string): Promise<IdentityRoleDto> {
+    return this.identityRoleService.get(id);
   }
 
   /**
    * Delete a role and refresh the list
    * @param id - The role ID to delete
    */
-  async dispatchDeleteRole(id: string): Promise<Identity.RoleItem> {
-    const result = await this.identityService.deleteRole(id);
+  async dispatchDeleteRole(id: string): Promise<void> {
+    await this.identityRoleService.delete(id);
     // Refresh roles list after deletion
     await this.dispatchGetRoles();
-    return result;
   }
 
   /**
    * Create a new role and refresh the list
    * @param body - The role data to create
    */
-  async dispatchCreateRole(body: Identity.RoleSaveRequest): Promise<Identity.RoleItem> {
-    const result = await this.identityService.createRole(body);
+  async dispatchCreateRole(body: IdentityRoleCreateDto): Promise<IdentityRoleDto> {
+    const result = await this.identityRoleService.create(body);
     // Refresh roles list after creation
     await this.dispatchGetRoles();
     return result;
@@ -122,8 +136,8 @@ export class IdentityStateService {
    * Update an existing role and refresh the list
    * @param payload - Object containing id and updated role data
    */
-  async dispatchUpdateRole(payload: { id: string; body: Identity.RoleSaveRequest }): Promise<Identity.RoleItem> {
-    const result = await this.identityService.updateRole(payload.id, payload.body);
+  async dispatchUpdateRole(payload: { id: string; body: IdentityRoleUpdateDto }): Promise<IdentityRoleDto> {
+    const result = await this.identityRoleService.update(payload.id, payload.body);
     // Refresh roles list after update
     await this.dispatchGetRoles();
     return result;
@@ -137,10 +151,10 @@ export class IdentityStateService {
    * Fetch users and update internal state
    * @param params - Optional query parameters for pagination/filtering
    */
-  async dispatchGetUsers(params?: ABP.PageQueryParams): Promise<Identity.UserResponse> {
-    const response = await this.identityService.getUsers(params);
-    this.users = response.items;
-    this.usersTotalCount = response.totalCount;
+  async dispatchGetUsers(params?: GetIdentityUsersInput): Promise<PagedResultDto<IdentityUserDto>> {
+    const response = await this.identityUserService.getList(params || {} as GetIdentityUsersInput);
+    this.users = response.items ?? [];
+    this.usersTotalCount = response.totalCount ?? 0;
     return response;
   }
 
@@ -148,8 +162,8 @@ export class IdentityStateService {
    * Fetch a user by ID
    * @param id - The user ID
    */
-  async dispatchGetUserById(id: string): Promise<Identity.UserItem> {
-    return this.identityService.getUserById(id);
+  async dispatchGetUserById(id: string): Promise<IdentityUserDto> {
+    return this.identityUserService.get(id);
   }
 
   /**
@@ -157,7 +171,7 @@ export class IdentityStateService {
    * @param id - The user ID to delete
    */
   async dispatchDeleteUser(id: string): Promise<void> {
-    await this.identityService.deleteUser(id);
+    await this.identityUserService.delete(id);
     // Refresh users list after deletion
     await this.dispatchGetUsers();
   }
@@ -166,8 +180,8 @@ export class IdentityStateService {
    * Create a new user and refresh the list
    * @param body - The user data to create
    */
-  async dispatchCreateUser(body: Identity.UserSaveRequest): Promise<Identity.UserItem> {
-    const result = await this.identityService.createUser(body);
+  async dispatchCreateUser(body: IdentityUserCreateDto): Promise<IdentityUserDto> {
+    const result = await this.identityUserService.create(body);
     // Refresh users list after creation
     await this.dispatchGetUsers();
     return result;
@@ -177,8 +191,8 @@ export class IdentityStateService {
    * Update an existing user and refresh the list
    * @param payload - Object containing id and updated user data
    */
-  async dispatchUpdateUser(payload: { id: string; body: Identity.UserSaveRequest }): Promise<Identity.UserItem> {
-    const result = await this.identityService.updateUser(payload.id, payload.body);
+  async dispatchUpdateUser(payload: { id: string; body: IdentityUserUpdateDto }): Promise<IdentityUserDto> {
+    const result = await this.identityUserService.update(payload.id, payload.body);
     // Refresh users list after update
     await this.dispatchGetUsers();
     return result;
@@ -188,7 +202,7 @@ export class IdentityStateService {
    * Get roles assigned to a user
    * @param id - The user ID
    */
-  async dispatchGetUserRoles(id: string): Promise<Identity.RoleResponse> {
-    return this.identityService.getUserRoles(id);
+  async dispatchGetUserRoles(id: string): Promise<ListResultDto<IdentityRoleDto>> {
+    return this.identityUserService.getRoles(id);
   }
 }

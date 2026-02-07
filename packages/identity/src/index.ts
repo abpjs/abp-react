@@ -2,25 +2,35 @@
  * @abpjs/identity
  *
  * ABP Framework identity components for React.
- * Translated from @abp/ng.identity version 3.2.0.
+ * Translated from @abp/ng.identity version 4.0.0.
  *
  * This package provides:
- * - Identity models (User, Role, etc.)
- * - Identity service for API operations
+ * - Identity models (State, component interfaces)
  * - IdentityStateService for stateful operations (v2.0.0)
+ * - Proxy services for typed API operations: IdentityRoleService, IdentityUserService,
+ *   IdentityUserLookupService, ProfileService (v3.2.0)
  * - React hooks for state management (useRoles, useUsers, useIdentity)
  * - UI components for role and user management
  * - Route path constants for navigation
  * - Component and route name enums for customization (v2.7.0)
  * - Config subpackage with route providers and policy names (v3.0.0)
- * - Proxy services and models for typed API operations (v3.2.0)
+ *
+ * Changes in v4.0.0:
+ * - Removed deprecated IdentityService (use IdentityRoleService/IdentityUserService instead)
+ * - Removed deprecated legacy types: RoleResponse, RoleSaveRequest, RoleItem,
+ *   UserResponse, User, UserItem, UserSaveRequest
+ * - Component interface callbacks now use IdentityRoleDto/IdentityUserDto
+ * - IdentityStateService migrated to use IdentityRoleService/IdentityUserService
+ * - useRoles hook migrated to IdentityRoleService
+ * - useUsers hook migrated to IdentityUserService
+ * - Route provider parameter renamed: routes → routesService
  *
  * Changes in v3.2.0:
  * - Added new proxy services: IdentityRoleService, IdentityUserService,
  *   IdentityUserLookupService, ProfileService
  * - Added new proxy models: IdentityRoleDto, IdentityUserDto, ProfileDto, etc.
  * - State interface now uses PagedResultDto and new proxy DTOs
- * - Deprecated legacy types (RoleItem, UserItem, etc.) - to be deleted in v4.0
+ * - Deprecated legacy types (RoleItem, UserItem, etc.) - deleted in v4.0.0
  * - Added UserData model for user lookup operations
  *
  * Changes in v3.1.0:

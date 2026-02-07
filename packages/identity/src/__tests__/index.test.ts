@@ -5,7 +5,7 @@ import * as identityModule from '../index';
  * Tests for @abpjs/identity package exports
  * Uses static import to avoid slow dynamic imports during test execution.
  *
- * @updated 3.0.0 - Added config exports, removed Administration from eIdentityRouteNames
+ * @updated 4.0.0 - Removed IdentityService export (deleted in v4.0.0)
  */
 describe('@abpjs/identity package exports', () => {
   // v3.0.0: Config exports
@@ -70,14 +70,27 @@ describe('@abpjs/identity package exports', () => {
 
   // Service exports
   describe('Service exports', () => {
-    it('should export IdentityService', () => {
-      const { IdentityService } = identityModule;
-      expect(IdentityService).toBeDefined();
-    });
-
     it('should export IdentityStateService', () => {
       const { IdentityStateService } = identityModule;
       expect(IdentityStateService).toBeDefined();
+    });
+
+    it('should not export IdentityService (removed in v4.0.0)', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      expect((identityModule as any).IdentityService).toBeUndefined();
+    });
+  });
+
+  // Proxy service exports (v3.2.0)
+  describe('Proxy service exports (v3.2.0)', () => {
+    it('should export IdentityRoleService', () => {
+      const { IdentityRoleService } = identityModule;
+      expect(IdentityRoleService).toBeDefined();
+    });
+
+    it('should export IdentityUserService', () => {
+      const { IdentityUserService } = identityModule;
+      expect(IdentityUserService).toBeDefined();
     });
   });
 
@@ -132,7 +145,7 @@ describe('@abpjs/identity package exports', () => {
 
   // Verify all major exports are present
   describe('All exports verification', () => {
-    it('should export all v3.0.0 functionality', () => {
+    it('should export all v4.0.0 functionality', () => {
       const module = identityModule;
 
       // Config (v3.0.0)
@@ -145,9 +158,10 @@ describe('@abpjs/identity package exports', () => {
       expect(module.eIdentityComponents).toBeDefined();
       expect(module.eIdentityRouteNames).toBeDefined();
 
-      // Services
-      expect(module.IdentityService).toBeDefined();
+      // Services (v4.0.0: IdentityService removed)
       expect(module.IdentityStateService).toBeDefined();
+      expect(module.IdentityRoleService).toBeDefined();
+      expect(module.IdentityUserService).toBeDefined();
 
       // Hooks
       expect(module.useIdentity).toBeDefined();

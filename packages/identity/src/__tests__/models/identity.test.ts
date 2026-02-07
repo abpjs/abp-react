@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import type { Identity } from '../../models';
+import type { IdentityRoleDto, IdentityUserDto } from '../../proxy/identity/models';
 
+/**
+ * @updated 4.0.0 - Removed deprecated legacy type tests (RoleItem, RoleSaveRequest, UserItem, UserSaveRequest, etc.)
+ * These types were deleted in v4.0.0. Use IdentityRoleDto/IdentityUserDto from proxy models instead.
+ */
 describe('Identity Namespace', () => {
   describe('State Interface', () => {
     it('should define State interface with correct properties', () => {
@@ -41,102 +46,15 @@ describe('Identity Namespace', () => {
     });
   });
 
-  describe('RoleItem Interface', () => {
-    it('should define RoleItem with all required properties', () => {
-      const role: Identity.RoleItem = {
-        id: 'role-1',
-        name: 'admin',
-        isDefault: true,
-        isPublic: true,
-        isStatic: false,
-        concurrencyStamp: 'abc123',
-      };
-
-      expect(role.id).toBe('role-1');
-      expect(role.name).toBe('admin');
-      expect(role.isDefault).toBe(true);
-      expect(role.isPublic).toBe(true);
-      expect(role.isStatic).toBe(false);
-      expect(role.concurrencyStamp).toBe('abc123');
-    });
-  });
-
-  describe('RoleSaveRequest Interface', () => {
-    it('should define RoleSaveRequest for creating/updating roles', () => {
-      const request: Identity.RoleSaveRequest = {
-        name: 'newRole',
-        isDefault: false,
-        isPublic: true,
-      };
-
-      expect(request.name).toBe('newRole');
-      expect(request.isDefault).toBe(false);
-      expect(request.isPublic).toBe(true);
-    });
-  });
-
-  describe('UserItem Interface', () => {
-    it('should define UserItem with all required properties', () => {
-      const user: Identity.UserItem = {
-        id: 'user-1',
-        userName: 'testuser',
-        name: 'Test',
-        surname: 'User',
-        email: 'test@example.com',
-        phoneNumber: '555-1234',
-        twoFactorEnabled: true,
-        lockoutEnabled: true,
-        tenantId: 'tenant-1',
-        emailConfirmed: true,
-        phoneNumberConfirmed: false,
-        isLockedOut: false,
-        concurrencyStamp: 'xyz789',
-      };
-
-      expect(user.id).toBe('user-1');
-      expect(user.userName).toBe('testuser');
-      expect(user.name).toBe('Test');
-      expect(user.surname).toBe('User');
-      expect(user.email).toBe('test@example.com');
-      expect(user.phoneNumber).toBe('555-1234');
-      expect(user.twoFactorEnabled).toBe(true);
-      expect(user.lockoutEnabled).toBe(true);
-      expect(user.tenantId).toBe('tenant-1');
-      expect(user.emailConfirmed).toBe(true);
-      expect(user.phoneNumberConfirmed).toBe(false);
-      expect(user.isLockedOut).toBe(false);
-      expect(user.concurrencyStamp).toBe('xyz789');
-    });
-  });
-
-  describe('UserSaveRequest Interface', () => {
-    it('should define UserSaveRequest for creating/updating users', () => {
-      const request: Identity.UserSaveRequest = {
-        userName: 'newuser',
-        name: 'New',
-        surname: 'User',
-        email: 'new@example.com',
-        phoneNumber: '555-0000',
-        twoFactorEnabled: false,
-        lockoutEnabled: true,
-        password: 'SecurePassword123!',
-        roleNames: ['admin', 'user'],
-      };
-
-      expect(request.userName).toBe('newuser');
-      expect(request.password).toBe('SecurePassword123!');
-      expect(request.roleNames).toEqual(['admin', 'user']);
-    });
-  });
-
   // v2.0.0 Component Interface Types
-  describe('RolesComponentInputs Interface (v2.0.0)', () => {
-    it('should define optional callback properties', () => {
+  // v4.0.0: Callbacks now use IdentityRoleDto/IdentityUserDto
+  describe('RolesComponentInputs Interface (v2.0.0, updated v4.0.0)', () => {
+    it('should define optional callback properties using IdentityRoleDto', () => {
       const inputs: Identity.RolesComponentInputs = {
-        onRoleCreated: (role) => {
+        onRoleCreated: (role: IdentityRoleDto) => {
           expect(role.id).toBeDefined();
         },
-        onRoleUpdated: (role) => {
+        onRoleUpdated: (role: IdentityRoleDto) => {
           expect(role.name).toBeDefined();
         },
         onRoleDeleted: (id) => {
@@ -186,13 +104,13 @@ describe('Identity Namespace', () => {
     });
   });
 
-  describe('UsersComponentInputs Interface (v2.0.0)', () => {
-    it('should define all optional callback and config properties', () => {
+  describe('UsersComponentInputs Interface (v2.0.0, updated v4.0.0)', () => {
+    it('should define all optional callback and config properties using IdentityUserDto', () => {
       const inputs: Identity.UsersComponentInputs = {
-        onUserCreated: (user) => {
+        onUserCreated: (user: IdentityUserDto) => {
           expect(user.id).toBeDefined();
         },
-        onUserUpdated: (user) => {
+        onUserUpdated: (user: IdentityUserDto) => {
           expect(user.userName).toBeDefined();
         },
         onUserDeleted: (id) => {

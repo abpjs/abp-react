@@ -436,6 +436,7 @@ describe('RolesComponent', () => {
           name: 'NewRole',
           isDefault: false,
           isPublic: false,
+          extraProperties: {},
         });
       });
     });

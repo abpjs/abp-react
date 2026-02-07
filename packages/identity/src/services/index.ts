@@ -1,4 +1,3 @@
-export * from './identity.service';
 export * from './identity-state.service';
 
 // Proxy services (v3.2.0)
