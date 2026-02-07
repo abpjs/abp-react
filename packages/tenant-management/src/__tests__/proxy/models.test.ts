@@ -225,7 +225,7 @@ describe('Proxy Models (v3.2.0)', () => {
         extraProperties: {},
       };
 
-      expect(Object.keys(dto.extraProperties)).toHaveLength(0);
+      expect(Object.keys(dto.extraProperties!)).toHaveLength(0);
     });
   });
 
@@ -299,8 +299,8 @@ describe('Proxy Models (v3.2.0)', () => {
         },
       };
 
-      expect(dto.extraProperties.nested).toEqual({ level1: { level2: 'deep' } });
-      expect(dto.extraProperties.array).toEqual([1, 2, 3]);
+      expect(dto.extraProperties!.nested).toEqual({ level1: { level2: 'deep' } });
+      expect(dto.extraProperties!.array).toEqual([1, 2, 3]);
     });
   });
 });

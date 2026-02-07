@@ -3,14 +3,15 @@ import {
   TenantManagementStateService,
   getTenantManagementStateService,
 } from '../services/tenant-management-state.service';
-import { TenantManagementService } from '../services/tenant-management.service';
-import type { TenantManagement } from '../models';
+import { TenantService } from '../proxy/tenant.service';
+import type { TenantDto, TenantCreateDto } from '../proxy/models';
+import type { PagedResultDto } from '@abpjs/core';
 
-// Mock the TenantManagementService
-vi.mock('../services/tenant-management.service', () => ({
-  TenantManagementService: vi.fn().mockImplementation(() => ({
-    getAll: vi.fn(),
-    getById: vi.fn(),
+// Mock the TenantService
+vi.mock('../proxy/tenant.service', () => ({
+  TenantService: vi.fn().mockImplementation(() => ({
+    getList: vi.fn(),
+    get: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -41,7 +42,7 @@ describe('TenantManagementStateService', () => {
     });
 
     it('should return tenants after setting them', () => {
-      const tenants = [
+      const tenants: TenantDto[] = [
         { id: '1', name: 'Tenant 1' },
         { id: '2', name: 'Tenant 2' },
       ];
@@ -51,7 +52,7 @@ describe('TenantManagementStateService', () => {
     });
 
     it('should return a copy of tenants array', () => {
-      const tenants = [{ id: '1', name: 'Tenant 1' }];
+      const tenants: TenantDto[] = [{ id: '1', name: 'Tenant 1' }];
       service.setTenants(tenants);
 
       const result1 = service.get();
@@ -86,7 +87,7 @@ describe('TenantManagementStateService', () => {
 
   describe('setTenants', () => {
     it('should set tenants', () => {
-      const tenants = [
+      const tenants: TenantDto[] = [
         { id: '1', name: 'Tenant 1' },
         { id: '2', name: 'Tenant 2' },
       ];
@@ -111,7 +112,7 @@ describe('TenantManagementStateService', () => {
     });
 
     it('should create a copy of the input array', () => {
-      const tenants = [{ id: '1', name: 'Tenant 1' }];
+      const tenants: TenantDto[] = [{ id: '1', name: 'Tenant 1' }];
       service.setTenants(tenants);
 
       tenants.push({ id: '2', name: 'Tenant 2' });
@@ -138,65 +139,6 @@ describe('TenantManagementStateService', () => {
       service.setTotalCount(20);
 
       expect(service.getTenantsTotalCount()).toBe(20);
-    });
-  });
-
-  describe('updateFromResponse', () => {
-    it('should update tenants and total count from response', () => {
-      const response: TenantManagement.Response = {
-        items: [
-          { id: '1', name: 'Tenant 1' },
-          { id: '2', name: 'Tenant 2' },
-        ],
-        totalCount: 2,
-      };
-
-      service.updateFromResponse(response);
-
-      expect(service.get()).toEqual(response.items);
-      expect(service.getTenantsTotalCount()).toBe(2);
-    });
-
-    it('should notify subscribers when updated from response', () => {
-      const callback = vi.fn();
-      service.subscribe(callback);
-
-      const response: TenantManagement.Response = {
-        items: [{ id: '1', name: 'Tenant 1' }],
-        totalCount: 1,
-      };
-
-      service.updateFromResponse(response);
-      expect(callback).toHaveBeenCalledTimes(1);
-    });
-
-    it('should handle empty response', () => {
-      const response: TenantManagement.Response = {
-        items: [],
-        totalCount: 0,
-      };
-
-      service.updateFromResponse(response);
-
-      expect(service.get()).toEqual([]);
-      expect(service.getTenantsTotalCount()).toBe(0);
-    });
-
-    it('should handle response with many items', () => {
-      const items = Array.from({ length: 100 }, (_, i) => ({
-        id: String(i + 1),
-        name: `Tenant ${i + 1}`,
-      }));
-
-      const response: TenantManagement.Response = {
-        items,
-        totalCount: 500,
-      };
-
-      service.updateFromResponse(response);
-
-      expect(service.get()).toHaveLength(100);
-      expect(service.getTenantsTotalCount()).toBe(500);
     });
   });
 
@@ -301,42 +243,42 @@ describe('TenantManagementStateService', () => {
     });
   });
 
-  describe('constructor with TenantManagementService (v2.0.0)', () => {
-    it('should accept TenantManagementService in constructor', () => {
+  describe('constructor with TenantService (v4.0.0)', () => {
+    it('should accept TenantService in constructor', () => {
       const mockTenantService = {
-        getAll: vi.fn(),
-        getById: vi.fn(),
+        getList: vi.fn(),
+        get: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
       expect(stateService).toBeInstanceOf(TenantManagementStateService);
     });
 
-    it('should work without TenantManagementService', () => {
+    it('should work without TenantService', () => {
       const stateService = new TenantManagementStateService();
       expect(stateService).toBeInstanceOf(TenantManagementStateService);
     });
 
-    it('should work with undefined TenantManagementService', () => {
+    it('should work with undefined TenantService', () => {
       const stateService = new TenantManagementStateService(undefined);
       expect(stateService).toBeInstanceOf(TenantManagementStateService);
     });
   });
 
-  describe('dispatchGetTenants (v2.0.0)', () => {
-    it('should throw error when TenantManagementService is not provided', async () => {
+  describe('dispatchGetTenants (v4.0.0)', () => {
+    it('should throw error when TenantService is not provided', async () => {
       const stateService = new TenantManagementStateService();
 
       await expect(stateService.dispatchGetTenants()).rejects.toThrow(
-        'TenantManagementService is required for dispatchGetTenants. Pass it to the constructor.'
+        'TenantService is required for dispatchGetTenants. Pass it to the constructor.'
       );
     });
 
-    it('should call getAll and update internal state', async () => {
-      const mockResponse: TenantManagement.Response = {
+    it('should call getList and update internal state', async () => {
+      const mockResponse: PagedResultDto<TenantDto> = {
         items: [
           { id: '1', name: 'Tenant A' },
           { id: '2', name: 'Tenant B' },
@@ -345,95 +287,126 @@ describe('TenantManagementStateService', () => {
       };
 
       const mockTenantService = {
-        getAll: vi.fn().mockResolvedValue(mockResponse),
-        getById: vi.fn(),
+        getList: vi.fn().mockResolvedValue(mockResponse),
+        get: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
       const result = await stateService.dispatchGetTenants();
 
-      expect(mockTenantService.getAll).toHaveBeenCalledWith(undefined);
+      expect(mockTenantService.getList).toHaveBeenCalledWith({
+        filter: '',
+        maxResultCount: 10,
+        skipCount: 0,
+      });
       expect(result).toEqual(mockResponse);
       expect(stateService.get()).toEqual(mockResponse.items);
       expect(stateService.getTenantsTotalCount()).toBe(2);
     });
 
-    it('should pass pagination params to getAll', async () => {
-      const mockResponse: TenantManagement.Response = {
+    it('should pass query params to getList', async () => {
+      const mockResponse: PagedResultDto<TenantDto> = {
         items: [],
         totalCount: 0,
       };
 
       const mockTenantService = {
-        getAll: vi.fn().mockResolvedValue(mockResponse),
-        getById: vi.fn(),
+        getList: vi.fn().mockResolvedValue(mockResponse),
+        get: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
       await stateService.dispatchGetTenants({ skipCount: 10, maxResultCount: 20 });
 
-      expect(mockTenantService.getAll).toHaveBeenCalledWith({ skipCount: 10, maxResultCount: 20 });
+      expect(mockTenantService.getList).toHaveBeenCalledWith({
+        filter: '',
+        skipCount: 10,
+        maxResultCount: 20,
+      });
     });
 
     it('should handle API errors', async () => {
       const mockTenantService = {
-        getAll: vi.fn().mockRejectedValue(new Error('API Error')),
-        getById: vi.fn(),
+        getList: vi.fn().mockRejectedValue(new Error('API Error')),
+        get: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
       await expect(stateService.dispatchGetTenants()).rejects.toThrow('API Error');
     });
-  });
 
-  describe('dispatchGetTenantById (v2.0.0)', () => {
-    it('should throw error when TenantManagementService is not provided', async () => {
-      const stateService = new TenantManagementStateService();
-
-      await expect(stateService.dispatchGetTenantById('tenant-id')).rejects.toThrow(
-        'TenantManagementService is required for dispatchGetTenantById. Pass it to the constructor.'
-      );
-    });
-
-    it('should call getById and return tenant', async () => {
-      const mockTenant: TenantManagement.Item = { id: '1', name: 'Tenant A' };
+    it('should handle response with undefined items and totalCount', async () => {
+      const mockResponse: PagedResultDto<TenantDto> = {
+        items: undefined,
+        totalCount: undefined,
+      };
 
       const mockTenantService = {
-        getAll: vi.fn(),
-        getById: vi.fn().mockResolvedValue(mockTenant),
+        getList: vi.fn().mockResolvedValue(mockResponse),
+        get: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
+
+      const stateService = new TenantManagementStateService(mockTenantService);
+
+      const result = await stateService.dispatchGetTenants();
+
+      expect(result).toEqual(mockResponse);
+      expect(stateService.get()).toEqual([]);
+      expect(stateService.getTenantsTotalCount()).toBe(0);
+    });
+  });
+
+  describe('dispatchGetTenantById (v4.0.0)', () => {
+    it('should throw error when TenantService is not provided', async () => {
+      const stateService = new TenantManagementStateService();
+
+      await expect(stateService.dispatchGetTenantById('tenant-id')).rejects.toThrow(
+        'TenantService is required for dispatchGetTenantById. Pass it to the constructor.'
+      );
+    });
+
+    it('should call get and return tenant', async () => {
+      const mockTenant: TenantDto = { id: '1', name: 'Tenant A' };
+
+      const mockTenantService = {
+        getList: vi.fn(),
+        get: vi.fn().mockResolvedValue(mockTenant),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
       const result = await stateService.dispatchGetTenantById('1');
 
-      expect(mockTenantService.getById).toHaveBeenCalledWith('1');
+      expect(mockTenantService.get).toHaveBeenCalledWith('1');
       expect(result).toEqual(mockTenant);
     });
 
     it('should handle API errors', async () => {
       const mockTenantService = {
-        getAll: vi.fn(),
-        getById: vi.fn().mockRejectedValue(new Error('Tenant not found')),
+        getList: vi.fn(),
+        get: vi.fn().mockRejectedValue(new Error('Tenant not found')),
         create: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
@@ -441,24 +414,24 @@ describe('TenantManagementStateService', () => {
     });
   });
 
-  describe('dispatchCreateTenant (v2.0.0)', () => {
-    const validAddRequest: TenantManagement.AddRequest = {
+  describe('dispatchCreateTenant (v4.0.0)', () => {
+    const validCreateInput: TenantCreateDto = {
       name: 'New Tenant',
       adminEmailAddress: 'admin@newtenant.com',
       adminPassword: 'Password123!',
     };
 
-    it('should throw error when TenantManagementService is not provided', async () => {
+    it('should throw error when TenantService is not provided', async () => {
       const stateService = new TenantManagementStateService();
 
-      await expect(stateService.dispatchCreateTenant(validAddRequest)).rejects.toThrow(
-        'TenantManagementService is required for dispatchCreateTenant. Pass it to the constructor.'
+      await expect(stateService.dispatchCreateTenant(validCreateInput)).rejects.toThrow(
+        'TenantService is required for dispatchCreateTenant. Pass it to the constructor.'
       );
     });
 
     it('should call create and refresh tenant list', async () => {
-      const createdTenant: TenantManagement.Item = { id: '3', name: 'New Tenant' };
-      const refreshedResponse: TenantManagement.Response = {
+      const createdTenant: TenantDto = { id: '3', name: 'New Tenant' };
+      const refreshedResponse: PagedResultDto<TenantDto> = {
         items: [
           { id: '1', name: 'Tenant A' },
           { id: '2', name: 'Tenant B' },
@@ -468,51 +441,51 @@ describe('TenantManagementStateService', () => {
       };
 
       const mockTenantService = {
-        getAll: vi.fn().mockResolvedValue(refreshedResponse),
-        getById: vi.fn(),
+        getList: vi.fn().mockResolvedValue(refreshedResponse),
+        get: vi.fn(),
         create: vi.fn().mockResolvedValue(createdTenant),
         update: vi.fn(),
         delete: vi.fn(),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
-      const result = await stateService.dispatchCreateTenant(validAddRequest);
+      const result = await stateService.dispatchCreateTenant(validCreateInput);
 
-      expect(mockTenantService.create).toHaveBeenCalledWith(validAddRequest);
-      expect(mockTenantService.getAll).toHaveBeenCalled();
+      expect(mockTenantService.create).toHaveBeenCalledWith(validCreateInput);
+      expect(mockTenantService.getList).toHaveBeenCalled();
       expect(result).toEqual(createdTenant);
       expect(stateService.get()).toHaveLength(3);
     });
 
     it('should handle API errors during creation', async () => {
       const mockTenantService = {
-        getAll: vi.fn(),
-        getById: vi.fn(),
+        getList: vi.fn(),
+        get: vi.fn(),
         create: vi.fn().mockRejectedValue(new Error('Creation failed')),
         update: vi.fn(),
         delete: vi.fn(),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
-      await expect(stateService.dispatchCreateTenant(validAddRequest)).rejects.toThrow('Creation failed');
-      expect(mockTenantService.getAll).not.toHaveBeenCalled();
+      await expect(stateService.dispatchCreateTenant(validCreateInput)).rejects.toThrow('Creation failed');
+      expect(mockTenantService.getList).not.toHaveBeenCalled();
     });
   });
 
-  describe('dispatchUpdateTenant (v2.0.0)', () => {
-    it('should throw error when TenantManagementService is not provided', async () => {
+  describe('dispatchUpdateTenant (v4.0.0)', () => {
+    it('should throw error when TenantService is not provided', async () => {
       const stateService = new TenantManagementStateService();
 
-      await expect(stateService.dispatchUpdateTenant({ id: '1', name: 'Updated' })).rejects.toThrow(
-        'TenantManagementService is required for dispatchUpdateTenant. Pass it to the constructor.'
+      await expect(stateService.dispatchUpdateTenant('1', { name: 'Updated' })).rejects.toThrow(
+        'TenantService is required for dispatchUpdateTenant. Pass it to the constructor.'
       );
     });
 
-    it('should call update and refresh tenant list', async () => {
-      const updatedTenant: TenantManagement.Item = { id: '1', name: 'Updated Tenant' };
-      const refreshedResponse: TenantManagement.Response = {
+    it('should call update with id and input, then refresh tenant list', async () => {
+      const updatedTenant: TenantDto = { id: '1', name: 'Updated Tenant' };
+      const refreshedResponse: PagedResultDto<TenantDto> = {
         items: [
           { id: '1', name: 'Updated Tenant' },
           { id: '2', name: 'Tenant B' },
@@ -521,85 +494,85 @@ describe('TenantManagementStateService', () => {
       };
 
       const mockTenantService = {
-        getAll: vi.fn().mockResolvedValue(refreshedResponse),
-        getById: vi.fn(),
+        getList: vi.fn().mockResolvedValue(refreshedResponse),
+        get: vi.fn(),
         create: vi.fn(),
         update: vi.fn().mockResolvedValue(updatedTenant),
         delete: vi.fn(),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
-      const result = await stateService.dispatchUpdateTenant({ id: '1', name: 'Updated Tenant' });
+      const result = await stateService.dispatchUpdateTenant('1', { name: 'Updated Tenant' });
 
-      expect(mockTenantService.update).toHaveBeenCalledWith({ id: '1', name: 'Updated Tenant' });
-      expect(mockTenantService.getAll).toHaveBeenCalled();
+      expect(mockTenantService.update).toHaveBeenCalledWith('1', { name: 'Updated Tenant' });
+      expect(mockTenantService.getList).toHaveBeenCalled();
       expect(result).toEqual(updatedTenant);
       expect(stateService.get()[0].name).toBe('Updated Tenant');
     });
 
     it('should handle API errors during update', async () => {
       const mockTenantService = {
-        getAll: vi.fn(),
-        getById: vi.fn(),
+        getList: vi.fn(),
+        get: vi.fn(),
         create: vi.fn(),
         update: vi.fn().mockRejectedValue(new Error('Update failed')),
         delete: vi.fn(),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
-      await expect(stateService.dispatchUpdateTenant({ id: '1', name: 'Updated' })).rejects.toThrow('Update failed');
-      expect(mockTenantService.getAll).not.toHaveBeenCalled();
+      await expect(stateService.dispatchUpdateTenant('1', { name: 'Updated' })).rejects.toThrow('Update failed');
+      expect(mockTenantService.getList).not.toHaveBeenCalled();
     });
   });
 
-  describe('dispatchDeleteTenant (v2.0.0)', () => {
-    it('should throw error when TenantManagementService is not provided', async () => {
+  describe('dispatchDeleteTenant (v4.0.0)', () => {
+    it('should throw error when TenantService is not provided', async () => {
       const stateService = new TenantManagementStateService();
 
       await expect(stateService.dispatchDeleteTenant('1')).rejects.toThrow(
-        'TenantManagementService is required for dispatchDeleteTenant. Pass it to the constructor.'
+        'TenantService is required for dispatchDeleteTenant. Pass it to the constructor.'
       );
     });
 
     it('should call delete and refresh tenant list', async () => {
-      const refreshedResponse: TenantManagement.Response = {
+      const refreshedResponse: PagedResultDto<TenantDto> = {
         items: [{ id: '2', name: 'Tenant B' }],
         totalCount: 1,
       };
 
       const mockTenantService = {
-        getAll: vi.fn().mockResolvedValue(refreshedResponse),
-        getById: vi.fn(),
+        getList: vi.fn().mockResolvedValue(refreshedResponse),
+        get: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
         delete: vi.fn().mockResolvedValue(undefined),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
       await stateService.dispatchDeleteTenant('1');
 
       expect(mockTenantService.delete).toHaveBeenCalledWith('1');
-      expect(mockTenantService.getAll).toHaveBeenCalled();
+      expect(mockTenantService.getList).toHaveBeenCalled();
       expect(stateService.get()).toHaveLength(1);
       expect(stateService.getTenantsTotalCount()).toBe(1);
     });
 
     it('should handle API errors during deletion', async () => {
       const mockTenantService = {
-        getAll: vi.fn(),
-        getById: vi.fn(),
+        getList: vi.fn(),
+        get: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
         delete: vi.fn().mockRejectedValue(new Error('Deletion failed')),
-      } as unknown as TenantManagementService;
+      } as unknown as TenantService;
 
       const stateService = new TenantManagementStateService(mockTenantService);
 
       await expect(stateService.dispatchDeleteTenant('1')).rejects.toThrow('Deletion failed');
-      expect(mockTenantService.getAll).not.toHaveBeenCalled();
+      expect(mockTenantService.getList).not.toHaveBeenCalled();
     });
   });
 
@@ -612,16 +585,13 @@ describe('TenantManagementStateService', () => {
       expect(service.get()).toEqual([]);
       expect(service.getTenantsTotalCount()).toBe(0);
 
-      // Load data from response
-      const response: TenantManagement.Response = {
-        items: [
-          { id: '1', name: 'Tenant A' },
-          { id: '2', name: 'Tenant B' },
-        ],
-        totalCount: 50,
-      };
-      service.updateFromResponse(response);
-      expect(callback).toHaveBeenCalledTimes(1);
+      // Set tenants and total count directly
+      service.setTenants([
+        { id: '1', name: 'Tenant A' },
+        { id: '2', name: 'Tenant B' },
+      ]);
+      service.setTotalCount(50);
+      expect(callback).toHaveBeenCalledTimes(2);
 
       // Verify data
       expect(service.get()).toHaveLength(2);
@@ -629,7 +599,7 @@ describe('TenantManagementStateService', () => {
 
       // Reset for refresh
       service.reset();
-      expect(callback).toHaveBeenCalledTimes(2);
+      expect(callback).toHaveBeenCalledTimes(3);
 
       expect(service.get()).toEqual([]);
       expect(service.getTenantsTotalCount()).toBe(0);
