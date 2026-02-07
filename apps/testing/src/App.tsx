@@ -25,6 +25,7 @@ import {
   TestAuditLoggingPage,
   TestTextTemplateManagementPage,
   TestChatPage,
+  TestFileManagementPage,
   TestSchematicsPage,
   TestComponentsPage,
 } from './pages'
@@ -192,6 +193,12 @@ function Home() {
           </div>
 
           <div className="test-card">
+            <h3>@abpjs/file-management</h3>
+            <p>File and folder management, upload/download, directory navigation</p>
+            <Link to="/test/file-management" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
+          </div>
+
+          <div className="test-card">
             <h3>@abpjs/schematics</h3>
             <p>Code generation types, API definitions, proxy utilities</p>
             <Link to="/test/schematics" style={{ color: '#646cff' }}>View Tests &rarr;</Link>
@@ -285,6 +292,7 @@ function App() {
         <Route path="/test/audit-logging" element={<TestAuditLoggingPage />} />
         <Route path="/test/text-template-management" element={<TestTextTemplateManagementPage />} />
         <Route path="/test/chat" element={<TestChatPage />} />
+        <Route path="/test/file-management" element={<TestFileManagementPage />} />
         <Route path="/test/schematics" element={<TestSchematicsPage />} />
         <Route path="/test/components" element={<TestComponentsPage />} />
         {/* Setting management page from @abpjs/setting-management */}
