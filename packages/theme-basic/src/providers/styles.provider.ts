@@ -51,9 +51,9 @@ export const THEME_BASIC_STYLES = `
     margin-top: -1px;
 }
 
-/* Loading overlay */
+/* Loading overlay (v3.2.0: reduced opacity from 0.1 to 0.05) */
 .abp-loading {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 /* Modal backdrop */

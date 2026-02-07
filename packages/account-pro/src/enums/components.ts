@@ -66,6 +66,12 @@ export const eAccountComponents = {
    * @since 3.1.0
    */
   MySecurityLogs: 'Account.MySecurityLogs',
+
+  /**
+   * Key for the ProfilePicture component.
+   * @since 3.2.0
+   */
+  ProfilePicture: 'Account.ProfilePicture',
 } as const;
 
 /**

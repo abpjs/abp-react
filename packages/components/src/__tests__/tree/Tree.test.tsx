@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { Tree, TreeProps } from '../../tree/components/Tree';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
+import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
+import {
+  Tree,
+  TreeProps,
+  TreeNodeTemplateContext,
+  ExpandedIconTemplateContext,
+} from '../../tree/components/Tree';
 import { TreeAdapter } from '../../tree/utils/tree-adapter';
 import { BaseNode } from '../../tree/models/base-node';
 import { TreeNodeData } from '../../tree/models/tree-node';
@@ -9,6 +15,10 @@ interface TestNode extends BaseNode {
   id: string;
   parentId: string | null;
   name: string;
+}
+
+function Wrapper({ children }: { children: React.ReactNode }) {
+  return <ChakraProvider value={defaultSystem}>{children}</ChakraProvider>;
 }
 
 describe('Tree Component', () => {
@@ -34,7 +44,8 @@ describe('Tree Component', () => {
         nodes={treeNodes}
         expandedKeys={['1', '2']}
         {...props}
-      />
+      />,
+      { wrapper: Wrapper }
     );
   };
 
@@ -66,14 +77,14 @@ describe('Tree Component', () => {
     });
 
     it('should render with custom style', () => {
-      const { container } = renderTree({ style: { border: '1px solid red' } });
-      const tree = container.querySelector('.abp-tree');
+      renderTree({ style: { border: '1px solid red' } });
+      const tree = screen.getByRole('tree');
       expect(tree).toHaveStyle({ border: '1px solid red' });
     });
 
     it('should render empty tree', () => {
-      const { container } = render(<Tree nodes={[]} />);
-      expect(container.querySelector('.abp-tree')).toBeInTheDocument();
+      render(<Tree nodes={[]} />, { wrapper: Wrapper });
+      expect(screen.getByRole('tree')).toBeInTheDocument();
     });
   });
 
@@ -82,11 +93,10 @@ describe('Tree Component', () => {
       const onExpandedKeysChange = vi.fn();
       renderTree({ expandedKeys: ['1'], onExpandedKeysChange });
 
-      // Click the expand/collapse arrow for Root 1
-      const toggleButton = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-switcher');
-      fireEvent.click(toggleButton!);
+      // Click the expand/collapse button for Root 1
+      const treeNode = screen.getByTestId('tree-node-1');
+      const toggleButton = within(treeNode).getByLabelText('Collapse');
+      fireEvent.click(toggleButton);
 
       expect(onExpandedKeysChange).toHaveBeenCalledWith([]);
     });
@@ -95,10 +105,9 @@ describe('Tree Component', () => {
       const onExpandedKeysChange = vi.fn();
       renderTree({ expandedKeys: [], onExpandedKeysChange });
 
-      const toggleButton = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-switcher');
-      fireEvent.click(toggleButton!);
+      const treeNode = screen.getByTestId('tree-node-1');
+      const toggleButton = within(treeNode).getByLabelText('Expand');
+      fireEvent.click(toggleButton);
 
       expect(onExpandedKeysChange).toHaveBeenCalledWith(['1']);
     });
@@ -109,10 +118,8 @@ describe('Tree Component', () => {
       const onSelectedNodeChange = vi.fn();
       renderTree({ onSelectedNodeChange });
 
-      const nodeContent = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
-      fireEvent.click(nodeContent!);
+      const nodeContent = screen.getByTestId('tree-node-content-1');
+      fireEvent.click(nodeContent);
 
       expect(onSelectedNodeChange).toHaveBeenCalledWith(
         expect.objectContaining({ id: '1', name: 'Root 1' })
@@ -122,10 +129,8 @@ describe('Tree Component', () => {
     it('should highlight selected node', () => {
       renderTree({ selectedNode: flatList[0] });
 
-      const nodeContent = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
-      expect(nodeContent).toHaveClass('selected');
+      const nodeContent = screen.getByTestId('tree-node-content-1');
+      expect(nodeContent).toHaveAttribute('data-selected');
     });
 
     it('should use custom isNodeSelected function', () => {
@@ -133,10 +138,8 @@ describe('Tree Component', () => {
         node.key === '5';
       renderTree({ isNodeSelected });
 
-      const root2Content = screen
-        .getByTestId('tree-node-5')
-        .querySelector('.abp-tree-node-content');
-      expect(root2Content).toHaveClass('selected');
+      const root2Content = screen.getByTestId('tree-node-content-5');
+      expect(root2Content).toHaveAttribute('data-selected');
     });
   });
 
@@ -168,9 +171,8 @@ describe('Tree Component', () => {
     it('should check node when checkbox is checked', () => {
       renderTree({ checkable: true, checkedKeys: ['1'] });
 
-      const checkbox = screen
-        .getByTestId('tree-node-1')
-        .querySelector('input[type="checkbox"]');
+      const nodeContent = screen.getByTestId('tree-node-content-1');
+      const checkbox = within(nodeContent).getByRole('checkbox');
       expect(checkbox).toBeChecked();
     });
 
@@ -182,10 +184,9 @@ describe('Tree Component', () => {
         onCheckedKeysChange,
       });
 
-      const checkbox = screen
-        .getByTestId('tree-node-1')
-        .querySelector('input[type="checkbox"]');
-      fireEvent.click(checkbox!);
+      const nodeContent = screen.getByTestId('tree-node-content-1');
+      const checkbox = within(nodeContent).getByRole('checkbox');
+      fireEvent.click(checkbox);
 
       expect(onCheckedKeysChange).toHaveBeenCalledWith([]);
     });
@@ -195,18 +196,14 @@ describe('Tree Component', () => {
     it('should set draggable attribute when draggable is true', () => {
       renderTree({ draggable: true });
 
-      const nodeContent = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
+      const nodeContent = screen.getByTestId('tree-node-content-1');
       expect(nodeContent).toHaveAttribute('draggable', 'true');
     });
 
     it('should not set draggable attribute when draggable is false', () => {
       renderTree({ draggable: false });
 
-      const nodeContent = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
+      const nodeContent = screen.getByTestId('tree-node-content-1');
       expect(nodeContent).not.toHaveAttribute('draggable', 'true');
     });
 
@@ -214,16 +211,12 @@ describe('Tree Component', () => {
       const onDrop = vi.fn();
       renderTree({ draggable: true, onDrop });
 
-      const sourceNode = screen
-        .getByTestId('tree-node-5')
-        .querySelector('.abp-tree-node-content');
-      const targetNode = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
+      const sourceNode = screen.getByTestId('tree-node-content-5');
+      const targetNode = screen.getByTestId('tree-node-content-1');
 
-      fireEvent.dragStart(sourceNode!);
-      fireEvent.dragOver(targetNode!);
-      fireEvent.drop(targetNode!);
+      fireEvent.dragStart(sourceNode);
+      fireEvent.dragOver(targetNode);
+      fireEvent.drop(targetNode);
 
       expect(onDrop).toHaveBeenCalled();
     });
@@ -233,16 +226,12 @@ describe('Tree Component', () => {
       const onDrop = vi.fn();
       renderTree({ draggable: true, beforeDrop, onDrop });
 
-      const sourceNode = screen
-        .getByTestId('tree-node-5')
-        .querySelector('.abp-tree-node-content');
-      const targetNode = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
+      const sourceNode = screen.getByTestId('tree-node-content-5');
+      const targetNode = screen.getByTestId('tree-node-content-1');
 
-      fireEvent.dragStart(sourceNode!);
-      fireEvent.dragOver(targetNode!);
-      fireEvent.drop(targetNode!);
+      fireEvent.dragStart(sourceNode);
+      fireEvent.dragOver(targetNode);
+      fireEvent.drop(targetNode);
 
       expect(beforeDrop).toHaveBeenCalled();
     });
@@ -252,16 +241,12 @@ describe('Tree Component', () => {
       const onDrop = vi.fn();
       renderTree({ draggable: true, beforeDrop, onDrop });
 
-      const sourceNode = screen
-        .getByTestId('tree-node-5')
-        .querySelector('.abp-tree-node-content');
-      const targetNode = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
+      const sourceNode = screen.getByTestId('tree-node-content-5');
+      const targetNode = screen.getByTestId('tree-node-content-1');
 
-      fireEvent.dragStart(sourceNode!);
-      fireEvent.dragOver(targetNode!);
-      fireEvent.drop(targetNode!);
+      fireEvent.dragStart(sourceNode);
+      fireEvent.dragOver(targetNode);
+      fireEvent.drop(targetNode);
 
       // Wait for async beforeDrop to resolve
       await vi.waitFor(() => {
@@ -279,14 +264,16 @@ describe('Tree Component', () => {
       expect(menuTriggers.length).toBeGreaterThan(0);
     });
 
-    it('should show menu content when menu trigger is clicked', () => {
+    it('should show menu content when menu trigger is clicked', async () => {
       const menu = () => <div>Menu Content</div>;
       renderTree({ menu });
 
       const menuTrigger = screen.getAllByLabelText('Open menu')[0];
       fireEvent.click(menuTrigger);
 
-      expect(screen.getByText('Menu Content')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Menu Content')).toBeInTheDocument();
+      });
     });
 
     it('should not render menu trigger when menu is not provided', () => {
@@ -320,27 +307,25 @@ describe('Tree Component', () => {
   });
 
   describe('node disabled state', () => {
-    it('should render disabled node with disabled class', () => {
+    it('should render disabled node with data-disabled attribute', () => {
       const disabledNodes = adapter.getTree();
       disabledNodes[0].disabled = true;
 
-      render(<Tree nodes={disabledNodes} />);
+      render(<Tree nodes={disabledNodes} />, { wrapper: Wrapper });
 
-      const title = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-title');
-      expect(title).toHaveClass('disabled');
+      const treeNode = screen.getByTestId('tree-node-1');
+      const title = within(treeNode).getByText('Root 1');
+      expect(title).toHaveAttribute('data-disabled');
     });
 
     it('should disable checkbox for disabled node', () => {
       const disabledNodes = adapter.getTree();
       disabledNodes[0].disabled = true;
 
-      render(<Tree nodes={disabledNodes} checkable={true} />);
+      render(<Tree nodes={disabledNodes} checkable={true} />, { wrapper: Wrapper });
 
-      const checkbox = screen
-        .getByTestId('tree-node-1')
-        .querySelector('input[type="checkbox"]');
+      const treeNode = screen.getByTestId('tree-node-1');
+      const checkbox = within(treeNode).getByRole('checkbox');
       expect(checkbox).toBeDisabled();
     });
 
@@ -348,12 +333,271 @@ describe('Tree Component', () => {
       const disabledCheckboxNodes = adapter.getTree();
       disabledCheckboxNodes[0].disableCheckbox = true;
 
-      render(<Tree nodes={disabledCheckboxNodes} checkable={true} />);
+      render(<Tree nodes={disabledCheckboxNodes} checkable={true} />, { wrapper: Wrapper });
 
-      const checkbox = screen
-        .getByTestId('tree-node-1')
-        .querySelector('input[type="checkbox"]');
+      const treeNode = screen.getByTestId('tree-node-1');
+      const checkbox = within(treeNode).getByRole('checkbox');
       expect(checkbox).toBeDisabled();
+    });
+  });
+
+  // v3.2.0: Custom templates
+  describe('customNodeTemplate (v3.2.0)', () => {
+    it('should render custom node template when provided', () => {
+      const customNodeTemplate = (ctx: TreeNodeTemplateContext<TestNode>) => (
+        <span data-testid="custom-node">{`Custom: ${ctx.node.title}`}</span>
+      );
+
+      renderTree({ customNodeTemplate });
+
+      // Multiple nodes will have the custom template
+      const customNodes = screen.getAllByTestId('custom-node');
+      expect(customNodes.length).toBeGreaterThan(0);
+      expect(screen.getByText('Custom: Root 1')).toBeInTheDocument();
+    });
+
+    it('should not render default title when customNodeTemplate is provided', () => {
+      const customNodeTemplate = (_ctx: TreeNodeTemplateContext<TestNode>) => (
+        <span data-testid="custom-node">Custom Content</span>
+      );
+
+      renderTree({ customNodeTemplate });
+
+      // The default title element (with title attribute) should not be present
+      const treeNode = screen.getByTestId('tree-node-1');
+      const defaultTitle = treeNode.querySelector('[title="Root 1"]');
+      expect(defaultTitle).not.toBeInTheDocument();
+    });
+
+    it('should pass correct context to customNodeTemplate', () => {
+      const templateFn = vi.fn((ctx: TreeNodeTemplateContext<TestNode>) => (
+        <span data-testid={`custom-${ctx.node.key}`}>
+          {ctx.node.title} - expanded:{String(ctx.isExpanded)} - level:{ctx.level}
+        </span>
+      ));
+
+      renderTree({
+        customNodeTemplate: templateFn,
+        expandedKeys: ['1'],
+        checkedKeys: ['1'],
+        selectedNode: flatList[0],
+      });
+
+      // Check that the template function was called with correct context
+      expect(templateFn).toHaveBeenCalled();
+      const lastCall = templateFn.mock.calls[0][0];
+      expect(lastCall.node.key).toBe('1');
+      expect(lastCall.isExpanded).toBe(true);
+      expect(lastCall.level).toBe(0);
+    });
+
+    it('should pass isSelected correctly to customNodeTemplate', () => {
+      let capturedContext: TreeNodeTemplateContext<TestNode> | null = null;
+      const customNodeTemplate = (ctx: TreeNodeTemplateContext<TestNode>) => {
+        if (ctx.node.key === '1') {
+          capturedContext = ctx;
+        }
+        return <span>{ctx.node.title}</span>;
+      };
+
+      renderTree({
+        customNodeTemplate,
+        selectedNode: flatList[0], // Root 1
+      });
+
+      expect(capturedContext).not.toBeNull();
+      expect(capturedContext!.isSelected).toBe(true);
+    });
+
+    it('should pass isChecked correctly to customNodeTemplate', () => {
+      let capturedContext: TreeNodeTemplateContext<TestNode> | null = null;
+      const customNodeTemplate = (ctx: TreeNodeTemplateContext<TestNode>) => {
+        if (ctx.node.key === '1') {
+          capturedContext = ctx;
+        }
+        return <span>{ctx.node.title}</span>;
+      };
+
+      renderTree({
+        customNodeTemplate,
+        checkable: true,
+        checkedKeys: ['1'],
+      });
+
+      expect(capturedContext).not.toBeNull();
+      expect(capturedContext!.isChecked).toBe(true);
+    });
+
+    it('should render custom template for child nodes', () => {
+      const customNodeTemplate = (ctx: TreeNodeTemplateContext<TestNode>) => (
+        <span data-testid={`custom-${ctx.node.key}`}>
+          Level {ctx.level}: {ctx.node.title}
+        </span>
+      );
+
+      renderTree({ customNodeTemplate, expandedKeys: ['1'] });
+
+      // Check child nodes also use custom template
+      expect(screen.getByTestId('custom-2')).toBeInTheDocument();
+      expect(screen.getByText('Level 1: Child 1.1')).toBeInTheDocument();
+    });
+
+    it('should update level correctly in nested custom templates', () => {
+      const levels: number[] = [];
+      const customNodeTemplate = (ctx: TreeNodeTemplateContext<TestNode>) => {
+        levels.push(ctx.level);
+        return <span>{ctx.node.title}</span>;
+      };
+
+      renderTree({ customNodeTemplate, expandedKeys: ['1', '2'] });
+
+      // Root nodes are level 0, children level 1, grandchildren level 2
+      expect(levels).toContain(0);
+      expect(levels).toContain(1);
+      expect(levels).toContain(2);
+    });
+  });
+
+  describe('expandedIconTemplate (v3.2.0)', () => {
+    it('should render custom expanded icon when provided', () => {
+      const expandedIconTemplate = (ctx: ExpandedIconTemplateContext<TestNode>) => (
+        <span data-testid="custom-icon">
+          {ctx.isExpanded ? '[-]' : '[+]'}
+        </span>
+      );
+
+      renderTree({ expandedIconTemplate, expandedKeys: ['1'] });
+
+      expect(screen.getAllByTestId('custom-icon').length).toBeGreaterThan(0);
+    });
+
+    it('should not render default arrow when expandedIconTemplate is provided', () => {
+      const expandedIconTemplate = () => (
+        <span data-testid="custom-icon">Icon</span>
+      );
+
+      renderTree({ expandedIconTemplate });
+
+      // Default Lucide SVG icons should not be present inside the toggle button
+      const nodeContent = screen.getByTestId('tree-node-content-1');
+      const toggleButton = within(nodeContent).getByRole('button', { name: /Expand|Collapse/i });
+      const svgIcons = toggleButton.querySelectorAll('svg');
+      expect(svgIcons).toHaveLength(0);
+    });
+
+    it('should pass correct context to expandedIconTemplate', () => {
+      const templateFn = vi.fn((ctx: ExpandedIconTemplateContext<TestNode>) => (
+        <span data-testid="custom-icon">
+          {ctx.isExpanded ? 'Expanded' : 'Collapsed'}
+        </span>
+      ));
+
+      renderTree({ expandedIconTemplate: templateFn, expandedKeys: ['1'] });
+
+      expect(templateFn).toHaveBeenCalled();
+      // First call should be for Root 1 which is expanded
+      const firstCall = templateFn.mock.calls[0][0];
+      expect(firstCall.node).toBeDefined();
+      expect(firstCall.isExpanded).toBe(true);
+    });
+
+    it('should show correct expanded state in custom icon', () => {
+      const expandedIconTemplate = (ctx: ExpandedIconTemplateContext<TestNode>) => (
+        <span data-testid={`icon-${ctx.node.key}`}>
+          {ctx.isExpanded ? 'OPEN' : 'CLOSED'}
+        </span>
+      );
+
+      renderTree({ expandedIconTemplate, expandedKeys: ['1'] });
+
+      // Root 1 is expanded
+      expect(screen.getByTestId('icon-1')).toHaveTextContent('OPEN');
+      // Root 2 is not expanded (but is a leaf, so no icon)
+    });
+
+    it('should not render custom icon for leaf nodes', () => {
+      const expandedIconTemplate = (ctx: ExpandedIconTemplateContext<TestNode>) => (
+        <span data-testid={`icon-${ctx.node.key}`}>Icon</span>
+      );
+
+      renderTree({ expandedIconTemplate });
+
+      // Root 2 is a leaf node, should not have the custom icon
+      expect(screen.queryByTestId('icon-5')).not.toBeInTheDocument();
+    });
+
+    it('should render custom icon for expanded child nodes', () => {
+      const expandedIconTemplate = (ctx: ExpandedIconTemplateContext<TestNode>) => (
+        <span data-testid={`icon-${ctx.node.key}`}>
+          {ctx.isExpanded ? 'V' : '>'}
+        </span>
+      );
+
+      renderTree({ expandedIconTemplate, expandedKeys: ['1', '2'] });
+
+      // Child 1.1 (id 2) has a child so should have an icon
+      expect(screen.getByTestId('icon-2')).toBeInTheDocument();
+      expect(screen.getByTestId('icon-2')).toHaveTextContent('V');
+    });
+  });
+
+  describe('combined custom templates (v3.2.0)', () => {
+    it('should support both customNodeTemplate and expandedIconTemplate together', () => {
+      const customNodeTemplate = (ctx: TreeNodeTemplateContext<TestNode>) => (
+        <span data-testid={`node-${ctx.node.key}`}>
+          Node: {ctx.node.title}
+        </span>
+      );
+
+      const expandedIconTemplate = (ctx: ExpandedIconTemplateContext<TestNode>) => (
+        <span data-testid={`icon-${ctx.node.key}`}>
+          {ctx.isExpanded ? '▾' : '▸'}
+        </span>
+      );
+
+      renderTree({
+        customNodeTemplate,
+        expandedIconTemplate,
+        expandedKeys: ['1'],
+      });
+
+      // Both templates should be rendered
+      expect(screen.getByTestId('node-1')).toBeInTheDocument();
+      expect(screen.getByTestId('icon-1')).toBeInTheDocument();
+      expect(screen.getByText('Node: Root 1')).toBeInTheDocument();
+      expect(screen.getByTestId('icon-1')).toHaveTextContent('▾');
+    });
+
+    it('should propagate templates to all nested levels', () => {
+      const nodeCalls: string[] = [];
+      const iconCalls: string[] = [];
+
+      const customNodeTemplate = (ctx: TreeNodeTemplateContext<TestNode>) => {
+        nodeCalls.push(ctx.node.key);
+        return <span>{ctx.node.title}</span>;
+      };
+
+      const expandedIconTemplate = (ctx: ExpandedIconTemplateContext<TestNode>) => {
+        iconCalls.push(ctx.node.key);
+        return <span>Icon</span>;
+      };
+
+      renderTree({
+        customNodeTemplate,
+        expandedIconTemplate,
+        expandedKeys: ['1', '2'],
+      });
+
+      // All rendered nodes should use custom node template
+      expect(nodeCalls).toContain('1');
+      expect(nodeCalls).toContain('2');
+      expect(nodeCalls).toContain('3');
+      expect(nodeCalls).toContain('4');
+      expect(nodeCalls).toContain('5');
+
+      // Non-leaf nodes should use custom icon template
+      expect(iconCalls).toContain('1');
+      expect(iconCalls).toContain('2');
     });
   });
 });

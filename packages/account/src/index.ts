@@ -1,7 +1,11 @@
 /**
  * @abpjs/account
  * ABP Framework Account module for React
- * Translated from @abp/ng.account v3.1.0
+ * Translated from @abp/ng.account v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - Breaking: RegisterResponse - Removed twoFactorEnabled property
+ * - Dependency update to @abp/ng.theme.shared v3.2.0
  *
  * Changes in v3.1.0:
  * - New: AuthenticationFlowGuard - Route guard for checking auth flow type
@@ -38,7 +42,7 @@
  * - Dependency updates to @abp/ng.theme.shared v2.2.0 and @abp/ng.account.config v2.2.0
  * - No functional code changes
  *
- * @version 3.1.0
+ * @version 3.2.0
  * @since 2.0.0 - Added Account namespace with component interface types
  * @since 2.0.0 - Added isSelfRegistrationEnabled support in Login/Register components
  * @since 2.0.0 - Added enableLocalLogin support in AuthWrapper component
@@ -51,6 +55,7 @@
  * @since 2.9.0 - Version bump only (dependency updates)
  * @since 3.0.0 - Config subpackage, accountOptionsFactory, initializeAccountRoutes
  * @since 3.1.0 - AuthenticationFlowGuard, hideCurrentPassword, hideChangePasswordTab
+ * @since 3.2.0 - RegisterResponse: Removed twoFactorEnabled property
  */
 
 // Config (v3.0.0) - Route providers and enums

@@ -1,7 +1,22 @@
 /**
  * @abpjs/account-pro
  * ABP Framework Account Pro module for React
- * Translated from @volo/abp.ng.account v3.1.0
+ * Translated from @volo/abp.ng.account v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - Added ProfilePicture component key to eAccountComponents
+ * - Added eAccountManageProfileTabNames enum for manage profile tab names
+ * - Added ProfilePictureType enum (None, Gravatar, Image)
+ * - Added eTwoFactorBehaviour enum (Optional, Disabled, Forced)
+ * - Added ProfilePictureInput interface for setting profile pictures
+ * - Added ProfilePictureSourceDto interface for profile picture data
+ * - Added AccountTwoFactorSettingsDto interface for 2FA settings
+ * - Added ProfileService for profile picture and two-factor operations
+ * - Added ManageProfileTabsService for managing profile tabs
+ * - Added getManageProfileTabsService() singleton accessor
+ * - Added ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS constants
+ * - Added ACCOUNT_MANAGE_PROFILE_TAB_ORDERS constants
+ * - Added ACCOUNT_MANAGE_PROFILE_TAB_NAMES constants
  *
  * Changes in v3.1.0:
  * - Added EmailConfirmation route name to eAccountRouteNames

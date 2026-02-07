@@ -4,6 +4,7 @@
  * @since 2.9.0 - New package
  * @updated 3.0.0 - Added config subpackage with policy names, route providers, nav item providers
  * @updated 3.1.0 - Internal Angular refactoring (subscription management, getters), no public API changes
+ * @updated 3.2.0 - Version bump only (dependency updates to @abp/ng.theme.shared ~3.2.0)
  */
 import { useState } from 'react'
 import {
@@ -1160,10 +1161,50 @@ function TestAPISummary() {
   )
 }
 
+function TestV320Features() {
+  return (
+    <div className="test-section">
+      <h2>v3.2.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(Current)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Version Bump <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
+        <p>
+          Version 3.2.0 is a dependency update release with no public API changes.
+          The Angular package updated its dependency on <code>@abp/ng.theme.shared</code> from <code>~3.1.0</code> to <code>~3.2.0</code>.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Package</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>v3.1.0</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>v3.2.0</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>@abp/ng.theme.shared</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>~3.1.0</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace', color: '#4f4' }}>~3.2.0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>v3.2.0 Summary</h3>
+        <p style={{ color: '#888' }}>
+          This release contains no code changes - only a dependency version bump.
+          All APIs remain unchanged from v3.1.0. The React translation did not require any updates.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function TestV310Features() {
   return (
     <div className="test-section">
-      <h2>v3.1.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(Current)</span></h2>
+      <h2>v3.1.0 Features</h2>
 
       <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
         <h3>Internal Angular Refactoring <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.1.0)</span></h3>
@@ -1252,12 +1293,13 @@ function Chat({ contacts, userMessages, ... }) {
 export function TestChatPage() {
   return (
     <div>
-      <h1>@abpjs/chat Tests (v3.1.0)</h1>
+      <h1>@abpjs/chat Tests (v3.2.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing chat components, hooks, services, and SignalR integration.</p>
       <p style={{ fontSize: '14px', color: '#4f4', marginBottom: '16px' }}>
-        Version 3.1.0 - Internal Angular refactoring (no public API changes)
+        Version 3.2.0 - Version bump only (dependency updates)
       </p>
 
+      <TestV320Features />
       <TestV310Features />
       <TestV300Features />
       <TestAPISummary />

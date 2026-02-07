@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/account-pro",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "ABP Framework Account Pro module for React - Translation of @volo/abp.ng.account",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -38,7 +38,7 @@
     "react-icons": ">=5.0.0"
   },
   "devDependencies": {
-    "@volo/abp.ng.account": "3.1.0",
+    "@volo/abp.ng.account": "3.2.0",
     "@abpjs/core": "workspace:*",
     "@abpjs/theme-shared": "workspace:*",
     "@chakra-ui/react": "^3.2.1",

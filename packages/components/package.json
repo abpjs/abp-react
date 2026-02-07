@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/components",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "ABP Framework shared components for React - translated from @abp/ng.components",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -43,8 +43,17 @@
   "dependencies": {
     "@abpjs/core": "workspace:*"
   },
+  "peerDependencies": {
+    "@chakra-ui/react": "^3.2.0",
+    "@abpjs/theme-shared": "workspace:*",
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0",
+    "react-icons": ">=5.0.0"
+  },
   "devDependencies": {
-    "@abp/ng.components": "3.1.0",
+    "@abp/ng.components": "3.2.0",
+    "@abpjs/theme-shared": "workspace:*",
+    "@chakra-ui/react": "^3.2.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.6.1",
@@ -59,6 +68,7 @@
     "jsdom": "^24.0.0",
     "prettier": "^3.7.4",
     "react": "^18.2.0",
+    "react-icons": "^5.5.0",
     "react-dom": "^18.2.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0",
@@ -79,8 +89,9 @@
   "bugs": {
     "url": "https://github.com/abpjs/abp-react/issues"
   },
-  "peerDependencies": {
-    "react": ">=17.0.0",
-    "react-dom": ">=17.0.0"
+  "peerDependenciesMeta": {
+    "react-icons": {
+      "optional": true
+    }
   }
 }

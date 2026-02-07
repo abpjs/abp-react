@@ -1,7 +1,7 @@
 /**
  * @abpjs/text-template-management
  * ABP Framework Text Template Management module for React
- * Translated from @volo/abp.ng.text-template-management v3.1.0
+ * Translated from @volo/abp.ng.text-template-management v3.2.0
  *
  * This module provides components and services for managing text templates
  * in ABP Framework applications.
@@ -11,6 +11,13 @@
  * - Template content editing with multi-culture support
  * - Restore to default functionality
  * - Type-safe component and route name constants
+ *
+ * Changes in v3.2.0:
+ * - Added proxy subpackage with typed services and DTOs
+ * - Added TemplateContentService for template content operations
+ * - Added TemplateDefinitionService for template definition queries
+ * - Extension tokens now use proxy DTOs (TemplateDefinitionDto)
+ * - Deprecated legacy types in models namespace (to be removed in v4.0)
  *
  * Changes in v3.1.0:
  * - Added GetTemplateDefinitionListInput interface for template list queries
@@ -28,7 +35,7 @@
  * - Fixed typo: TextTemplateManagementTooolbarActionContributors -> TextTemplateManagementToolbarActionContributors
  *
  * @since 2.7.0
- * @updated 3.1.0
+ * @updated 3.2.0
  */
 
 // Config subpackage (v3.0.0)
@@ -57,3 +64,6 @@ export * from './hooks';
 
 // Components
 export * from './components';
+
+// Proxy (v3.2.0)
+export * from './proxy';

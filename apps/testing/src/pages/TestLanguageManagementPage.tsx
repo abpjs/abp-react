@@ -8,6 +8,7 @@
  * @updated 2.9.0 - Internal Angular changes (no new React features)
  * @updated 3.0.0 - Added config subpackage (policy names, route providers), extension tokens, extension guards
  * @updated 3.1.0 - Internal type updates, dependency updates (no new React features)
+ * @updated 3.2.0 - Added proxy subpackage with typed DTOs and services
  */
 import { useState } from 'react'
 import { useRestService } from '@abpjs/core'
@@ -49,12 +50,362 @@ import {
   languageManagementExtensionsGuard,
   useLanguageManagementExtensionsGuard,
   LanguageManagementExtensionsGuard,
+  // v3.2.0 Proxy exports
+  LanguageService,
+  LanguageTextService,
 } from '@abpjs/language-management'
-import type { LanguageManagement } from '@abpjs/language-management'
+import type {
+  LanguageManagement,
+  CreateLanguageDto,
+  UpdateLanguageDto,
+  LanguageDto,
+  LanguageTextDto,
+  CultureInfoDto,
+  LanguageResourceDto,
+  GetLanguagesTextsInput,
+} from '@abpjs/language-management'
 
 // Type annotation to ensure LanguageManagementStateService is used
 const _stateServiceType: typeof LanguageManagementStateService | null = null
 void _stateServiceType
+
+// Type annotations to ensure proxy DTOs are used (compile-time verification)
+const _createLanguageDto: CreateLanguageDto | null = null
+const _updateLanguageDto: UpdateLanguageDto | null = null
+const _languageDto: LanguageDto | null = null
+const _languageTextDto: LanguageTextDto | null = null
+const _cultureInfoDto: CultureInfoDto | null = null
+const _languageResourceDto: LanguageResourceDto | null = null
+const _getLanguagesTextsInput: GetLanguagesTextsInput | null = null
+void _createLanguageDto
+void _updateLanguageDto
+void _languageDto
+void _languageTextDto
+void _cultureInfoDto
+void _languageResourceDto
+void _getLanguagesTextsInput
+
+/**
+ * Test section for v3.2.0 features: proxy subpackage with typed DTOs and services
+ */
+function TestV320Features() {
+  const restService = useRestService()
+  const [languageService] = useState(() => new LanguageService(restService))
+  const [languageTextService] = useState(() => new LanguageTextService(restService))
+  const [languageServiceResult, setLanguageServiceResult] = useState<string>('')
+  const [languageTextServiceResult, setLanguageTextServiceResult] = useState<string>('')
+
+  const testLanguageService = () => {
+    setLanguageServiceResult(`LanguageService instantiated successfully!
+
+apiName: ${languageService.apiName}
+
+Available methods:
+- create(input: CreateLanguageDto): Promise<LanguageDto>
+- delete(id: string): Promise<void>
+- get(id: string): Promise<LanguageDto>
+- getAllList(): Promise<ListResultDto<LanguageDto>>
+- getCulturelist(): Promise<CultureInfoDto[]>
+- getList(input?: GetLanguagesTextsInput): Promise<ListResultDto<LanguageDto>>
+- getResources(): Promise<LanguageResourceDto[]>
+- setAsDefault(id: string): Promise<void>
+- update(id: string, input: UpdateLanguageDto): Promise<LanguageDto>`)
+  }
+
+  const testLanguageTextService = () => {
+    setLanguageTextServiceResult(`LanguageTextService instantiated successfully!
+
+apiName: ${languageTextService.apiName}
+
+Available methods:
+- get(resourceName, cultureName, name, baseCultureName): Promise<LanguageTextDto>
+- getList(input: GetLanguagesTextsInput): Promise<PagedResultDto<LanguageTextDto>>
+- restoreToDefault(resourceName, cultureName, name): Promise<void>
+- update(resourceName, cultureName, name, value): Promise<void>`)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.2.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      {/* Overview */}
+      <div className="test-card">
+        <h3>Proxy Subpackage (v3.2.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New proxy subpackage with typed DTOs and services that mirror the ABP backend API structure.
+          The legacy <code>LanguageManagementService</code> is now deprecated in favor of the new typed proxy services.
+        </p>
+        <div style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #f59e0b', marginBottom: '1rem' }}>
+          <strong style={{ color: '#f59e0b' }}>Deprecation Notice:</strong>
+          <p style={{ fontSize: '12px', margin: '0.5rem 0 0' }}>
+            <code>LanguageManagementService</code>, <code>LanguageManagement.Language</code>, and related legacy types
+            are deprecated. Use <code>LanguageService</code>, <code>LanguageTextService</code>, and proxy DTOs instead.
+            Legacy types will be removed in v4.0.0.
+          </p>
+        </div>
+      </div>
+
+      {/* LanguageService */}
+      <div className="test-card">
+        <h3>LanguageService (v3.2.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Typed service for managing languages with full CRUD operations.
+        </p>
+        <button onClick={testLanguageService} style={{ marginBottom: '1rem' }}>
+          Test LanguageService
+        </button>
+        {languageServiceResult && (
+          <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px', overflow: 'auto' }}>
+            {languageServiceResult}
+          </pre>
+        )}
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px', marginTop: '1rem' }}>
+{`// Usage - LanguageService
+import { LanguageService } from '@abpjs/language-management';
+import type { CreateLanguageDto, LanguageDto } from '@abpjs/language-management/proxy';
+
+const languageService = new LanguageService(restService);
+
+// Get all languages
+const allLanguages = await languageService.getAllList();
+
+// Create a new language
+const newLanguage = await languageService.create({
+  displayName: 'French',
+  cultureName: 'fr-FR',
+  uiCultureName: 'fr-FR',
+  flagIcon: 'fr',
+  isEnabled: true,
+});
+
+// Set as default
+await languageService.setAsDefault(newLanguage.id);`}
+        </pre>
+      </div>
+
+      {/* LanguageTextService */}
+      <div className="test-card">
+        <h3>LanguageTextService (v3.2.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Typed service for managing language text translations.
+        </p>
+        <button onClick={testLanguageTextService} style={{ marginBottom: '1rem' }}>
+          Test LanguageTextService
+        </button>
+        {languageTextServiceResult && (
+          <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px', overflow: 'auto' }}>
+            {languageTextServiceResult}
+          </pre>
+        )}
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px', marginTop: '1rem' }}>
+{`// Usage - LanguageTextService
+import { LanguageTextService } from '@abpjs/language-management';
+import type { GetLanguagesTextsInput, LanguageTextDto } from '@abpjs/language-management/proxy';
+
+const textService = new LanguageTextService(restService);
+
+// Get language texts with filtering
+const texts = await textService.getList({
+  baseCultureName: 'en-US',
+  targetCultureName: 'fr-FR',
+  resourceName: 'AbpIdentity',
+  getOnlyEmptyValues: true,
+  maxResultCount: 50,
+});
+
+// Update a translation
+await textService.update('AbpIdentity', 'fr-FR', 'UserName', 'Nom d\\'utilisateur');
+
+// Restore to default
+await textService.restoreToDefault('AbpIdentity', 'fr-FR', 'UserName');`}
+        </pre>
+      </div>
+
+      {/* DTOs Reference */}
+      <div className="test-card">
+        <h3>Proxy DTOs (v3.2.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Typed Data Transfer Objects for type-safe API interactions.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>DTO</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Purpose</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key Fields</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>CreateLanguageDto</code></td>
+              <td style={{ padding: '8px' }}>Create a new language</td>
+              <td style={{ padding: '8px', fontSize: '11px' }}>displayName, cultureName, uiCultureName, flagIcon, isEnabled</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>UpdateLanguageDto</code></td>
+              <td style={{ padding: '8px' }}>Update an existing language</td>
+              <td style={{ padding: '8px', fontSize: '11px' }}>displayName, flagIcon, isEnabled</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageDto</code></td>
+              <td style={{ padding: '8px' }}>Language entity response</td>
+              <td style={{ padding: '8px', fontSize: '11px' }}>id, cultureName, displayName, isEnabled, isDefaultLanguage, ...</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageTextDto</code></td>
+              <td style={{ padding: '8px' }}>Language text translation</td>
+              <td style={{ padding: '8px', fontSize: '11px' }}>resourceName, cultureName, name, value, baseValue</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>CultureInfoDto</code></td>
+              <td style={{ padding: '8px' }}>Culture information</td>
+              <td style={{ padding: '8px', fontSize: '11px' }}>name, displayName</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageResourceDto</code></td>
+              <td style={{ padding: '8px' }}>Localization resource</td>
+              <td style={{ padding: '8px', fontSize: '11px' }}>name</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>GetLanguagesTextsInput</code></td>
+              <td style={{ padding: '8px' }}>Query parameters for texts</td>
+              <td style={{ padding: '8px', fontSize: '11px' }}>filter, resourceName, baseCultureName, targetCultureName, ...</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Import proxy DTOs
+import type {
+  CreateLanguageDto,
+  UpdateLanguageDto,
+  LanguageDto,
+  LanguageTextDto,
+  CultureInfoDto,
+  LanguageResourceDto,
+  GetLanguagesTextsInput,
+} from '@abpjs/language-management/proxy';
+
+// Type-safe language creation
+const createDto: CreateLanguageDto = {
+  displayName: 'German',
+  cultureName: 'de-DE',
+  uiCultureName: 'de-DE',
+  flagIcon: 'de',
+  isEnabled: true,
+  extraProperties: { region: 'Europe' }, // Optional
+};
+
+// Type-safe query input
+const queryInput: GetLanguagesTextsInput = {
+  baseCultureName: 'en-US',
+  targetCultureName: 'de-DE',
+  getOnlyEmptyValues: true,
+  maxResultCount: 100,
+  sorting: 'name asc',
+};`}
+        </pre>
+      </div>
+
+      {/* Migration Guide */}
+      <div className="test-card">
+        <h3>Migration from Legacy Types</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Legacy (Deprecated)</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>New (v3.2.0)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagementService</code></td>
+              <td style={{ padding: '8px' }}><code>LanguageService</code> + <code>LanguageTextService</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagement.Language</code></td>
+              <td style={{ padding: '8px' }}><code>LanguageDto</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagement.LanguageText</code></td>
+              <td style={{ padding: '8px' }}><code>LanguageTextDto</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagement.Culture</code></td>
+              <td style={{ padding: '8px' }}><code>CultureInfoDto</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagement.Resource</code></td>
+              <td style={{ padding: '8px' }}><code>LanguageResourceDto</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagement.LanguageCreateDto</code></td>
+              <td style={{ padding: '8px' }}><code>CreateLanguageDto</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagement.LanguageUpdateDto</code></td>
+              <td style={{ padding: '8px' }}><code>UpdateLanguageDto</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* v3.2.0 API Reference */}
+      <div className="test-card">
+        <h3>v3.2.0 API Reference</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Category</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }} rowSpan={2}>Services</td>
+              <td style={{ padding: '8px' }}><code>LanguageService</code></td>
+              <td style={{ padding: '8px' }}>Class</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageTextService</code></td>
+              <td style={{ padding: '8px' }}>Class</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }} rowSpan={7}>DTOs</td>
+              <td style={{ padding: '8px' }}><code>CreateLanguageDto</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>UpdateLanguageDto</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageDto</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageTextDto</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>CultureInfoDto</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>LanguageResourceDto</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>GetLanguagesTextsInput</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
 /**
  * Test section for v3.0.0 features: config subpackage, extension tokens, extension guards
@@ -1304,12 +1655,13 @@ function TestModels() {
 export function TestLanguageManagementPage() {
   return (
     <div>
-      <h1>@abpjs/language-management Tests (v3.1.0)</h1>
+      <h1>@abpjs/language-management Tests (v3.2.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing language management components, hooks, and services.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.1.0 - Internal type updates, dependency updates (no new features)
+        Version 3.2.0 - Added proxy subpackage with typed DTOs and services
       </p>
 
+      <TestV320Features />
       <TestV300Features />
       <TestV270Features />
       <TestV240Features />

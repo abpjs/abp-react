@@ -173,17 +173,41 @@ describe('TenantManagement models', () => {
 
   describe('TenantManagement.State', () => {
     it('should define State interface with result and selectedItem', () => {
+      // v3.2.0: State now uses PagedResultDto<TenantDto> and TenantDto
       const state: TenantManagement.State = {
         result: {
-          items: [{ id: '1', name: 'Tenant 1' }],
+          items: [{ id: '1', name: 'Tenant 1', extraProperties: {} }],
           totalCount: 1,
         },
-        selectedItem: { id: '1', name: 'Tenant 1' },
+        selectedItem: { id: '1', name: 'Tenant 1', extraProperties: {} },
       };
 
       expect(state.result.items).toHaveLength(1);
       expect(state.result.totalCount).toBe(1);
       expect(state.selectedItem.id).toBe('1');
+    });
+
+    it('should support TenantDto with extraProperties (v3.2.0)', () => {
+      const state: TenantManagement.State = {
+        result: {
+          items: [
+            {
+              id: 'tenant-1',
+              name: 'Test Tenant',
+              extraProperties: { customField: 'value' },
+            },
+          ],
+          totalCount: 1,
+        },
+        selectedItem: {
+          id: 'tenant-1',
+          name: 'Test Tenant',
+          extraProperties: { customField: 'value' },
+        },
+      };
+
+      expect(state.result.items?.[0].extraProperties).toEqual({ customField: 'value' });
+      expect(state.selectedItem.extraProperties).toEqual({ customField: 'value' });
     });
   });
 

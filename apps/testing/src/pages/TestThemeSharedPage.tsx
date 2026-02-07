@@ -8,6 +8,7 @@
  * @updated 2.9.0 - RTL support, LazyStyleHandler, NavItems, LAZY_STYLES token, dismissible
  * @updated 3.0.0 - NavItemsService, eThemeSharedRouteNames, route providers, Toaster.Status removed
  * @updated 3.1.0 - NavItem class with visible callback, NavItemProps interface, DEFAULT_ERROR_LOCALIZATIONS
+ * @updated 3.2.0 - Added .datatable-scroll CSS styles for ngx-datatable horizontal scroll fix
  */
 import { useState, useContext, useEffect } from 'react'
 import {
@@ -56,9 +57,95 @@ import {
   NavItem,
   // v3.1.0: DEFAULT_ERROR_LOCALIZATIONS
   DEFAULT_ERROR_LOCALIZATIONS,
+  // v3.2.0: DEFAULT_STYLES with new datatable-scroll CSS
+  DEFAULT_STYLES,
 } from '@abpjs/theme-shared'
 import type { SettingsStore, NavItemProps } from '@abpjs/theme-shared'
 import { useAbp, useAuth } from '@abpjs/core'
+
+/**
+ * v3.2.0 Features Section
+ * Demonstrates:
+ * - .datatable-scroll CSS styles for ngx-datatable horizontal scroll fix
+ */
+function TestV320Features() {
+  const [showStyles, setShowStyles] = useState(false)
+
+  return (
+    <div className="test-section">
+      <h2>v3.2.0 Features</h2>
+
+      <div className="test-card">
+        <h3>.datatable-scroll CSS Styles</h3>
+        <p>New CSS styles added for fixing horizontal scroll gaps in ngx-datatable components.</p>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          These styles are automatically included in DEFAULT_STYLES and will be applied when using the ThemeSharedProvider.
+        </p>
+
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={() => setShowStyles(!showStyles)}>
+            {showStyles ? 'Hide' : 'Show'} CSS Rule
+          </button>
+        </div>
+
+        {showStyles && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', marginTop: '1rem', overflow: 'auto' }}>
+{`.datatable-scroll {
+  margin-bottom: 5px !important;
+  width: unset !important;
+}`}
+          </pre>
+        )}
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>Verification</h4>
+          <p>Checking if the new styles are included in DEFAULT_STYLES:</p>
+          <ul style={{ marginLeft: '1.5rem', marginTop: '0.5rem' }}>
+            <li>
+              <code>.datatable-scroll</code> class: {' '}
+              <span style={{ color: DEFAULT_STYLES.includes('.datatable-scroll') ? '#6f6' : '#f66' }}>
+                {DEFAULT_STYLES.includes('.datatable-scroll') ? '✓ Found' : '✗ Not found'}
+              </span>
+            </li>
+            <li>
+              <code>margin-bottom: 5px !important</code>: {' '}
+              <span style={{ color: DEFAULT_STYLES.includes('margin-bottom: 5px !important') ? '#6f6' : '#f66' }}>
+                {DEFAULT_STYLES.includes('margin-bottom: 5px !important') ? '✓ Found' : '✗ Not found'}
+              </span>
+            </li>
+            <li>
+              <code>width: unset !important</code>: {' '}
+              <span style={{ color: DEFAULT_STYLES.includes('width: unset !important') ? '#6f6' : '#f66' }}>
+                {DEFAULT_STYLES.includes('width: unset !important') ? '✓ Found' : '✗ Not found'}
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>Usage Example</h4>
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', overflow: 'auto' }}>
+{`// The styles are automatically applied when using ThemeSharedProvider
+// or when manually injecting DEFAULT_STYLES
+
+import { DEFAULT_STYLES } from '@abpjs/theme-shared';
+
+// Option 1: Use with ThemeSharedProvider (recommended)
+<ThemeSharedProvider>
+  <App />
+</ThemeSharedProvider>
+
+// Option 2: Manually inject styles
+<style>{DEFAULT_STYLES}</style>
+
+// The .datatable-scroll class will be applied to ngx-datatable
+// or any table component that uses this class name`}
+          </pre>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 /**
  * v3.1.0 Features Section
@@ -1797,12 +1884,13 @@ function TestProfile() {
 export function TestThemeSharedPage() {
   return (
     <div>
-      <h1>@abpjs/theme-shared Tests (v3.1.0)</h1>
+      <h1>@abpjs/theme-shared Tests (v3.2.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing toast notifications, confirmation dialogs, modals, error handling, and shared components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.1.0 - NavItem class with visible callback, NavItemProps, DEFAULT_ERROR_LOCALIZATIONS
+        Version 3.2.0 - Added .datatable-scroll CSS styles for ngx-datatable horizontal scroll fix
       </p>
 
+      <TestV320Features />
       <TestV310Features />
       <TestV300Features />
       <TestV290Features />

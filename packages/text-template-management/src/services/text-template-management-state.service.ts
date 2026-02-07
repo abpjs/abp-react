@@ -1,21 +1,30 @@
 /**
  * Text Template Management State Service
- * Translated from @volo/abp.ng.text-template-management v2.7.0
+ * Translated from @volo/abp.ng.text-template-management v3.2.0
  *
  * Provides a stateful facade over text template operations,
  * maintaining internal state similar to Angular's NGXS store pattern.
+ *
+ * @since 2.7.0
+ * @updated 3.2.0 - Now uses proxy services
  */
 
-import type { RestService, PagedResultRequestDto, ListResultDto } from '@abpjs/core';
+import type { RestService, PagedResultDto } from '@abpjs/core';
 import type { TextTemplateManagement } from '../models';
-import { TemplateDefinitionService } from './template-definition.service';
-import { TemplateContentService } from './template-content.service';
+import type {
+  TemplateDefinitionDto,
+  TextTemplateContentDto,
+  GetTemplateDefinitionListInput,
+} from '../proxy/text-templates/models';
+import { TemplateDefinitionService } from '../proxy/text-templates/template-definition.service';
+import { TemplateContentService } from '../proxy/text-templates/template-content.service';
 
 /**
  * State service for text template management.
  * Maintains state for template definitions and content.
  *
  * @since 2.7.0
+ * @updated 3.2.0 - Now uses proxy services internally
  */
 export class TextTemplateManagementStateService {
   private templateDefinitionService: TemplateDefinitionService;
@@ -39,7 +48,7 @@ export class TextTemplateManagementStateService {
    * Get template definitions from state
    * @returns Array of template definitions
    */
-  getTemplateDefinitions(): TextTemplateManagement.TemplateDefinitionDto[] {
+  getTemplateDefinitions(): TemplateDefinitionDto[] {
     return this._state.templateDefinitions;
   }
 
@@ -55,7 +64,7 @@ export class TextTemplateManagementStateService {
    * Get the currently selected template
    * @returns Selected template or null
    */
-  getSelectedTemplate(): TextTemplateManagement.TemplateDefinitionDto | null {
+  getSelectedTemplate(): TemplateDefinitionDto | null {
     return this._state.selectedTemplate;
   }
 
@@ -63,7 +72,7 @@ export class TextTemplateManagementStateService {
    * Get template content from state
    * @returns Template content or null
    */
-  getTemplateContent(): TextTemplateManagement.TextTemplateContentDto | null {
+  getTemplateContent(): TextTemplateContentDto | null {
     return this._state.templateContent;
   }
 
@@ -72,26 +81,33 @@ export class TextTemplateManagementStateService {
   /**
    * Dispatch action to fetch template definitions
    * @param params Query parameters for filtering and pagination
-   * @returns Promise with list result
+   * @returns Promise with paged result
+   * @updated 3.2.0 - Now returns PagedResultDto instead of ListResultDto
    */
   async dispatchGetTemplateDefinitions(
-    params: Partial<PagedResultRequestDto> = {}
-  ): Promise<ListResultDto<TextTemplateManagement.TemplateDefinitionDto>> {
+    params: GetTemplateDefinitionListInput = {}
+  ): Promise<PagedResultDto<TemplateDefinitionDto>> {
     const result = await this.templateDefinitionService.getList(params);
     this._state.templateDefinitions = result.items || [];
-    this._state.totalCount = this._state.templateDefinitions.length;
+    this._state.totalCount = result.totalCount ?? this._state.templateDefinitions.length;
     return result;
   }
 
   /**
    * Dispatch action to get template content
-   * @param params Input containing template name and optional culture name
+   * @param params Input containing template name and culture name
    * @returns Promise with template content
    */
   async dispatchGetTemplateContent(
     params: TextTemplateManagement.TemplateContentInput
-  ): Promise<TextTemplateManagement.TextTemplateContentDto> {
-    const result = await this.templateContentService.getByInput(params);
+  ): Promise<TextTemplateContentDto> {
+    if (!params.cultureName) {
+      throw new Error('cultureName is required for getting template content');
+    }
+    const result = await this.templateContentService.get({
+      templateName: params.templateName,
+      cultureName: params.cultureName,
+    });
     this._state.templateContent = result;
     return result;
   }
@@ -103,8 +119,12 @@ export class TextTemplateManagementStateService {
    */
   async dispatchUpdateTemplateContent(
     body: TextTemplateManagement.CreateOrUpdateTemplateContentDto
-  ): Promise<TextTemplateManagement.TextTemplateContentDto> {
-    const result = await this.templateContentService.updateByInput(body);
+  ): Promise<TextTemplateContentDto> {
+    const result = await this.templateContentService.update({
+      templateName: body.templateName,
+      cultureName: body.cultureName,
+      content: body.content,
+    });
     this._state.templateContent = result;
     return result;
   }
@@ -117,20 +137,22 @@ export class TextTemplateManagementStateService {
   async dispatchRestoreToDefault(
     body: TextTemplateManagement.TemplateContentInput
   ): Promise<void> {
-    await this.templateContentService.restoreToDefaultByInput(body);
-    // Refresh the content after restore
-    if (body.cultureName) {
-      await this.dispatchGetTemplateContent(body);
+    if (!body.cultureName) {
+      throw new Error('cultureName is required for restoring template content');
     }
+    await this.templateContentService.restoreToDefault({
+      templateName: body.templateName,
+      cultureName: body.cultureName,
+    });
+    // Refresh the content after restore
+    await this.dispatchGetTemplateContent(body);
   }
 
   /**
    * Set the selected template
    * @param template Template to select or null to clear
    */
-  setSelectedTemplate(
-    template: TextTemplateManagement.TemplateDefinitionDto | null
-  ): void {
+  setSelectedTemplate(template: TemplateDefinitionDto | null): void {
     this._state.selectedTemplate = template;
   }
 

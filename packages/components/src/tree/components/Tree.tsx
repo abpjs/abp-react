@@ -1,4 +1,9 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { Box, Flex, Text, Menu, Portal, IconButton } from '@chakra-ui/react';
+import type { SystemStyleObject } from '@chakra-ui/react';
+import { Checkbox } from '@abpjs/theme-shared';
+import type { CheckboxProps } from '@abpjs/theme-shared';
+import { LuChevronRight, LuChevronDown, LuEllipsisVertical } from 'react-icons/lu';
 import { BaseNode } from '../models/base-node';
 import { TreeNodeData } from '../models/tree-node';
 
@@ -29,6 +34,72 @@ export interface BeforeDropEvent<T extends BaseNode = BaseNode> {
 }
 
 /**
+ * Context for custom node template rendering
+ * @since v3.2.0
+ */
+export interface TreeNodeTemplateContext<T extends BaseNode = BaseNode> {
+  /** The node being rendered */
+  node: TreeNodeData<T>;
+  /** Whether the node is expanded */
+  isExpanded: boolean;
+  /** Whether the node is selected */
+  isSelected: boolean;
+  /** Whether the node is checked */
+  isChecked: boolean;
+  /** Nesting level (0 for root) */
+  level: number;
+}
+
+/**
+ * Context for custom expanded icon template rendering
+ * @since v3.2.0
+ */
+export interface ExpandedIconTemplateContext<T extends BaseNode = BaseNode> {
+  /** The node for this icon */
+  node: TreeNodeData<T>;
+  /** Whether the node is expanded */
+  isExpanded: boolean;
+}
+
+/**
+ * Slot-based customization props for the Tree component.
+ * Each slot key maps to a specific rendered element and accepts
+ * Chakra UI style props that are spread onto that element.
+ *
+ * @since v3.3.0
+ */
+export interface TreeSlotProps {
+  /** Style props for the root container (role="tree") */
+  root?: SystemStyleObject;
+  /** Style props for each node's row container */
+  nodeContent?: SystemStyleObject;
+  /** Style overrides applied when a node is selected */
+  selectedNode?: SystemStyleObject;
+  /** Style overrides applied during drag-over */
+  dragOverNode?: SystemStyleObject;
+  /** Props for the expand/collapse icon button */
+  switcher?: {
+    size?: 'xs' | 'sm' | 'md';
+    variant?: 'ghost' | 'plain';
+    colorPalette?: string;
+  };
+  /** Props for the Checkbox component */
+  checkbox?: Pick<CheckboxProps, 'colorPalette' | 'size'>;
+  /** Style props for the title text element */
+  title?: SystemStyleObject;
+  /** Props for the menu trigger icon button */
+  menuTrigger?: {
+    size?: 'xs' | 'sm' | 'md';
+    variant?: 'ghost' | 'outline' | 'plain';
+    colorPalette?: string;
+  };
+  /** Style props for the menu content popover */
+  menuContent?: SystemStyleObject;
+  /** Style props for the children container */
+  childrenContainer?: SystemStyleObject;
+}
+
+/**
  * Props for the Tree component
  */
 export interface TreeProps<T extends BaseNode = BaseNode> {
@@ -52,6 +123,18 @@ export interface TreeProps<T extends BaseNode = BaseNode> {
   beforeDrop?: (event: BeforeDropEvent<T>) => boolean | Promise<boolean>;
   /** Context menu render function */
   menu?: (node: TreeNodeData<T>) => React.ReactNode;
+  /**
+   * Custom node template render function
+   * When provided, replaces the default node title rendering
+   * @since v3.2.0
+   */
+  customNodeTemplate?: (context: TreeNodeTemplateContext<T>) => React.ReactNode;
+  /**
+   * Custom expanded icon template render function
+   * When provided, replaces the default expand/collapse arrow
+   * @since v3.2.0
+   */
+  expandedIconTemplate?: (context: ExpandedIconTemplateContext<T>) => React.ReactNode;
   /** Called when checked keys change */
   onCheckedKeysChange?: (keys: string[]) => void;
   /** Called when expanded keys change */
@@ -60,10 +143,21 @@ export interface TreeProps<T extends BaseNode = BaseNode> {
   onSelectedNodeChange?: (entity: T) => void;
   /** Called when a node is dropped */
   onDrop?: (event: DropEvent<T>) => void;
-  /** Custom class name */
+  /**
+   * Custom class name
+   * @deprecated Use slotProps.root instead. Will be removed in v4.0.
+   */
   className?: string;
-  /** Custom styles */
+  /**
+   * Custom styles
+   * @deprecated Use slotProps.root instead. Will be removed in v4.0.
+   */
   style?: React.CSSProperties;
+  /**
+   * Slot-based customization props for individual rendered elements.
+   * @since v3.3.0
+   */
+  slotProps?: TreeSlotProps;
 }
 
 /**
@@ -79,6 +173,9 @@ interface TreeNodeProps<T extends BaseNode = BaseNode> {
   draggable?: boolean;
   isNodeSelected?: (node: TreeNodeData<T>) => boolean;
   menu?: (node: TreeNodeData<T>) => React.ReactNode;
+  customNodeTemplate?: (context: TreeNodeTemplateContext<T>) => React.ReactNode;
+  expandedIconTemplate?: (context: ExpandedIconTemplateContext<T>) => React.ReactNode;
+  slotProps?: TreeSlotProps;
   onToggle: (key: string) => void;
   onCheck: (key: string) => void;
   onSelect: (node: TreeNodeData<T>) => void;
@@ -100,6 +197,9 @@ function TreeNodeComponent<T extends BaseNode = BaseNode>({
   draggable,
   isNodeSelected,
   menu,
+  customNodeTemplate,
+  expandedIconTemplate,
+  slotProps,
   onToggle,
   onCheck,
   onSelect,
@@ -107,7 +207,6 @@ function TreeNodeComponent<T extends BaseNode = BaseNode>({
   onDragOver,
   onDrop,
 }: TreeNodeProps<T>) {
-  const [showMenu, setShowMenu] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
   const isExpanded = expandedKeys.has(node.key);
@@ -165,78 +264,136 @@ function TreeNodeComponent<T extends BaseNode = BaseNode>({
     [node, onDrop]
   );
 
+  // Build conditional styles
+  const conditionalStyles: SystemStyleObject = {
+    ...(slotProps?.nodeContent),
+    ...(isSelected
+      ? {
+          bg: 'colorPalette.solid',
+          color: 'colorPalette.contrast',
+          ...(slotProps?.selectedNode),
+        }
+      : {}),
+    ...(dragOver
+      ? {
+          bg: 'colorPalette.muted',
+          borderWidth: '1px',
+          borderStyle: 'dashed',
+          borderColor: 'colorPalette.emphasized',
+          ...(slotProps?.dragOverNode),
+        }
+      : {}),
+  };
+
   return (
-    <div className="abp-tree-node" data-testid={`tree-node-${node.key}`}>
-      <div
-        className={`abp-tree-node-content ${isSelected ? 'selected' : ''} ${
-          dragOver ? 'drag-over' : ''
-        }`}
-        style={{ paddingLeft: `${level * 20}px` }}
+    <Box data-testid={`tree-node-${node.key}`} userSelect="none">
+      <Flex
+        data-testid={`tree-node-content-${node.key}`}
+        align="center"
+        py="1"
+        px="2"
+        borderRadius="sm"
+        cursor="pointer"
+        transition="backgrounds"
+        _hover={!isSelected && !dragOver ? { bg: 'bg.muted' } : undefined}
+        pl={`${level * 20}px`}
         onClick={handleSelect}
         draggable={draggable && !node.disabled}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        data-selected={isSelected || undefined}
+        data-dragover={dragOver || undefined}
+        css={conditionalStyles}
       >
         {/* Expand/Collapse toggle */}
-        <span
-          className={`abp-tree-switcher ${node.isLeaf ? 'leaf' : ''}`}
-          onClick={handleToggle}
-          role="button"
-          tabIndex={0}
+        <IconButton
+          size={slotProps?.switcher?.size || 'xs'}
+          variant={slotProps?.switcher?.variant || 'ghost'}
+          colorPalette={slotProps?.switcher?.colorPalette}
           aria-label={isExpanded ? 'Collapse' : 'Expand'}
+          onClick={handleToggle}
+          visibility={node.isLeaf ? 'hidden' : 'visible'}
+          minW="5"
+          h="5"
+          tabIndex={0}
         >
-          {!node.isLeaf && (
-            <span className={`arrow ${isExpanded ? 'expanded' : ''}`}>
-              {isExpanded ? '▼' : '▶'}
-            </span>
-          )}
-        </span>
+          {!node.isLeaf &&
+            (expandedIconTemplate ? (
+              expandedIconTemplate({ node, isExpanded })
+            ) : isExpanded ? (
+              <LuChevronDown />
+            ) : (
+              <LuChevronRight />
+            ))}
+        </IconButton>
 
         {/* Checkbox */}
         {checkable && (
-          <input
-            type="checkbox"
-            className="abp-tree-checkbox"
+          <Checkbox
             checked={isChecked}
             onChange={handleCheck}
             disabled={node.disabled || node.disableCheckbox}
-            aria-label={`Select ${node.title}`}
+            colorPalette={slotProps?.checkbox?.colorPalette || 'blue'}
+            size={slotProps?.checkbox?.size || 'sm'}
           />
         )}
 
         {/* Node title */}
-        <span
-          className={`abp-tree-title ${node.disabled ? 'disabled' : ''}`}
-          title={node.title}
-        >
-          {node.title}
-        </span>
+        {customNodeTemplate ? (
+          customNodeTemplate({
+            node,
+            isExpanded,
+            isSelected,
+            isChecked,
+            level,
+          })
+        ) : (
+          <Text
+            flex="1"
+            truncate
+            title={node.title}
+            css={slotProps?.title}
+            {...(node.disabled
+              ? { color: 'fg.subtle', cursor: 'not-allowed' }
+              : {})}
+            data-disabled={node.disabled || undefined}
+          >
+            {node.title}
+          </Text>
+        )}
 
         {/* Context menu */}
         {menu && (
-          <div className="abp-tree-menu" onMouseLeave={() => setShowMenu(false)}>
-            <button
-              className="abp-tree-menu-trigger"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowMenu(!showMenu);
-              }}
-              aria-label="Open menu"
-            >
-              ⋮
-            </button>
-            {showMenu && (
-              <div className="abp-tree-menu-content">{menu(node)}</div>
-            )}
-          </div>
+          <Menu.Root>
+            <Menu.Trigger asChild>
+              <IconButton
+                size={slotProps?.menuTrigger?.size || 'xs'}
+                variant={slotProps?.menuTrigger?.variant || 'ghost'}
+                colorPalette={slotProps?.menuTrigger?.colorPalette}
+                aria-label="Open menu"
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                opacity={0.5}
+                _hover={{ opacity: 1 }}
+              >
+                <LuEllipsisVertical />
+              </IconButton>
+            </Menu.Trigger>
+            <Portal>
+              <Menu.Positioner>
+                <Menu.Content minW="120px" css={slotProps?.menuContent}>
+                  {menu(node)}
+                </Menu.Content>
+              </Menu.Positioner>
+            </Portal>
+          </Menu.Root>
         )}
-      </div>
+      </Flex>
 
       {/* Children */}
       {!node.isLeaf && isExpanded && (
-        <div className="abp-tree-children">
+        <Box css={slotProps?.childrenContainer}>
           {node.children.map((child) => (
             <TreeNodeComponent
               key={child.key}
@@ -249,6 +406,9 @@ function TreeNodeComponent<T extends BaseNode = BaseNode>({
               draggable={draggable}
               isNodeSelected={isNodeSelected}
               menu={menu}
+              customNodeTemplate={customNodeTemplate}
+              expandedIconTemplate={expandedIconTemplate}
+              slotProps={slotProps}
               onToggle={onToggle}
               onCheck={onCheck}
               onSelect={onSelect}
@@ -257,9 +417,9 @@ function TreeNodeComponent<T extends BaseNode = BaseNode>({
               onDrop={onDrop}
             />
           ))}
-        </div>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
 
@@ -272,6 +432,7 @@ function TreeNodeComponent<T extends BaseNode = BaseNode>({
  * - Drag and drop support
  * - Context menus
  * - Keyboard navigation
+ * - Chakra UI integration with slotProps customization
  *
  * @example
  * ```tsx
@@ -280,6 +441,11 @@ function TreeNodeComponent<T extends BaseNode = BaseNode>({
  *   expandedKeys={['1', '2']}
  *   onExpandedKeysChange={(keys) => setExpandedKeys(keys)}
  *   onSelectedNodeChange={(node) => setSelected(node)}
+ *   slotProps={{
+ *     root: { bg: 'gray.50', p: 4 },
+ *     checkbox: { colorPalette: 'brand' },
+ *     selectedNode: { bg: 'brand.500', color: 'white' },
+ *   }}
  * />
  * ```
  */
@@ -294,12 +460,15 @@ export function Tree<T extends BaseNode = BaseNode>({
   isNodeSelected,
   beforeDrop,
   menu,
+  customNodeTemplate,
+  expandedIconTemplate,
   onCheckedKeysChange,
   onExpandedKeysChange,
   onSelectedNodeChange,
   onDrop,
   className,
   style,
+  slotProps,
 }: TreeProps<T>) {
   // Internal state for drag and drop
   const [dragNode, setDragNode] = useState<TreeNodeData<T> | null>(null);
@@ -416,11 +585,15 @@ export function Tree<T extends BaseNode = BaseNode>({
   );
 
   return (
-    <div
-      className={`abp-tree ${className || ''}`}
-      style={style}
+    <Box
       role="tree"
       aria-label="Tree view"
+      colorPalette="blue"
+      fontSize="sm"
+      lineHeight="tall"
+      className={className}
+      style={style}
+      css={slotProps?.root}
     >
       {nodes.map((node) => (
         <TreeNodeComponent
@@ -434,6 +607,9 @@ export function Tree<T extends BaseNode = BaseNode>({
           draggable={draggable}
           isNodeSelected={isNodeSelected}
           menu={menu}
+          customNodeTemplate={customNodeTemplate}
+          expandedIconTemplate={expandedIconTemplate}
+          slotProps={slotProps}
           onToggle={handleToggle}
           onCheck={handleCheck}
           onSelect={handleSelect}
@@ -442,115 +618,9 @@ export function Tree<T extends BaseNode = BaseNode>({
           onDrop={handleDrop}
         />
       ))}
-      <style>{treeStyles}</style>
-    </div>
+    </Box>
   );
 }
-
-// Default styles for the tree component
-const treeStyles = `
-.abp-tree {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-.abp-tree-node {
-  user-select: none;
-}
-
-.abp-tree-node-content {
-  display: flex;
-  align-items: center;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.abp-tree-node-content:hover {
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-.abp-tree-node-content.selected {
-  background-color: var(--primary-color, #1890ff);
-  color: white;
-}
-
-.abp-tree-node-content.drag-over {
-  background-color: rgba(24, 144, 255, 0.1);
-  border: 1px dashed var(--primary-color, #1890ff);
-}
-
-.abp-tree-switcher {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-.abp-tree-switcher .arrow {
-  font-size: 10px;
-  transition: transform 0.2s;
-}
-
-.abp-tree-switcher.leaf {
-  visibility: hidden;
-}
-
-.abp-tree-checkbox {
-  margin-right: 8px;
-  cursor: pointer;
-}
-
-.abp-tree-title {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.abp-tree-title.disabled {
-  color: rgba(0, 0, 0, 0.25);
-  cursor: not-allowed;
-}
-
-.abp-tree-menu {
-  position: relative;
-}
-
-.abp-tree-menu-trigger {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 8px;
-  font-size: 16px;
-  opacity: 0.5;
-  transition: opacity 0.2s;
-}
-
-.abp-tree-menu-trigger:hover {
-  opacity: 1;
-}
-
-.abp-tree-menu-content {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  z-index: 1000;
-  min-width: 120px;
-  background: white;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.abp-tree-children {
-  /* Children are indented via padding on content */
-}
-`;
 
 // Add displayName for debugging
 Tree.displayName = 'Tree';

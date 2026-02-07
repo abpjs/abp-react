@@ -285,6 +285,189 @@ describe('TreeAdapter', () => {
       expect(tree[1].checked).toBe(true);
     });
   });
+
+  // v3.2.0: New methods
+  describe('handleUpdate (v3.2.0)', () => {
+    it('should replace children of a node', () => {
+      const newChildren: TestNode[] = [
+        { id: '10', parentId: '1', name: 'New Child 1' },
+        { id: '11', parentId: '1', name: 'New Child 2' },
+      ];
+
+      adapter.handleUpdate({ key: '1', children: newChildren });
+
+      const tree = adapter.getTree();
+      const root1 = tree[0];
+
+      // Should have 2 new children instead of original 2
+      expect(root1.children).toHaveLength(2);
+      expect(root1.children[0].key).toBe('10');
+      expect(root1.children[0].title).toBe('New Child 1');
+      expect(root1.children[1].key).toBe('11');
+      expect(root1.children[1].title).toBe('New Child 2');
+    });
+
+    it('should remove all existing children before adding new ones', () => {
+      const newChildren: TestNode[] = [
+        { id: '10', parentId: '1', name: 'Only Child' },
+      ];
+
+      adapter.handleUpdate({ key: '1', children: newChildren });
+
+      const list = adapter.getList();
+      // Original direct children (id 2, 3) should be removed
+      expect(list.find((n) => n.id === '2')).toBeUndefined();
+      expect(list.find((n) => n.id === '3')).toBeUndefined();
+      // Note: Grandchild (id 4) is not a direct child of '1', so handleUpdate
+      // only removes direct children. This is correct behavior.
+      // If we want to remove grandchildren too, we'd need a recursive approach.
+    });
+
+    it('should set correct parentId on new children', () => {
+      const newChildren: TestNode[] = [
+        { id: '10', parentId: null, name: 'Child without parent' },
+      ];
+
+      adapter.handleUpdate({ key: '1', children: newChildren });
+
+      const list = adapter.getList();
+      const newChild = list.find((n) => n.id === '10');
+      expect(newChild?.parentId).toBe('1');
+    });
+
+    it('should handle empty children array', () => {
+      adapter.handleUpdate({ key: '1', children: [] });
+
+      const tree = adapter.getTree();
+      const root1 = tree[0];
+      expect(root1.children).toHaveLength(0);
+      expect(root1.isLeaf).toBe(true);
+    });
+
+    it('should not affect nodes that are not children of target', () => {
+      const newChildren: TestNode[] = [
+        { id: '10', parentId: '1', name: 'New Child' },
+      ];
+
+      adapter.handleUpdate({ key: '1', children: newChildren });
+
+      const list = adapter.getList();
+      // Root 2 (id 5) should still exist
+      expect(list.find((n) => n.id === '5')).toBeDefined();
+      // Root 1 (id 1) should still exist
+      expect(list.find((n) => n.id === '1')).toBeDefined();
+    });
+
+    it('should handle updating leaf node to have children', () => {
+      const newChildren: TestNode[] = [
+        { id: '10', parentId: '5', name: 'Child of Root 2' },
+      ];
+
+      adapter.handleUpdate({ key: '5', children: newChildren });
+
+      const tree = adapter.getTree();
+      const root2 = tree[1];
+      expect(root2.isLeaf).toBe(false);
+      expect(root2.children).toHaveLength(1);
+      expect(root2.children[0].title).toBe('Child of Root 2');
+    });
+  });
+
+  describe('updateTreeFromList (v3.2.0)', () => {
+    it('should replace internal list and rebuild tree', () => {
+      const newList: TestNode[] = [
+        { id: 'a', parentId: null, name: 'New Root A' },
+        { id: 'b', parentId: 'a', name: 'Child of A' },
+        { id: 'c', parentId: null, name: 'New Root C' },
+      ];
+
+      const result = adapter.updateTreeFromList(newList);
+
+      expect(result).toBe(newList);
+      expect(adapter.getList()).toHaveLength(3);
+      expect(adapter.getTree()).toHaveLength(2); // 2 root nodes
+    });
+
+    it('should return the updated list', () => {
+      const newList: TestNode[] = [
+        { id: 'x', parentId: null, name: 'X' },
+      ];
+
+      const result = adapter.updateTreeFromList(newList);
+
+      expect(result).toEqual(newList);
+    });
+
+    it('should properly rebuild tree structure', () => {
+      const newList: TestNode[] = [
+        { id: 'root', parentId: null, name: 'Root' },
+        { id: 'child1', parentId: 'root', name: 'Child 1' },
+        { id: 'child2', parentId: 'root', name: 'Child 2' },
+        { id: 'grandchild', parentId: 'child1', name: 'Grandchild' },
+      ];
+
+      adapter.updateTreeFromList(newList);
+
+      const tree = adapter.getTree();
+      expect(tree).toHaveLength(1);
+      expect(tree[0].key).toBe('root');
+      expect(tree[0].children).toHaveLength(2);
+      expect(tree[0].children[0].key).toBe('child1');
+      expect(tree[0].children[0].children).toHaveLength(1);
+      expect(tree[0].children[0].children[0].key).toBe('grandchild');
+    });
+
+    it('should handle empty list', () => {
+      adapter.updateTreeFromList([]);
+
+      expect(adapter.getList()).toHaveLength(0);
+      expect(adapter.getTree()).toHaveLength(0);
+    });
+
+    it('should clear previous data completely', () => {
+      const newList: TestNode[] = [
+        { id: 'new', parentId: null, name: 'New Node' },
+      ];
+
+      adapter.updateTreeFromList(newList);
+
+      // Original nodes should be gone
+      expect(adapter.findNode('1')).toBeUndefined();
+      expect(adapter.findNode('2')).toBeUndefined();
+      expect(adapter.findNode('5')).toBeUndefined();
+
+      // Only new node should exist
+      expect(adapter.findNode('new')).toBeDefined();
+    });
+  });
+
+  describe('handleDrop with destructured params (v3.2.0)', () => {
+    it('should work with destructured key and parentNode', () => {
+      const tree = adapter.getTree();
+      const nodeToMove = tree[1]; // Root 2
+
+      // The method signature is now { key, parentNode }
+      // Calling with a TreeNode that has these properties
+      nodeToMove.parentNode = tree[0];
+      adapter.handleDrop(nodeToMove);
+
+      const updatedTree = adapter.getTree();
+      expect(updatedTree).toHaveLength(1);
+    });
+  });
+
+  describe('handleRemove with destructured params (v3.2.0)', () => {
+    it('should work with destructured key', () => {
+      const tree = adapter.getTree();
+      const nodeToRemove = tree[1]; // Root 2
+
+      // The method signature is now { key }
+      adapter.handleRemove(nodeToRemove);
+
+      const list = adapter.getList();
+      expect(list.find((n) => n.id === '5')).toBeUndefined();
+    });
+  });
 });
 
 describe('createTreeFromList', () => {

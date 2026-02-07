@@ -356,6 +356,58 @@ describe('ConfigStateService', () => {
     });
   });
 
+  describe('getLocalizationResource (v3.2.0)', () => {
+    it('should return entire localization resource by name', () => {
+      const resource = service.getLocalizationResource('TestResource');
+
+      expect(resource).toEqual({
+        Hello: 'Hello',
+        Greeting: 'Hello {0}!',
+        DoubleGreeting: 'Hello {0} and {1}!',
+      });
+    });
+
+    it('should return empty object for non-existent resource', () => {
+      const resource = service.getLocalizationResource('NonExistent');
+
+      expect(resource).toEqual({});
+    });
+
+    it('should return empty object when localization values are undefined', () => {
+      mockState.config.localization = undefined as any;
+
+      const resource = service.getLocalizationResource('TestResource');
+
+      expect(resource).toEqual({});
+    });
+
+    it('should return the same reference for same resource', () => {
+      const resource1 = service.getLocalizationResource('TestResource');
+      const resource2 = service.getLocalizationResource('TestResource');
+
+      // Returns same reference for performance (not a copy)
+      expect(resource1).toBe(resource2);
+    });
+
+    it('should handle resource with special characters in name', () => {
+      mockState.config.localization.values['Abp.Identity'] = {
+        'User.Create': 'Create User',
+      };
+
+      const resource = service.getLocalizationResource('Abp.Identity');
+
+      expect(resource).toEqual({ 'User.Create': 'Create User' });
+    });
+
+    it('should handle empty resource', () => {
+      mockState.config.localization.values['EmptyResource'] = {};
+
+      const resource = service.getLocalizationResource('EmptyResource');
+
+      expect(resource).toEqual({});
+    });
+  });
+
   describe('dispatchSetEnvironment', () => {
     it('should dispatch setEnvironment action with the provided environment', () => {
       const newEnvironment: Config.Environment = {

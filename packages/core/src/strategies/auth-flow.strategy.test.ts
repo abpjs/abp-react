@@ -4,10 +4,12 @@ import {
   AuthPasswordFlowStrategy,
   AUTH_FLOW_STRATEGY,
   getAuthFlowType,
+  oAuthStorage,
+  clearOAuthStorage,
 } from './auth-flow.strategy';
 import type { UserManager } from 'oidc-client-ts';
 
-describe('auth-flow.strategy (v3.1.0)', () => {
+describe('auth-flow.strategy (v3.2.0)', () => {
   let mockUserManager: UserManager;
 
   beforeEach(() => {
@@ -284,6 +286,126 @@ describe('auth-flow.strategy (v3.1.0)', () => {
       expect(consoleSpy).toHaveBeenCalledWith('Authentication error:', error);
 
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('oAuthStorage (v3.2.0)', () => {
+    it('should be a Storage object', () => {
+      expect(oAuthStorage).toBeDefined();
+      expect(typeof oAuthStorage.getItem).toBe('function');
+      expect(typeof oAuthStorage.setItem).toBe('function');
+      expect(typeof oAuthStorage.removeItem).toBe('function');
+      expect(typeof oAuthStorage.clear).toBe('function');
+      expect(typeof oAuthStorage.key).toBe('function');
+      expect(typeof oAuthStorage.length).toBe('number');
+    });
+
+    it('should support setItem and getItem', () => {
+      oAuthStorage.setItem('test_key', 'test_value');
+      expect(oAuthStorage.getItem('test_key')).toBe('test_value');
+      oAuthStorage.removeItem('test_key');
+    });
+
+    it('should return null for non-existent keys', () => {
+      expect(oAuthStorage.getItem('non_existent_key_12345')).toBeNull();
+    });
+
+    it('should support removeItem', () => {
+      oAuthStorage.setItem('to_remove', 'value');
+      oAuthStorage.removeItem('to_remove');
+      expect(oAuthStorage.getItem('to_remove')).toBeNull();
+    });
+  });
+
+  describe('clearOAuthStorage (v3.2.0)', () => {
+    let mockStorage: Storage;
+
+    beforeEach(() => {
+      const store: Record<string, string> = {};
+      mockStorage = {
+        get length() {
+          return Object.keys(store).length;
+        },
+        clear: vi.fn(() => {
+          Object.keys(store).forEach((key) => delete store[key]);
+        }),
+        getItem: vi.fn((key: string) => store[key] ?? null),
+        key: vi.fn((index: number) => Object.keys(store)[index] ?? null),
+        removeItem: vi.fn((key: string) => {
+          delete store[key];
+        }),
+        setItem: vi.fn((key: string, value: string) => {
+          store[key] = value;
+        }),
+      };
+    });
+
+    it('should clear known OAuth keys', () => {
+      const oAuthKeys = [
+        'access_token',
+        'id_token',
+        'refresh_token',
+        'expires_at',
+        'token_type',
+        'scope',
+        'state',
+        'nonce',
+        'session_state',
+      ];
+
+      oAuthKeys.forEach((key) => {
+        mockStorage.setItem(key, 'test_value');
+      });
+
+      clearOAuthStorage(mockStorage);
+
+      oAuthKeys.forEach((key) => {
+        expect(mockStorage.removeItem).toHaveBeenCalledWith(key);
+      });
+    });
+
+    it('should clear oidc. prefixed keys', () => {
+      mockStorage.setItem('oidc.user', 'user_data');
+      mockStorage.setItem('oidc.session', 'session_data');
+
+      clearOAuthStorage(mockStorage);
+
+      expect(mockStorage.removeItem).toHaveBeenCalledWith('oidc.user');
+      expect(mockStorage.removeItem).toHaveBeenCalledWith('oidc.session');
+    });
+
+    it('should clear oidc- prefixed keys', () => {
+      mockStorage.setItem('oidc-state', 'state_data');
+      mockStorage.setItem('oidc-nonce', 'nonce_data');
+
+      clearOAuthStorage(mockStorage);
+
+      expect(mockStorage.removeItem).toHaveBeenCalledWith('oidc-state');
+      expect(mockStorage.removeItem).toHaveBeenCalledWith('oidc-nonce');
+    });
+
+    it('should use default oAuthStorage when no storage provided', () => {
+      // Set up a test key
+      oAuthStorage.setItem('access_token', 'test_token');
+
+      clearOAuthStorage();
+
+      expect(oAuthStorage.getItem('access_token')).toBeNull();
+    });
+
+    it('should not throw when storage is empty', () => {
+      expect(() => clearOAuthStorage(mockStorage)).not.toThrow();
+    });
+
+    it('should not remove non-OAuth keys', () => {
+      mockStorage.setItem('my_app_key', 'my_value');
+      mockStorage.setItem('other_key', 'other_value');
+
+      clearOAuthStorage(mockStorage);
+
+      // These should not have been removed
+      expect(mockStorage.getItem('my_app_key')).toBe('my_value');
+      expect(mockStorage.getItem('other_key')).toBe('other_value');
     });
   });
 });

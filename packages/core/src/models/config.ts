@@ -40,17 +40,20 @@ export namespace Config {
 
   /**
    * API configuration with URL and optional additional properties
+   * Changed from interface to type intersection in v3.2.0 for better type safety
    * @since 2.4.0
+   * @updated 3.2.0 - Changed to type intersection
    */
-  export interface ApiConfig {
+  export type ApiConfig = {
+    [key: string]: string;
     url: string;
+  } & Partial<{
     /**
      * Root namespace for the API
      * @since 3.1.0
      */
-    rootNamespace?: string;
-    [key: string]: string | undefined;
-  }
+    rootNamespace: string;
+  }>;
 
   /**
    * Custom merge function type for remote environment

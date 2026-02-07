@@ -9,8 +9,13 @@ import type {
   ChangePasswordFormData,
   ProfileResponse,
   PasswordFlowResult,
+  ProfilePictureInput,
+  ProfilePictureSourceDto,
+  AccountTwoFactorSettingsDto,
 } from '../models';
 import { Account } from '../models';
+import { ProfilePictureType } from '../config/enums/profile-picture-type';
+import { eTwoFactorBehaviour } from '../config/enums/two-factor-behaviour';
 
 describe('Models', () => {
   describe('AccountOptions', () => {
@@ -263,6 +268,162 @@ describe('Models', () => {
       };
       expect(result.success).toBe(false);
       expect(result.error).toBe('Invalid credentials');
+    });
+  });
+
+  describe('ProfilePictureInput (v3.2.0)', () => {
+    it('should have required type property', () => {
+      const input: ProfilePictureInput = {
+        type: ProfilePictureType.Gravatar,
+      };
+      expect(input.type).toBe(ProfilePictureType.Gravatar);
+    });
+
+    it('should allow type None without fileBytes', () => {
+      const input: ProfilePictureInput = {
+        type: ProfilePictureType.None,
+      };
+      expect(input.type).toBe(ProfilePictureType.None);
+      expect(input.fileBytes).toBeUndefined();
+    });
+
+    it('should allow type Gravatar without fileBytes', () => {
+      const input: ProfilePictureInput = {
+        type: ProfilePictureType.Gravatar,
+      };
+      expect(input.type).toBe(ProfilePictureType.Gravatar);
+      expect(input.fileBytes).toBeUndefined();
+    });
+
+    it('should allow type Image with fileBytes', () => {
+      const input: ProfilePictureInput = {
+        type: ProfilePictureType.Image,
+        fileBytes: 'base64encodedimagedata',
+      };
+      expect(input.type).toBe(ProfilePictureType.Image);
+      expect(input.fileBytes).toBe('base64encodedimagedata');
+    });
+
+    it('should allow type Image with empty fileBytes', () => {
+      const input: ProfilePictureInput = {
+        type: ProfilePictureType.Image,
+        fileBytes: '',
+      };
+      expect(input.type).toBe(ProfilePictureType.Image);
+      expect(input.fileBytes).toBe('');
+    });
+  });
+
+  describe('ProfilePictureSourceDto (v3.2.0)', () => {
+    it('should have required type and source properties', () => {
+      const dto: ProfilePictureSourceDto = {
+        type: ProfilePictureType.Gravatar,
+        source: 'https://gravatar.com/avatar/abc123',
+      };
+      expect(dto.type).toBe(ProfilePictureType.Gravatar);
+      expect(dto.source).toBe('https://gravatar.com/avatar/abc123');
+    });
+
+    it('should allow type None with empty source', () => {
+      const dto: ProfilePictureSourceDto = {
+        type: ProfilePictureType.None,
+        source: '',
+      };
+      expect(dto.type).toBe(ProfilePictureType.None);
+      expect(dto.source).toBe('');
+    });
+
+    it('should allow type Gravatar with Gravatar URL', () => {
+      const dto: ProfilePictureSourceDto = {
+        type: ProfilePictureType.Gravatar,
+        source: 'https://www.gravatar.com/avatar/abc123?s=200&d=identicon',
+      };
+      expect(dto.type).toBe(ProfilePictureType.Gravatar);
+      expect(dto.source).toContain('gravatar.com');
+    });
+
+    it('should allow type Image with API endpoint source', () => {
+      const dto: ProfilePictureSourceDto = {
+        type: ProfilePictureType.Image,
+        source: '/api/account/profile-picture/download',
+      };
+      expect(dto.type).toBe(ProfilePictureType.Image);
+      expect(dto.source).toBe('/api/account/profile-picture/download');
+    });
+
+    it('should allow optional fileContent for Image type', () => {
+      const dto: ProfilePictureSourceDto = {
+        type: ProfilePictureType.Image,
+        source: '/api/account/profile-picture/download',
+        fileContent: 'base64encodedfiledata',
+      };
+      expect(dto.type).toBe(ProfilePictureType.Image);
+      expect(dto.fileContent).toBe('base64encodedfiledata');
+    });
+
+    it('should allow fileContent to be undefined', () => {
+      const dto: ProfilePictureSourceDto = {
+        type: ProfilePictureType.Image,
+        source: '/api/account/profile-picture/download',
+      };
+      expect(dto.fileContent).toBeUndefined();
+    });
+  });
+
+  describe('AccountTwoFactorSettingsDto (v3.2.0)', () => {
+    it('should have required isEnabled and behaviour properties', () => {
+      const dto: AccountTwoFactorSettingsDto = {
+        isEnabled: true,
+        behaviour: eTwoFactorBehaviour.Optional,
+      };
+      expect(dto.isEnabled).toBe(true);
+      expect(dto.behaviour).toBe(eTwoFactorBehaviour.Optional);
+    });
+
+    it('should allow isEnabled=false with Optional behaviour', () => {
+      const dto: AccountTwoFactorSettingsDto = {
+        isEnabled: false,
+        behaviour: eTwoFactorBehaviour.Optional,
+      };
+      expect(dto.isEnabled).toBe(false);
+      expect(dto.behaviour).toBe(eTwoFactorBehaviour.Optional);
+    });
+
+    it('should allow isEnabled=false with Disabled behaviour', () => {
+      const dto: AccountTwoFactorSettingsDto = {
+        isEnabled: false,
+        behaviour: eTwoFactorBehaviour.Disabled,
+      };
+      expect(dto.isEnabled).toBe(false);
+      expect(dto.behaviour).toBe(eTwoFactorBehaviour.Disabled);
+    });
+
+    it('should allow isEnabled=true with Forced behaviour', () => {
+      const dto: AccountTwoFactorSettingsDto = {
+        isEnabled: true,
+        behaviour: eTwoFactorBehaviour.Forced,
+      };
+      expect(dto.isEnabled).toBe(true);
+      expect(dto.behaviour).toBe(eTwoFactorBehaviour.Forced);
+    });
+
+    it('should support all behaviour types', () => {
+      const optionalDto: AccountTwoFactorSettingsDto = {
+        isEnabled: true,
+        behaviour: eTwoFactorBehaviour.Optional,
+      };
+      const disabledDto: AccountTwoFactorSettingsDto = {
+        isEnabled: false,
+        behaviour: eTwoFactorBehaviour.Disabled,
+      };
+      const forcedDto: AccountTwoFactorSettingsDto = {
+        isEnabled: true,
+        behaviour: eTwoFactorBehaviour.Forced,
+      };
+
+      expect(optionalDto.behaviour).toBe(0);
+      expect(disabledDto.behaviour).toBe(1);
+      expect(forcedDto.behaviour).toBe(2);
     });
   });
 });

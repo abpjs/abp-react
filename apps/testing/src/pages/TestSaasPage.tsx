@@ -9,6 +9,7 @@
  * @updated 2.9.0 - Internal Angular changes (no new React features)
  * @updated 3.0.0 - Added config subpackage, tokens, guards, removed Administration route name
  * @updated 3.1.0 - Internal Angular changes (SubscriptionService pattern, type refs) - no new React features
+ * @updated 3.2.0 - Added proxy subpackage with EditionService, TenantService, and typed DTOs
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -43,6 +44,16 @@ import {
   saasExtensionsGuard,
   useSaasExtensionsGuard,
   SaasExtensionsGuard,
+  // v3.2.0 proxy exports
+  EditionService,
+  TenantService,
+  type EditionDto,
+  type SaasTenantDto,
+  type EditionCreateDto,
+  type SaasTenantCreateDto,
+  type GetEditionsInput,
+  type GetTenantsInput,
+  type GetEditionUsageStatisticsResult,
   type Saas,
   type SaasComponentKey,
   type SaasRouteNameKey,
@@ -897,6 +908,349 @@ function EditionsWithFeatures() {
 }
 
 /**
+ * Test section for v3.2.0 features: proxy subpackage with EditionService, TenantService
+ */
+function TestV320Features() {
+  const restService = useRestService()
+  const [editionService] = useState(() => new EditionService(restService))
+  const [tenantService] = useState(() => new TenantService(restService))
+  const { isAuthenticated } = useAuth()
+
+  // State for interactive testing
+  const [editions, setEditions] = useState<EditionDto[]>([])
+  const [tenants, setTenants] = useState<SaasTenantDto[]>([])
+  const [usageStats, setUsageStats] = useState<Record<string, number>>({})
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchEditions = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const input: GetEditionsInput = { maxResultCount: 10 }
+      const result = await editionService.getList(input)
+      setEditions(result.items ?? [])
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to fetch editions')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchTenants = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const input: GetTenantsInput = { maxResultCount: 10, getEditionNames: true }
+      const result = await tenantService.getList(input)
+      setTenants(result.items ?? [])
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to fetch tenants')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchUsageStats = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const result: GetEditionUsageStatisticsResult = await editionService.getUsageStatistics()
+      setUsageStats(result.data)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to fetch usage statistics')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.2.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      <div className="test-card">
+        <h3>Proxy Subpackage Overview</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Version 3.2.0 introduces a new <code>proxy</code> subpackage with typed services and DTOs.
+          This replaces the legacy SaasService methods with strongly-typed EditionService and TenantService.
+        </p>
+        <ul style={{ marginLeft: '1.5rem', fontSize: '14px', color: '#888' }}>
+          <li><code>EditionService</code> - CRUD operations for editions</li>
+          <li><code>TenantService</code> - CRUD operations for tenants + connection string management</li>
+          <li>New typed DTOs: <code>EditionDto</code>, <code>SaasTenantDto</code>, etc.</li>
+          <li>Legacy types marked as <code>@deprecated</code> (to be removed in v4.0)</li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>EditionService (v3.2.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Typed service for edition operations with <code>apiName</code> property.
+        </p>
+        <div style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #333', marginBottom: '0.5rem' }}>
+          <p><strong>EditionService.apiName:</strong> <code>{editionService.apiName}</code></p>
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Signature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>create</code></td>
+              <td style={{ padding: '8px' }}>(input: EditionCreateDto) =&gt; Promise&lt;EditionDto&gt;</td>
+              <td>Create a new edition</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>delete</code></td>
+              <td style={{ padding: '8px' }}>(id: string) =&gt; Promise&lt;void&gt;</td>
+              <td>Delete an edition</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>get</code></td>
+              <td style={{ padding: '8px' }}>(id: string) =&gt; Promise&lt;EditionDto&gt;</td>
+              <td>Get edition by ID</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>getList</code></td>
+              <td style={{ padding: '8px' }}>(input?: GetEditionsInput) =&gt; Promise&lt;PagedResultDto&lt;EditionDto&gt;&gt;</td>
+              <td>Get paginated editions</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>getUsageStatistics</code></td>
+              <td style={{ padding: '8px' }}>() =&gt; Promise&lt;GetEditionUsageStatisticsResult&gt;</td>
+              <td>Get edition usage stats</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>update</code></td>
+              <td style={{ padding: '8px' }}>(id: string, input: EditionUpdateDto) =&gt; Promise&lt;EditionDto&gt;</td>
+              <td>Update an edition</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>TenantService (v3.2.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Typed service for tenant operations with connection string management.
+        </p>
+        <div style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #333', marginBottom: '0.5rem' }}>
+          <p><strong>TenantService.apiName:</strong> <code>{tenantService.apiName}</code></p>
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>create(input: SaasTenantCreateDto)</code></td>
+              <td>Create a new tenant with admin credentials</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>delete(id: string)</code></td>
+              <td>Delete a tenant</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>deleteDefaultConnectionString(id: string)</code></td>
+              <td>Delete tenant's connection string (use shared DB)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>get(id: string)</code></td>
+              <td>Get tenant by ID</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>getDefaultConnectionString(id: string)</code></td>
+              <td>Get tenant's connection string</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>getList(input?: GetTenantsInput)</code></td>
+              <td>Get paginated tenants with optional edition names</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>update(id: string, input: SaasTenantUpdateDto)</code></td>
+              <td>Update a tenant</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>updateDefaultConnectionString(id, connStr)</code></td>
+              <td>Update tenant's connection string</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Interactive Testing (v3.2.0 Proxy Services)</h3>
+        {!isAuthenticated && (
+          <p style={{ color: '#f88', marginBottom: '0.5rem' }}>
+            ⚠️ You must be authenticated to use proxy services
+          </p>
+        )}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <button onClick={fetchEditions} disabled={loading || !isAuthenticated}>
+            {loading ? 'Loading...' : 'Fetch Editions (EditionService)'}
+          </button>
+          <button onClick={fetchTenants} disabled={loading || !isAuthenticated}>
+            {loading ? 'Loading...' : 'Fetch Tenants (TenantService)'}
+          </button>
+          <button onClick={fetchUsageStats} disabled={loading || !isAuthenticated}>
+            {loading ? 'Loading...' : 'Fetch Usage Stats'}
+          </button>
+        </div>
+        {error && <p style={{ color: '#f88' }}>Error: {error}</p>}
+        {editions.length > 0 && (
+          <div style={{ marginBottom: '0.5rem' }}>
+            <strong>Editions ({editions.length}):</strong>
+            <pre style={{ fontSize: '12px', maxHeight: '150px', overflow: 'auto' }}>
+              {JSON.stringify(editions, null, 2)}
+            </pre>
+          </div>
+        )}
+        {tenants.length > 0 && (
+          <div style={{ marginBottom: '0.5rem' }}>
+            <strong>Tenants ({tenants.length}):</strong>
+            <pre style={{ fontSize: '12px', maxHeight: '150px', overflow: 'auto' }}>
+              {JSON.stringify(tenants, null, 2)}
+            </pre>
+          </div>
+        )}
+        {Object.keys(usageStats).length > 0 && (
+          <div style={{ marginBottom: '0.5rem' }}>
+            <strong>Usage Statistics:</strong>
+            <pre style={{ fontSize: '12px' }}>
+              {JSON.stringify(usageStats, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>New DTOs (v3.2.0)</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>DTO</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>EditionDto</code></td>
+              <td>Edition entity with id, displayName, concurrencyStamp, creationTime, extraProperties</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>EditionCreateDto</code></td>
+              <td>Input for creating an edition (displayName required)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>EditionUpdateDto</code></td>
+              <td>Input for updating an edition</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>GetEditionsInput</code></td>
+              <td>Query params: filter, skipCount, maxResultCount, sorting</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasTenantDto</code></td>
+              <td>Tenant entity with id, name, editionId, editionName, etc.</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasTenantCreateDto</code></td>
+              <td>Input for creating a tenant (name, adminEmailAddress, adminPassword required)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasTenantUpdateDto</code></td>
+              <td>Input for updating a tenant</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>GetTenantsInput</code></td>
+              <td>Query params: filter, getEditionNames, skipCount, maxResultCount, sorting</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>GetEditionUsageStatisticsResult</code></td>
+              <td>Usage statistics result with data: Record&lt;string, number&gt;</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example (v3.2.0)</h3>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px', overflow: 'auto' }}>
+{`import {
+  EditionService,
+  TenantService,
+  type EditionDto,
+  type SaasTenantDto,
+  type GetEditionsInput,
+  type GetTenantsInput,
+} from '@abpjs/saas';
+import { useRestService } from '@abpjs/core';
+
+function MyComponent() {
+  const restService = useRestService();
+  const editionService = new EditionService(restService);
+  const tenantService = new TenantService(restService);
+
+  // Fetch editions with pagination
+  const fetchEditions = async () => {
+    const input: GetEditionsInput = { maxResultCount: 10 };
+    const result = await editionService.getList(input);
+    console.log('Editions:', result.items);
+  };
+
+  // Fetch tenants with edition names
+  const fetchTenants = async () => {
+    const input: GetTenantsInput = { getEditionNames: true };
+    const result = await tenantService.getList(input);
+    console.log('Tenants:', result.items);
+  };
+
+  // Create a new tenant
+  const createTenant = async () => {
+    const tenant = await tenantService.create({
+      name: 'New Tenant',
+      adminEmailAddress: 'admin@newtenant.com',
+      adminPassword: 'Password123!',
+      editionId: 'edition-id',
+    });
+    console.log('Created:', tenant);
+  };
+
+  // Manage connection strings
+  const connString = await tenantService.getDefaultConnectionString('tenant-id');
+  await tenantService.updateDefaultConnectionString('tenant-id', 'Server=...;');
+  await tenantService.deleteDefaultConnectionString('tenant-id');
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Deprecation Notice</h3>
+        <p style={{ color: '#f88', fontSize: '14px' }}>
+          Legacy types in <code>Saas</code> namespace are deprecated and will be removed in v4.0.
+          Migrate to the new proxy DTOs (<code>EditionDto</code>, <code>SaasTenantDto</code>, etc.).
+        </p>
+        <ul style={{ marginLeft: '1.5rem', fontSize: '14px', color: '#888' }}>
+          <li><code>Saas.Tenant</code> → <code>SaasTenantDto</code></li>
+          <li><code>Saas.Edition</code> → <code>EditionDto</code></li>
+          <li><code>Saas.CreateTenantRequest</code> → <code>SaasTenantCreateDto</code></li>
+          <li><code>Saas.CreateEditionRequest</code> → <code>EditionCreateDto</code></li>
+          <li><code>Saas.UpdateTenantRequest</code> → <code>SaasTenantUpdateDto</code></li>
+          <li><code>Saas.UpdateEditionRequest</code> → <code>EditionUpdateDto</code></li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+/**
  * Test section for v3.0.0 features: config, tokens, guards
  */
 function TestV300Features() {
@@ -1590,16 +1944,17 @@ function TestApiEndpoints() {
 export function TestSaasPage() {
   return (
     <div>
-      <h1>@abpjs/saas Tests (v3.1.0)</h1>
+      <h1>@abpjs/saas Tests (v3.2.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing SaaS module for tenant and edition management.</p>
-      <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.1.0 - Internal Angular changes (SubscriptionService pattern, type refs) - no new React features
+      <p style={{ fontSize: '14px', color: '#4ade80', marginBottom: '16px' }}>
+        Version 3.2.0 - New proxy subpackage with EditionService, TenantService, and typed DTOs
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components for multi-tenant SaaS applications with tenant management,
         edition management, and connection string management.
       </p>
 
+      <TestV320Features />
       <TestV300Features />
       <TestV270Features />
       <TestV240Features />

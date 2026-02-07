@@ -2,16 +2,20 @@
  * Identity Security Log Models
  * Types for security log management in the Identity module.
  * @since 3.1.0
+ * @updated 3.2.0 - Re-exports from proxy/identity/models
  */
 
 import { PagedResultDto } from '@abpjs/core';
 
+// Re-export from proxy for new typed interface
+export type { IdentitySecurityLogDto } from '../proxy/identity/models';
+
 /**
- * Security log data transfer object.
- * Represents a security event logged in the system.
+ * Legacy security log data transfer object.
  * @since 3.1.0
+ * @deprecated Use IdentitySecurityLogDto from proxy/identity/models instead
  */
-export interface IdentitySecurityLogDto {
+export interface LegacyIdentitySecurityLogDto {
   /** Unique identifier for the log entry */
   id: string;
   /** Tenant ID if applicable */
@@ -77,7 +81,7 @@ export interface IdentitySecurityLogGetListInput {
  * Paginated response for security logs.
  * @since 3.1.0
  */
-export type IdentitySecurityLogResponse = PagedResultDto<IdentitySecurityLogDto>;
+export type IdentitySecurityLogResponse = PagedResultDto<LegacyIdentitySecurityLogDto>;
 
 /**
  * Factory function to create a default IdentitySecurityLogGetListInput.

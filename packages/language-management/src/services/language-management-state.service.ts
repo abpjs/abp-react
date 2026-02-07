@@ -1,17 +1,28 @@
 /**
  * Language Management State Service
- * Translated from @volo/abp.ng.language-management v3.0.0
+ * Translated from @volo/abp.ng.language-management v3.2.0
  *
  * Provides a stateful facade over language management operations,
  * maintaining internal state that mirrors the Angular NGXS store pattern.
  *
  * @since 2.0.0
  * @updated 3.0.0 - Removed getLanguagesTotalCount() method
+ * @updated 3.2.0 - Now uses new proxy services and types
  */
 
-import { RestService, ABP } from '@abpjs/core';
-import { LanguageManagement } from '../models';
-import { LanguageManagementService } from './language-management.service';
+import type { RestService } from '@abpjs/core';
+import type { LanguageManagement } from '../models';
+import type {
+  CultureInfoDto,
+  GetLanguagesTextsInput,
+  LanguageDto,
+  LanguageResourceDto,
+  LanguageTextDto,
+  CreateLanguageDto,
+  UpdateLanguageDto,
+} from '../proxy/dto/models';
+import { LanguageService } from '../proxy/language.service';
+import { LanguageTextService } from '../proxy/language-text.service';
 
 /**
  * State service for language management operations.
@@ -19,22 +30,24 @@ import { LanguageManagementService } from './language-management.service';
  * mirroring the Angular NGXS store pattern.
  *
  * @since 2.0.0
+ * @updated 3.2.0 - Now uses new proxy services internally
  *
  * @example
  * ```tsx
  * const stateService = new LanguageManagementStateService(restService);
  *
  * // Dispatch to fetch languages
- * await stateService.dispatchGetLanguages({ maxResultCount: 10 });
+ * await stateService.dispatchGetLanguages();
  *
  * // Access the result
  * const languages = stateService.getLanguages();
  * ```
  */
 export class LanguageManagementStateService {
-  private service: LanguageManagementService;
+  private languageService: LanguageService;
+  private languageTextService: LanguageTextService;
   private state: LanguageManagement.State = {
-    languageResponse: { items: [], totalCount: 0 },
+    languageResponse: { items: [] },
     languageTextsResponse: { items: [], totalCount: 0 },
     selectedItem: null,
     cultures: [],
@@ -42,7 +55,8 @@ export class LanguageManagementStateService {
   };
 
   constructor(rest: RestService) {
-    this.service = new LanguageManagementService(rest);
+    this.languageService = new LanguageService(rest);
+    this.languageTextService = new LanguageTextService(rest);
   }
 
   // ========================
@@ -51,8 +65,9 @@ export class LanguageManagementStateService {
 
   /**
    * Get the current list of languages from state
+   * @returns Array of LanguageDto
    */
-  getLanguages(): LanguageManagement.Language[] {
+  getLanguages(): LanguageDto[] {
     return this.state.languageResponse?.items ?? [];
   }
 
@@ -60,8 +75,9 @@ export class LanguageManagementStateService {
 
   /**
    * Get the current list of language texts from state
+   * @returns Array of LanguageTextDto
    */
-  getLanguageTexts(): LanguageManagement.LanguageText[] {
+  getLanguageTexts(): LanguageTextDto[] {
     return this.state.languageTextsResponse?.items ?? [];
   }
 
@@ -74,15 +90,17 @@ export class LanguageManagementStateService {
 
   /**
    * Get the current list of cultures from state
+   * @returns Array of CultureInfoDto
    */
-  getCultures(): LanguageManagement.Culture[] {
+  getCultures(): CultureInfoDto[] {
     return this.state.cultures ?? [];
   }
 
   /**
    * Get the current list of resources from state
+   * @returns Array of LanguageResourceDto
    */
-  getResources(): LanguageManagement.Resource[] {
+  getResources(): LanguageResourceDto[] {
     return this.state.resources ?? [];
   }
 
@@ -91,14 +109,14 @@ export class LanguageManagementStateService {
   // ========================
 
   /**
-   * Dispatch action to fetch languages with optional pagination
-   * @param params - Optional query parameters for pagination and filtering
-   * @returns Promise with the language response
+   * Dispatch action to fetch languages with optional filtering
+   * @param params - Optional query parameters for filtering
+   * @returns Promise with the language list result
    */
   async dispatchGetLanguages(
-    params: ABP.PageQueryParams = {}
-  ): Promise<LanguageManagement.LanguageResponse> {
-    const response = await this.service.getLanguages(params);
+    params?: GetLanguagesTextsInput
+  ): Promise<LanguageManagement.State['languageResponse']> {
+    const response = await this.languageService.getList(params);
     this.state = {
       ...this.state,
       languageResponse: response,
@@ -111,8 +129,8 @@ export class LanguageManagementStateService {
    * @param id - The language ID
    * @returns Promise with the language
    */
-  async dispatchGetLanguageById(id: string): Promise<LanguageManagement.Language> {
-    const language = await this.service.getLanguageById(id);
+  async dispatchGetLanguageById(id: string): Promise<LanguageDto> {
+    const language = await this.languageService.get(id);
     this.state = {
       ...this.state,
       selectedItem: language,
@@ -127,14 +145,14 @@ export class LanguageManagementStateService {
    * @returns Promise with the created/updated language
    */
   async dispatchCreateUpdateLanguage(
-    body: LanguageManagement.CreateLanguageInput | LanguageManagement.UpdateLanguageInput,
+    body: CreateLanguageDto | UpdateLanguageDto,
     id?: string
-  ): Promise<LanguageManagement.Language> {
-    let result: LanguageManagement.Language;
+  ): Promise<LanguageDto> {
+    let result: LanguageDto;
     if (id) {
-      result = await this.service.updateLanguage(id, body as LanguageManagement.UpdateLanguageInput);
+      result = await this.languageService.update(id, body as UpdateLanguageDto);
     } else {
-      result = await this.service.createLanguage(body as LanguageManagement.CreateLanguageInput);
+      result = await this.languageService.create(body as CreateLanguageDto);
     }
     // Refresh the list after create/update
     await this.dispatchGetLanguages();
@@ -144,13 +162,12 @@ export class LanguageManagementStateService {
   /**
    * Dispatch action to delete a language
    * @param id - The language ID to delete
-   * @returns Promise resolving when complete (returns null per v2.0.0 spec)
+   * @returns Promise resolving when complete
    */
-  async dispatchDeleteLanguage(id: string): Promise<null> {
-    await this.service.deleteLanguage(id);
+  async dispatchDeleteLanguage(id: string): Promise<void> {
+    await this.languageService.delete(id);
     // Refresh the list after deletion
     await this.dispatchGetLanguages();
-    return null;
   }
 
   /**
@@ -159,7 +176,7 @@ export class LanguageManagementStateService {
    * @returns Promise resolving when complete
    */
   async dispatchSetAsDefaultLanguage(id: string): Promise<void> {
-    await this.service.setAsDefaultLanguage(id);
+    await this.languageService.setAsDefault(id);
     // Refresh the list after setting default
     await this.dispatchGetLanguages();
   }
@@ -174,9 +191,9 @@ export class LanguageManagementStateService {
    * @returns Promise with the language text response
    */
   async dispatchGetLanguageTexts(
-    params: LanguageManagement.LanguageTextQueryParams
-  ): Promise<LanguageManagement.LanguageTextResponse> {
-    const response = await this.service.getLanguageTexts(params);
+    params: GetLanguagesTextsInput
+  ): Promise<LanguageManagement.State['languageTextsResponse']> {
+    const response = await this.languageTextService.getList(params);
     this.state = {
       ...this.state,
       languageTextsResponse: response,
@@ -187,13 +204,20 @@ export class LanguageManagementStateService {
   /**
    * Dispatch action to update a language text by name
    * @param params - Parameters including the new value
-   * @returns Promise with the updated language text
+   * @returns Promise resolving when complete
    */
-  async dispatchUpdateLanguageTextByName(
-    params: LanguageManagement.LanguageTextUpdateByNameParams
-  ): Promise<LanguageManagement.LanguageText> {
-    const result = await this.service.updateLanguageTextByName(params);
-    return result;
+  async dispatchUpdateLanguageTextByName(params: {
+    resourceName: string;
+    cultureName: string;
+    name: string;
+    value: string;
+  }): Promise<void> {
+    await this.languageTextService.update(
+      params.resourceName,
+      params.cultureName,
+      params.name,
+      params.value
+    );
   }
 
   /**
@@ -201,10 +225,16 @@ export class LanguageManagementStateService {
    * @param params - Parameters identifying the language text
    * @returns Promise resolving when complete
    */
-  async dispatchRestoreLanguageTextByName(
-    params: LanguageManagement.LanguageTextRequestByNameParams
-  ): Promise<void> {
-    await this.service.restoreLanguageTextByName(params);
+  async dispatchRestoreLanguageTextByName(params: {
+    resourceName: string;
+    cultureName: string;
+    name: string;
+  }): Promise<void> {
+    await this.languageTextService.restoreToDefault(
+      params.resourceName,
+      params.cultureName,
+      params.name
+    );
   }
 
   // ========================
@@ -215,8 +245,8 @@ export class LanguageManagementStateService {
    * Dispatch action to fetch available cultures
    * @returns Promise with the list of cultures
    */
-  async dispatchGetLanguageCultures(): Promise<LanguageManagement.Culture[]> {
-    const cultures = await this.service.getCultures();
+  async dispatchGetLanguageCultures(): Promise<CultureInfoDto[]> {
+    const cultures = await this.languageService.getCulturelist();
     this.state = {
       ...this.state,
       cultures,
@@ -228,8 +258,8 @@ export class LanguageManagementStateService {
    * Dispatch action to fetch available localization resources
    * @returns Promise with the list of resources
    */
-  async dispatchGetLanguageResources(): Promise<LanguageManagement.Resource[]> {
-    const resources = await this.service.getResources();
+  async dispatchGetLanguageResources(): Promise<LanguageResourceDto[]> {
+    const resources = await this.languageService.getResources();
     this.state = {
       ...this.state,
       resources,

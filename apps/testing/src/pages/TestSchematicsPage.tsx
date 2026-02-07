@@ -2,6 +2,8 @@
  * Test Page for @abpjs/schematics
  *
  * Demonstrates the schematics types, classes, and utilities for code generation.
+ *
+ * @updated 3.2.0 - PROXY_WARNING updated with npm module publishing notice
  */
 
 import { useState } from 'react';
@@ -93,9 +95,35 @@ function ConstantsDemo() {
       </ul>
 
       <h4>PROXY_WARNING (README content)</h4>
-      <pre style={{ fontSize: '0.75rem', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', overflow: 'auto', maxHeight: '150px' }}>
+      <p style={{ fontSize: '12px', color: '#888' }}>
+        v3.2.0: Now includes important notice about npm module publishing
+      </p>
+      <pre style={{ fontSize: '0.75rem', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', overflow: 'auto', maxHeight: '200px' }}>
         {PROXY_WARNING}
       </pre>
+      <div style={{ marginTop: '0.5rem' }}>
+        <strong>v3.2.0 Verification:</strong>
+        <ul style={{ marginLeft: '1rem', fontSize: '0.85rem' }}>
+          <li>
+            Contains "Important Notice": {' '}
+            <span style={{ color: PROXY_WARNING.includes('**Important Notice:**') ? '#6f6' : '#f66' }}>
+              {PROXY_WARNING.includes('**Important Notice:**') ? '✓' : '✗'}
+            </span>
+          </li>
+          <li>
+            Mentions "barrel exports": {' '}
+            <span style={{ color: PROXY_WARNING.includes('barrel exports') ? '#6f6' : '#f66' }}>
+              {PROXY_WARNING.includes('barrel exports') ? '✓' : '✗'}
+            </span>
+          </li>
+          <li>
+            Mentions "public-api.ts": {' '}
+            <span style={{ color: PROXY_WARNING.includes('public-api.ts') ? '#6f6' : '#f66' }}>
+              {PROXY_WARNING.includes('public-api.ts') ? '✓' : '✗'}
+            </span>
+          </li>
+        </ul>
+      </div>
 
       <h4>VOLO_REGEX</h4>
       <p>Pattern: <code>{VOLO_REGEX.toString()}</code></p>
@@ -371,13 +399,16 @@ function ServiceClassDemo() {
 export function TestSchematicsPage() {
   return (
     <div>
-      <h1>@abpjs/schematics v3.1.0</h1>
+      <h1>@abpjs/schematics v3.2.0</h1>
       <p>
         <Link to="/" style={{ color: '#646cff' }}>&larr; Back to Home</Link>
       </p>
       <p>
         Schematics types and utilities for code generation. This package provides types, interfaces,
         and classes for generating proxy services from ABP API definitions.
+      </p>
+      <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
+        Version 3.2.0 - PROXY_WARNING updated with npm module publishing notice
       </p>
 
       <div className="test-section">

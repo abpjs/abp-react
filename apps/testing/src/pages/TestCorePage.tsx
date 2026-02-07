@@ -7,6 +7,7 @@
  * @updated 2.7.0 - Added CurrentCulture, ABP.Option, utility types, form-utils, number-utils, generatePassword, DomInsertionService updates
  * @updated 3.0.0 - Added RoutesService, tree-utils, array-utils, ABP.Nav, ABP.Tab, CurrentUser.roles
  * @updated 3.1.0 - Added MultiTenancyService, SubscriptionService, AuthFlowStrategy, utility functions, FindTenantResultDto
+ * @updated 3.2.0 - Added ReplaceableComponentsService, InternalStore, downloadBlob, interpolate, oAuthStorage, clearOAuthStorage, getLocalizationResource, CurrentUser fields
  */
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -96,6 +97,17 @@ import {
   getShortDateShortTimeFormat,
   // v3.1.0 Models
   FindTenantResultDto,
+  // v3.2.0 Services
+  ReplaceableComponentsService,
+  replaceableComponentsService,
+  // v3.2.0 Utils
+  downloadBlob,
+  InternalStore,
+  interpolate,
+  reloadRoute,
+  // v3.2.0 Strategies
+  oAuthStorage,
+  clearOAuthStorage,
 } from '@abpjs/core'
 import { useDispatch } from 'react-redux'
 
@@ -1267,6 +1279,388 @@ function TestV27Features() {
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+  )
+}
+
+function TestV32Features() {
+  const [replaceableResults, setReplaceableResults] = useState<string[]>([])
+  const [fileUtilsResults, setFileUtilsResults] = useState<string[]>([])
+  const [internalStoreResults, setInternalStoreResults] = useState<string[]>([])
+  const [stringUtilsResults, setStringUtilsResults] = useState<string[]>([])
+  const [authStorageResults, setAuthStorageResults] = useState<string[]>([])
+  const [localizationResourceResults, setLocalizationResourceResults] = useState<string[]>([])
+  const { configService, localizationService } = useAbp()
+
+  const testReplaceableComponentsService = () => {
+    const results: string[] = []
+
+    // Clear existing components for testing
+    replaceableComponentsService.clear()
+
+    results.push(`✓ ReplaceableComponentsService singleton:`)
+    results.push(`  - replaceableComponentsService: ${replaceableComponentsService ? 'Available' : 'Not available'}`)
+    results.push(`  - Type: ${typeof ReplaceableComponentsService}`)
+    results.push(``)
+
+    // Test adding components
+    const TestComponent = () => null
+    const ReplacementComponent = () => null
+
+    replaceableComponentsService.add({ key: 'MyApp.TestComponent', component: TestComponent })
+    results.push(`✓ add({ key: 'MyApp.TestComponent', component: TestComponent })`)
+
+    const retrieved = replaceableComponentsService.getComponent('MyApp.TestComponent')
+    results.push(`  - getComponent('MyApp.TestComponent'): ${retrieved === TestComponent ? 'Correct' : 'Wrong'}`)
+    results.push(``)
+
+    // Test replacement
+    replaceableComponentsService.add({ key: 'MyApp.TestComponent', component: ReplacementComponent })
+    const replaced = replaceableComponentsService.getComponent('MyApp.TestComponent')
+    results.push(`✓ Replacing component:`)
+    results.push(`  - After replacement: ${replaced === ReplacementComponent ? 'Correct' : 'Wrong'}`)
+    results.push(``)
+
+    // Test replaceableComponents getter
+    replaceableComponentsService.add({ key: 'MyApp.Another', component: TestComponent })
+    const all = replaceableComponentsService.replaceableComponents
+    results.push(`✓ replaceableComponents:`)
+    results.push(`  - Count: ${all.length}`)
+    results.push(`  - Keys: ${all.map(c => c.key).join(', ')}`)
+    results.push(``)
+
+    // Test clear
+    replaceableComponentsService.clear()
+    const afterClear = replaceableComponentsService.replaceableComponents
+    results.push(`✓ clear():`)
+    results.push(`  - Count after clear: ${afterClear.length === 0 ? '0 (correct)' : `${afterClear.length} (wrong)`}`)
+
+    setReplaceableResults(results)
+  }
+
+  const testFileUtils = () => {
+    const results: string[] = []
+
+    results.push(`✓ downloadBlob() function:`)
+    results.push(`  - Type: ${typeof downloadBlob}`)
+    results.push(``)
+
+    // Create a test blob
+    const testContent = 'Hello, World! This is a test file from @abpjs/core v3.2.0.'
+    const blob = new Blob([testContent], { type: 'text/plain' })
+
+    results.push(`✓ Test Blob created:`)
+    results.push(`  - Size: ${blob.size} bytes`)
+    results.push(`  - Type: ${blob.type}`)
+    results.push(``)
+
+    // Test download (this will trigger a file download in browser)
+    results.push(`✓ Click button below to test download:`)
+
+    setFileUtilsResults(results)
+  }
+
+  const handleDownloadTest = () => {
+    const testContent = 'Hello, World! This is a test file from @abpjs/core v3.2.0.\nDownloaded at: ' + new Date().toISOString()
+    const blob = new Blob([testContent], { type: 'text/plain' })
+    downloadBlob(blob, 'test-download.txt')
+  }
+
+  const testInternalStore = () => {
+    const results: string[] = []
+
+    results.push(`✓ InternalStore class:`)
+    results.push(`  - Type: ${typeof InternalStore}`)
+    results.push(``)
+
+    // Create store with initial value
+    const store = new InternalStore<{ count: number; name: string }>({
+      count: 0,
+      name: 'Test'
+    })
+
+    results.push(`✓ Created store with initial state:`)
+    results.push(`  - state: ${JSON.stringify(store.state)}`)
+    results.push(``)
+
+    // Subscribe to changes
+    let lastValue: { count: number; name: string } | null = null
+    const unsubscribe = store.subscribe((value) => {
+      lastValue = value
+    })
+
+    results.push(`✓ Subscribed to store`)
+    results.push(``)
+
+    // Patch the store (InternalStore uses patch, not set)
+    store.patch({ count: 5, name: 'Updated' })
+    results.push(`✓ patch({ count: 5, name: 'Updated' }):`)
+    results.push(`  - state: ${JSON.stringify(store.state)}`)
+    results.push(`  - lastValue from subscription: ${JSON.stringify(lastValue)}`)
+    results.push(``)
+
+    // Patch partial state
+    store.patch({ count: 10 })
+    results.push(`✓ patch({ count: 10 }) - partial update:`)
+    results.push(`  - state: ${JSON.stringify(store.state)}`)
+    results.push(``)
+
+    // Unsubscribe
+    unsubscribe()
+    store.patch({ count: 20, name: 'After unsubscribe' })
+    results.push(`✓ After unsubscribe:`)
+    results.push(`  - lastValue still: ${JSON.stringify(lastValue)} (unchanged)`)
+    results.push(`  - Current state: ${JSON.stringify(store.state)}`)
+    results.push(``)
+
+    // Test reset
+    store.reset()
+    results.push(`✓ reset():`)
+    results.push(`  - state after reset: ${JSON.stringify(store.state)}`)
+
+    setInternalStoreResults(results)
+  }
+
+  const testStringUtils = () => {
+    const results: string[] = []
+
+    results.push(`✓ interpolate() function:`)
+    results.push(`  - Type: ${typeof interpolate}`)
+    results.push(``)
+
+    // Basic interpolation
+    const basic = interpolate('Hello {0}!', ['World'])
+    results.push(`✓ interpolate('Hello {0}!', ['World']):`)
+    results.push(`  - Result: '${basic}'`)
+    results.push(``)
+
+    // Multiple parameters
+    const multi = interpolate('Hello {0}, welcome to {1}!', ['John', 'ABP'])
+    results.push(`✓ interpolate('Hello {0}, welcome to {1}!', ['John', 'ABP']):`)
+    results.push(`  - Result: '${multi}'`)
+    results.push(``)
+
+    // Repeated placeholders
+    const repeated = interpolate('{0} + {0} = {1}', ['1', '2'])
+    results.push(`✓ interpolate('{0} + {0} = {1}', ['1', '2']):`)
+    results.push(`  - Result: '${repeated}'`)
+    results.push(``)
+
+    // No params
+    const noParams = interpolate('No placeholders here', [])
+    results.push(`✓ interpolate('No placeholders here', []):`)
+    results.push(`  - Result: '${noParams}'`)
+
+    setStringUtilsResults(results)
+  }
+
+  const testAuthStorage = () => {
+    const results: string[] = []
+
+    results.push(`✓ oAuthStorage:`)
+    results.push(`  - Type: ${typeof oAuthStorage}`)
+    results.push(`  - Is Storage interface: ${typeof oAuthStorage.getItem === 'function' && typeof oAuthStorage.setItem === 'function'}`)
+    results.push(``)
+
+    // Test setting/getting values
+    const testKey = 'test_oauth_key_v32'
+    oAuthStorage.setItem(testKey, 'test_value')
+    results.push(`✓ setItem('${testKey}', 'test_value'):`)
+    results.push(`  - getItem(): '${oAuthStorage.getItem(testKey)}'`)
+    results.push(``)
+
+    // Test clearOAuthStorage
+    results.push(`✓ clearOAuthStorage() function:`)
+    results.push(`  - Type: ${typeof clearOAuthStorage}`)
+
+    // Set some OAuth-like keys to test clearing
+    oAuthStorage.setItem('access_token', 'test_token')
+    oAuthStorage.setItem('id_token', 'test_id_token')
+    oAuthStorage.setItem('refresh_token', 'test_refresh')
+
+    results.push(`  - Before clear:`)
+    results.push(`    access_token: '${oAuthStorage.getItem('access_token')}'`)
+    results.push(`    id_token: '${oAuthStorage.getItem('id_token')}'`)
+
+    clearOAuthStorage()
+
+    results.push(`  - After clearOAuthStorage():`)
+    results.push(`    access_token: '${oAuthStorage.getItem('access_token') ?? 'null'}'`)
+    results.push(`    id_token: '${oAuthStorage.getItem('id_token') ?? 'null'}'`)
+
+    // Clean up test key
+    oAuthStorage.removeItem(testKey)
+
+    setAuthStorageResults(results)
+  }
+
+  const testLocalizationResource = () => {
+    const results: string[] = []
+
+    results.push(`✓ ConfigStateService.getLocalizationResource():`)
+    results.push(`  - Type: ${typeof configService.getLocalizationResource}`)
+    results.push(``)
+
+    // Get a resource
+    const resource = configService.getLocalizationResource('AbpIdentity')
+    const keys = Object.keys(resource)
+    results.push(`✓ getLocalizationResource('AbpIdentity'):`)
+    results.push(`  - Keys found: ${keys.length}`)
+    if (keys.length > 0) {
+      results.push(`  - Sample keys: ${keys.slice(0, 5).join(', ')}${keys.length > 5 ? '...' : ''}`)
+    }
+    results.push(``)
+
+    // Try another resource
+    const accountResource = configService.getLocalizationResource('AbpAccount')
+    const accountKeys = Object.keys(accountResource)
+    results.push(`✓ getLocalizationResource('AbpAccount'):`)
+    results.push(`  - Keys found: ${accountKeys.length}`)
+    results.push(``)
+
+    // Non-existent resource
+    const nonExistent = configService.getLocalizationResource('NonExistentResource')
+    results.push(`✓ getLocalizationResource('NonExistentResource'):`)
+    results.push(`  - Result: ${JSON.stringify(nonExistent)} (empty object)`)
+    results.push(``)
+
+    results.push(`✓ LocalizationService.getResource():`)
+    results.push(`  - Type: ${typeof localizationService.getResource}`)
+
+    const locResource = localizationService.getResource('AbpIdentity')
+    results.push(`  - getResource('AbpIdentity'): ${Object.keys(locResource).length} keys`)
+
+    setLocalizationResourceResults(results)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.2.0 Features</h2>
+
+      <div className="test-card">
+        <h3>ReplaceableComponentsService</h3>
+        <p>Singleton service for managing replaceable components. Recommended over deprecated AddReplaceableComponent action.</p>
+        <button onClick={testReplaceableComponentsService}>Test ReplaceableComponentsService</button>
+        {replaceableResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '400px', overflow: 'auto', marginTop: '1rem' }}>
+            {replaceableResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>file-utils: downloadBlob()</h3>
+        <p>Utility function to download a Blob as a file with a specified filename.</p>
+        <button onClick={testFileUtils}>Test downloadBlob()</button>
+        <button onClick={handleDownloadTest} style={{ marginLeft: '0.5rem' }}>Download Test File</button>
+        {fileUtilsResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '300px', overflow: 'auto', marginTop: '1rem' }}>
+            {fileUtilsResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>internal-store-utils: InternalStore</h3>
+        <p>Lightweight internal state management class with subscribe/set/patch methods. React equivalent of Angular's InternalStore.</p>
+        <button onClick={testInternalStore}>Test InternalStore</button>
+        {internalStoreResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '400px', overflow: 'auto', marginTop: '1rem' }}>
+            {internalStoreResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>string-utils: interpolate()</h3>
+        <p>Function for parameter substitution using {'{0}'}, {'{1}'} placeholders.</p>
+        <button onClick={testStringUtils}>Test interpolate()</button>
+        {stringUtilsResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '300px', overflow: 'auto', marginTop: '1rem' }}>
+            {stringUtilsResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>oAuthStorage & clearOAuthStorage()</h3>
+        <p>OAuth storage instance (sessionStorage by default) and function to clear OAuth-related keys.</p>
+        <button onClick={testAuthStorage}>Test OAuth Storage</button>
+        {authStorageResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '400px', overflow: 'auto', marginTop: '1rem' }}>
+            {authStorageResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>getLocalizationResource()</h3>
+        <p>New methods on ConfigStateService and LocalizationService to get entire localization resources by name.</p>
+        <button onClick={testLocalizationResource}>Test getLocalizationResource()</button>
+        {localizationResourceResults.length > 0 && (
+          <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', maxHeight: '400px', overflow: 'auto', marginTop: '1rem' }}>
+            {localizationResourceResults.join('\n')}
+          </pre>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>reloadRoute()</h3>
+        <p>Utility function to reload the current route/page.</p>
+        <button onClick={() => {
+          if (confirm('This will reload the page. Continue?')) {
+            reloadRoute()
+          }
+        }}>Test reloadRoute() (will reload page)</button>
+        <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem' }}>
+{`// Usage:
+import { reloadRoute } from '@abpjs/core'
+
+// Reload the current page
+reloadRoute()`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>CurrentUser Enhancements</h3>
+        <p>New properties added to ApplicationConfiguration.CurrentUser in v3.2.0:</p>
+        <ul style={{ marginLeft: '1.5rem', marginTop: '0.5rem' }}>
+          <li><code>emailVerified</code> - Whether email is verified</li>
+          <li><code>name</code> - User's given/first name</li>
+          <li><code>surName</code> - User's surname/last name</li>
+          <li><code>phoneNumber</code> - User's phone number</li>
+          <li><code>phoneNumberVerified</code> - Whether phone number is verified</li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>DeepPartial Utility Type</h3>
+        <p>New utility type that makes all properties optional recursively.</p>
+        <pre style={{ background: '#1a1a2e', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem' }}>
+{`// Usage:
+import type { DeepPartial } from '@abpjs/core'
+
+interface User {
+  name: string
+  address: {
+    street: string
+    city: string
+  }
+}
+
+// All properties become optional, including nested ones
+type PartialUser = DeepPartial<User>
+// { name?: string; address?: { street?: string; city?: string } }`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>NodeKey Type</h3>
+        <p>New type for tree node keys: <code>type NodeKey = string | number | undefined | null</code></p>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          Used in tree-utils for more flexible tree node identification.
+        </p>
       </div>
     </div>
   )
@@ -2609,12 +3003,13 @@ function TestDateExtensions() {
 export function TestCorePage() {
   return (
     <div>
-      <h1>@abpjs/core Tests (v3.1.0)</h1>
+      <h1>@abpjs/core Tests (v3.2.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing core hooks, services, and components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.1.0 - Added MultiTenancyService, SubscriptionService, AuthFlowStrategy, utility functions, FindTenantResultDto
+        Version 3.2.0 - Added ReplaceableComponentsService, InternalStore, downloadBlob, interpolate, oAuthStorage, getLocalizationResource, CurrentUser fields
       </p>
 
+      <TestV32Features />
       <TestV31Features />
       <TestV30Features />
       <TestV27Features />

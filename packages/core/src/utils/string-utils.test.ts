@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { createTokenParser } from './string-utils';
+import { createTokenParser, interpolate } from './string-utils';
 
-describe('string-utils (v3.1.0)', () => {
+describe('string-utils (v3.2.0)', () => {
   describe('createTokenParser', () => {
     it('should parse simple two-token format', () => {
       const parser = createTokenParser('{0}.{1}');
@@ -232,6 +232,129 @@ describe('string-utils (v3.1.0)', () => {
         '1': ['domain'],
         '2': ['com'],
       });
+    });
+  });
+
+  describe('interpolate (v3.2.0)', () => {
+    it('should replace single placeholder', () => {
+      const result = interpolate('Hello {0}!', ['World']);
+
+      expect(result).toBe('Hello World!');
+    });
+
+    it('should replace multiple placeholders', () => {
+      const result = interpolate('Hello {0}, you have {1} messages', ['John', '5']);
+
+      expect(result).toBe('Hello John, you have 5 messages');
+    });
+
+    it('should replace all occurrences of the same placeholder', () => {
+      const result = interpolate('{0} + {0} = {1}', ['2', '4']);
+
+      expect(result).toBe('2 + 2 = 4');
+    });
+
+    it('should handle empty params array', () => {
+      const result = interpolate('Hello {0}!', []);
+
+      expect(result).toBe('Hello {0}!');
+    });
+
+    it('should handle null params', () => {
+      const result = interpolate('Hello {0}!', null as unknown as string[]);
+
+      expect(result).toBe('Hello {0}!');
+    });
+
+    it('should handle undefined params', () => {
+      const result = interpolate('Hello {0}!', undefined as unknown as string[]);
+
+      expect(result).toBe('Hello {0}!');
+    });
+
+    it('should handle text without placeholders', () => {
+      const result = interpolate('Hello World!', ['ignored']);
+
+      expect(result).toBe('Hello World!');
+    });
+
+    it('should handle empty text', () => {
+      const result = interpolate('', ['value']);
+
+      expect(result).toBe('');
+    });
+
+    it('should handle more params than placeholders', () => {
+      const result = interpolate('Hello {0}!', ['World', 'Extra', 'Values']);
+
+      expect(result).toBe('Hello World!');
+    });
+
+    it('should leave unreplaced placeholders', () => {
+      const result = interpolate('Hello {0}, {1}, {2}!', ['A', 'B']);
+
+      expect(result).toBe('Hello A, B, {2}!');
+    });
+
+    it('should handle placeholder at start of text', () => {
+      const result = interpolate('{0} is great', ['TypeScript']);
+
+      expect(result).toBe('TypeScript is great');
+    });
+
+    it('should handle placeholder at end of text', () => {
+      const result = interpolate('The answer is {0}', ['42']);
+
+      expect(result).toBe('The answer is 42');
+    });
+
+    it('should handle consecutive placeholders', () => {
+      const result = interpolate('{0}{1}{2}', ['a', 'b', 'c']);
+
+      expect(result).toBe('abc');
+    });
+
+    it('should handle special characters in params', () => {
+      const result = interpolate('Regex: {0}', ['.*+?^${}()|[]\\']);
+
+      expect(result).toBe('Regex: .*+?^${}()|[]\\');
+    });
+
+    it('should handle unicode in params', () => {
+      const result = interpolate('Hello {0}!', ['世界']);
+
+      expect(result).toBe('Hello 世界!');
+    });
+
+    it('should handle multi-digit placeholder indices', () => {
+      const params = Array.from({ length: 12 }, (_, i) => `v${i}`);
+      const result = interpolate('{0} {10} {11}', params);
+
+      expect(result).toBe('v0 v10 v11');
+    });
+
+    it('should handle newlines in text', () => {
+      const result = interpolate('Line 1: {0}\nLine 2: {1}', ['A', 'B']);
+
+      expect(result).toBe('Line 1: A\nLine 2: B');
+    });
+
+    it('should handle tabs in text', () => {
+      const result = interpolate('Tab1:\t{0}\tTab2:\t{1}', ['A', 'B']);
+
+      expect(result).toBe('Tab1:\tA\tTab2:\tB');
+    });
+
+    it('should preserve whitespace in params', () => {
+      const result = interpolate('Value: {0}', ['  spaced  ']);
+
+      expect(result).toBe('Value:   spaced  ');
+    });
+
+    it('should handle empty string params', () => {
+      const result = interpolate('Before{0}After', ['']);
+
+      expect(result).toBe('BeforeAfter');
     });
   });
 });

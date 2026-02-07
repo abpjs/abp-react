@@ -1,7 +1,25 @@
 /**
  * @abpjs/tenant-management
  * ABP Framework Tenant Management module for React
- * Translated from @abp/ng.tenant-management v3.1.0
+ * Translated from @abp/ng.tenant-management v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - Added proxy submodule with typed DTOs and TenantService
+ * - Added GetTenantsInput interface for tenant list queries
+ * - Added TenantCreateDto interface for creating tenants
+ * - Added TenantUpdateDto interface for updating tenants
+ * - Added TenantDto interface for tenant responses
+ * - Added TenantCreateOrUpdateDtoBase base interface
+ * - Added TenantService with typed CRUD operations (create, delete, get, getList, update)
+ * - Added TenantService.deleteDefaultConnectionString method
+ * - Added TenantService.getDefaultConnectionString method
+ * - Added TenantService.updateDefaultConnectionString method
+ * - Updated TenantManagement.State to use PagedResultDto<TenantDto> and TenantDto
+ * - Deprecated TenantManagement.Response (use PagedResultDto<TenantDto> instead)
+ * - Deprecated TenantManagement.Item (use TenantDto instead)
+ * - Deprecated TenantManagement.AddRequest (use TenantCreateDto instead)
+ * - Deprecated TenantManagement.UpdateRequest (use TenantUpdateDto instead)
+ * - Deprecated TenantManagement.DefaultConnectionStringRequest (use TenantService methods instead)
  *
  * Changes in v3.1.0:
  * - Version bump only (dependency updates to @abp/ng.feature-management v3.1.0, @abp/ng.theme.shared v3.1.0)
@@ -60,6 +78,9 @@ export * from './enums';
 
 // Models
 export * from './models';
+
+// Proxy (v3.2.0) - Typed DTOs and TenantService
+export * from './proxy';
 
 // Services
 export * from './services';

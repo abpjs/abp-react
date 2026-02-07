@@ -2,37 +2,53 @@
  * Tests for LanguageManagementStateService
  * @since 2.0.0
  * @updated 3.0.0 - Removed getLanguagesTotalCount() tests (removed in v3.0.0)
+ * @updated 3.2.0 - Updated to use new proxy services
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LanguageManagementStateService } from '../services/language-management-state.service';
-import { LanguageManagementService } from '../services/language-management.service';
-import type { LanguageManagement } from '../models';
+import { LanguageService } from '../proxy/language.service';
+import { LanguageTextService } from '../proxy/language-text.service';
+import type {
+  LanguageDto,
+  LanguageTextDto,
+  CultureInfoDto,
+  LanguageResourceDto,
+  CreateLanguageDto,
+  UpdateLanguageDto,
+  GetLanguagesTextsInput,
+} from '../proxy/dto/models';
 
-// Mock the LanguageManagementService
-vi.mock('../services/language-management.service', () => ({
-  LanguageManagementService: vi.fn().mockImplementation(() => ({
-    getLanguages: vi.fn(),
-    getLanguageById: vi.fn(),
-    createLanguage: vi.fn(),
-    updateLanguage: vi.fn(),
-    deleteLanguage: vi.fn(),
-    setAsDefaultLanguage: vi.fn(),
-    getLanguageTexts: vi.fn(),
-    updateLanguageTextByName: vi.fn(),
-    restoreLanguageTextByName: vi.fn(),
-    getCultures: vi.fn(),
+// Mock the proxy services
+vi.mock('../proxy/language.service', () => ({
+  LanguageService: vi.fn().mockImplementation(() => ({
+    getList: vi.fn(),
+    get: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    setAsDefault: vi.fn(),
+    getCulturelist: vi.fn(),
     getResources: vi.fn(),
+  })),
+}));
+
+vi.mock('../proxy/language-text.service', () => ({
+  LanguageTextService: vi.fn().mockImplementation(() => ({
+    getList: vi.fn(),
+    update: vi.fn(),
+    restoreToDefault: vi.fn(),
   })),
 }));
 
 describe('LanguageManagementStateService', () => {
   let stateService: LanguageManagementStateService;
-  let mockService: ReturnType<typeof vi.mocked<LanguageManagementService>>;
+  let mockLanguageService: ReturnType<typeof vi.mocked<LanguageService>>;
+  let mockLanguageTextService: ReturnType<typeof vi.mocked<LanguageTextService>>;
   const mockRestService = {} as any;
 
   // Sample test data
-  const mockLanguage: LanguageManagement.Language = {
+  const mockLanguage: LanguageDto = {
     id: 'lang-1',
     cultureName: 'en',
     uiCultureName: 'en',
@@ -44,12 +60,11 @@ describe('LanguageManagementStateService', () => {
     creatorId: 'user-1',
   };
 
-  const mockLanguageResponse: LanguageManagement.LanguageResponse = {
+  const mockLanguageResponse = {
     items: [mockLanguage],
-    totalCount: 1,
   };
 
-  const mockLanguageText: LanguageManagement.LanguageText = {
+  const mockLanguageText: LanguageTextDto = {
     resourceName: 'TestResource',
     cultureName: 'en',
     baseCultureName: 'en',
@@ -58,25 +73,26 @@ describe('LanguageManagementStateService', () => {
     value: 'Hello',
   };
 
-  const mockLanguageTextsResponse: LanguageManagement.LanguageTextResponse = {
+  const mockLanguageTextsResponse = {
     items: [mockLanguageText],
     totalCount: 1,
   };
 
-  const mockCulture: LanguageManagement.Culture = {
+  const mockCulture: CultureInfoDto = {
     name: 'en',
     displayName: 'English',
   };
 
-  const mockResource: LanguageManagement.Resource = {
+  const mockResource: LanguageResourceDto = {
     name: 'TestResource',
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
     stateService = new LanguageManagementStateService(mockRestService);
-    // Get the mocked service instance
-    mockService = (stateService as any).service;
+    // Get the mocked service instances
+    mockLanguageService = (stateService as any).languageService;
+    mockLanguageTextService = (stateService as any).languageTextService;
   });
 
   describe('Getter Methods', () => {
@@ -93,7 +109,7 @@ describe('LanguageManagementStateService', () => {
     });
 
     it('should return languages after dispatch', async () => {
-      mockService.getLanguages.mockResolvedValue(mockLanguageResponse);
+      mockLanguageService.getList.mockResolvedValue(mockLanguageResponse);
 
       await stateService.dispatchGetLanguages();
 
@@ -102,20 +118,22 @@ describe('LanguageManagementStateService', () => {
     });
 
     it('should return language texts after dispatch', async () => {
-      mockService.getLanguageTexts.mockResolvedValue(mockLanguageTextsResponse);
+      mockLanguageTextService.getList.mockResolvedValue(mockLanguageTextsResponse);
 
-      await stateService.dispatchGetLanguageTexts({
+      const params: GetLanguagesTextsInput = {
         baseCultureName: 'en',
         targetCultureName: 'fr',
         getOnlyEmptyValues: false,
-      });
+      };
+
+      await stateService.dispatchGetLanguageTexts(params);
 
       expect(stateService.getLanguageTexts()).toEqual([mockLanguageText]);
       expect(stateService.getLanguageTextsTotalCount()).toBe(1);
     });
 
     it('should return cultures after dispatch', async () => {
-      mockService.getCultures.mockResolvedValue([mockCulture]);
+      mockLanguageService.getCulturelist.mockResolvedValue([mockCulture]);
 
       await stateService.dispatchGetLanguageCultures();
 
@@ -123,7 +141,7 @@ describe('LanguageManagementStateService', () => {
     });
 
     it('should return resources after dispatch', async () => {
-      mockService.getResources.mockResolvedValue([mockResource]);
+      mockLanguageService.getResources.mockResolvedValue([mockResource]);
 
       await stateService.dispatchGetLanguageResources();
 
@@ -133,103 +151,103 @@ describe('LanguageManagementStateService', () => {
 
   describe('Language Dispatch Methods', () => {
     it('should dispatch getLanguages and update state', async () => {
-      mockService.getLanguages.mockResolvedValue(mockLanguageResponse);
+      mockLanguageService.getList.mockResolvedValue(mockLanguageResponse);
 
-      const result = await stateService.dispatchGetLanguages({ maxResultCount: 10 });
+      const params: GetLanguagesTextsInput = { maxResultCount: 10 };
+      const result = await stateService.dispatchGetLanguages(params);
 
-      expect(mockService.getLanguages).toHaveBeenCalledWith({ maxResultCount: 10 });
+      expect(mockLanguageService.getList).toHaveBeenCalledWith(params);
       expect(result).toEqual(mockLanguageResponse);
       expect(stateService.getLanguages()).toEqual([mockLanguage]);
     });
 
     it('should dispatch getLanguages with default params', async () => {
-      mockService.getLanguages.mockResolvedValue(mockLanguageResponse);
+      mockLanguageService.getList.mockResolvedValue(mockLanguageResponse);
 
       await stateService.dispatchGetLanguages();
 
-      expect(mockService.getLanguages).toHaveBeenCalledWith({});
+      expect(mockLanguageService.getList).toHaveBeenCalledWith(undefined);
     });
 
     it('should dispatch getLanguageById and update selectedItem', async () => {
-      mockService.getLanguageById.mockResolvedValue(mockLanguage);
+      mockLanguageService.get.mockResolvedValue(mockLanguage);
 
       const result = await stateService.dispatchGetLanguageById('lang-1');
 
-      expect(mockService.getLanguageById).toHaveBeenCalledWith('lang-1');
+      expect(mockLanguageService.get).toHaveBeenCalledWith('lang-1');
       expect(result).toEqual(mockLanguage);
     });
 
     it('should dispatch createUpdateLanguage for create (without id)', async () => {
-      const createInput: LanguageManagement.CreateLanguageInput = {
+      const createInput: CreateLanguageDto = {
         cultureName: 'fr',
         uiCultureName: 'fr',
         displayName: 'French',
         flagIcon: '🇫🇷',
         isEnabled: true,
       };
-      const createdLanguage = { ...mockLanguage, id: 'lang-2', cultureName: 'fr', displayName: 'French' };
+      const createdLanguage: LanguageDto = { ...mockLanguage, id: 'lang-2', cultureName: 'fr', displayName: 'French' };
 
-      mockService.createLanguage.mockResolvedValue(createdLanguage);
-      mockService.getLanguages.mockResolvedValue({ items: [createdLanguage], totalCount: 1 });
+      mockLanguageService.create.mockResolvedValue(createdLanguage);
+      mockLanguageService.getList.mockResolvedValue({ items: [createdLanguage] });
 
       const result = await stateService.dispatchCreateUpdateLanguage(createInput);
 
-      expect(mockService.createLanguage).toHaveBeenCalledWith(createInput);
-      expect(mockService.updateLanguage).not.toHaveBeenCalled();
+      expect(mockLanguageService.create).toHaveBeenCalledWith(createInput);
+      expect(mockLanguageService.update).not.toHaveBeenCalled();
       expect(result).toEqual(createdLanguage);
       // Should refresh list after create
-      expect(mockService.getLanguages).toHaveBeenCalled();
+      expect(mockLanguageService.getList).toHaveBeenCalled();
     });
 
     it('should dispatch createUpdateLanguage for update (with id)', async () => {
-      const updateInput: LanguageManagement.UpdateLanguageInput = {
+      const updateInput: UpdateLanguageDto = {
         displayName: 'English (Updated)',
         flagIcon: '🇬🇧',
         isEnabled: true,
       };
-      const updatedLanguage = { ...mockLanguage, displayName: 'English (Updated)', flagIcon: '🇬🇧' };
+      const updatedLanguage: LanguageDto = { ...mockLanguage, displayName: 'English (Updated)', flagIcon: '🇬🇧' };
 
-      mockService.updateLanguage.mockResolvedValue(updatedLanguage);
-      mockService.getLanguages.mockResolvedValue({ items: [updatedLanguage], totalCount: 1 });
+      mockLanguageService.update.mockResolvedValue(updatedLanguage);
+      mockLanguageService.getList.mockResolvedValue({ items: [updatedLanguage] });
 
       const result = await stateService.dispatchCreateUpdateLanguage(updateInput, 'lang-1');
 
-      expect(mockService.updateLanguage).toHaveBeenCalledWith('lang-1', updateInput);
-      expect(mockService.createLanguage).not.toHaveBeenCalled();
+      expect(mockLanguageService.update).toHaveBeenCalledWith('lang-1', updateInput);
+      expect(mockLanguageService.create).not.toHaveBeenCalled();
       expect(result).toEqual(updatedLanguage);
       // Should refresh list after update
-      expect(mockService.getLanguages).toHaveBeenCalled();
+      expect(mockLanguageService.getList).toHaveBeenCalled();
     });
 
-    it('should dispatch deleteLanguage and return null', async () => {
-      mockService.deleteLanguage.mockResolvedValue(undefined);
-      mockService.getLanguages.mockResolvedValue({ items: [], totalCount: 0 });
+    it('should dispatch deleteLanguage', async () => {
+      mockLanguageService.delete.mockResolvedValue(undefined);
+      mockLanguageService.getList.mockResolvedValue({ items: [] });
 
-      const result = await stateService.dispatchDeleteLanguage('lang-1');
+      await stateService.dispatchDeleteLanguage('lang-1');
 
-      expect(mockService.deleteLanguage).toHaveBeenCalledWith('lang-1');
-      expect(result).toBeNull();
+      expect(mockLanguageService.delete).toHaveBeenCalledWith('lang-1');
       // Should refresh list after delete
-      expect(mockService.getLanguages).toHaveBeenCalled();
+      expect(mockLanguageService.getList).toHaveBeenCalled();
     });
 
     it('should dispatch setAsDefaultLanguage', async () => {
-      mockService.setAsDefaultLanguage.mockResolvedValue(undefined);
-      mockService.getLanguages.mockResolvedValue(mockLanguageResponse);
+      mockLanguageService.setAsDefault.mockResolvedValue(undefined);
+      mockLanguageService.getList.mockResolvedValue(mockLanguageResponse);
 
       await stateService.dispatchSetAsDefaultLanguage('lang-1');
 
-      expect(mockService.setAsDefaultLanguage).toHaveBeenCalledWith('lang-1');
+      expect(mockLanguageService.setAsDefault).toHaveBeenCalledWith('lang-1');
       // Should refresh list after setting default
-      expect(mockService.getLanguages).toHaveBeenCalled();
+      expect(mockLanguageService.getList).toHaveBeenCalled();
     });
   });
 
   describe('Language Text Dispatch Methods', () => {
     it('should dispatch getLanguageTexts and update state', async () => {
-      mockService.getLanguageTexts.mockResolvedValue(mockLanguageTextsResponse);
+      mockLanguageTextService.getList.mockResolvedValue(mockLanguageTextsResponse);
 
-      const params: LanguageManagement.LanguageTextQueryParams = {
+      const params: GetLanguagesTextsInput = {
         baseCultureName: 'en',
         targetCultureName: 'fr',
         getOnlyEmptyValues: false,
@@ -240,62 +258,69 @@ describe('LanguageManagementStateService', () => {
 
       const result = await stateService.dispatchGetLanguageTexts(params);
 
-      expect(mockService.getLanguageTexts).toHaveBeenCalledWith(params);
+      expect(mockLanguageTextService.getList).toHaveBeenCalledWith(params);
       expect(result).toEqual(mockLanguageTextsResponse);
       expect(stateService.getLanguageTexts()).toEqual([mockLanguageText]);
     });
 
     it('should dispatch updateLanguageTextByName', async () => {
-      const params: LanguageManagement.LanguageTextUpdateByNameParams = {
+      const params = {
         resourceName: 'TestResource',
         cultureName: 'fr',
         name: 'Greeting',
         value: 'Bonjour',
       };
-      const updatedText = { ...mockLanguageText, value: 'Bonjour', cultureName: 'fr' };
 
-      mockService.updateLanguageTextByName.mockResolvedValue(updatedText);
+      mockLanguageTextService.update.mockResolvedValue(undefined);
 
-      const result = await stateService.dispatchUpdateLanguageTextByName(params);
+      await stateService.dispatchUpdateLanguageTextByName(params);
 
-      expect(mockService.updateLanguageTextByName).toHaveBeenCalledWith(params);
-      expect(result).toEqual(updatedText);
+      expect(mockLanguageTextService.update).toHaveBeenCalledWith(
+        params.resourceName,
+        params.cultureName,
+        params.name,
+        params.value
+      );
     });
 
     it('should dispatch restoreLanguageTextByName', async () => {
-      const params: LanguageManagement.LanguageTextRequestByNameParams = {
+      const params = {
         resourceName: 'TestResource',
         cultureName: 'fr',
         name: 'Greeting',
       };
 
-      mockService.restoreLanguageTextByName.mockResolvedValue(undefined);
+      mockLanguageTextService.restoreToDefault.mockResolvedValue(undefined);
 
       await stateService.dispatchRestoreLanguageTextByName(params);
 
-      expect(mockService.restoreLanguageTextByName).toHaveBeenCalledWith(params);
+      expect(mockLanguageTextService.restoreToDefault).toHaveBeenCalledWith(
+        params.resourceName,
+        params.cultureName,
+        params.name
+      );
     });
   });
 
   describe('Culture & Resource Dispatch Methods', () => {
     it('should dispatch getLanguageCultures and update state', async () => {
-      const cultures = [mockCulture, { name: 'fr', displayName: 'French' }];
-      mockService.getCultures.mockResolvedValue(cultures);
+      const cultures: CultureInfoDto[] = [mockCulture, { name: 'fr', displayName: 'French' }];
+      mockLanguageService.getCulturelist.mockResolvedValue(cultures);
 
       const result = await stateService.dispatchGetLanguageCultures();
 
-      expect(mockService.getCultures).toHaveBeenCalled();
+      expect(mockLanguageService.getCulturelist).toHaveBeenCalled();
       expect(result).toEqual(cultures);
       expect(stateService.getCultures()).toEqual(cultures);
     });
 
     it('should dispatch getLanguageResources and update state', async () => {
-      const resources = [mockResource, { name: 'AnotherResource' }];
-      mockService.getResources.mockResolvedValue(resources);
+      const resources: LanguageResourceDto[] = [mockResource, { name: 'AnotherResource' }];
+      mockLanguageService.getResources.mockResolvedValue(resources);
 
       const result = await stateService.dispatchGetLanguageResources();
 
-      expect(mockService.getResources).toHaveBeenCalled();
+      expect(mockLanguageService.getResources).toHaveBeenCalled();
       expect(result).toEqual(resources);
       expect(stateService.getResources()).toEqual(resources);
     });
@@ -304,15 +329,15 @@ describe('LanguageManagementStateService', () => {
   describe('State Persistence', () => {
     it('should preserve state across multiple dispatches', async () => {
       // First dispatch cultures
-      mockService.getCultures.mockResolvedValue([mockCulture]);
+      mockLanguageService.getCulturelist.mockResolvedValue([mockCulture]);
       await stateService.dispatchGetLanguageCultures();
 
       // Then dispatch resources
-      mockService.getResources.mockResolvedValue([mockResource]);
+      mockLanguageService.getResources.mockResolvedValue([mockResource]);
       await stateService.dispatchGetLanguageResources();
 
       // Then dispatch languages
-      mockService.getLanguages.mockResolvedValue(mockLanguageResponse);
+      mockLanguageService.getList.mockResolvedValue(mockLanguageResponse);
       await stateService.dispatchGetLanguages();
 
       // All state should be preserved
@@ -322,10 +347,10 @@ describe('LanguageManagementStateService', () => {
     });
 
     it('should handle empty responses', async () => {
-      mockService.getLanguages.mockResolvedValue({ items: [], totalCount: 0 });
-      mockService.getLanguageTexts.mockResolvedValue({ items: [], totalCount: 0 });
-      mockService.getCultures.mockResolvedValue([]);
-      mockService.getResources.mockResolvedValue([]);
+      mockLanguageService.getList.mockResolvedValue({ items: [] });
+      mockLanguageTextService.getList.mockResolvedValue({ items: [], totalCount: 0 });
+      mockLanguageService.getCulturelist.mockResolvedValue([]);
+      mockLanguageService.getResources.mockResolvedValue([]);
 
       await stateService.dispatchGetLanguages();
       await stateService.dispatchGetLanguageTexts({
@@ -372,9 +397,8 @@ describe('LanguageManagementStateService', () => {
         cultureName: `culture-${i}`,
       }));
 
-      mockService.getLanguages.mockResolvedValue({
+      mockLanguageService.getList.mockResolvedValue({
         items: manyLanguages,
-        totalCount: 1000, // More than items in this page
       });
 
       await stateService.dispatchGetLanguages({ maxResultCount: 100 });
@@ -387,21 +411,21 @@ describe('LanguageManagementStateService', () => {
   describe('Error Handling', () => {
     it('should propagate errors from getLanguages', async () => {
       const error = new Error('Network error');
-      mockService.getLanguages.mockRejectedValue(error);
+      mockLanguageService.getList.mockRejectedValue(error);
 
       await expect(stateService.dispatchGetLanguages()).rejects.toThrow('Network error');
     });
 
     it('should propagate errors from getLanguageById', async () => {
       const error = new Error('Language not found');
-      mockService.getLanguageById.mockRejectedValue(error);
+      mockLanguageService.get.mockRejectedValue(error);
 
       await expect(stateService.dispatchGetLanguageById('invalid-id')).rejects.toThrow('Language not found');
     });
 
     it('should propagate errors from createLanguage', async () => {
       const error = new Error('Validation failed');
-      mockService.createLanguage.mockRejectedValue(error);
+      mockLanguageService.create.mockRejectedValue(error);
 
       await expect(
         stateService.dispatchCreateUpdateLanguage({
@@ -416,7 +440,7 @@ describe('LanguageManagementStateService', () => {
 
     it('should propagate errors from updateLanguage', async () => {
       const error = new Error('Update failed');
-      mockService.updateLanguage.mockRejectedValue(error);
+      mockLanguageService.update.mockRejectedValue(error);
 
       await expect(
         stateService.dispatchCreateUpdateLanguage(
@@ -428,21 +452,21 @@ describe('LanguageManagementStateService', () => {
 
     it('should propagate errors from deleteLanguage', async () => {
       const error = new Error('Cannot delete default language');
-      mockService.deleteLanguage.mockRejectedValue(error);
+      mockLanguageService.delete.mockRejectedValue(error);
 
       await expect(stateService.dispatchDeleteLanguage('lang-1')).rejects.toThrow('Cannot delete default language');
     });
 
     it('should propagate errors from setAsDefaultLanguage', async () => {
       const error = new Error('Permission denied');
-      mockService.setAsDefaultLanguage.mockRejectedValue(error);
+      mockLanguageService.setAsDefault.mockRejectedValue(error);
 
       await expect(stateService.dispatchSetAsDefaultLanguage('lang-1')).rejects.toThrow('Permission denied');
     });
 
     it('should propagate errors from getLanguageTexts', async () => {
       const error = new Error('Invalid parameters');
-      mockService.getLanguageTexts.mockRejectedValue(error);
+      mockLanguageTextService.getList.mockRejectedValue(error);
 
       await expect(
         stateService.dispatchGetLanguageTexts({
@@ -455,7 +479,7 @@ describe('LanguageManagementStateService', () => {
 
     it('should propagate errors from updateLanguageTextByName', async () => {
       const error = new Error('Text not found');
-      mockService.updateLanguageTextByName.mockRejectedValue(error);
+      mockLanguageTextService.update.mockRejectedValue(error);
 
       await expect(
         stateService.dispatchUpdateLanguageTextByName({
@@ -469,7 +493,7 @@ describe('LanguageManagementStateService', () => {
 
     it('should propagate errors from restoreLanguageTextByName', async () => {
       const error = new Error('Restore failed');
-      mockService.restoreLanguageTextByName.mockRejectedValue(error);
+      mockLanguageTextService.restoreToDefault.mockRejectedValue(error);
 
       await expect(
         stateService.dispatchRestoreLanguageTextByName({
@@ -482,14 +506,14 @@ describe('LanguageManagementStateService', () => {
 
     it('should propagate errors from getCultures', async () => {
       const error = new Error('Cultures fetch failed');
-      mockService.getCultures.mockRejectedValue(error);
+      mockLanguageService.getCulturelist.mockRejectedValue(error);
 
       await expect(stateService.dispatchGetLanguageCultures()).rejects.toThrow('Cultures fetch failed');
     });
 
     it('should propagate errors from getResources', async () => {
       const error = new Error('Resources fetch failed');
-      mockService.getResources.mockRejectedValue(error);
+      mockLanguageService.getResources.mockRejectedValue(error);
 
       await expect(stateService.dispatchGetLanguageResources()).rejects.toThrow('Resources fetch failed');
     });

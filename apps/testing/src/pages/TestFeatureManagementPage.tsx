@@ -4,6 +4,7 @@
  * @updated 2.9.0 - Version bump only (dependency updates)
  * @updated 3.0.0 - Angular visible getter/setter change (no React impact)
  * @updated 3.1.0 - Added displayName property to Feature interface
+ * @updated 3.2.0 - Added proxy models, FeaturesService, ValueTypes enum, getInputType
  */
 import { useState, useMemo } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -11,9 +12,21 @@ import {
   FeatureManagementModal,
   useFeatureManagement,
   FeatureManagementService,
+  FeaturesService,
   eFeatureManagementComponents,
+  ValueTypes,
+  INPUT_TYPES,
+  getInputType,
 } from '@abpjs/feature-management'
-import type { FeatureManagement } from '@abpjs/feature-management'
+import type {
+  FeatureManagement,
+  FeatureDto,
+  FeatureGroupDto,
+  GetFeatureListResultDto,
+  UpdateFeaturesDto,
+  IStringValueType,
+  FreeTextType,
+} from '@abpjs/feature-management'
 
 function TestFeatureModal() {
   const [tenantModalVisible, setTenantModalVisible] = useState(false)
@@ -478,6 +491,232 @@ const key = eFeatureManagementComponents.FeatureManagement
   )
 }
 
+function TestV320Features() {
+  const restService = useRestService()
+  const featuresService = useMemo(() => new FeaturesService(restService), [restService])
+
+  // Demo data for proxy models
+  const demoFeature: FeatureDto = {
+    name: 'MyApp.MaxUsers',
+    displayName: 'Maximum Users',
+    value: '100',
+    provider: { name: 'T', key: 'tenant-123' },
+    description: 'Maximum number of users allowed',
+    valueType: {
+      name: 'FreeTextStringValueType',
+      item: {},
+      properties: {},
+      validator: { name: 'NumericValidator', item: {}, properties: {} },
+    },
+    depth: 0,
+    parentName: '',
+  }
+
+  const demoGroup: FeatureGroupDto = {
+    name: 'MyApp',
+    displayName: 'My Application',
+    features: [demoFeature],
+  }
+
+  const demoResult: GetFeatureListResultDto = {
+    groups: [demoGroup],
+  }
+
+  // Test getInputType with different validators
+  const numericFeature: FreeTextType = {
+    valueType: { validator: { name: 'NumericValidator' } },
+  }
+  const stringFeature: FreeTextType = {
+    valueType: { validator: { name: 'StringValidator' } },
+  }
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.2.0</h2>
+
+      <div className="test-card">
+        <h3>FeaturesService (Proxy Service)</h3>
+        <p>
+          New proxy service for feature management API calls with typed methods.
+        </p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`import { FeaturesService } from '@abpjs/feature-management'
+
+const service = new FeaturesService(restService)
+console.log(service.apiName) // "default"
+
+// Get features for a provider
+const result = await service.get('T', 'tenant-123')
+
+// Update features
+await service.update('T', 'tenant-123', {
+  features: [
+    { name: 'MyApp.Feature1', value: 'true' },
+  ]
+})`}
+        </pre>
+        <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+          Current apiName: <code style={{ color: '#2ecc71' }}>{featuresService.apiName}</code>
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>New Proxy Models</h3>
+        <p>Typed DTOs for API requests and responses:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Model</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}><code>FeatureDto</code></td><td>Single feature with full metadata</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>FeatureGroupDto</code></td><td>Group of features</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>FeatureProviderDto</code></td><td>Provider info (name, key)</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>GetFeatureListResultDto</code></td><td>API response with groups</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>UpdateFeatureDto</code></td><td>Single feature update</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>UpdateFeaturesDto</code></td><td>Batch feature updates</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>IStringValueType</code></td><td>Value type with validator</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>IValueValidator</code></td><td>Value validator interface</td></tr>
+          </tbody>
+        </table>
+        <h4 style={{ marginTop: '1rem' }}>Example FeatureDto:</h4>
+        <pre style={{ fontSize: '11px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', overflow: 'auto' }}>
+          {JSON.stringify(demoFeature, null, 2)}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>ValueTypes Enum</h3>
+        <p>Enum for feature value types:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Enum Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>ToggleStringValueType</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{ValueTypes.ToggleStringValueType}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>FreeTextStringValueType</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{ValueTypes.FreeTextStringValueType}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>SelectionStringValueType</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{ValueTypes.SelectionStringValueType}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>INPUT_TYPES Constant</h3>
+        <p>Maps validator types to HTML input types:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>numeric</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{INPUT_TYPES.numeric}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>default</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{INPUT_TYPES.default}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>getInputType Function</h3>
+        <p>Determines HTML input type based on feature validator:</p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`import { getInputType } from '@abpjs/feature-management'
+
+// Returns 'number' for numeric validators
+const feature = { valueType: { validator: { name: 'NumericValidator' } } }
+getInputType(feature) // 'number'
+
+// Returns 'text' for other validators
+const textFeature = { valueType: { validator: { name: 'StringValidator' } } }
+getInputType(textFeature) // 'text'`}
+        </pre>
+        <h4 style={{ marginTop: '1rem' }}>Live Demo:</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Validator</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>getInputType Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>NumericValidator</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{getInputType(numericFeature)}</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>StringValidator</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{getInputType(stringFeature)}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>API Endpoints (Proxy Service)</h3>
+        <p>The new FeaturesService uses these endpoints:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Endpoint</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Service Method</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>GET</code></td>
+              <td style={{ padding: '8px' }}><code>/api/feature-management/features</code></td>
+              <td><code>service.get(providerName, providerKey)</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>PUT</code></td>
+              <td style={{ padding: '8px' }}><code>/api/feature-management/features</code></td>
+              <td><code>service.update(providerName, providerKey, input)</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Deprecation Notices</h3>
+        <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: '#2e2a1a', borderRadius: '4px', border: '1px solid #4a4a2e' }}>
+          <p style={{ color: '#f0ad4e', margin: 0, fontSize: '14px' }}>
+            <strong>Deprecated (to be deleted in v4.0):</strong>
+          </p>
+          <ul style={{ color: '#ccc', margin: '0.5rem 0 0 0', paddingLeft: '1.5rem', fontSize: '13px' }}>
+            <li><code>FeatureManagement.State</code> → Use <code>GetFeatureListResultDto</code></li>
+            <li><code>FeatureManagement.ValueType</code> → Use <code>IStringValueType</code></li>
+            <li><code>FeatureManagement.Feature</code> → Use <code>FeatureDto</code></li>
+            <li><code>FeatureManagement.Features</code> → Use <code>UpdateFeaturesDto</code></li>
+            <li><code>FeatureManagement.Provider</code> → Use <code>FeatureProviderDto</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function TestV310Features() {
   return (
     <div className="test-section">
@@ -630,13 +869,19 @@ console.log(service.apiName) // "default"`}</pre>
 export function TestFeatureManagementPage() {
   return (
     <div>
-      <h1>@abpjs/feature-management Tests (v3.1.0)</h1>
+      <h1>@abpjs/feature-management Tests (v3.2.0)</h1>
       <p>Testing feature management modal and hooks.</p>
       <p style={{ color: '#888', fontSize: '0.9rem' }}>
-        Version 3.1.0 - Added displayName property to Feature interface
+        Version 3.2.0 - Added proxy models, FeaturesService, ValueTypes enum, getInputType
       </p>
 
-      {/* v3.1.0 Features - Highlighted at top */}
+      {/* v3.2.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #8b5cf6', paddingTop: '1rem' }}>
+        v3.2.0 Changes
+      </h2>
+      <TestV320Features />
+
+      {/* v3.1.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #f59e0b', paddingTop: '1rem' }}>
         v3.1.0 Changes
       </h2>

@@ -192,3 +192,19 @@ export function getAbpRoutes(): ABP.FullRoute[] {
 export function clearAbpRoutes(): void {
   abpRoutes = [];
 }
+
+/**
+ * Reload the current route
+ * In React, this typically triggers a page reload or route refresh
+ *
+ * Note: This is a simplified version of Angular's router reload.
+ * In React, you may want to use react-router's navigate with replace
+ * or implement a custom refresh mechanism.
+ *
+ * @since 3.2.0
+ */
+export function reloadRoute(): void {
+  // In React/SPA context, we reload the current page
+  // This is equivalent to Angular's router reload behavior
+  window.location.reload();
+}

@@ -1,6 +1,7 @@
 /**
  * Tests for module exports
- * @abpjs/language-management v2.4.0
+ * @abpjs/language-management v3.2.0
+ * @updated 3.2.0 - Added proxy subpackage exports tests
  */
 import { describe, it, expect, vi } from 'vitest';
 
@@ -168,6 +169,69 @@ describe('Module exports', () => {
       const mockRestService = { request: vi.fn() };
       const service = new LanguageManagementService(mockRestService as never);
       expect(service.apiName).toBe('default');
+    });
+  });
+
+  describe('Proxy exports (v3.2.0)', () => {
+    it('should export LanguageService from index', async () => {
+      const { LanguageService } = await import('../index');
+      expect(LanguageService).toBeDefined();
+      expect(typeof LanguageService).toBe('function');
+    });
+
+    it('should export LanguageTextService from index', async () => {
+      const { LanguageTextService } = await import('../index');
+      expect(LanguageTextService).toBeDefined();
+      expect(typeof LanguageTextService).toBe('function');
+    });
+
+    it('should be able to instantiate LanguageService with mock', async () => {
+      const { LanguageService } = await import('../index');
+      const mockRestService = { request: vi.fn() };
+      const service = new LanguageService(mockRestService as never);
+      expect(service).toBeInstanceOf(LanguageService);
+      expect(service.apiName).toBe('default');
+    });
+
+    it('should be able to instantiate LanguageTextService with mock', async () => {
+      const { LanguageTextService } = await import('../index');
+      const mockRestService = { request: vi.fn() };
+      const service = new LanguageTextService(mockRestService as never);
+      expect(service).toBeInstanceOf(LanguageTextService);
+      expect(service.apiName).toBe('default');
+    });
+
+    it('should export proxy services from proxy subpackage', async () => {
+      const proxy = await import('../proxy');
+      expect(proxy.LanguageService).toBeDefined();
+      expect(proxy.LanguageTextService).toBeDefined();
+    });
+
+    it('should have LanguageService with all required methods', async () => {
+      const { LanguageService } = await import('../index');
+      const mockRestService = { request: vi.fn() };
+      const service = new LanguageService(mockRestService as never);
+
+      expect(typeof service.create).toBe('function');
+      expect(typeof service.delete).toBe('function');
+      expect(typeof service.get).toBe('function');
+      expect(typeof service.getAllList).toBe('function');
+      expect(typeof service.getCulturelist).toBe('function');
+      expect(typeof service.getList).toBe('function');
+      expect(typeof service.getResources).toBe('function');
+      expect(typeof service.setAsDefault).toBe('function');
+      expect(typeof service.update).toBe('function');
+    });
+
+    it('should have LanguageTextService with all required methods', async () => {
+      const { LanguageTextService } = await import('../index');
+      const mockRestService = { request: vi.fn() };
+      const service = new LanguageTextService(mockRestService as never);
+
+      expect(typeof service.get).toBe('function');
+      expect(typeof service.getList).toBe('function');
+      expect(typeof service.restoreToDefault).toBe('function');
+      expect(typeof service.update).toBe('function');
     });
   });
 });

@@ -147,9 +147,18 @@ describe('TextTemplateManagementStateService', () => {
 
       const result = await service.dispatchGetTemplateContent({
         templateName: 'EmailTemplate',
+        cultureName: 'en',
       });
 
       expect(result.content).toBe('Test content');
+    });
+
+    it('should throw error if cultureName is not provided', async () => {
+      await expect(
+        service.dispatchGetTemplateContent({
+          templateName: 'EmailTemplate',
+        })
+      ).rejects.toThrow('cultureName is required for getting template content');
     });
   });
 
@@ -213,14 +222,12 @@ describe('TextTemplateManagementStateService', () => {
       expect(content?.content).toBe('Default content');
     });
 
-    it('should not refresh if no cultureName provided', async () => {
-      vi.mocked(mockRestService.request).mockResolvedValue(undefined);
-
-      await service.dispatchRestoreToDefault({
-        templateName: 'EmailTemplate',
-      });
-
-      expect(mockRestService.request).toHaveBeenCalledTimes(1);
+    it('should throw error if cultureName is not provided', async () => {
+      await expect(
+        service.dispatchRestoreToDefault({
+          templateName: 'EmailTemplate',
+        })
+      ).rejects.toThrow('cultureName is required for restoring template content');
     });
   });
 

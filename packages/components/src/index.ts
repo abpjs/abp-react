@@ -1,7 +1,7 @@
 /**
- * @abpjs/components v3.1.0
+ * @abpjs/components v3.2.0
  * ABP Framework shared components for React
- * Translated from @abp/ng.components v3.1.0
+ * Translated from @abp/ng.components v3.2.0
  *
  * This package provides reusable UI components for ABP applications.
  *
@@ -12,6 +12,8 @@
  * - Checkable nodes
  * - Drag and drop support
  * - Context menus
+ * - Custom node templates (v3.2.0)
+ * - Custom expanded icon templates (v3.2.0)
  *
  * Import from '@abpjs/components/tree' for tree-specific exports.
  *
@@ -22,6 +24,16 @@
  * const adapter = new TreeAdapter(flatList);
  * return <Tree nodes={adapter.getTree()} />;
  * ```
+ *
+ * ## Changelog
+ *
+ * ### v3.2.0
+ * - Tree: Added `customNodeTemplate` prop for custom node rendering
+ * - Tree: Added `expandedIconTemplate` prop for custom expand/collapse icons
+ * - Tree: Added `TreeNodeTemplateContext` and `ExpandedIconTemplateContext` types
+ * - TreeAdapter: Added `handleUpdate({ key, children })` method
+ * - TreeAdapter: Added `updateTreeFromList(list)` method
+ * - TreeAdapter: `handleDrop` and `handleRemove` now use destructured parameters
  */
 
 // Re-export tree module for convenience

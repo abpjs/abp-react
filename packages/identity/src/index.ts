@@ -2,7 +2,7 @@
  * @abpjs/identity
  *
  * ABP Framework identity components for React.
- * Translated from @abp/ng.identity version 3.1.0.
+ * Translated from @abp/ng.identity version 3.2.0.
  *
  * This package provides:
  * - Identity models (User, Role, etc.)
@@ -13,6 +13,15 @@
  * - Route path constants for navigation
  * - Component and route name enums for customization (v2.7.0)
  * - Config subpackage with route providers and policy names (v3.0.0)
+ * - Proxy services and models for typed API operations (v3.2.0)
+ *
+ * Changes in v3.2.0:
+ * - Added new proxy services: IdentityRoleService, IdentityUserService,
+ *   IdentityUserLookupService, ProfileService
+ * - Added new proxy models: IdentityRoleDto, IdentityUserDto, ProfileDto, etc.
+ * - State interface now uses PagedResultDto and new proxy DTOs
+ * - Deprecated legacy types (RoleItem, UserItem, etc.) - to be deleted in v4.0
+ * - Added UserData model for user lookup operations
  *
  * Changes in v3.1.0:
  * - Version bump only (internal Angular type reference updates, no functional changes)
@@ -107,6 +116,9 @@ export * from './enums';
 
 // Models
 export * from './models';
+
+// Proxy (v3.2.0)
+export * from './proxy';
 
 // Services
 export * from './services';

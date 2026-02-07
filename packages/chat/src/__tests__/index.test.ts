@@ -1,6 +1,13 @@
 /**
  * Tests for @abpjs/chat package exports
- * @abpjs/chat v3.0.0
+ * @abpjs/chat v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - Version bump only (dependency updates to @abp/ng.theme.shared ~3.2.0)
+ * - No public API changes
+ *
+ * Changes in v3.1.0:
+ * - Internal Angular refactoring (no public API changes)
  */
 import { describe, it, expect } from 'vitest';
 import * as chatExports from '../index';

@@ -1,7 +1,24 @@
 /**
  * @abpjs/core
  * ABP Framework Core module for React
- * Translated from @abp/ng.core v3.0.0
+ * Translated from @abp/ng.core v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - Added ApplicationConfiguration.CurrentUser fields: emailVerified, name, phoneNumber, phoneNumberVerified, surName
+ * - Added ReplaceableComponentsService for component replacement (recommended over deprecated AddReplaceableComponent)
+ * - Added DeepPartial utility type
+ * - Added InternalStore class for lightweight internal state management
+ * - Added file-utils: downloadBlob() for downloading Blob as file
+ * - Added string-utils: interpolate() for parameter substitution
+ * - Added route-utils: reloadRoute() for route reloading
+ * - Added oAuthStorage and clearOAuthStorage() for OAuth storage management
+ * - Added ConfigStateService.getLocalizationResource() method
+ * - Added LocalizationService.getResource() method
+ * - Updated Config.ApiConfig to use type intersection
+ * - Updated Rest.Request.responseType to use inline literal types
+ * - Added NodeKey type for tree utilities
+ * - Deprecated AddReplaceableComponent action (use ReplaceableComponentsService instead)
+ * - Deprecated ReplaceableComponentsState (use ReplaceableComponentsService instead)
  *
  * Changes in v3.0.0:
  * - Added ApplicationConfiguration.CurrentUser.roles field
@@ -60,7 +77,7 @@
  * - Added @angular/localize dependency (Angular-specific, not applicable to React)
  *
  * @since 0.7.6
- * @updated 3.0.0
+ * @updated 3.2.0
  */
 
 // Models

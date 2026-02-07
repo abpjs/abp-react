@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/theme-basic",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "ABP Framework Theme Basic components for React - translated from @abp/ng.theme.basic",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -43,7 +43,7 @@
     "react-icons": "^5.0.0"
   },
   "devDependencies": {
-    "@abp/ng.theme.basic": "3.1.0",
+    "@abp/ng.theme.basic": "3.2.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@vitest/coverage-v8": "^1.6.0",

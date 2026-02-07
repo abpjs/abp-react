@@ -1,7 +1,22 @@
 /**
  * @abpjs/language-management
  * ABP Framework Language Management module for React
- * Translated from @volo/abp.ng.language-management v3.1.0
+ * Translated from @volo/abp.ng.language-management v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - Added proxy subpackage with typed DTOs and services:
+ *   - LanguageService proxy for language CRUD operations
+ *   - LanguageTextService proxy for localization text operations
+ *   - CreateLanguageDto, UpdateLanguageDto for language input
+ *   - LanguageDto for language entity response
+ *   - LanguageTextDto for localization string response
+ *   - CultureInfoDto for culture information
+ *   - LanguageResourceDto for localization resources
+ *   - GetLanguagesTextsInput for query parameters
+ * - State now uses new proxy types (ListResultDto<LanguageDto>, PagedResultDto<LanguageTextDto>)
+ * - LanguageManagementStateService now uses proxy services internally
+ * - Extension tokens now use proxy types (LanguageDto, LanguageTextDto)
+ * - Deprecated LanguageManagement namespace types (to be removed in v4.0)
  *
  * Changes in v3.1.0:
  * - Internal type reference updates (no functional changes)
@@ -38,11 +53,14 @@
  * - No functional code changes
  *
  * @since 2.0.0
- * @updated 3.1.0
+ * @updated 3.2.0
  */
 
 // Config (v3.0.0)
 export * from './config';
+
+// Proxy (v3.2.0)
+export * from './proxy';
 
 // Guards (v3.0.0)
 export * from './guards';

@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/text-template-management",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "ABP Framework text-template-management components for React - translated from @volo/abp.ng.text-template-management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -41,7 +41,7 @@
     "@abpjs/theme-shared": "workspace:*"
   },
   "devDependencies": {
-    "@volo/abp.ng.text-template-management": "3.1.0",
+    "@volo/abp.ng.text-template-management": "3.2.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.6.1",

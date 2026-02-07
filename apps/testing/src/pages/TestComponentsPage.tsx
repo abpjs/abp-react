@@ -2,9 +2,12 @@
  * Test page for @abpjs/components package
  * Tests: Tree component, TreeAdapter, BaseNode models
  * @version 3.1.0 - Initial implementation with Tree component
+ * @version 3.2.0 - Custom templates (customNodeTemplate, expandedIconTemplate), handleUpdate, updateTreeFromList
+ * @version 3.3.0 - Chakra UI integration, slotProps customization
  */
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { Menu } from '@chakra-ui/react'
 import {
   Tree,
   TreeAdapter,
@@ -14,7 +17,13 @@ import {
   createMapFromList,
   defaultNameResolver,
 } from '@abpjs/components'
-import type { BaseNode, TreeNodeData, DropEvent } from '@abpjs/components'
+import type {
+  BaseNode,
+  TreeNodeData,
+  DropEvent,
+  TreeNodeTemplateContext,
+  ExpandedIconTemplateContext,
+} from '@abpjs/components'
 
 // Sample data interface
 interface OrgUnit extends BaseNode {
@@ -202,26 +211,17 @@ function TestTreeContextMenu() {
   };
 
   const renderMenu = (node: TreeNodeData<OrgUnit>) => (
-    <div style={{ padding: '0.5rem 0' }}>
-      <button
-        onClick={() => handleMenuAction('Edit', node)}
-        style={{ display: 'block', width: '100%', padding: '0.5rem 1rem', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}
-      >
+    <>
+      <Menu.Item value="edit" onClick={() => handleMenuAction('Edit', node)}>
         Edit
-      </button>
-      <button
-        onClick={() => handleMenuAction('Add Child', node)}
-        style={{ display: 'block', width: '100%', padding: '0.5rem 1rem', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}
-      >
+      </Menu.Item>
+      <Menu.Item value="add" onClick={() => handleMenuAction('Add Child', node)}>
         Add Child
-      </button>
-      <button
-        onClick={() => handleMenuAction('Delete', node)}
-        style={{ display: 'block', width: '100%', padding: '0.5rem 1rem', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', color: '#e74c3c' }}
-      >
+      </Menu.Item>
+      <Menu.Item value="delete" color="red.500" onClick={() => handleMenuAction('Delete', node)}>
         Delete
-      </button>
-    </div>
+      </Menu.Item>
+    </>
   );
 
   return (
@@ -417,6 +417,334 @@ function TestUtilityFunctions() {
   );
 }
 
+// v3.2.0: Custom Node Template Demo
+function TestCustomNodeTemplate() {
+  const [expandedKeys, setExpandedKeys] = useState<string[]>(['1', '2']);
+  const [templateStyle, setTemplateStyle] = useState<'badge' | 'icon' | 'colored'>('badge');
+
+  const adapter = useMemo(() => {
+    return new TreeAdapter(sampleOrgUnits.map(item => ({ ...item })));
+  }, []);
+
+  // Different custom node templates
+  const badgeTemplate = (ctx: TreeNodeTemplateContext<OrgUnit>) => (
+    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <span>{ctx.node.title}</span>
+      {ctx.node.entity.code && (
+        <span style={{
+          background: ctx.isSelected ? '#fff' : '#646cff',
+          color: ctx.isSelected ? '#646cff' : '#fff',
+          padding: '2px 6px',
+          borderRadius: '4px',
+          fontSize: '10px',
+          fontWeight: 'bold',
+        }}>
+          {ctx.node.entity.code}
+        </span>
+      )}
+      {ctx.isChecked && <span style={{ color: '#2ecc71' }}>✓</span>}
+    </span>
+  );
+
+  const iconTemplate = (ctx: TreeNodeTemplateContext<OrgUnit>) => (
+    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <span style={{ fontSize: '16px' }}>
+        {ctx.level === 0 ? '🏢' : ctx.level === 1 ? '📁' : ctx.node.children.length > 0 ? '📂' : '📄'}
+      </span>
+      <span>{ctx.node.title}</span>
+    </span>
+  );
+
+  const coloredTemplate = (ctx: TreeNodeTemplateContext<OrgUnit>) => {
+    const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6'];
+    const color = colors[ctx.level % colors.length];
+    return (
+      <span style={{
+        color: ctx.isSelected ? '#fff' : color,
+        fontWeight: ctx.level === 0 ? 'bold' : 'normal',
+      }}>
+        {'—'.repeat(ctx.level)} {ctx.node.title}
+      </span>
+    );
+  };
+
+  const templates = {
+    badge: badgeTemplate,
+    icon: iconTemplate,
+    colored: coloredTemplate,
+  };
+
+  return (
+    <div className="test-section">
+      <h2>Custom Node Template (v3.2.0)</h2>
+
+      <div className="test-card">
+        <h3>Template Styles</h3>
+        <p>Choose a template style to see different custom node rendering:</p>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button
+            onClick={() => setTemplateStyle('badge')}
+            style={{ background: templateStyle === 'badge' ? '#646cff' : undefined }}
+          >
+            Badge Style
+          </button>
+          <button
+            onClick={() => setTemplateStyle('icon')}
+            style={{ background: templateStyle === 'icon' ? '#646cff' : undefined }}
+          >
+            Icon Style
+          </button>
+          <button
+            onClick={() => setTemplateStyle('colored')}
+            style={{ background: templateStyle === 'colored' ? '#646cff' : undefined }}
+          >
+            Colored Style
+          </button>
+        </div>
+        <div style={{ border: '1px solid #333', borderRadius: '8px', padding: '1rem' }}>
+          <Tree<OrgUnit>
+            nodes={adapter.getTree()}
+            expandedKeys={expandedKeys}
+            customNodeTemplate={templates[templateStyle]}
+            onExpandedKeysChange={setExpandedKeys}
+          />
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>TreeNodeTemplateContext</h3>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`interface TreeNodeTemplateContext<T> {
+  node: TreeNodeData<T>;  // The node being rendered
+  isExpanded: boolean;    // Whether node is expanded
+  isSelected: boolean;    // Whether node is selected
+  isChecked: boolean;     // Whether node is checked
+  level: number;          // Nesting level (0 = root)
+}`}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+// v3.2.0: Custom Expanded Icon Template Demo
+function TestExpandedIconTemplate() {
+  const [expandedKeys, setExpandedKeys] = useState<string[]>(['1', '2']);
+  const [iconStyle, setIconStyle] = useState<'plus' | 'arrow' | 'folder' | 'chevron'>('plus');
+
+  const adapter = useMemo(() => {
+    return new TreeAdapter(sampleOrgUnits.map(item => ({ ...item })));
+  }, []);
+
+  // Different expanded icon templates
+  const plusTemplate = (ctx: ExpandedIconTemplateContext<OrgUnit>) => (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '16px',
+      height: '16px',
+      border: '1px solid #888',
+      borderRadius: '2px',
+      fontSize: '12px',
+      fontWeight: 'bold',
+    }}>
+      {ctx.isExpanded ? '−' : '+'}
+    </span>
+  );
+
+  const arrowTemplate = (ctx: ExpandedIconTemplateContext<OrgUnit>) => (
+    <span style={{
+      display: 'inline-block',
+      transition: 'transform 0.2s',
+      transform: ctx.isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+    }}>
+      ➤
+    </span>
+  );
+
+  const folderTemplate = (ctx: ExpandedIconTemplateContext<OrgUnit>) => (
+    <span style={{ fontSize: '14px' }}>
+      {ctx.isExpanded ? '📂' : '📁'}
+    </span>
+  );
+
+  const chevronTemplate = (ctx: ExpandedIconTemplateContext<OrgUnit>) => (
+    <span style={{
+      display: 'inline-block',
+      transition: 'transform 0.2s',
+      transform: ctx.isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+      color: '#646cff',
+    }}>
+      ›
+    </span>
+  );
+
+  const templates = {
+    plus: plusTemplate,
+    arrow: arrowTemplate,
+    folder: folderTemplate,
+    chevron: chevronTemplate,
+  };
+
+  return (
+    <div className="test-section">
+      <h2>Custom Expanded Icon Template (v3.2.0)</h2>
+
+      <div className="test-card">
+        <h3>Icon Styles</h3>
+        <p>Choose an icon style for expand/collapse indicators:</p>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button
+            onClick={() => setIconStyle('plus')}
+            style={{ background: iconStyle === 'plus' ? '#646cff' : undefined }}
+          >
+            [+/-] Style
+          </button>
+          <button
+            onClick={() => setIconStyle('arrow')}
+            style={{ background: iconStyle === 'arrow' ? '#646cff' : undefined }}
+          >
+            Arrow Style
+          </button>
+          <button
+            onClick={() => setIconStyle('folder')}
+            style={{ background: iconStyle === 'folder' ? '#646cff' : undefined }}
+          >
+            Folder Style
+          </button>
+          <button
+            onClick={() => setIconStyle('chevron')}
+            style={{ background: iconStyle === 'chevron' ? '#646cff' : undefined }}
+          >
+            Chevron Style
+          </button>
+        </div>
+        <div style={{ border: '1px solid #333', borderRadius: '8px', padding: '1rem' }}>
+          <Tree<OrgUnit>
+            nodes={adapter.getTree()}
+            expandedKeys={expandedKeys}
+            expandedIconTemplate={templates[iconStyle]}
+            onExpandedKeysChange={setExpandedKeys}
+          />
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>ExpandedIconTemplateContext</h3>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`interface ExpandedIconTemplateContext<T> {
+  node: TreeNodeData<T>;  // The node for this icon
+  isExpanded: boolean;    // Whether node is expanded
+}`}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+// v3.2.0: handleUpdate and updateTreeFromList Demo
+function TestTreeAdapterV320() {
+  const [data, setData] = useState(() => sampleOrgUnits.slice(0, 5).map(item => ({ ...item })));
+  const [log, setLog] = useState<string[]>([]);
+
+  const adapter = useMemo(() => new TreeAdapter(data), [data]);
+
+  const handleUpdateChildren = () => {
+    // Replace children of Engineering (id: 2) with new teams
+    const newChildren: OrgUnit[] = [
+      { id: 'new-1', parentId: '2', name: 'AI Team', displayName: 'AI Team', code: 'AI' },
+      { id: 'new-2', parentId: '2', name: 'ML Team', displayName: 'ML Team', code: 'ML' },
+      { id: 'new-3', parentId: '2', name: 'Data Team', displayName: 'Data Team', code: 'DATA' },
+    ];
+
+    adapter.handleUpdate({ key: '2', children: newChildren });
+    setData([...adapter.getList()]);
+    setLog(prev => ['handleUpdate: Replaced Engineering children with AI, ML, Data teams', ...prev.slice(0, 4)]);
+  };
+
+  const handleReplaceTree = () => {
+    // Replace entire tree with new data
+    const newList: OrgUnit[] = [
+      { id: 'corp', parentId: null, name: 'New Corp', displayName: 'New Corporation', code: 'NCORP' },
+      { id: 'tech', parentId: 'corp', name: 'Technology', displayName: 'Technology Division', code: 'TECH' },
+      { id: 'ops', parentId: 'corp', name: 'Operations', displayName: 'Operations Division', code: 'OPS' },
+    ];
+
+    adapter.updateTreeFromList(newList);
+    setData([...adapter.getList()]);
+    setLog(prev => ['updateTreeFromList: Replaced entire tree with New Corporation structure', ...prev.slice(0, 4)]);
+  };
+
+  const handleReset = () => {
+    setData(sampleOrgUnits.slice(0, 5).map(item => ({ ...item })));
+    setLog(prev => ['Reset: Restored original sample data', ...prev.slice(0, 4)]);
+  };
+
+  return (
+    <div className="test-section">
+      <h2>TreeAdapter New Methods (v3.2.0)</h2>
+
+      <div className="test-card">
+        <h3>handleUpdate & updateTreeFromList</h3>
+        <p>New methods for updating tree data:</p>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          <button onClick={handleUpdateChildren}>
+            handleUpdate (Replace Engineering Children)
+          </button>
+          <button onClick={handleReplaceTree}>
+            updateTreeFromList (Replace Entire Tree)
+          </button>
+          <button onClick={handleReset} style={{ background: '#e74c3c' }}>
+            Reset
+          </button>
+        </div>
+        <div style={{ border: '1px solid #333', borderRadius: '8px', padding: '1rem' }}>
+          <Tree<OrgUnit>
+            nodes={adapter.getTree()}
+            expandedKeys={data.map(d => d.id)}
+          />
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>Operation Log</h3>
+        {log.length > 0 ? (
+          <ul style={{ margin: 0, padding: '0 0 0 1.5rem' }}>
+            {log.map((entry, i) => (
+              <li key={i} style={{ color: i === 0 ? '#2ecc71' : '#888' }}>{entry}</li>
+            ))}
+          </ul>
+        ) : (
+          <p style={{ color: '#888' }}>Click buttons above to see operations</p>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>New v3.2.0 Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>handleUpdate({'{ key, children }'})</code></td>
+              <td>Replaces children of a node with new children</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a2e1a' }}>
+              <td style={{ padding: '8px' }}><code>updateTreeFromList(list)</code></td>
+              <td>Replaces internal list and rebuilds tree</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function TestBaseNodeModel() {
   return (
     <div className="test-section">
@@ -483,18 +811,95 @@ const adapter = new TreeAdapter(data);
   );
 }
 
+// v3.3.0: slotProps Customization Demo
+function TestTreeSlotProps() {
+  const [expandedKeys, setExpandedKeys] = useState<string[]>(['1', '2']);
+  const [selectedNode, setSelectedNode] = useState<OrgUnit | undefined>();
+  const [checkedKeys, setCheckedKeys] = useState<string[]>(['5']);
+
+  const adapter = useMemo(() => {
+    return new TreeAdapter(sampleOrgUnits.map(item => ({ ...item })));
+  }, []);
+
+  return (
+    <div className="test-section">
+      <h2>Tree slotProps Customization (v3.3.0)</h2>
+
+      <div className="test-card">
+        <h3>Customized via slotProps</h3>
+        <p>The Tree now uses Chakra UI internally. Use <code>slotProps</code> to customize individual elements:</p>
+        <div style={{ border: '1px solid #333', borderRadius: '8px', padding: '1rem', marginTop: '0.5rem' }}>
+          <Tree<OrgUnit>
+            nodes={adapter.getTree()}
+            expandedKeys={expandedKeys}
+            selectedNode={selectedNode}
+            checkedKeys={checkedKeys}
+            checkable
+            onExpandedKeysChange={setExpandedKeys}
+            onSelectedNodeChange={setSelectedNode}
+            onCheckedKeysChange={setCheckedKeys}
+            slotProps={{
+              root: { p: 3, borderRadius: 'md' },
+              checkbox: { colorPalette: 'teal', size: 'md' },
+              title: { fontWeight: 'medium' },
+              selectedNode: { bg: 'teal.600', color: 'white' },
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>Available Slots</h3>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`interface TreeSlotProps {
+  root?: SystemStyleObject;           // Root container
+  nodeContent?: SystemStyleObject;    // Each node row
+  selectedNode?: SystemStyleObject;   // Selected state override
+  dragOverNode?: SystemStyleObject;   // Drag-over state override
+  switcher?: { size, variant, colorPalette }
+  checkbox?: { colorPalette, size }
+  title?: SystemStyleObject;          // Title text
+  menuTrigger?: { size, variant, colorPalette }
+  menuContent?: SystemStyleObject;    // Menu popover
+  childrenContainer?: SystemStyleObject;
+}`}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
 export function TestComponentsPage() {
   return (
     <div>
-      <h1>@abpjs/components Tests (v3.1.0)</h1>
+      <h1>@abpjs/components Tests (v3.3.0)</h1>
       <p>Testing Tree component, TreeAdapter, and utility functions.</p>
       <p style={{ color: '#888', fontSize: '0.9rem' }}>
-        Version 3.1.0 - Initial implementation with Tree component and utilities
+        Version 3.3.0 - Chakra UI integration, slotProps customization
       </p>
 
       <div style={{ marginBottom: '1rem' }}>
         <Link to="/" style={{ color: '#646cff' }}>&larr; Back to Home</Link>
       </div>
+
+      {/* v3.3.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
+        v3.3.0 New Features
+      </h2>
+      <TestTreeSlotProps />
+
+      {/* v3.2.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
+        v3.2.0 Features
+      </h2>
+      <TestCustomNodeTemplate />
+      <TestExpandedIconTemplate />
+      <TestTreeAdapterV320 />
+
+      {/* Core Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #646cff', paddingTop: '1rem' }}>
+        Core Tree Features
+      </h2>
 
       {/* Basic Tree */}
       <TestTreeBasic />
