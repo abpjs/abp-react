@@ -1,14 +1,28 @@
 /**
  * SaaS State Service
- * Translated from @volo/abp.ng.saas v2.0.0
+ * Translated from @volo/abp.ng.saas v3.2.0
  *
  * Provides a stateful facade over SaaS operations,
  * maintaining internal state that mirrors the Angular NGXS store pattern.
+ *
+ * @updated 3.2.0 - Now uses EditionService and TenantService proxy services internally
  */
 
-import type { RestService } from '@abpjs/core';
+import type { RestService, PagedResultDto } from '@abpjs/core';
 import type { Saas } from '../models';
-import { SaasService } from './saas.service';
+import { TenantService } from '../proxy/host/tenant.service';
+import { EditionService } from '../proxy/host/edition.service';
+import type {
+  EditionDto,
+  SaasTenantDto,
+  SaasTenantCreateDto,
+  SaasTenantUpdateDto,
+  EditionCreateDto,
+  EditionUpdateDto,
+  GetTenantsInput,
+  GetEditionsInput,
+} from '../proxy/host/dtos/models';
+import type { GetEditionUsageStatisticsResult } from '../proxy/host/models';
 
 /**
  * State service for SaaS operations.
@@ -16,6 +30,7 @@ import { SaasService } from './saas.service';
  * mirroring the Angular NGXS store pattern.
  *
  * @since 2.0.0
+ * @updated 3.2.0 - Now uses EditionService and TenantService proxy services internally
  *
  * @example
  * ```tsx
@@ -30,7 +45,8 @@ import { SaasService } from './saas.service';
  * ```
  */
 export class SaasStateService {
-  private service: SaasService;
+  private tenantService: TenantService;
+  private editionService: EditionService;
   private state: Saas.State = {
     tenants: { items: [], totalCount: 0 },
     editions: { items: [], totalCount: 0 },
@@ -39,7 +55,8 @@ export class SaasStateService {
   };
 
   constructor(rest: RestService) {
-    this.service = new SaasService(rest);
+    this.tenantService = new TenantService(rest);
+    this.editionService = new EditionService(rest);
   }
 
   // ========================
@@ -48,21 +65,24 @@ export class SaasStateService {
 
   /**
    * Get the current list of tenants from state
+   * @returns Array of tenants
    */
-  getTenants(): Saas.Tenant[] {
+  getTenants(): SaasTenantDto[] {
     return this.state.tenants?.items ?? [];
   }
 
   /**
    * Get the latest tenants from state (for dashboard widget)
    * @since 2.0.0
+   * @returns Array of latest tenants
    */
-  getLatestTenants(): Saas.Tenant[] {
+  getLatestTenants(): SaasTenantDto[] {
     return this.state.latestTenants ?? [];
   }
 
   /**
    * Get the total count of tenants from state
+   * @returns Total count
    */
   getTenantsTotalCount(): number {
     return this.state.tenants?.totalCount ?? 0;
@@ -70,13 +90,15 @@ export class SaasStateService {
 
   /**
    * Get the current list of editions from state
+   * @returns Array of editions
    */
-  getEditions(): Saas.Edition[] {
+  getEditions(): EditionDto[] {
     return this.state.editions?.items ?? [];
   }
 
   /**
    * Get the total count of editions from state
+   * @returns Total count
    */
   getEditionsTotalCount(): number {
     return this.state.editions?.totalCount ?? 0;
@@ -84,6 +106,7 @@ export class SaasStateService {
 
   /**
    * Get the usage statistics from state
+   * @returns Usage statistics data
    */
   getUsageStatistics(): Record<string, number> {
     return this.state.usageStatistics ?? {};
@@ -98,8 +121,8 @@ export class SaasStateService {
    * @param params - Optional query parameters for pagination and filtering
    * @returns Promise with the tenants response
    */
-  async dispatchGetTenants(params: Saas.TenantsQueryParams = {}): Promise<Saas.TenantsResponse> {
-    const response = await this.service.getTenants(params);
+  async dispatchGetTenants(params: GetTenantsInput = {}): Promise<PagedResultDto<SaasTenantDto>> {
+    const response = await this.tenantService.getList(params);
     this.state = {
       ...this.state,
       tenants: response,
@@ -112,8 +135,8 @@ export class SaasStateService {
    * @param id - The tenant ID
    * @returns Promise with the tenant
    */
-  async dispatchGetTenantById(id: string): Promise<Saas.Tenant> {
-    const tenant = await this.service.getTenantById(id);
+  async dispatchGetTenantById(id: string): Promise<SaasTenantDto> {
+    const tenant = await this.tenantService.get(id);
     return tenant;
   }
 
@@ -122,8 +145,8 @@ export class SaasStateService {
    * @param body - The tenant creation request
    * @returns Promise with the created tenant
    */
-  async dispatchCreateTenant(body: Saas.CreateTenantRequest): Promise<Saas.Tenant> {
-    const result = await this.service.createTenant(body);
+  async dispatchCreateTenant(body: SaasTenantCreateDto): Promise<SaasTenantDto> {
+    const result = await this.tenantService.create(body);
     // Refresh the list after create
     await this.dispatchGetTenants();
     return result;
@@ -131,11 +154,12 @@ export class SaasStateService {
 
   /**
    * Dispatch action to update a tenant
-   * @param body - The tenant update request
+   * @param payload - Object containing id and update data
    * @returns Promise with the updated tenant
    */
-  async dispatchUpdateTenant(body: Saas.UpdateTenantRequest): Promise<Saas.Tenant> {
-    const result = await this.service.updateTenant(body);
+  async dispatchUpdateTenant(payload: SaasTenantUpdateDto & { id: string }): Promise<SaasTenantDto> {
+    const { id, ...input } = payload;
+    const result = await this.tenantService.update(id, input);
     // Refresh the list after update
     await this.dispatchGetTenants();
     return result;
@@ -147,7 +171,7 @@ export class SaasStateService {
    * @returns Promise resolving when complete
    */
   async dispatchDeleteTenant(id: string): Promise<void> {
-    await this.service.deleteTenant(id);
+    await this.tenantService.delete(id);
     // Refresh the list after delete
     await this.dispatchGetTenants();
   }
@@ -157,13 +181,13 @@ export class SaasStateService {
    * @returns Promise with the latest tenants
    * @since 2.0.0
    */
-  async dispatchGetLatestTenants(): Promise<Saas.Tenant[]> {
-    const latestTenants = await this.service.getLatestTenants();
+  async dispatchGetLatestTenants(): Promise<PagedResultDto<SaasTenantDto>> {
+    const response = await this.tenantService.getList({ maxResultCount: 5, sorting: 'creationTime desc' });
     this.state = {
       ...this.state,
-      latestTenants,
+      latestTenants: response.items ?? [],
     };
-    return latestTenants;
+    return response;
   }
 
   // ========================
@@ -175,8 +199,8 @@ export class SaasStateService {
    * @param params - Optional query parameters for pagination and filtering
    * @returns Promise with the editions response
    */
-  async dispatchGetEditions(params: Saas.EditionsQueryParams = {}): Promise<Saas.EditionsResponse> {
-    const response = await this.service.getEditions(params);
+  async dispatchGetEditions(params: GetEditionsInput = {}): Promise<PagedResultDto<EditionDto>> {
+    const response = await this.editionService.getList(params);
     this.state = {
       ...this.state,
       editions: response,
@@ -189,8 +213,8 @@ export class SaasStateService {
    * @param id - The edition ID
    * @returns Promise with the edition
    */
-  async dispatchGetEditionById(id: string): Promise<Saas.Edition> {
-    const edition = await this.service.getEditionById(id);
+  async dispatchGetEditionById(id: string): Promise<EditionDto> {
+    const edition = await this.editionService.get(id);
     return edition;
   }
 
@@ -199,8 +223,8 @@ export class SaasStateService {
    * @param body - The edition creation request
    * @returns Promise with the created edition
    */
-  async dispatchCreateEdition(body: Saas.CreateEditionRequest): Promise<Saas.Edition> {
-    const result = await this.service.createEdition(body);
+  async dispatchCreateEdition(body: EditionCreateDto): Promise<EditionDto> {
+    const result = await this.editionService.create(body);
     // Refresh the list after create
     await this.dispatchGetEditions();
     return result;
@@ -208,11 +232,12 @@ export class SaasStateService {
 
   /**
    * Dispatch action to update an edition
-   * @param body - The edition update request
+   * @param payload - Object containing id and update data
    * @returns Promise with the updated edition
    */
-  async dispatchUpdateEdition(body: Saas.UpdateEditionRequest): Promise<Saas.Edition> {
-    const result = await this.service.updateEdition(body);
+  async dispatchUpdateEdition(payload: EditionUpdateDto & { id: string }): Promise<EditionDto> {
+    const { id, ...input } = payload;
+    const result = await this.editionService.update(id, input);
     // Refresh the list after update
     await this.dispatchGetEditions();
     return result;
@@ -224,7 +249,7 @@ export class SaasStateService {
    * @returns Promise resolving when complete
    */
   async dispatchDeleteEdition(id: string): Promise<void> {
-    await this.service.deleteEdition(id);
+    await this.editionService.delete(id);
     // Refresh the list after delete
     await this.dispatchGetEditions();
   }
@@ -237,8 +262,8 @@ export class SaasStateService {
    * Dispatch action to fetch usage statistics
    * @returns Promise with the usage statistics response
    */
-  async dispatchGetUsageStatistics(): Promise<Saas.UsageStatisticsResponse> {
-    const response = await this.service.getUsageStatistics();
+  async dispatchGetUsageStatistics(): Promise<GetEditionUsageStatisticsResult> {
+    const response = await this.editionService.getUsageStatistics();
     this.state = {
       ...this.state,
       usageStatistics: response.data,
