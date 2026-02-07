@@ -128,6 +128,85 @@ describe('ChatContacts', () => {
     expect(screen.getByText('Other Contacts')).toBeInTheDocument();
     expect(screen.getByTestId('chat-contact-user-3')).toBeInTheDocument();
   });
+
+  describe('formatDate display', () => {
+    it('should show "Yesterday" for messages from yesterday', () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const contacts: ChatContactDto[] = [
+        {
+          userId: 'user-y',
+          name: 'Yesterday',
+          surname: 'User',
+          username: 'yuser',
+          lastMessageSide: ChatMessageSide.Receiver,
+          lastMessage: 'Old message',
+          lastMessageDate: yesterday,
+          unreadMessageCount: 0,
+        },
+      ];
+      render(<ChatContacts contacts={contacts} />);
+      expect(screen.getByText('Yesterday')).toBeInTheDocument();
+    });
+
+    it('should show weekday for messages 2-6 days ago', () => {
+      const threeDaysAgo = new Date();
+      threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+      const expectedWeekday = threeDaysAgo.toLocaleDateString([], { weekday: 'short' });
+
+      const contacts: ChatContactDto[] = [
+        {
+          userId: 'user-w',
+          name: 'Weekday',
+          surname: 'User',
+          username: 'wuser',
+          lastMessageSide: ChatMessageSide.Receiver,
+          lastMessage: 'Older message',
+          lastMessageDate: threeDaysAgo,
+          unreadMessageCount: 0,
+        },
+      ];
+      render(<ChatContacts contacts={contacts} />);
+      expect(screen.getByText(expectedWeekday)).toBeInTheDocument();
+    });
+
+    it('should show month/day for messages older than 7 days', () => {
+      const tenDaysAgo = new Date();
+      tenDaysAgo.setDate(tenDaysAgo.getDate() - 10);
+      const expectedDate = tenDaysAgo.toLocaleDateString([], { month: 'short', day: 'numeric' });
+
+      const contacts: ChatContactDto[] = [
+        {
+          userId: 'user-o',
+          name: 'Old',
+          surname: 'User',
+          username: 'ouser',
+          lastMessageSide: ChatMessageSide.Receiver,
+          lastMessage: 'Very old message',
+          lastMessageDate: tenDaysAgo,
+          unreadMessageCount: 0,
+        },
+      ];
+      render(<ChatContacts contacts={contacts} />);
+      expect(screen.getByText(expectedDate)).toBeInTheDocument();
+    });
+  });
+
+  it('should apply custom className', () => {
+    render(<ChatContacts contacts={mockContacts} className="custom-contacts" />);
+    const container = screen.getByTestId('chat-contacts');
+    expect(container).toHaveClass('custom-contacts');
+  });
+
+  it('should filter contacts by surname', () => {
+    render(<ChatContacts contacts={mockContacts} />);
+    const search = screen.getByTestId('chat-contacts-search');
+
+    fireEvent.change(search, { target: { value: 'Doe' } });
+
+    expect(screen.getByTestId('chat-contact-user-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('chat-contact-user-2')).not.toBeInTheDocument();
+  });
 });
 
 describe('getContactName', () => {
