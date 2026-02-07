@@ -29,6 +29,34 @@ export interface BeforeDropEvent<T extends BaseNode = BaseNode> {
 }
 
 /**
+ * Context for custom node template rendering
+ * @since v3.2.0
+ */
+export interface TreeNodeTemplateContext<T extends BaseNode = BaseNode> {
+  /** The node being rendered */
+  node: TreeNodeData<T>;
+  /** Whether the node is expanded */
+  isExpanded: boolean;
+  /** Whether the node is selected */
+  isSelected: boolean;
+  /** Whether the node is checked */
+  isChecked: boolean;
+  /** Nesting level (0 for root) */
+  level: number;
+}
+
+/**
+ * Context for custom expanded icon template rendering
+ * @since v3.2.0
+ */
+export interface ExpandedIconTemplateContext<T extends BaseNode = BaseNode> {
+  /** The node for this icon */
+  node: TreeNodeData<T>;
+  /** Whether the node is expanded */
+  isExpanded: boolean;
+}
+
+/**
  * Props for the Tree component
  */
 export interface TreeProps<T extends BaseNode = BaseNode> {
@@ -52,6 +80,18 @@ export interface TreeProps<T extends BaseNode = BaseNode> {
   beforeDrop?: (event: BeforeDropEvent<T>) => boolean | Promise<boolean>;
   /** Context menu render function */
   menu?: (node: TreeNodeData<T>) => React.ReactNode;
+  /**
+   * Custom node template render function
+   * When provided, replaces the default node title rendering
+   * @since v3.2.0
+   */
+  customNodeTemplate?: (context: TreeNodeTemplateContext<T>) => React.ReactNode;
+  /**
+   * Custom expanded icon template render function
+   * When provided, replaces the default expand/collapse arrow
+   * @since v3.2.0
+   */
+  expandedIconTemplate?: (context: ExpandedIconTemplateContext<T>) => React.ReactNode;
   /** Called when checked keys change */
   onCheckedKeysChange?: (keys: string[]) => void;
   /** Called when expanded keys change */
@@ -79,6 +119,8 @@ interface TreeNodeProps<T extends BaseNode = BaseNode> {
   draggable?: boolean;
   isNodeSelected?: (node: TreeNodeData<T>) => boolean;
   menu?: (node: TreeNodeData<T>) => React.ReactNode;
+  customNodeTemplate?: (context: TreeNodeTemplateContext<T>) => React.ReactNode;
+  expandedIconTemplate?: (context: ExpandedIconTemplateContext<T>) => React.ReactNode;
   onToggle: (key: string) => void;
   onCheck: (key: string) => void;
   onSelect: (node: TreeNodeData<T>) => void;
@@ -100,6 +142,8 @@ function TreeNodeComponent<T extends BaseNode = BaseNode>({
   draggable,
   isNodeSelected,
   menu,
+  customNodeTemplate,
+  expandedIconTemplate,
   onToggle,
   onCheck,
   onSelect,
@@ -188,9 +232,13 @@ function TreeNodeComponent<T extends BaseNode = BaseNode>({
           aria-label={isExpanded ? 'Collapse' : 'Expand'}
         >
           {!node.isLeaf && (
-            <span className={`arrow ${isExpanded ? 'expanded' : ''}`}>
-              {isExpanded ? '▼' : '▶'}
-            </span>
+            expandedIconTemplate ? (
+              expandedIconTemplate({ node, isExpanded })
+            ) : (
+              <span className={`arrow ${isExpanded ? 'expanded' : ''}`}>
+                {isExpanded ? '▼' : '▶'}
+              </span>
+            )
           )}
         </span>
 
@@ -207,12 +255,22 @@ function TreeNodeComponent<T extends BaseNode = BaseNode>({
         )}
 
         {/* Node title */}
-        <span
-          className={`abp-tree-title ${node.disabled ? 'disabled' : ''}`}
-          title={node.title}
-        >
-          {node.title}
-        </span>
+        {customNodeTemplate ? (
+          customNodeTemplate({
+            node,
+            isExpanded,
+            isSelected,
+            isChecked,
+            level,
+          })
+        ) : (
+          <span
+            className={`abp-tree-title ${node.disabled ? 'disabled' : ''}`}
+            title={node.title}
+          >
+            {node.title}
+          </span>
+        )}
 
         {/* Context menu */}
         {menu && (
@@ -249,6 +307,8 @@ function TreeNodeComponent<T extends BaseNode = BaseNode>({
               draggable={draggable}
               isNodeSelected={isNodeSelected}
               menu={menu}
+              customNodeTemplate={customNodeTemplate}
+              expandedIconTemplate={expandedIconTemplate}
               onToggle={onToggle}
               onCheck={onCheck}
               onSelect={onSelect}
@@ -294,6 +354,8 @@ export function Tree<T extends BaseNode = BaseNode>({
   isNodeSelected,
   beforeDrop,
   menu,
+  customNodeTemplate,
+  expandedIconTemplate,
   onCheckedKeysChange,
   onExpandedKeysChange,
   onSelectedNodeChange,
@@ -434,6 +496,8 @@ export function Tree<T extends BaseNode = BaseNode>({
           draggable={draggable}
           isNodeSelected={isNodeSelected}
           menu={menu}
+          customNodeTemplate={customNodeTemplate}
+          expandedIconTemplate={expandedIconTemplate}
           onToggle={handleToggle}
           onCheck={handleCheck}
           onSelect={handleSelect}
