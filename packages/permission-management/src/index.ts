@@ -1,7 +1,20 @@
 /**
  * @abpjs/permission-management
  * ABP Framework Permission Management module for React
- * Translated from @abp/ng.permission-management v3.1.0
+ * Translated from @abp/ng.permission-management v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - New proxy service: PermissionsService with typed methods (get, update)
+ * - New proxy models: GetPermissionListResultDto, PermissionGrantInfoDto, PermissionGroupDto,
+ *   ProviderInfoDto, UpdatePermissionDto, UpdatePermissionsDto
+ * - Added PermissionWithStyle interface (replaces PermissionWithMargin internally)
+ * - Deprecated legacy types (to be deleted in v4.0):
+ *   - PermissionManagement.Response -> use GetPermissionListResultDto
+ *   - PermissionManagement.Group -> use PermissionGroupDto
+ *   - PermissionManagement.MinimumPermission -> use UpdatePermissionDto
+ *   - PermissionManagement.Permission -> use PermissionGrantInfoDto
+ *   - PermissionManagement.UpdateRequest -> use UpdatePermissionsDto
+ *   - PermissionWithMargin -> use PermissionWithStyle
  *
  * Changes in v3.1.0:
  * - Added shouldFetchAppConfig(providerKey, providerName) method to usePermissionManagement hook
@@ -58,3 +71,6 @@ export * from './hooks';
 
 // Components
 export * from './components';
+
+// Proxy (v3.2.0)
+export * from './proxy';

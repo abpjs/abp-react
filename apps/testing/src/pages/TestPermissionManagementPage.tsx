@@ -1,16 +1,29 @@
 /**
- * Test page for @abpjs/permission-management package v3.1.0
+ * Test page for @abpjs/permission-management package v3.2.0
  * Tests: PermissionManagementModal, usePermissionManagement hook, PermissionManagementStateService
+ *
+ * v3.2.0 Updates:
+ * - New proxy service: PermissionsService with typed methods (get, update)
+ * - New proxy models: GetPermissionListResultDto, PermissionGrantInfoDto, etc.
+ * - PermissionWithStyle type (replaces PermissionWithMargin)
+ * - Deprecated legacy types (to be removed in v4.0)
  */
-import { useState } from 'react'
-import { useAuth, useConfig, useCurrentUserInfo } from '@abpjs/core'
+import { useState, useMemo } from 'react'
+import { useAuth, useConfig, useCurrentUserInfo, useRestService } from '@abpjs/core'
 import {
   PermissionManagementModal,
   usePermissionManagement,
   PermissionManagementStateService,
   ePermissionManagementComponents,
+  // v3.2.0 proxy service
+  PermissionsService,
 } from '@abpjs/permission-management'
-import type { PermissionManagement } from '@abpjs/permission-management'
+import type {
+  PermissionManagement,
+  // v3.2.0 proxy models
+  GetPermissionListResultDto,
+  UpdatePermissionsDto,
+} from '@abpjs/permission-management'
 
 function TestPermissionModal() {
   const [roleModalVisible, setRoleModalVisible] = useState(false)
@@ -744,6 +757,224 @@ console.log(\`\${count} permissions granted\`);`}
   )
 }
 
+function TestV320Features() {
+  const restService = useRestService()
+  const { isAuthenticated } = useAuth()
+
+  // Initialize proxy service
+  const permissionsService = useMemo(() => new PermissionsService(restService), [restService])
+
+  // State for demo
+  const [testProviderKey, setTestProviderKey] = useState('')
+  const [testProviderName, setTestProviderName] = useState<'R' | 'U'>('R')
+  const [proxyResult, setProxyResult] = useState<GetPermissionListResultDto | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Demo: Fetch permissions using PermissionsService
+  const handleFetchWithProxy = async () => {
+    if (!testProviderKey) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      const result = await permissionsService.get(testProviderName, testProviderKey)
+      setProxyResult(result)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch permissions')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Demo: Update permissions using PermissionsService
+  const handleUpdateWithProxy = async () => {
+    if (!testProviderKey) return
+    setIsLoading(true)
+    setError(null)
+    try {
+      const input: UpdatePermissionsDto = { permissions: [] }
+      await permissionsService.update(testProviderName, testProviderKey, input)
+      setError(null)
+      alert('Permissions updated successfully (empty update for demo)')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update permissions')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.2.0</h2>
+
+      <div className="test-card">
+        <h3>New Proxy Service: PermissionsService</h3>
+        <p>v3.2.0 introduces a typed proxy service for direct API access:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { PermissionsService } from '@abpjs/permission-management'
+
+// Initialize with RestService
+const permissionsService = new PermissionsService(restService)
+
+// Get permissions
+const result = await permissionsService.get('R', 'role-id')
+
+// Update permissions
+await permissionsService.update('R', 'role-id', {
+  permissions: [
+    { name: 'AbpIdentity.Users', isGranted: true },
+  ]
+})`}</pre>
+
+        <h4 style={{ marginTop: '1rem' }}>Service Properties:</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Property</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>apiName</code></td>
+              <td style={{ padding: '8px' }}><code style={{ color: '#2ecc71' }}>{permissionsService.apiName}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>PermissionsService Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}><code>get(providerName, providerKey)</code></td><td>Get permissions for a provider</td></tr>
+            <tr><td style={{ padding: '8px' }}><code>update(providerName, providerKey, input)</code></td><td>Update permissions for a provider</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Interactive Demo</h3>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
+          <select
+            value={testProviderName}
+            onChange={(e) => setTestProviderName(e.target.value as 'R' | 'U')}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333'
+            }}
+          >
+            <option value="R">Role (R)</option>
+            <option value="U">User (U)</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Provider Key (ID)"
+            value={testProviderKey}
+            onChange={(e) => setTestProviderKey(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #333',
+              flex: 1
+            }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+          <button onClick={handleFetchWithProxy} disabled={!testProviderKey || !isAuthenticated || isLoading}>
+            {isLoading ? 'Loading...' : 'permissionsService.get()'}
+          </button>
+          <button onClick={handleUpdateWithProxy} disabled={!testProviderKey || !isAuthenticated || isLoading}>
+            {isLoading ? 'Loading...' : 'permissionsService.update()'}
+          </button>
+        </div>
+
+        {!isAuthenticated && (
+          <p style={{ color: '#f88', fontSize: '12px' }}>Login required</p>
+        )}
+
+        {error && (
+          <p style={{ color: '#f88', fontSize: '14px' }}>Error: {error}</p>
+        )}
+
+        {proxyResult && (
+          <div style={{ marginTop: '0.5rem' }}>
+            <p style={{ fontSize: '14px' }}><strong>Entity:</strong> {proxyResult.entityDisplayName}</p>
+            <p style={{ fontSize: '14px' }}><strong>Groups:</strong> {proxyResult.groups.length}</p>
+            {proxyResult.groups.length > 0 && (
+              <ul style={{ fontSize: '12px', margin: '0.25rem 0', paddingLeft: '1.5rem' }}>
+                {proxyResult.groups.slice(0, 5).map(group => (
+                  <li key={group.name}>{group.displayName} ({group.permissions.length} permissions)</li>
+                ))}
+                {proxyResult.groups.length > 5 && <li>... and {proxyResult.groups.length - 5} more</li>}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>New Proxy Models (DTOs)</h3>
+        <p>Typed DTOs for API requests and responses:</p>
+        <pre style={{ fontSize: '12px' }}>{`import type {
+  GetPermissionListResultDto,
+  PermissionGrantInfoDto,
+  PermissionGroupDto,
+  ProviderInfoDto,
+  UpdatePermissionDto,
+  UpdatePermissionsDto,
+} from '@abpjs/permission-management'`}</pre>
+      </div>
+
+      <div className="test-card">
+        <h3>PermissionWithStyle (replaces PermissionWithMargin)</h3>
+        <p>New interface for permissions with style property:</p>
+        <pre style={{ fontSize: '12px' }}>{`import type { PermissionWithStyle } from '@abpjs/permission-management'
+
+// v3.2.0: Uses style string instead of margin number
+const permission: PermissionWithStyle = {
+  name: 'AbpIdentity.Users.Create',
+  displayName: 'Create Users',
+  isGranted: true,
+  parentName: 'AbpIdentity.Users',
+  allowedProviders: ['R'],
+  grantedProviders: [],
+  style: 'margin-left: 24px', // CSS style string
+}`}</pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Deprecated Types</h3>
+        <p style={{ color: '#f88' }}>The following legacy types are deprecated in v3.2.0 (to be removed in v4.0):</p>
+        <ul style={{ fontSize: '14px' }}>
+          <li><code>PermissionManagement.Response</code> - Use <code>GetPermissionListResultDto</code></li>
+          <li><code>PermissionManagement.Group</code> - Use <code>PermissionGroupDto</code></li>
+          <li><code>PermissionManagement.MinimumPermission</code> - Use <code>UpdatePermissionDto</code></li>
+          <li><code>PermissionManagement.Permission</code> - Use <code>PermissionGrantInfoDto</code></li>
+          <li><code>PermissionManagement.UpdateRequest</code> - Use <code>UpdatePermissionsDto</code></li>
+          <li><code>PermissionWithMargin</code> - Use <code>PermissionWithStyle</code></li>
+        </ul>
+        <pre style={{ fontSize: '12px', marginTop: '0.5rem' }}>{`// Before (deprecated)
+import type { PermissionManagement, PermissionWithMargin } from '@abpjs/permission-management'
+const res: PermissionManagement.Response = ...
+const perm: PermissionWithMargin = { margin: 24, ... }
+
+// After (v3.2.0)
+import type { GetPermissionListResultDto, PermissionWithStyle } from '@abpjs/permission-management'
+const res: GetPermissionListResultDto = ...
+const perm: PermissionWithStyle = { style: 'margin-left: 24px', ... }`}</pre>
+      </div>
+    </div>
+  )
+}
+
 function TestV310Features() {
   const [testProviderKey, setTestProviderKey] = useState('')
   const [testProviderName, setTestProviderName] = useState<'R' | 'U'>('R')
@@ -1086,13 +1317,19 @@ function TestApiEndpoints() {
 export function TestPermissionManagementPage() {
   return (
     <div>
-      <h1>@abpjs/permission-management Tests v3.1.0</h1>
+      <h1>@abpjs/permission-management Tests v3.2.0</h1>
       <p>Testing permission management modal, hooks, and state service.</p>
-      <p style={{ color: '#9b59b6', fontSize: '0.9rem' }}>Version 3.1.0 - Added shouldFetchAppConfig method</p>
+      <p style={{ color: '#9333ea', fontSize: '0.9rem' }}>Version 3.2.0 - New proxy service and typed DTOs</p>
 
-      {/* v3.1.0 Features - Highlighted at top */}
+      {/* v3.2.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #9333ea', paddingTop: '1rem' }}>
+        v3.2.0 New Features
+      </h2>
+      <TestV320Features />
+
+      {/* v3.1.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #9b59b6', paddingTop: '1rem' }}>
-        v3.1.0 New Features
+        v3.1.0 Features
       </h2>
       <TestV310Features />
 
