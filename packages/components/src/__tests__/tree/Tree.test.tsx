@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
+import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
 import {
   Tree,
   TreeProps,
@@ -14,6 +15,10 @@ interface TestNode extends BaseNode {
   id: string;
   parentId: string | null;
   name: string;
+}
+
+function Wrapper({ children }: { children: React.ReactNode }) {
+  return <ChakraProvider value={defaultSystem}>{children}</ChakraProvider>;
 }
 
 describe('Tree Component', () => {
@@ -39,7 +44,8 @@ describe('Tree Component', () => {
         nodes={treeNodes}
         expandedKeys={['1', '2']}
         {...props}
-      />
+      />,
+      { wrapper: Wrapper }
     );
   };
 
@@ -71,14 +77,14 @@ describe('Tree Component', () => {
     });
 
     it('should render with custom style', () => {
-      const { container } = renderTree({ style: { border: '1px solid red' } });
-      const tree = container.querySelector('.abp-tree');
+      renderTree({ style: { border: '1px solid red' } });
+      const tree = screen.getByRole('tree');
       expect(tree).toHaveStyle({ border: '1px solid red' });
     });
 
     it('should render empty tree', () => {
-      const { container } = render(<Tree nodes={[]} />);
-      expect(container.querySelector('.abp-tree')).toBeInTheDocument();
+      render(<Tree nodes={[]} />, { wrapper: Wrapper });
+      expect(screen.getByRole('tree')).toBeInTheDocument();
     });
   });
 
@@ -87,11 +93,10 @@ describe('Tree Component', () => {
       const onExpandedKeysChange = vi.fn();
       renderTree({ expandedKeys: ['1'], onExpandedKeysChange });
 
-      // Click the expand/collapse arrow for Root 1
-      const toggleButton = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-switcher');
-      fireEvent.click(toggleButton!);
+      // Click the expand/collapse button for Root 1
+      const treeNode = screen.getByTestId('tree-node-1');
+      const toggleButton = within(treeNode).getByLabelText('Collapse');
+      fireEvent.click(toggleButton);
 
       expect(onExpandedKeysChange).toHaveBeenCalledWith([]);
     });
@@ -100,10 +105,9 @@ describe('Tree Component', () => {
       const onExpandedKeysChange = vi.fn();
       renderTree({ expandedKeys: [], onExpandedKeysChange });
 
-      const toggleButton = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-switcher');
-      fireEvent.click(toggleButton!);
+      const treeNode = screen.getByTestId('tree-node-1');
+      const toggleButton = within(treeNode).getByLabelText('Expand');
+      fireEvent.click(toggleButton);
 
       expect(onExpandedKeysChange).toHaveBeenCalledWith(['1']);
     });
@@ -114,10 +118,8 @@ describe('Tree Component', () => {
       const onSelectedNodeChange = vi.fn();
       renderTree({ onSelectedNodeChange });
 
-      const nodeContent = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
-      fireEvent.click(nodeContent!);
+      const nodeContent = screen.getByTestId('tree-node-content-1');
+      fireEvent.click(nodeContent);
 
       expect(onSelectedNodeChange).toHaveBeenCalledWith(
         expect.objectContaining({ id: '1', name: 'Root 1' })
@@ -127,10 +129,8 @@ describe('Tree Component', () => {
     it('should highlight selected node', () => {
       renderTree({ selectedNode: flatList[0] });
 
-      const nodeContent = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
-      expect(nodeContent).toHaveClass('selected');
+      const nodeContent = screen.getByTestId('tree-node-content-1');
+      expect(nodeContent).toHaveAttribute('data-selected');
     });
 
     it('should use custom isNodeSelected function', () => {
@@ -138,10 +138,8 @@ describe('Tree Component', () => {
         node.key === '5';
       renderTree({ isNodeSelected });
 
-      const root2Content = screen
-        .getByTestId('tree-node-5')
-        .querySelector('.abp-tree-node-content');
-      expect(root2Content).toHaveClass('selected');
+      const root2Content = screen.getByTestId('tree-node-content-5');
+      expect(root2Content).toHaveAttribute('data-selected');
     });
   });
 
@@ -173,9 +171,8 @@ describe('Tree Component', () => {
     it('should check node when checkbox is checked', () => {
       renderTree({ checkable: true, checkedKeys: ['1'] });
 
-      const checkbox = screen
-        .getByTestId('tree-node-1')
-        .querySelector('input[type="checkbox"]');
+      const nodeContent = screen.getByTestId('tree-node-content-1');
+      const checkbox = within(nodeContent).getByRole('checkbox');
       expect(checkbox).toBeChecked();
     });
 
@@ -187,10 +184,9 @@ describe('Tree Component', () => {
         onCheckedKeysChange,
       });
 
-      const checkbox = screen
-        .getByTestId('tree-node-1')
-        .querySelector('input[type="checkbox"]');
-      fireEvent.click(checkbox!);
+      const nodeContent = screen.getByTestId('tree-node-content-1');
+      const checkbox = within(nodeContent).getByRole('checkbox');
+      fireEvent.click(checkbox);
 
       expect(onCheckedKeysChange).toHaveBeenCalledWith([]);
     });
@@ -200,18 +196,14 @@ describe('Tree Component', () => {
     it('should set draggable attribute when draggable is true', () => {
       renderTree({ draggable: true });
 
-      const nodeContent = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
+      const nodeContent = screen.getByTestId('tree-node-content-1');
       expect(nodeContent).toHaveAttribute('draggable', 'true');
     });
 
     it('should not set draggable attribute when draggable is false', () => {
       renderTree({ draggable: false });
 
-      const nodeContent = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
+      const nodeContent = screen.getByTestId('tree-node-content-1');
       expect(nodeContent).not.toHaveAttribute('draggable', 'true');
     });
 
@@ -219,16 +211,12 @@ describe('Tree Component', () => {
       const onDrop = vi.fn();
       renderTree({ draggable: true, onDrop });
 
-      const sourceNode = screen
-        .getByTestId('tree-node-5')
-        .querySelector('.abp-tree-node-content');
-      const targetNode = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
+      const sourceNode = screen.getByTestId('tree-node-content-5');
+      const targetNode = screen.getByTestId('tree-node-content-1');
 
-      fireEvent.dragStart(sourceNode!);
-      fireEvent.dragOver(targetNode!);
-      fireEvent.drop(targetNode!);
+      fireEvent.dragStart(sourceNode);
+      fireEvent.dragOver(targetNode);
+      fireEvent.drop(targetNode);
 
       expect(onDrop).toHaveBeenCalled();
     });
@@ -238,16 +226,12 @@ describe('Tree Component', () => {
       const onDrop = vi.fn();
       renderTree({ draggable: true, beforeDrop, onDrop });
 
-      const sourceNode = screen
-        .getByTestId('tree-node-5')
-        .querySelector('.abp-tree-node-content');
-      const targetNode = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
+      const sourceNode = screen.getByTestId('tree-node-content-5');
+      const targetNode = screen.getByTestId('tree-node-content-1');
 
-      fireEvent.dragStart(sourceNode!);
-      fireEvent.dragOver(targetNode!);
-      fireEvent.drop(targetNode!);
+      fireEvent.dragStart(sourceNode);
+      fireEvent.dragOver(targetNode);
+      fireEvent.drop(targetNode);
 
       expect(beforeDrop).toHaveBeenCalled();
     });
@@ -257,16 +241,12 @@ describe('Tree Component', () => {
       const onDrop = vi.fn();
       renderTree({ draggable: true, beforeDrop, onDrop });
 
-      const sourceNode = screen
-        .getByTestId('tree-node-5')
-        .querySelector('.abp-tree-node-content');
-      const targetNode = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-node-content');
+      const sourceNode = screen.getByTestId('tree-node-content-5');
+      const targetNode = screen.getByTestId('tree-node-content-1');
 
-      fireEvent.dragStart(sourceNode!);
-      fireEvent.dragOver(targetNode!);
-      fireEvent.drop(targetNode!);
+      fireEvent.dragStart(sourceNode);
+      fireEvent.dragOver(targetNode);
+      fireEvent.drop(targetNode);
 
       // Wait for async beforeDrop to resolve
       await vi.waitFor(() => {
@@ -284,14 +264,16 @@ describe('Tree Component', () => {
       expect(menuTriggers.length).toBeGreaterThan(0);
     });
 
-    it('should show menu content when menu trigger is clicked', () => {
+    it('should show menu content when menu trigger is clicked', async () => {
       const menu = () => <div>Menu Content</div>;
       renderTree({ menu });
 
       const menuTrigger = screen.getAllByLabelText('Open menu')[0];
       fireEvent.click(menuTrigger);
 
-      expect(screen.getByText('Menu Content')).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.getByText('Menu Content')).toBeInTheDocument();
+      });
     });
 
     it('should not render menu trigger when menu is not provided', () => {
@@ -325,27 +307,25 @@ describe('Tree Component', () => {
   });
 
   describe('node disabled state', () => {
-    it('should render disabled node with disabled class', () => {
+    it('should render disabled node with data-disabled attribute', () => {
       const disabledNodes = adapter.getTree();
       disabledNodes[0].disabled = true;
 
-      render(<Tree nodes={disabledNodes} />);
+      render(<Tree nodes={disabledNodes} />, { wrapper: Wrapper });
 
-      const title = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-title');
-      expect(title).toHaveClass('disabled');
+      const treeNode = screen.getByTestId('tree-node-1');
+      const title = within(treeNode).getByText('Root 1');
+      expect(title).toHaveAttribute('data-disabled');
     });
 
     it('should disable checkbox for disabled node', () => {
       const disabledNodes = adapter.getTree();
       disabledNodes[0].disabled = true;
 
-      render(<Tree nodes={disabledNodes} checkable={true} />);
+      render(<Tree nodes={disabledNodes} checkable={true} />, { wrapper: Wrapper });
 
-      const checkbox = screen
-        .getByTestId('tree-node-1')
-        .querySelector('input[type="checkbox"]');
+      const treeNode = screen.getByTestId('tree-node-1');
+      const checkbox = within(treeNode).getByRole('checkbox');
       expect(checkbox).toBeDisabled();
     });
 
@@ -353,11 +333,10 @@ describe('Tree Component', () => {
       const disabledCheckboxNodes = adapter.getTree();
       disabledCheckboxNodes[0].disableCheckbox = true;
 
-      render(<Tree nodes={disabledCheckboxNodes} checkable={true} />);
+      render(<Tree nodes={disabledCheckboxNodes} checkable={true} />, { wrapper: Wrapper });
 
-      const checkbox = screen
-        .getByTestId('tree-node-1')
-        .querySelector('input[type="checkbox"]');
+      const treeNode = screen.getByTestId('tree-node-1');
+      const checkbox = within(treeNode).getByRole('checkbox');
       expect(checkbox).toBeDisabled();
     });
   });
@@ -384,10 +363,9 @@ describe('Tree Component', () => {
 
       renderTree({ customNodeTemplate });
 
-      // The default .abp-tree-title should not be present
-      const defaultTitle = screen
-        .getByTestId('tree-node-1')
-        .querySelector('.abp-tree-title');
+      // The default title element (with title attribute) should not be present
+      const treeNode = screen.getByTestId('tree-node-1');
+      const defaultTitle = treeNode.querySelector('[title="Root 1"]');
       expect(defaultTitle).not.toBeInTheDocument();
     });
 
@@ -500,11 +478,11 @@ describe('Tree Component', () => {
 
       renderTree({ expandedIconTemplate });
 
-      // Default arrows should not be present
-      const defaultArrows = screen
-        .getByTestId('tree-node-1')
-        .querySelectorAll('.arrow');
-      expect(defaultArrows).toHaveLength(0);
+      // Default Lucide SVG icons should not be present inside the toggle button
+      const nodeContent = screen.getByTestId('tree-node-content-1');
+      const toggleButton = within(nodeContent).getByRole('button', { name: /Expand|Collapse/i });
+      const svgIcons = toggleButton.querySelectorAll('svg');
+      expect(svgIcons).toHaveLength(0);
     });
 
     it('should pass correct context to expandedIconTemplate', () => {

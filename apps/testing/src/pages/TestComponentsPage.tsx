@@ -3,9 +3,11 @@
  * Tests: Tree component, TreeAdapter, BaseNode models
  * @version 3.1.0 - Initial implementation with Tree component
  * @version 3.2.0 - Custom templates (customNodeTemplate, expandedIconTemplate), handleUpdate, updateTreeFromList
+ * @version 3.3.0 - Chakra UI integration, slotProps customization
  */
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
+import { Menu } from '@chakra-ui/react'
 import {
   Tree,
   TreeAdapter,
@@ -209,26 +211,17 @@ function TestTreeContextMenu() {
   };
 
   const renderMenu = (node: TreeNodeData<OrgUnit>) => (
-    <div style={{ padding: '0.5rem 0' }}>
-      <button
-        onClick={() => handleMenuAction('Edit', node)}
-        style={{ display: 'block', width: '100%', padding: '0.5rem 1rem', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}
-      >
+    <>
+      <Menu.Item value="edit" onClick={() => handleMenuAction('Edit', node)}>
         Edit
-      </button>
-      <button
-        onClick={() => handleMenuAction('Add Child', node)}
-        style={{ display: 'block', width: '100%', padding: '0.5rem 1rem', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer' }}
-      >
+      </Menu.Item>
+      <Menu.Item value="add" onClick={() => handleMenuAction('Add Child', node)}>
         Add Child
-      </button>
-      <button
-        onClick={() => handleMenuAction('Delete', node)}
-        style={{ display: 'block', width: '100%', padding: '0.5rem 1rem', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', color: '#e74c3c' }}
-      >
+      </Menu.Item>
+      <Menu.Item value="delete" color="red.500" onClick={() => handleMenuAction('Delete', node)}>
         Delete
-      </button>
-    </div>
+      </Menu.Item>
+    </>
   );
 
   return (
@@ -818,22 +811,86 @@ const adapter = new TreeAdapter(data);
   );
 }
 
+// v3.3.0: slotProps Customization Demo
+function TestTreeSlotProps() {
+  const [expandedKeys, setExpandedKeys] = useState<string[]>(['1', '2']);
+  const [selectedNode, setSelectedNode] = useState<OrgUnit | undefined>();
+  const [checkedKeys, setCheckedKeys] = useState<string[]>(['5']);
+
+  const adapter = useMemo(() => {
+    return new TreeAdapter(sampleOrgUnits.map(item => ({ ...item })));
+  }, []);
+
+  return (
+    <div className="test-section">
+      <h2>Tree slotProps Customization (v3.3.0)</h2>
+
+      <div className="test-card">
+        <h3>Customized via slotProps</h3>
+        <p>The Tree now uses Chakra UI internally. Use <code>slotProps</code> to customize individual elements:</p>
+        <div style={{ border: '1px solid #333', borderRadius: '8px', padding: '1rem', marginTop: '0.5rem' }}>
+          <Tree<OrgUnit>
+            nodes={adapter.getTree()}
+            expandedKeys={expandedKeys}
+            selectedNode={selectedNode}
+            checkedKeys={checkedKeys}
+            checkable
+            onExpandedKeysChange={setExpandedKeys}
+            onSelectedNodeChange={setSelectedNode}
+            onCheckedKeysChange={setCheckedKeys}
+            slotProps={{
+              root: { p: 3, borderRadius: 'md' },
+              checkbox: { colorPalette: 'teal', size: 'md' },
+              title: { fontWeight: 'medium' },
+              selectedNode: { bg: 'teal.600', color: 'white' },
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>Available Slots</h3>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`interface TreeSlotProps {
+  root?: SystemStyleObject;           // Root container
+  nodeContent?: SystemStyleObject;    // Each node row
+  selectedNode?: SystemStyleObject;   // Selected state override
+  dragOverNode?: SystemStyleObject;   // Drag-over state override
+  switcher?: { size, variant, colorPalette }
+  checkbox?: { colorPalette, size }
+  title?: SystemStyleObject;          // Title text
+  menuTrigger?: { size, variant, colorPalette }
+  menuContent?: SystemStyleObject;    // Menu popover
+  childrenContainer?: SystemStyleObject;
+}`}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
 export function TestComponentsPage() {
   return (
     <div>
-      <h1>@abpjs/components Tests (v3.2.0)</h1>
+      <h1>@abpjs/components Tests (v3.3.0)</h1>
       <p>Testing Tree component, TreeAdapter, and utility functions.</p>
       <p style={{ color: '#888', fontSize: '0.9rem' }}>
-        Version 3.2.0 - Custom templates, handleUpdate, updateTreeFromList
+        Version 3.3.0 - Chakra UI integration, slotProps customization
       </p>
 
       <div style={{ marginBottom: '1rem' }}>
         <Link to="/" style={{ color: '#646cff' }}>&larr; Back to Home</Link>
       </div>
 
-      {/* v3.2.0 Features - Highlighted at top */}
+      {/* v3.3.0 Features - Highlighted at top */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
-        v3.2.0 New Features
+        v3.3.0 New Features
+      </h2>
+      <TestTreeSlotProps />
+
+      {/* v3.2.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
+        v3.2.0 Features
       </h2>
       <TestCustomNodeTemplate />
       <TestExpandedIconTemplate />

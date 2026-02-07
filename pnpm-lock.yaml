@@ -517,6 +517,12 @@ importers:
       '@abp/ng.components':
         specifier: 3.2.0
         version: 3.2.0(4732b77c60c611d87c43cfaeb3b7c25d)
+      '@abpjs/theme-shared':
+        specifier: workspace:*
+        version: link:../theme-shared
+      '@chakra-ui/react':
+        specifier: ^3.2.0
+        version: 3.31.0(@emotion/react@11.14.0(@types/react@18.3.27)(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@testing-library/jest-dom':
         specifier: ^6.9.1
         version: 6.9.1
@@ -565,6 +571,9 @@ importers:
       react-dom:
         specifier: ^18.2.0
         version: 18.3.1(react@18.3.1)
+      react-icons:
+        specifier: ^5.5.0
+        version: 5.5.0(react@18.3.1)
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(jiti@1.21.7)(postcss@8.5.6)(typescript@5.9.3)

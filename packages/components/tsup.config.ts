@@ -9,6 +9,10 @@ export default defineConfig({
     'react',
     'react-dom',
     'react/jsx-runtime',
+    '@chakra-ui/react',
+    '@abpjs/theme-shared',
+    'react-icons',
+    'react-icons/lu',
   ],
   esbuildOptions(options) {
     options.jsx = 'automatic';
