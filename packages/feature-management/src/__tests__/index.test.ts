@@ -5,7 +5,7 @@ import * as featureManagementModule from '../index';
  * Tests for @abpjs/feature-management package exports
  * Uses static import to avoid slow dynamic imports during test execution.
  *
- * @updated 3.0.0 - No new exports; Angular visible getter/setter change doesn't affect React
+ * @updated 4.0.0 - Removed FeatureManagementService export, now exports FeaturesService
  */
 describe('@abpjs/feature-management package exports', () => {
   // v2.7.0: Enum exports
@@ -30,9 +30,9 @@ describe('@abpjs/feature-management package exports', () => {
 
   // Service exports
   describe('Service exports', () => {
-    it('should export FeatureManagementService', () => {
-      const { FeatureManagementService } = featureManagementModule;
-      expect(FeatureManagementService).toBeDefined();
+    it('should export FeaturesService', () => {
+      const { FeaturesService } = featureManagementModule;
+      expect(FeaturesService).toBeDefined();
     });
   });
 
