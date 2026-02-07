@@ -1,6 +1,6 @@
 /**
  * Tests for config-options
- * @abpjs/file-management v3.2.0
+ * @abpjs/file-management v4.0.0
  */
 import { describe, it, expect } from 'vitest';
 import { eFileManagementComponents } from '../../enums/components';
@@ -257,6 +257,35 @@ describe('config-options', () => {
       expect(options.entityActionContributors).toBeUndefined();
       expect(options.entityPropContributors).toBeUndefined();
       expect(options.toolbarActionContributors).toBeUndefined();
+      expect(options.xsrfHeaderName).toBeUndefined();
+    });
+
+    it('should accept xsrfHeaderName option (v4.0.0)', () => {
+      const options: FileManagementConfigOptions = {
+        xsrfHeaderName: 'X-XSRF-TOKEN',
+      };
+
+      expect(options.xsrfHeaderName).toBe('X-XSRF-TOKEN');
+    });
+
+    it('should accept full config options with xsrfHeaderName', () => {
+      const options: FileManagementConfigOptions = {
+        entityActionContributors: {
+          [eFileManagementComponents.FolderContent]: [() => {}],
+        },
+        entityPropContributors: {
+          [eFileManagementComponents.FolderContent]: [() => {}],
+        },
+        toolbarActionContributors: {
+          [eFileManagementComponents.FolderContent]: [() => {}],
+        },
+        xsrfHeaderName: 'RequestVerificationToken',
+      };
+
+      expect(options.entityActionContributors).toBeDefined();
+      expect(options.entityPropContributors).toBeDefined();
+      expect(options.toolbarActionContributors).toBeDefined();
+      expect(options.xsrfHeaderName).toBe('RequestVerificationToken');
     });
   });
 });

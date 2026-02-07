@@ -2,6 +2,7 @@
  * Test page for @abpjs/file-management package
  * Tests: Proxy services, DTOs, config, enums, constants
  * @since 3.2.0 - New package
+ * @updated 4.0.0 - Added xsrfHeaderName to FileManagementConfigOptions, Angular DI refactoring (no other React API changes)
  */
 import { useState } from 'react';
 import {
@@ -502,6 +503,7 @@ interface FileManagementConfigOptions {
   entityActionContributors?: FileManagementEntityActionContributors;
   entityPropContributors?: FileManagementEntityPropContributors;
   toolbarActionContributors?: FileManagementToolbarActionContributors;  // v3.2.0
+  xsrfHeaderName?: string;  // v4.0.0
 }
 
 // Example: Adding custom actions
@@ -530,6 +532,73 @@ const options: FileManagementConfigOptions = {
   },
 };`}
         </pre>
+      </div>
+    </div>
+  );
+}
+
+function TestV400Features() {
+  return (
+    <div className="test-section">
+      <h2>v4.0.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(Current)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>xsrfHeaderName Config Option <span style={{ color: '#4f4', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <p>
+          New optional <code>xsrfHeaderName</code> property on <code>FileManagementConfigOptions</code> for
+          customizing the XSRF token header name used during file uploads.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`import type { FileManagementConfigOptions } from '@abpjs/file-management';
+
+// Default behavior (no XSRF header override)
+const options: FileManagementConfigOptions = {};
+
+// Custom XSRF header name for file uploads
+const optionsWithXsrf: FileManagementConfigOptions = {
+  xsrfHeaderName: 'X-XSRF-TOKEN',
+};
+
+// Combined with other config options
+const fullOptions: FileManagementConfigOptions = {
+  xsrfHeaderName: 'RequestVerificationToken',
+  entityActionContributors: { /* ... */ },
+  toolbarActionContributors: { /* ... */ },
+};`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Angular DI Refactoring <span style={{ color: '#4f4', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <p>
+          Additional internal Angular changes with no React API impact:
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Angular Change</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>React Impact</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>UploadService</td>
+              <td style={{ padding: '8px' }}>Replaced <code>ConfigStateService</code> with <code>EnvironmentService</code>, added <code>HttpXsrfTokenExtractor</code></td>
+              <td style={{ padding: '8px', color: '#888' }}>None - React uses RestService</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>Extensions Token</td>
+              <td style={{ padding: '8px' }}>Added <code>FILE_MANAGEMENT_XSRF_HEADER_NAME</code> injection token</td>
+              <td style={{ padding: '8px', color: '#888' }}>None - React uses config options</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>Dependencies</td>
+              <td style={{ padding: '8px' }}>@abp/ng.core &gt;=4.0.0, @abp/ng.theme.shared &gt;=4.0.0</td>
+              <td style={{ padding: '8px', color: '#888' }}>workspace:* (unchanged)</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -727,12 +796,13 @@ function TestAPISummary() {
 export function TestFileManagementPage() {
   return (
     <div>
-      <h1>@abpjs/file-management Tests (v3.2.0)</h1>
+      <h1>@abpjs/file-management Tests (v4.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing file management proxy services, DTOs, config, and enums.</p>
       <p style={{ fontSize: '14px', color: '#4f4', marginBottom: '16px' }}>
-        Version 3.2.0 - Initial release with full proxy subpackage
+        Version 4.0.0 - Added xsrfHeaderName config option
       </p>
 
+      <TestV400Features />
       <TestAPISummary />
       <TestEnums />
       <TestConfigEnums />

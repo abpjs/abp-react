@@ -1,6 +1,7 @@
 /**
  * Configuration options for file management module
  * @since v3.2.0
+ * @updated v4.0.0 - Added xsrfHeaderName option
  *
  * Translated from @volo/abp.ng.file-management/lib/models/config-options
  */
@@ -142,4 +143,8 @@ export interface FileManagementConfigOptions {
    * Toolbar action contributors (v3.2.0+)
    */
   toolbarActionContributors?: FileManagementToolbarActionContributors;
+  /**
+   * Custom XSRF header name for file uploads (v4.0.0+)
+   */
+  xsrfHeaderName?: string;
 }
