@@ -1,6 +1,6 @@
 /**
- * Test page for @abpjs/tenant-management package v3.1.0
- * Tests: TenantManagementModal, useTenantManagement hook
+ * Test page for @abpjs/tenant-management package v3.2.0
+ * Tests: TenantManagementModal, useTenantManagement hook, TenantService
  */
 import { useState, useEffect } from 'react'
 import { useAuth } from '@abpjs/core'
@@ -18,6 +18,12 @@ import {
   TENANT_MANAGEMENT_ROUTE_PROVIDERS,
   configureRoutes,
   initializeTenantManagementRoutes,
+  // v3.2.0 proxy exports
+  TenantService,
+  type TenantDto,
+  type TenantCreateDto,
+  type TenantUpdateDto,
+  type GetTenantsInput,
 } from '@abpjs/tenant-management'
 import { FeatureManagementModal } from '@abpjs/feature-management'
 
@@ -1859,12 +1865,273 @@ function TestV310Features() {
   )
 }
 
+function TestV320Features() {
+  // Demo TenantService usage
+  const demoTenantDto: TenantDto = {
+    id: 'demo-tenant-123',
+    name: 'Demo Tenant',
+    extraProperties: { plan: 'enterprise' },
+  }
+
+  const demoCreateDto: TenantCreateDto = {
+    name: 'New Tenant',
+    adminEmailAddress: 'admin@newtenant.com',
+    adminPassword: 'SecurePass123!',
+    extraProperties: {},
+  }
+
+  const demoUpdateDto: TenantUpdateDto = {
+    name: 'Updated Tenant Name',
+    extraProperties: { version: 2 },
+  }
+
+  const demoGetTenantsInput: GetTenantsInput = {
+    filter: 'search',
+    maxResultCount: 10,
+    skipCount: 0,
+    sorting: 'name asc',
+  }
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.2.0</h2>
+
+      <div className="test-card" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)' }}>
+        <h3>Proxy Module Overview</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Version 3.2.0 introduces a new proxy submodule with typed DTOs and TenantService.
+          This provides strongly-typed API operations for tenant management.
+        </p>
+        <ul style={{ fontSize: '14px', color: '#888' }}>
+          <li><code>TenantService</code> - Typed proxy service for tenant CRUD operations</li>
+          <li><code>TenantDto</code> - DTO representing a tenant entity</li>
+          <li><code>TenantCreateDto</code> - DTO for creating tenants</li>
+          <li><code>TenantUpdateDto</code> - DTO for updating tenants</li>
+          <li><code>GetTenantsInput</code> - Input parameters for listing tenants</li>
+          <li><code>TenantCreateOrUpdateDtoBase</code> - Base interface for create/update DTOs</li>
+        </ul>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)' }}>
+        <h3>TenantService</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          New typed proxy service that replaces the legacy TenantManagementService for API calls.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Return Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>create(input)</code></td>
+              <td><code>Promise&lt;TenantDto&gt;</code></td>
+              <td>Create a new tenant</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>delete(id)</code></td>
+              <td><code>Promise&lt;void&gt;</code></td>
+              <td>Delete a tenant</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>get(id)</code></td>
+              <td><code>Promise&lt;TenantDto&gt;</code></td>
+              <td>Get a tenant by ID</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>getList(input)</code></td>
+              <td><code>Promise&lt;PagedResultDto&lt;TenantDto&gt;&gt;</code></td>
+              <td>Get paginated list of tenants</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>update(id, input)</code></td>
+              <td><code>Promise&lt;TenantDto&gt;</code></td>
+              <td>Update a tenant</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>getDefaultConnectionString(id)</code></td>
+              <td><code>Promise&lt;string&gt;</code></td>
+              <td>Get tenant's connection string</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>updateDefaultConnectionString(id, str)</code></td>
+              <td><code>Promise&lt;void&gt;</code></td>
+              <td>Update connection string</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>deleteDefaultConnectionString(id)</code></td>
+              <td><code>Promise&lt;void&gt;</code></td>
+              <td>Delete connection string</td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '8px' }}>
+          TenantService is: <code>{typeof TenantService}</code>
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)' }}>
+        <h3>TenantDto Interface</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Represents a tenant entity. Extends <code>ExtensibleEntityDto&lt;string&gt;</code>.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`interface TenantDto extends ExtensibleEntityDto<string> {
+  id: string;           // Tenant ID
+  name: string;         // Tenant name
+  extraProperties: {};  // Custom properties
+}
+
+// Example:
+${JSON.stringify(demoTenantDto, null, 2)}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)' }}>
+        <h3>TenantCreateDto Interface</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          DTO for creating a new tenant. Extends <code>TenantCreateOrUpdateDtoBase</code>.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`interface TenantCreateDto extends TenantCreateOrUpdateDtoBase {
+  name: string;              // Tenant name
+  adminEmailAddress: string; // Admin email
+  adminPassword: string;     // Admin password
+  extraProperties: {};       // Custom properties
+}
+
+// Example:
+${JSON.stringify(demoCreateDto, null, 2)}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)' }}>
+        <h3>TenantUpdateDto Interface</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          DTO for updating a tenant. Only name is updatable (no admin credentials needed).
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`interface TenantUpdateDto extends TenantCreateOrUpdateDtoBase {
+  name: string;        // New tenant name
+  extraProperties: {}; // Custom properties
+}
+
+// Example:
+${JSON.stringify(demoUpdateDto, null, 2)}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)' }}>
+        <h3>GetTenantsInput Interface</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Input parameters for listing tenants. Extends <code>PagedAndSortedResultRequestDto</code>.
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`interface GetTenantsInput extends PagedAndSortedResultRequestDto {
+  filter: string;          // Search filter
+  maxResultCount?: number; // Page size
+  skipCount?: number;      // Offset
+  sorting?: string;        // Sort expression
+}
+
+// Example:
+${JSON.stringify(demoGetTenantsInput, null, 2)}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)' }}>
+        <h3>Deprecated Types</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          The following types in <code>TenantManagement</code> namespace are deprecated and will be removed in v4.0:
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Deprecated Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Replacement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
+              <td style={{ padding: '8px' }}><code>TenantManagement.Response</code></td>
+              <td><code>PagedResultDto&lt;TenantDto&gt;</code></td>
+            </tr>
+            <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
+              <td style={{ padding: '8px' }}><code>TenantManagement.Item</code></td>
+              <td><code>TenantDto</code></td>
+            </tr>
+            <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
+              <td style={{ padding: '8px' }}><code>TenantManagement.AddRequest</code></td>
+              <td><code>TenantCreateDto</code></td>
+            </tr>
+            <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
+              <td style={{ padding: '8px' }}><code>TenantManagement.UpdateRequest</code></td>
+              <td><code>TenantUpdateDto</code></td>
+            </tr>
+            <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
+              <td style={{ padding: '8px' }}><code>TenantManagement.DefaultConnectionStringRequest</code></td>
+              <td><code>TenantService.updateDefaultConnectionString()</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)' }}>
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`import { TenantService, TenantCreateDto, TenantDto, GetTenantsInput } from '@abpjs/tenant-management';
+import { getRestService } from '@abpjs/core';
+
+// Create service instance
+const tenantService = new TenantService(getRestService());
+
+// List tenants with pagination
+const input: GetTenantsInput = {
+  filter: '',
+  maxResultCount: 10,
+  skipCount: 0,
+};
+const result = await tenantService.getList(input);
+console.log(\`Found \${result.totalCount} tenants\`);
+
+// Create a new tenant
+const createInput: TenantCreateDto = {
+  name: 'New Tenant',
+  adminEmailAddress: 'admin@newtenant.com',
+  adminPassword: 'SecurePassword123!',
+  extraProperties: {},
+};
+const newTenant: TenantDto = await tenantService.create(createInput);
+
+// Update tenant
+await tenantService.update(newTenant.id, {
+  name: 'Updated Name',
+  extraProperties: {},
+});
+
+// Delete tenant
+await tenantService.delete(newTenant.id);`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 export function TestTenantManagementPage() {
   return (
     <div>
-      <h1>@abpjs/tenant-management Tests v3.1.0</h1>
-      <p>Testing tenant management modal and hooks for creating, updating, and managing tenants.</p>
-      <p style={{ color: '#9b59b6', fontSize: '0.9rem' }}>Version 3.1.0 - Version bump only (no functional changes)</p>
+      <h1>@abpjs/tenant-management Tests v3.2.0</h1>
+      <p>Testing tenant management modal, hooks, and TenantService for creating, updating, and managing tenants.</p>
+      <p style={{ color: '#3b82f6', fontSize: '0.9rem' }}>Version 3.2.0 - New proxy module with TenantService and typed DTOs</p>
+
+      {/* v3.2.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #3b82f6', paddingTop: '1rem' }}>
+        v3.2.0 Features
+      </h2>
+      <TestV320Features />
 
       {/* v3.1.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #9b59b6', paddingTop: '1rem' }}>
