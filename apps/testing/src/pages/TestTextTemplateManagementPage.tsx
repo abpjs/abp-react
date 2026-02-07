@@ -5,6 +5,7 @@
  * @updated 2.9.0 - Internal Angular changes (no new React features)
  * @updated 3.0.0 - Config subpackage, extension tokens, guards, policy names
  * @updated 3.1.0 - Added GetTemplateDefinitionListInput, createGetTemplateDefinitionListInput
+ * @updated 3.2.0 - Added proxy subpackage with typed services and DTOs
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -13,8 +14,6 @@ import {
   TemplateContentsComponent,
   useTextTemplates,
   TEXT_TEMPLATE_MANAGEMENT_ROUTES,
-  TemplateDefinitionService,
-  TemplateContentService,
   TextTemplateManagementStateService,
   eTextTemplateManagementComponents,
   eTextTemplateManagementRouteNames,
@@ -38,18 +37,398 @@ import {
   type EntityPropContributorCallback,
   // v3.0.0 - Guards
   useTextTemplateManagementExtensionsGuard,
-  // v3.1.0 - New input types
+  // v3.1.0 - New input types (now from proxy)
   type GetTemplateDefinitionListInput,
   createGetTemplateDefinitionListInput,
+  // v3.2.0 - Proxy subpackage
+  TemplateDefinitionService,
+  TemplateContentService,
+  type TemplateDefinitionDto,
+  type TextTemplateContentDto,
+  type GetTemplateContentInput,
+  type RestoreTemplateContentInput,
+  type UpdateTemplateContentInput,
 } from '@abpjs/text-template-management'
 
 // Type annotation to ensure services are used
-const _definitionServiceType: typeof TemplateDefinitionService | null = null
-const _contentServiceType: typeof TemplateContentService | null = null
 const _stateServiceType: typeof TextTemplateManagementStateService | null = null
-void _definitionServiceType
-void _contentServiceType
 void _stateServiceType
+
+/**
+ * v3.2.0 Features - Proxy subpackage with typed services and DTOs
+ */
+function TestV320Features() {
+  const restService = useRestService()
+  const [templateResult, setTemplateResult] = useState<TemplateDefinitionDto | null>(null)
+  const [contentResult, setContentResult] = useState<TextTemplateContentDto | null>(null)
+  const [listResult, setListResult] = useState<TemplateDefinitionDto[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Create service instances
+  const definitionService = new TemplateDefinitionService(restService)
+  const contentService = new TemplateContentService(restService)
+
+  // Demo input objects
+  const getContentInput: GetTemplateContentInput = {
+    templateName: 'EmailVerification',
+    cultureName: 'en',
+  }
+
+  const restoreInput: RestoreTemplateContentInput = {
+    templateName: 'EmailVerification',
+    cultureName: 'en',
+  }
+
+  const updateInput: UpdateTemplateContentInput = {
+    templateName: 'EmailVerification',
+    cultureName: 'en',
+    content: '<html><body>Updated content</body></html>',
+  }
+
+  const listInput: GetTemplateDefinitionListInput = {
+    filterText: 'email',
+    skipCount: 0,
+    maxResultCount: 10,
+    sorting: 'name asc',
+  }
+
+  const handleGetTemplate = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const result = await definitionService.get('EmailVerification')
+      setTemplateResult(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to get template')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGetList = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const result = await definitionService.getList(listInput)
+      setListResult(result.items || [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to get template list')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleGetContent = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      const result = await contentService.get(getContentInput)
+      setContentResult(result)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to get content')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.2.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      <div className="test-card">
+        <h3>Proxy Subpackage Overview</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New typed proxy services and DTOs that replace the legacy services. These provide better type safety
+          and align with the ABP Framework proxy pattern.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>TemplateDefinitionService</code></td>
+              <td style={{ padding: '8px' }}>Class</td>
+              <td style={{ padding: '8px' }}>Proxy service for template definitions (get, getList)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>TemplateContentService</code></td>
+              <td style={{ padding: '8px' }}>Class</td>
+              <td style={{ padding: '8px' }}>Proxy service for template content (get, update, restoreToDefault)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>TemplateDefinitionDto</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+              <td style={{ padding: '8px' }}>Template definition data transfer object</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>TextTemplateContentDto</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+              <td style={{ padding: '8px' }}>Template content data transfer object</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>GetTemplateContentInput</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+              <td style={{ padding: '8px' }}>Input for getting template content</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>UpdateTemplateContentInput</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+              <td style={{ padding: '8px' }}>Input for updating template content</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>RestoreTemplateContentInput</code></td>
+              <td style={{ padding: '8px' }}>Interface</td>
+              <td style={{ padding: '8px' }}>Input for restoring template to default</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>TemplateDefinitionService</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New proxy service for template definition operations with typed methods.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Parameters</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Returns</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>get(name)</code></td>
+              <td style={{ padding: '8px' }}>string</td>
+              <td style={{ padding: '8px' }}>Promise&lt;TemplateDefinitionDto&gt;</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>getList(input?)</code></td>
+              <td style={{ padding: '8px' }}>GetTemplateDefinitionListInput</td>
+              <td style={{ padding: '8px' }}>Promise&lt;PagedResultDto&lt;TemplateDefinitionDto&gt;&gt;</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <button onClick={handleGetTemplate} disabled={isLoading}>
+            {isLoading ? 'Loading...' : 'Get Template by Name'}
+          </button>
+          <button onClick={handleGetList} disabled={isLoading}>
+            {isLoading ? 'Loading...' : 'Get Template List'}
+          </button>
+        </div>
+        <p style={{ fontSize: '12px', color: '#888' }}>
+          apiName: <code>{definitionService.apiName}</code>
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>TemplateContentService</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          New proxy service for template content operations with typed methods.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Parameters</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Returns</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>get(input)</code></td>
+              <td style={{ padding: '8px' }}>GetTemplateContentInput</td>
+              <td style={{ padding: '8px' }}>Promise&lt;TextTemplateContentDto&gt;</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>update(input)</code></td>
+              <td style={{ padding: '8px' }}>UpdateTemplateContentInput</td>
+              <td style={{ padding: '8px' }}>Promise&lt;TextTemplateContentDto&gt;</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>restoreToDefault(input)</code></td>
+              <td style={{ padding: '8px' }}>RestoreTemplateContentInput</td>
+              <td style={{ padding: '8px' }}>Promise&lt;void&gt;</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <button onClick={handleGetContent} disabled={isLoading}>
+            {isLoading ? 'Loading...' : 'Get Template Content'}
+          </button>
+        </div>
+        <p style={{ fontSize: '12px', color: '#888' }}>
+          apiName: <code>{contentService.apiName}</code>
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Typed Input Examples</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+          <div>
+            <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>GetTemplateContentInput:</p>
+            <pre style={{ fontSize: '11px', margin: 0, padding: '0.5rem', borderRadius: '4px', border: '1px solid #333' }}>
+              {JSON.stringify(getContentInput, null, 2)}
+            </pre>
+          </div>
+          <div>
+            <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>RestoreTemplateContentInput:</p>
+            <pre style={{ fontSize: '11px', margin: 0, padding: '0.5rem', borderRadius: '4px', border: '1px solid #333' }}>
+              {JSON.stringify(restoreInput, null, 2)}
+            </pre>
+          </div>
+          <div>
+            <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>UpdateTemplateContentInput:</p>
+            <pre style={{ fontSize: '11px', margin: 0, padding: '0.5rem', borderRadius: '4px', border: '1px solid #333' }}>
+              {JSON.stringify(updateInput, null, 2)}
+            </pre>
+          </div>
+          <div>
+            <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>GetTemplateDefinitionListInput:</p>
+            <pre style={{ fontSize: '11px', margin: 0, padding: '0.5rem', borderRadius: '4px', border: '1px solid #333' }}>
+              {JSON.stringify(listInput, null, 2)}
+            </pre>
+          </div>
+        </div>
+      </div>
+
+      {error && (
+        <div className="test-card" style={{ borderColor: '#f44' }}>
+          <h3 style={{ color: '#f44' }}>Error</h3>
+          <p>{error}</p>
+        </div>
+      )}
+
+      {templateResult && (
+        <div className="test-card">
+          <h3>Template Definition Result</h3>
+          <pre style={{ fontSize: '12px', padding: '0.5rem', borderRadius: '4px', border: '1px solid #333' }}>
+            {JSON.stringify(templateResult, null, 2)}
+          </pre>
+        </div>
+      )}
+
+      {listResult.length > 0 && (
+        <div className="test-card">
+          <h3>Template List Result ({listResult.length} items)</h3>
+          <div style={{ maxHeight: '200px', overflow: 'auto' }}>
+            <pre style={{ fontSize: '11px', padding: '0.5rem', borderRadius: '4px', border: '1px solid #333' }}>
+              {JSON.stringify(listResult, null, 2)}
+            </pre>
+          </div>
+        </div>
+      )}
+
+      {contentResult && (
+        <div className="test-card">
+          <h3>Template Content Result</h3>
+          <pre style={{ fontSize: '12px', padding: '0.5rem', borderRadius: '4px', border: '1px solid #333' }}>
+            {JSON.stringify(contentResult, null, 2)}
+          </pre>
+        </div>
+      )}
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px', overflow: 'auto' }}>
+{`import {
+  // Proxy Services (v3.2.0)
+  TemplateDefinitionService,
+  TemplateContentService,
+  // Proxy DTOs (v3.2.0)
+  type TemplateDefinitionDto,
+  type TextTemplateContentDto,
+  type GetTemplateContentInput,
+  type UpdateTemplateContentInput,
+  type RestoreTemplateContentInput,
+  type GetTemplateDefinitionListInput,
+} from '@abpjs/text-template-management';
+import { useRestService } from '@abpjs/core';
+
+function MyComponent() {
+  const restService = useRestService();
+
+  // Create proxy service instances
+  const definitionService = new TemplateDefinitionService(restService);
+  const contentService = new TemplateContentService(restService);
+
+  // Get single template definition by name
+  const template = await definitionService.get('EmailVerification');
+
+  // Get paginated list with filters
+  const list = await definitionService.getList({
+    filterText: 'email',
+    skipCount: 0,
+    maxResultCount: 10,
+    sorting: 'name asc',
+  });
+
+  // Get template content
+  const content = await contentService.get({
+    templateName: 'EmailVerification',
+    cultureName: 'en',
+  });
+
+  // Update template content
+  const updated = await contentService.update({
+    templateName: 'EmailVerification',
+    cultureName: 'en',
+    content: '<html>New content</html>',
+  });
+
+  // Restore to default
+  await contentService.restoreToDefault({
+    templateName: 'EmailVerification',
+    cultureName: 'en',
+  });
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Migration Notes</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          The legacy services in the models namespace are deprecated and will be removed in v4.0.
+          Migrate to the new proxy services for better type safety.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Legacy (Deprecated)</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>New (v3.2.0)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>TextTemplateManagement.TemplateDefinitionDto</code></td>
+              <td style={{ padding: '8px' }}><code>TemplateDefinitionDto</code> (from proxy)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>TextTemplateManagement.TextTemplateContentDto</code></td>
+              <td style={{ padding: '8px' }}><code>TextTemplateContentDto</code> (from proxy)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>TextTemplateManagement.TemplateContentInput</code></td>
+              <td style={{ padding: '8px' }}><code>GetTemplateContentInput</code> (from proxy)</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>TextTemplateManagement.CreateOrUpdateTemplateContentDto</code></td>
+              <td style={{ padding: '8px' }}><code>UpdateTemplateContentInput</code> (from proxy)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
 /**
  * v3.1.0 Features - GetTemplateDefinitionListInput and factory function
@@ -936,16 +1315,17 @@ function TestApiEndpoints() {
 export function TestTextTemplateManagementPage() {
   return (
     <div>
-      <h1>@abpjs/text-template-management Tests (v3.1.0)</h1>
+      <h1>@abpjs/text-template-management Tests (v3.2.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing Text Template Management module for managing text templates and their content.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.1.0 - Added GetTemplateDefinitionListInput and createGetTemplateDefinitionListInput factory
+        Version 3.2.0 - Added proxy subpackage with typed services and DTOs
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components and services for managing text templates used in email notifications,
         SMS messages, and other text-based content in ABP Framework applications.
       </p>
 
+      <TestV320Features />
       <TestV310Features />
       <TestV300Features />
       <TestEnumsSection />
