@@ -1,9 +1,16 @@
 /**
  * @abpjs/chat
  * ABP Framework Chat module for React
- * Translated from @volo/abp.ng.chat and @volo/abp.ng.chat.config v3.0.0
+ * Translated from @volo/abp.ng.chat and @volo/abp.ng.chat.config v3.1.0
  *
- * Features in v3.0.0:
+ * Changes in v3.1.0:
+ * - Internal Angular refactoring (subscription management in ChatIconComponent)
+ * - Added isChatEnabled and signalRUrl getters to ChatConfigService (internal)
+ * - Added NavItemsService injection to ChatConfigService for chat toggle (internal)
+ * - Added Store injection to ChatComponent (internal Angular state management)
+ * - No public API changes - React implementation unchanged
+ *
+ * Features:
  * - Real-time messaging via SignalR
  * - Contact management with search
  * - Conversation history with pagination

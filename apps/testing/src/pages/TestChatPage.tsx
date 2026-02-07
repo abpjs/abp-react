@@ -3,6 +3,7 @@
  * Tests: Chat components, hooks, services, constants, enums
  * @since 2.9.0 - New package
  * @updated 3.0.0 - Added config subpackage with policy names, route providers, nav item providers
+ * @updated 3.1.0 - Internal Angular refactoring (subscription management, getters), no public API changes
  */
 import { useState } from 'react'
 import {
@@ -1159,15 +1160,105 @@ function TestAPISummary() {
   )
 }
 
+function TestV310Features() {
+  return (
+    <div className="test-section">
+      <h2>v3.1.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(Current)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Internal Angular Refactoring <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.1.0)</span></h3>
+        <p>
+          Version 3.1.0 includes internal Angular refactoring that does not affect the React implementation.
+          No public API changes were made in this release.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Change</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Angular</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>React</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>ChatIconComponent</td>
+              <td style={{ padding: '8px' }}>Subscription management refactored (listenToMessages, listenToRouterEvents)</td>
+              <td style={{ padding: '8px' }}>useEffect cleanup (unchanged)</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>ChatConfigService</td>
+              <td style={{ padding: '8px' }}>Added isChatEnabled/signalRUrl getters, NavItemsService injection</td>
+              <td style={{ padding: '8px' }}>Props-based configuration (unchanged)</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>ChatComponent</td>
+              <td style={{ padding: '8px' }}>Added NGXS Store injection</td>
+              <td style={{ padding: '8px' }}>Uses React hooks/props (unchanged)</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>Dependencies</td>
+              <td style={{ padding: '8px' }}>@abp/ng.theme.shared &gt;=3.1.0</td>
+              <td style={{ padding: '8px' }}>@abpjs/theme-shared workspace:*</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>React Patterns Already in Use <span style={{ color: '#4f4', fontSize: '12px' }}>(No Changes Needed)</span></h3>
+        <p>
+          The React implementation already uses equivalent patterns for all Angular v3.1.0 changes:
+        </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`// ChatIcon - React already uses useEffect for cleanup
+function ChatIcon({ unreadCount, onClick }) {
+  // No subscriptions needed - React props are reactive
+  return (
+    <button onClick={onClick}>
+      {unreadCount > 0 && <span>{unreadCount}</span>}
+    </button>
+  );
+}
+
+// ChatConfigService - getters equivalent
+class ChatConfigService {
+  get isChatEnabled(): boolean {
+    return this.connection?.state === HubConnectionState.Connected;
+  }
+  // Already exposed as isConnected() method
+}
+
+// Chat component - uses hooks instead of Store injection
+function Chat({ contacts, userMessages, ... }) {
+  // State managed via props and callbacks
+  // No need for NGXS Store - React uses lifting state up
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v3.1.0 Summary</h3>
+        <p style={{ color: '#888' }}>
+          This release focused on internal Angular code quality improvements including subscription
+          management in ChatIconComponent, convenience getters in ChatConfigService, and NGXS Store
+          injection in ChatComponent. All existing APIs from v3.0.0 remain unchanged and fully
+          compatible. The React translation did not require any updates.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function TestChatPage() {
   return (
     <div>
-      <h1>@abpjs/chat Tests (v3.0.0)</h1>
+      <h1>@abpjs/chat Tests (v3.1.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing chat components, hooks, services, and SignalR integration.</p>
       <p style={{ fontSize: '14px', color: '#4f4', marginBottom: '16px' }}>
-        Version 3.0.0 - Config subpackage with policy names, route providers, nav item providers
+        Version 3.1.0 - Internal Angular refactoring (no public API changes)
       </p>
 
+      <TestV310Features />
       <TestV300Features />
       <TestAPISummary />
       <TestChatComponent />
