@@ -151,6 +151,169 @@ describe('ChatConfigService', () => {
   });
 });
 
+describe('ChatConfigService - initSignalR and stopSignalR', () => {
+  const mockRestService = { request: vi.fn() };
+  const mockGetAccessToken = vi.fn().mockResolvedValue('test-token');
+  let service: ChatConfigService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetChatConfigService();
+    service = new ChatConfigService(mockRestService as any, mockGetAccessToken);
+  });
+
+  afterEach(() => {
+    resetChatConfigService();
+  });
+
+  it('should initialize SignalR connection', async () => {
+    await service.initSignalR('/signalr-hubs/chat');
+
+    expect(service.connection).not.toBeNull();
+    expect(service.isConnected()).toBe(true);
+  });
+
+  it('should return connection state when connected', async () => {
+    await service.initSignalR('/signalr-hubs/chat');
+
+    expect(service.getConnectionState()).toBe('Connected');
+  });
+
+  it('should not reinitialize if already initialized', async () => {
+    await service.initSignalR('/signalr-hubs/chat');
+    const firstConnection = service.connection;
+
+    await service.initSignalR('/signalr-hubs/chat');
+
+    expect(service.connection).toBe(firstConnection);
+  });
+
+  it('should stop SignalR connection', async () => {
+    await service.initSignalR('/signalr-hubs/chat');
+    expect(service.connection).not.toBeNull();
+
+    await service.stopSignalR();
+
+    expect(service.connection).toBeNull();
+  });
+
+  it('should handle stopSignalR when no connection exists', async () => {
+    // Should not throw
+    await service.stopSignalR();
+    expect(service.connection).toBeNull();
+  });
+
+  it('should handle initSignalR failure', async () => {
+    const { HubConnectionBuilder } = await import('@microsoft/signalr');
+    const mockBuilder = new HubConnectionBuilder();
+    const mockConn = mockBuilder.withUrl('').withAutomaticReconnect().build();
+    (mockConn.start as any).mockRejectedValueOnce(new Error('Connection failed'));
+
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await expect(service.initSignalR('/signalr-hubs/chat')).rejects.toThrow('Connection failed');
+
+    consoleSpy.mockRestore();
+  });
+
+  it('should handle stopSignalR failure gracefully', async () => {
+    await service.initSignalR('/signalr-hubs/chat');
+    (service.connection!.stop as any).mockRejectedValueOnce(new Error('Stop failed'));
+
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await service.stopSignalR();
+
+    expect(consoleSpy).toHaveBeenCalledWith('Failed to stop SignalR connection:', expect.any(Error));
+    expect(service.connection).toBeNull();
+    consoleSpy.mockRestore();
+  });
+
+  it('should set up message handler on ReceiveChatMessage', async () => {
+    await service.initSignalR('/signalr-hubs/chat');
+
+    expect(service.connection!.on).toHaveBeenCalledWith('ReceiveChatMessage', expect.any(Function));
+  });
+});
+
+describe('ChatConfigService - subscriber error handling', () => {
+  const mockRestService = { request: vi.fn() };
+  const mockGetAccessToken = vi.fn().mockResolvedValue('test-token');
+  let service: ChatConfigService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetChatConfigService();
+    service = new ChatConfigService(mockRestService as any, mockGetAccessToken);
+  });
+
+  afterEach(() => {
+    resetChatConfigService();
+  });
+
+  it('should handle error in unread count subscriber', () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const errorCallback = vi.fn().mockImplementation(() => {
+      throw new Error('Subscriber error');
+    });
+    service.onUnreadCountChange(errorCallback);
+
+    service.updateUnreadCount(5);
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Error in unread count subscriber callback:',
+      expect.any(Error)
+    );
+    consoleSpy.mockRestore();
+  });
+
+  it('should unsubscribe from unread count changes', () => {
+    const callback = vi.fn();
+    const unsubscribe = service.onUnreadCountChange(callback);
+
+    service.updateUnreadCount(5);
+    expect(callback).toHaveBeenCalledWith(5);
+
+    callback.mockClear();
+    unsubscribe();
+
+    service.updateUnreadCount(10);
+    expect(callback).not.toHaveBeenCalled();
+  });
+
+  it('should handle error in message subscriber', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const errorCallback = vi.fn().mockImplementation(() => {
+      throw new Error('Message handler error');
+    });
+    service.onMessage(errorCallback);
+
+    // Initialize to get the ReceiveChatMessage handler
+    await service.initSignalR('/signalr-hubs/chat');
+
+    // Get the registered handler and call it
+    const onCall = (service.connection!.on as any).mock.calls.find(
+      (call: any[]) => call[0] === 'ReceiveChatMessage'
+    );
+    expect(onCall).toBeDefined();
+    const handler = onCall[1];
+
+    handler({
+      senderUserId: 'user-1',
+      senderUsername: 'test',
+      senderName: 'Test',
+      senderSurname: 'User',
+      text: 'Hello',
+    });
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Error in message subscriber callback:',
+      expect.any(Error)
+    );
+    consoleSpy.mockRestore();
+  });
+});
+
 describe('getChatConfigService', () => {
   const mockRestService = { request: vi.fn() };
   const mockGetAccessToken = vi.fn();

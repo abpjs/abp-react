@@ -242,4 +242,177 @@ describe('Chat', () => {
     const chat = screen.getByTestId('chat');
     expect(chat).toHaveClass('custom-chat');
   });
+
+  it('should call onMarkAsRead when selecting a contact with unread messages', () => {
+    const handleMarkAsRead = vi.fn();
+    const contactWithUnread: ChatContactDto = {
+      ...mockContacts[0],
+      unreadMessageCount: 5,
+    };
+    render(
+      <Chat
+        contacts={[contactWithUnread]}
+        userMessages={mockUserMessages}
+        selectedContact={contactWithUnread}
+        onMarkAsRead={handleMarkAsRead}
+      />
+    );
+    expect(handleMarkAsRead).toHaveBeenCalledWith('user-1');
+  });
+
+  it('should not call onMarkAsRead when contact has 0 unread messages', () => {
+    const handleMarkAsRead = vi.fn();
+    render(
+      <Chat
+        contacts={mockContacts}
+        userMessages={mockUserMessages}
+        selectedContact={mockContacts[0]}
+        onMarkAsRead={handleMarkAsRead}
+      />
+    );
+    expect(handleMarkAsRead).not.toHaveBeenCalled();
+  });
+
+  it('should call onLoadMore when scrolling near the top', () => {
+    const handleLoadMore = vi.fn();
+    render(
+      <Chat
+        contacts={mockContacts}
+        userMessages={mockUserMessages}
+        selectedContact={mockContacts[0]}
+        onLoadMore={handleLoadMore}
+        messagesLoading={false}
+        allMessagesLoaded={false}
+      />
+    );
+
+    const messagesDiv = screen.getByTestId('chat-messages');
+    fireEvent.scroll(messagesDiv, { target: { scrollTop: 10 } });
+
+    expect(handleLoadMore).toHaveBeenCalledWith('user-1');
+  });
+
+  it('should not call onLoadMore when allMessagesLoaded is true', () => {
+    const handleLoadMore = vi.fn();
+    render(
+      <Chat
+        contacts={mockContacts}
+        userMessages={mockUserMessages}
+        selectedContact={mockContacts[0]}
+        onLoadMore={handleLoadMore}
+        messagesLoading={false}
+        allMessagesLoaded={true}
+      />
+    );
+
+    const messagesDiv = screen.getByTestId('chat-messages');
+    fireEvent.scroll(messagesDiv, { target: { scrollTop: 10 } });
+
+    expect(handleLoadMore).not.toHaveBeenCalled();
+  });
+
+  it('should not call onLoadMore when messagesLoading is true', () => {
+    const handleLoadMore = vi.fn();
+    render(
+      <Chat
+        contacts={mockContacts}
+        userMessages={mockUserMessages}
+        selectedContact={mockContacts[0]}
+        onLoadMore={handleLoadMore}
+        messagesLoading={true}
+        allMessagesLoaded={false}
+      />
+    );
+
+    const messagesDiv = screen.getByTestId('chat-messages');
+    fireEvent.scroll(messagesDiv, { target: { scrollTop: 10 } });
+
+    expect(handleLoadMore).not.toHaveBeenCalled();
+  });
+
+  it('should not send empty/whitespace-only message', () => {
+    const handleSend = vi.fn();
+    render(
+      <Chat
+        contacts={mockContacts}
+        userMessages={mockUserMessages}
+        selectedContact={mockContacts[0]}
+        onSendMessage={handleSend}
+      />
+    );
+
+    const input = screen.getByTestId('chat-input');
+    fireEvent.change(input, { target: { value: '   ' } });
+    fireEvent.click(screen.getByTestId('chat-send-button'));
+
+    expect(handleSend).not.toHaveBeenCalled();
+  });
+
+  it('should not send on Enter when sendOnEnter is false', () => {
+    const handleSend = vi.fn();
+    render(
+      <Chat
+        contacts={mockContacts}
+        userMessages={mockUserMessages}
+        selectedContact={mockContacts[0]}
+        onSendMessage={handleSend}
+        sendOnEnter={false}
+      />
+    );
+
+    const input = screen.getByTestId('chat-input');
+    fireEvent.change(input, { target: { value: 'Test' } });
+    fireEvent.keyDown(input, { key: 'Enter', shiftKey: false });
+
+    expect(handleSend).not.toHaveBeenCalled();
+  });
+
+  it('should show read indicator for read sent messages', () => {
+    const readMessages: ChatMessageDto[] = [
+      {
+        message: 'Read message',
+        messageDate: new Date(),
+        isRead: true,
+        readDate: new Date(),
+        side: ChatMessageSide.Sender,
+      },
+    ];
+    const readMap = new Map<string, ChatMessageDto[]>();
+    readMap.set('user-1', readMessages);
+
+    render(
+      <Chat
+        contacts={mockContacts}
+        userMessages={readMap}
+        selectedContact={mockContacts[0]}
+      />
+    );
+
+    // The read indicator ✓✓ should be present
+    expect(screen.getByText(/✓✓/)).toBeInTheDocument();
+  });
+
+  it('should not show read indicator for unread sent messages', () => {
+    const unreadMessages: ChatMessageDto[] = [
+      {
+        message: 'Unread message',
+        messageDate: new Date(),
+        isRead: false,
+        readDate: new Date(),
+        side: ChatMessageSide.Sender,
+      },
+    ];
+    const unreadMap = new Map<string, ChatMessageDto[]>();
+    unreadMap.set('user-1', unreadMessages);
+
+    render(
+      <Chat
+        contacts={mockContacts}
+        userMessages={unreadMap}
+        selectedContact={mockContacts[0]}
+      />
+    );
+
+    expect(screen.queryByText(/✓✓/)).not.toBeInTheDocument();
+  });
 });
