@@ -1,5 +1,5 @@
 /**
- * Test page for @abpjs/setting-management package
+ * Test page for @abpjs/setting-management package v3.1.0
  * Tests: SettingLayout, useSettingManagement hook, SettingManagementService
  */
 import { useState, useEffect } from 'react'
@@ -795,13 +795,46 @@ const localizedName = localize(eSettingManagementRouteNames.Settings);`}
   )
 }
 
+function TestV310Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.1.0</h2>
+
+      <div className="test-card" style={{ background: 'rgba(155,89,182,0.05)', border: '1px solid rgba(155,89,182,0.2)' }}>
+        <h3>Version Bump Only</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Version 3.1.0 is a maintenance release with no functional changes.
+          The update includes internal Angular type reference changes that do not affect the React translation.
+        </p>
+        <ul style={{ fontSize: '14px', color: '#888' }}>
+          <li>Internal type reference updates (Angular-specific)</li>
+          <li>Dependency version bump for @abp/ng.theme.shared</li>
+        </ul>
+        <p style={{ fontSize: '14px', color: '#9b59b6', marginTop: '12px' }}>
+          All v3.0.0 features and APIs remain unchanged.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function TestSettingManagementPage() {
   return (
     <div>
-      <h1>@abpjs/setting-management Tests v3.0.0</h1>
+      <h1>@abpjs/setting-management Tests v3.1.0</h1>
       <p>Testing setting management layout, hook, and services.</p>
-      <p style={{ color: '#22c55e', fontSize: '0.9rem' }}>Version 3.0.0 - Config route providers, state changes (null → undefined)</p>
+      <p style={{ color: '#9b59b6', fontSize: '0.9rem' }}>Version 3.1.0 - Version bump only (no functional changes)</p>
 
+      {/* v3.1.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #9b59b6', paddingTop: '1rem' }}>
+        v3.1.0 Changes
+      </h2>
+      <TestV310Features />
+
+      {/* v3.0.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #22c55e', paddingTop: '1rem' }}>
+        v3.0.0 Features
+      </h2>
       <TestV300Features />
       <TestV270Features />
       <TestSettingLayoutComponent />
