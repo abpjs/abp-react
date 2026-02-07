@@ -2,6 +2,15 @@ import { describe, it, expect } from 'vitest';
 import * as settingManagementExports from '../index';
 
 describe('@abpjs/setting-management package exports', () => {
+  describe('v3.2.0 - Version bump only', () => {
+    it('should maintain all existing exports (no changes in v3.2.0)', () => {
+      // v3.2.0 is a version bump only - internal Angular type reference changes
+      // All existing functionality remains unchanged
+      expect(settingManagementExports).toBeDefined();
+      expect(Object.keys(settingManagementExports).length).toBeGreaterThan(0);
+    });
+  });
+
   describe('config (v3.0.0)', () => {
     it('should export SETTING_MANAGEMENT_ROUTE_PROVIDERS', () => {
       expect(settingManagementExports.SETTING_MANAGEMENT_ROUTE_PROVIDERS).toBeDefined();

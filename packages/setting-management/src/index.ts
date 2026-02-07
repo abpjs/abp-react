@@ -1,7 +1,10 @@
 /**
  * @abpjs/setting-management
  * ABP Framework Setting Management module for React
- * Translated from @abp/ng.setting-management v3.1.0
+ * Translated from @abp/ng.setting-management v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - Version bump only (internal Angular type reference changes, no functional changes)
  *
  * Changes in v3.1.0:
  * - Version bump only (internal Angular type reference changes, no functional changes)
