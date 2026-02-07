@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Entity Change Models
- * Translated from @volo/abp.ng.audit-logging v2.7.0
+ * Translated from @volo/abp.ng.audit-logging v3.2.0
+ *
+ * @since 3.2.0 - Deprecated in favor of proxy DTOs
  */
 
 import type { ABP } from '@abpjs/core';
@@ -11,6 +13,7 @@ import type { eEntityChangeType } from '../enums/entity-change';
  * EntityChange namespace containing all models
  * for entity change management.
  * @since 2.7.0
+ * @deprecated To be removed in v4.0. Use EntityChangeDto, EntityChangeWithUsernameDto, and GetEntityChangesDto from proxy instead.
  */
 export namespace EntityChange {
   /**

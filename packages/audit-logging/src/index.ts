@@ -1,7 +1,28 @@
 /**
  * @abpjs/audit-logging
  * ABP Framework Audit Logging module for React
- * Translated from @volo/abp.ng.audit-logging v3.1.0
+ * Translated from @volo/abp.ng.audit-logging v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - Added new proxy subpackage with typed DTOs:
+ *   - AuditLogDto, AuditLogActionDto, EntityChangeDto, EntityPropertyChangeDto
+ *   - GetAuditLogListDto, GetEntityChangesDto, EntityChangeFilter
+ *   - GetAverageExecutionDurationPerDayInput, GetAverageExecutionDurationPerDayOutput
+ *   - GetErrorRateFilter, GetErrorRateOutput, EntityChangeWithUsernameDto
+ * - Added new EntityChangeType enum in proxy/auditing (same values as eEntityChangeType)
+ * - Added new AuditLogsService (proxy) with typed methods:
+ *   - get, getList, getEntityChange, getEntityChanges
+ *   - getEntityChangeWithUsername, getEntityChangesWithUsername
+ *   - getAverageExecutionDurationPerDay, getErrorRate
+ * - Updated AuditLogging.State to use new proxy DTOs:
+ *   - result: PagedResultDto<AuditLogDto>
+ *   - averageExecutionStatistics: Record<string, number>
+ *   - errorRateStatistics: Record<string, number>
+ * - Deprecated old types (to be removed in v4.0):
+ *   - AuditLogging.Response, AuditLogging.AuditLogsQueryParams, AuditLogging.Log
+ *   - Statistics namespace (Filter, Data, Response)
+ *   - EntityChange namespace
+ * - Dependency updates to @abp/ng.theme.shared ~3.2.0, @volo/abp.commercial.ng.ui ~3.2.0
  *
  * Changes in v3.1.0:
  * - Internal Angular refactoring (OnDestroy → SubscriptionService for widget cleanup)
@@ -49,6 +70,9 @@
  * - React: Already properly typed using Set<number> for expanded state tracking
  * - Dependency updates to @abp/ng.theme.shared v2.1.0
  */
+
+// Proxy (v3.2.0) - new typed DTOs and services
+export * from './proxy';
 
 // Config (v3.0.0)
 export * from './config';
