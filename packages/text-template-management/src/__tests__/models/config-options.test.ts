@@ -10,7 +10,6 @@ import type {
   TextTemplateManagementConfigOptions,
 } from '../../models/config-options';
 import { eTextTemplateManagementComponents } from '../../enums/components';
-import type { TextTemplateManagement } from '../../models/text-template-management';
 
 describe('Config Options', () => {
   describe('TextTemplateManagementEntityActionContributors Type', () => {

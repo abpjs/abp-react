@@ -6,11 +6,8 @@
  * @since 3.0.0
  */
 
-import {
-  eLayoutType,
-  getRoutesService,
-  RoutesService,
-} from '@abpjs/core';
+import { eLayoutType, getRoutesService } from '@abpjs/core';
+import type { RoutesService } from '@abpjs/core';
 import { eAuditLoggingRouteNames } from '../enums/route-names';
 import { eAuditLoggingPolicyNames } from '../enums/policy-names';
 

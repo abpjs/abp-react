@@ -8,7 +8,7 @@
  * @since 3.0.0
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import {
   Avatar,
   Box,
@@ -20,7 +20,7 @@ import {
   type SystemStyleObject,
 } from '@chakra-ui/react';
 import { LuEllipsisVertical, LuKey, LuLogOut, LuUser, LuLogIn } from 'react-icons/lu';
-import { useConfig, useAuth, useDirection, useLocalization, useSession } from '@abpjs/core';
+import { useConfig, useAuth, useDirection, useLocalization } from '@abpjs/core';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 /**

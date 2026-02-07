@@ -12,7 +12,6 @@ import type {
   SaasEditFormPropContributors,
 } from '../../models/config-options';
 import { eSaasComponents } from '../../enums/components';
-import type { Saas } from '../../models/saas';
 
 describe('SaasConfigOptions type', () => {
   it('should allow empty options object', () => {

@@ -99,7 +99,7 @@ describe('entity-details.token (v3.0.0)', () => {
     });
 
     it('should work with WeakMap for memory-safe storage', () => {
-      const registry = new Map<symbol, Function>();
+      const registry = new Map<symbol, (...args: unknown[]) => unknown>();
       const fn: ShowEntityDetailsFn = () => {};
 
       registry.set(SHOW_ENTITY_DETAILS, fn);

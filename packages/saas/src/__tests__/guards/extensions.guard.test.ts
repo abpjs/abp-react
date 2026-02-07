@@ -2,8 +2,8 @@
  * Tests for SaaS Extensions Guard
  * @abpjs/saas v3.0.0
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import { renderHook, waitFor } from '@testing-library/react';
 import {
   saasExtensionsGuard,
   useSaasExtensionsGuard,
@@ -58,7 +58,7 @@ describe('useSaasExtensionsGuard', () => {
   });
 
   it('should handle unmount during loading', async () => {
-    const { result, unmount } = renderHook(() => useSaasExtensionsGuard());
+    const { unmount } = renderHook(() => useSaasExtensionsGuard());
 
     // Unmount immediately
     unmount();

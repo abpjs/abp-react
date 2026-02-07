@@ -199,7 +199,7 @@ describe('routes.service', () => {
     describe('refresh', () => {
       it('should rebuild tree from flat list', () => {
         routesService.add([{ name: 'Test', path: '/test' }]);
-        const treeBeforeRefresh = routesService.tree;
+        const _treeBeforeRefresh = routesService.tree;
 
         routesService.refresh();
 

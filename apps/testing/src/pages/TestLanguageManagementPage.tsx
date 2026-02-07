@@ -62,9 +62,9 @@ function TestV300Features() {
   const [guardResult, setGuardResult] = useState<{ isLoaded: boolean; loading: boolean } | null>(null)
   const [guardFnResult, setGuardFnResult] = useState<boolean | null>(null)
 
+  const hookResult = useLanguageManagementExtensionsGuard()
   const testGuardHook = () => {
-    const result = useLanguageManagementExtensionsGuard()
-    setGuardResult(result)
+    setGuardResult(hookResult)
   }
 
   const testGuardFunction = async () => {

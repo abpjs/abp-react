@@ -564,7 +564,7 @@ describe('NavItem interface (v3.0.0)', () => {
     });
 
     it('should accept component with props', () => {
-      const MockComponent = ({ name }: { name: string }) => null;
+      const MockComponent = ({ name: _name }: { name: string }) => null;
       const item: NavItem = {
         id: 'test',
         component: MockComponent,

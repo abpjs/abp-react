@@ -10,7 +10,6 @@ import {
 } from '../../../config/providers/route.provider';
 import { eAuditLoggingRouteNames } from '../../../config/enums/route-names';
 import { eAuditLoggingPolicyNames } from '../../../config/enums/policy-names';
-import { RoutesService } from '@abpjs/core';
 
 // Mock the @abpjs/core module
 vi.mock('@abpjs/core', async () => {
