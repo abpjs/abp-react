@@ -393,7 +393,7 @@ describe('DEFAULT_ERROR_LOCALIZATIONS (v3.1.0)', () => {
       const entries = Object.entries(DEFAULT_ERROR_LOCALIZATIONS);
 
       expect(entries).toHaveLength(5);
-      entries.forEach(([key, value]) => {
+      entries.forEach(([_key, value]) => {
         expect(value).toHaveProperty('title');
         expect(value).toHaveProperty('details');
         expect(typeof value.title).toBe('string');

@@ -194,7 +194,7 @@ describe('SubscriptionService (v3.1.0)', () => {
 
     it('should only remove the specified subscription', () => {
       const sub1 = service.addOne(() => () => {});
-      const sub2 = service.addOne(() => () => {});
+      const _sub2 = service.addOne(() => () => {});
 
       service.removeOne(sub1);
 

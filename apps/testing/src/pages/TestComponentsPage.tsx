@@ -9,14 +9,12 @@ import {
   Tree,
   TreeAdapter,
   TreeNode,
-  BaseNode,
-  TreeNodeData,
   createTreeFromList,
   createListFromTree,
   createMapFromList,
   defaultNameResolver,
-  DropEvent,
 } from '@abpjs/components'
+import type { BaseNode, TreeNodeData, DropEvent } from '@abpjs/components'
 
 // Sample data interface
 interface OrgUnit extends BaseNode {

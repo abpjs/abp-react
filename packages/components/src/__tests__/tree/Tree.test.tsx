@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { Tree, TreeProps, DropEvent } from '../../tree/components/Tree';
+import { Tree, TreeProps } from '../../tree/components/Tree';
 import { TreeAdapter } from '../../tree/utils/tree-adapter';
 import { BaseNode } from '../../tree/models/base-node';
 import { TreeNodeData } from '../../tree/models/tree-node';

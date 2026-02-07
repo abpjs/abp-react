@@ -175,7 +175,7 @@ function TestPermissionHook() {
     isGranted,
     isGrantedByRole,
     isGrantedByOtherProviderName,
-    shouldFetchAppConfig,
+    shouldFetchAppConfig: _shouldFetchAppConfig,
     reset,
   } = usePermissionManagement()
 
