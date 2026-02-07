@@ -28,6 +28,14 @@ import {
   DEFAULT_ACCOUNT_OPTIONS,
   // v3.0.0 utils
   accountOptionsFactory,
+  // v3.2.0 exports
+  eAccountManageProfileTabNames,
+  ProfilePictureType,
+  eTwoFactorBehaviour,
+  getManageProfileTabsService,
+  ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS,
+  ACCOUNT_MANAGE_PROFILE_TAB_ORDERS,
+  ACCOUNT_MANAGE_PROFILE_TAB_NAMES,
 } from '@abpjs/account-pro'
 import { useAuth, useConfig } from '@abpjs/core'
 import { useToaster } from '@abpjs/theme-shared'
@@ -746,6 +754,370 @@ await service.confirmPhoneNumber(token);`}
               <td style={{ padding: '8px' }}>ProfileResponse.phoneNumberConfirmed</td>
               <td>boolean</td>
               <td>Phone confirmation status</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function TestV320Features() {
+  const tabsService = getManageProfileTabsService()
+  const [tabCount, setTabCount] = useState(tabsService.getTabs().length)
+
+  const handleAddCustomTab = () => {
+    tabsService.addTab({
+      key: 'custom-demo-tab',
+      name: 'Custom Demo Tab',
+      order: 100,
+      component: () => null,
+      visible: true,
+    })
+    setTabCount(tabsService.getTabs().length)
+  }
+
+  const handleRemoveCustomTab = () => {
+    tabsService.removeTab('custom-demo-tab')
+    setTabCount(tabsService.getTabs().length)
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.2.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>New Component Key <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
+        <p>Added ProfilePicture component key to eAccountComponents:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.1)' }}>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>ProfilePicture</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{eAccountComponents.ProfilePicture}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eAccountManageProfileTabNames <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
+        <p>New enum for manage profile tab localization keys:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(eAccountManageProfileTabNames).map(([key, value]) => (
+              <tr key={key} style={{ background: 'rgba(68,255,68,0.05)' }}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>ProfilePictureType Enum <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
+        <p>Defines the source type of a user's profile picture:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Name</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>None</td>
+              <td style={{ padding: '8px' }}>{ProfilePictureType.None}</td>
+              <td style={{ padding: '8px', color: '#888' }}>No profile picture set</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>Gravatar</td>
+              <td style={{ padding: '8px' }}>{ProfilePictureType.Gravatar}</td>
+              <td style={{ padding: '8px', color: '#888' }}>Profile picture from Gravatar service</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>Image</td>
+              <td style={{ padding: '8px' }}>{ProfilePictureType.Image}</td>
+              <td style={{ padding: '8px', color: '#888' }}>Custom uploaded image</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>eTwoFactorBehaviour Enum <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
+        <p>Defines how two-factor authentication is enforced:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Name</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>Optional</td>
+              <td style={{ padding: '8px' }}>{eTwoFactorBehaviour.Optional}</td>
+              <td style={{ padding: '8px', color: '#888' }}>Users can choose to enable/disable 2FA</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>Disabled</td>
+              <td style={{ padding: '8px' }}>{eTwoFactorBehaviour.Disabled}</td>
+              <td style={{ padding: '8px', color: '#888' }}>2FA is disabled system-wide</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>Forced</td>
+              <td style={{ padding: '8px' }}>{eTwoFactorBehaviour.Forced}</td>
+              <td style={{ padding: '8px', color: '#888' }}>All users must use 2FA</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>ProfileService <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
+        <p>New service for profile picture and two-factor authentication operations:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import { ProfileService } from '@abpjs/account-pro';
+
+const service = new ProfileService(restService);
+
+// Profile Picture operations
+const picture = await service.getProfilePicture();
+// { type: ProfilePictureType, source: string, fileContent?: string }
+
+await service.setProfilePicture({
+  type: ProfilePictureType.Image,
+  fileBytes: 'base64encodedimage',
+});
+
+const userPicture = await service.getProfilePictureByUserId('user-id');
+
+// Two-Factor Authentication
+const isEnabled = await service.getTwoFactorEnabled();
+await service.setTwoFactorEnabled(true);`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>ManageProfileTabsService <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
+        <p>Service for managing profile tabs in the ManageProfile component:</p>
+
+        <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+          <p>Current tabs count: <strong>{tabCount}</strong></p>
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+            <button onClick={handleAddCustomTab}>Add Custom Tab</button>
+            <button onClick={handleRemoveCustomTab}>Remove Custom Tab</button>
+          </div>
+        </div>
+
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import {
+  getManageProfileTabsService,
+  ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS,
+} from '@abpjs/account-pro';
+
+const tabsService = getManageProfileTabsService();
+
+// Add a custom tab
+tabsService.addTab({
+  key: 'custom-tab',
+  name: 'My Custom Tab',
+  order: 50,
+  component: MyCustomComponent,
+  visible: true,
+});
+
+// Get all tabs (sorted by order)
+const tabs = tabsService.getTabs();
+
+// Get only visible tabs
+const visibleTabs = tabsService.getVisibleTabs();
+
+// Update tab visibility
+tabsService.setTabVisibility('custom-tab', false);
+
+// Update tab order
+tabsService.setTabOrder('custom-tab', 100);
+
+// Remove a tab
+tabsService.removeTab('custom-tab');`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Tab Provider Constants <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
+        <p>Constants for standard profile tabs:</p>
+
+        <h4 style={{ marginTop: '1rem' }}>ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Constant</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <h4 style={{ marginTop: '1rem' }}>ACCOUNT_MANAGE_PROFILE_TAB_ORDERS</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Tab Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Order</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(ACCOUNT_MANAGE_PROFILE_TAB_ORDERS).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <h4 style={{ marginTop: '1rem' }}>ACCOUNT_MANAGE_PROFILE_TAB_NAMES</h4>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Tab Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Localization Key</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(ACCOUNT_MANAGE_PROFILE_TAB_NAMES).map(([key, value]) => (
+              <tr key={key}>
+                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
+                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>New Model Interfaces <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
+        <p>Added interfaces for profile picture and two-factor settings:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`// Input for setting a profile picture
+interface ProfilePictureInput {
+  type: ProfilePictureType;
+  fileBytes?: string;  // Base64 encoded, for Image type
+}
+
+// Profile picture source information
+interface ProfilePictureSourceDto {
+  type: ProfilePictureType;
+  source: string;       // URL or empty string
+  fileContent?: string; // Base64 encoded
+}
+
+// Two-factor authentication settings
+interface AccountTwoFactorSettingsDto {
+  isEnabled: boolean;
+  behaviour: eTwoFactorBehaviour;
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v3.2.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAccountComponents.ProfilePicture</td>
+              <td>string</td>
+              <td>Component key for profile picture</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAccountManageProfileTabNames</td>
+              <td>const object</td>
+              <td>Manage profile tab name keys</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ProfilePictureType</td>
+              <td>enum</td>
+              <td>None, Gravatar, Image</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eTwoFactorBehaviour</td>
+              <td>enum</td>
+              <td>Optional, Disabled, Forced</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ProfileService</td>
+              <td>class</td>
+              <td>Profile picture & 2FA operations</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ManageProfileTabsService</td>
+              <td>class</td>
+              <td>Manage profile tabs service</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>getManageProfileTabsService()</td>
+              <td>function</td>
+              <td>Singleton accessor</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS</td>
+              <td>const object</td>
+              <td>Tab provider keys</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ACCOUNT_MANAGE_PROFILE_TAB_ORDERS</td>
+              <td>const object</td>
+              <td>Default tab orders</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ACCOUNT_MANAGE_PROFILE_TAB_NAMES</td>
+              <td>const object</td>
+              <td>Tab localization keys</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ProfilePictureInput</td>
+              <td>interface</td>
+              <td>Input for setting profile picture</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>ProfilePictureSourceDto</td>
+              <td>interface</td>
+              <td>Profile picture source data</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AccountTwoFactorSettingsDto</td>
+              <td>interface</td>
+              <td>2FA settings configuration</td>
             </tr>
           </tbody>
         </table>
@@ -1634,9 +2006,9 @@ function TestAuthState() {
 export function TestAccountProPage() {
   return (
     <div>
-      <h1>@abpjs/account-pro Tests v3.1.0</h1>
+      <h1>@abpjs/account-pro Tests v3.2.0</h1>
       <p>Testing Pro account features: password reset, profile management, enhanced components.</p>
-      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 3.1.0 - Added email confirmation, security logs, and new interfaces</p>
+      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 3.2.0 - Added profile picture management, 2FA settings, and manage profile tabs service</p>
 
       <div className="test-card" style={{ backgroundColor: '#1a365d', border: '1px solid #2b6cb0' }}>
         <h3 style={{ color: '#90cdf4' }}>Pro Package Features</h3>
@@ -1651,9 +2023,11 @@ export function TestAccountProPage() {
           <li style={{ color: '#4f4' }}>v2.9.0: Logo component, eAccountComponents.Logo key (now 10 keys)</li>
           <li style={{ color: '#4f4' }}>v3.0.0: Config subpackage, eAccountSettingTabNames, ACCOUNT_ROUTE_PROVIDERS, ACCOUNT_SETTING_TAB_PROVIDERS, ACCOUNT_OPTIONS token, accountOptionsFactory</li>
           <li style={{ color: '#4f4' }}>v3.1.0: EmailConfirmation/MySecurityLogs routes & components, sendEmailConfirmationToken(), confirmEmail(), getMySecurityLogs(), AccountSettings, AccountLdapSettings interfaces</li>
+          <li style={{ color: '#4f4' }}>v3.2.0: ProfilePicture component, ProfilePictureType/eTwoFactorBehaviour enums, ProfileService, ManageProfileTabsService, eAccountManageProfileTabNames, ACCOUNT_MANAGE_PROFILE_TAB_* constants</li>
         </ul>
       </div>
 
+      <TestV320Features />
       <TestV310Features />
       <TestV300Features />
       <TestV290Features />

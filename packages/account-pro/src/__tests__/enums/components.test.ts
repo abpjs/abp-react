@@ -4,7 +4,7 @@ import {
   type AccountComponentKey,
 } from '../../enums/components';
 
-describe('eAccountComponents (v3.1.0)', () => {
+describe('eAccountComponents (v3.2.0)', () => {
   describe('enum values', () => {
     it('should have Account key with correct value', () => {
       expect(eAccountComponents.Account).toBe('Account.AccountComponent');
@@ -65,12 +65,16 @@ describe('eAccountComponents (v3.1.0)', () => {
     it('should have MySecurityLogs key with correct value (v3.1.0)', () => {
       expect(eAccountComponents.MySecurityLogs).toBe('Account.MySecurityLogs');
     });
+
+    it('should have ProfilePicture key with correct value (v3.2.0)', () => {
+      expect(eAccountComponents.ProfilePicture).toBe('Account.ProfilePicture');
+    });
   });
 
   describe('enum structure', () => {
-    it('should have exactly 12 keys', () => {
+    it('should have exactly 13 keys', () => {
       const keys = Object.keys(eAccountComponents);
-      expect(keys).toHaveLength(12);
+      expect(keys).toHaveLength(13);
     });
 
     it('should have all expected keys', () => {
@@ -87,6 +91,7 @@ describe('eAccountComponents (v3.1.0)', () => {
       expect(keys).toContain('Logo');
       expect(keys).toContain('EmailConfirmation');
       expect(keys).toContain('MySecurityLogs');
+      expect(keys).toContain('ProfilePicture');
     });
 
     it('should be immutable (const assertion)', () => {
@@ -118,6 +123,8 @@ describe('eAccountComponents (v3.1.0)', () => {
         eAccountComponents.EmailConfirmation;
       const mySecurityLogsKey: AccountComponentKey =
         eAccountComponents.MySecurityLogs;
+      const profilePictureKey: AccountComponentKey =
+        eAccountComponents.ProfilePicture;
 
       expect(accountKey).toBe('Account.AccountComponent');
       expect(loginKey).toBe('Account.LoginComponent');
@@ -131,6 +138,7 @@ describe('eAccountComponents (v3.1.0)', () => {
       expect(logoKey).toBe('Account.LogoComponent');
       expect(emailConfirmationKey).toBe('Account.EmailConfirmationComponent');
       expect(mySecurityLogsKey).toBe('Account.MySecurityLogs');
+      expect(profilePictureKey).toBe('Account.ProfilePicture');
     });
 
     it('should preserve literal types', () => {
@@ -148,7 +156,7 @@ describe('eAccountComponents (v3.1.0)', () => {
   describe('usage patterns', () => {
     it('should allow iteration over all component keys', () => {
       const allKeys = Object.values(eAccountComponents);
-      expect(allKeys).toHaveLength(12);
+      expect(allKeys).toHaveLength(13);
       expect(allKeys.every((key) => key.startsWith('Account.'))).toBe(true);
     });
 
@@ -201,6 +209,9 @@ describe('eAccountComponents (v3.1.0)', () => {
         case eAccountComponents.MySecurityLogs:
           label = 'My Security Logs';
           break;
+        case eAccountComponents.ProfilePicture:
+          label = 'Profile Picture';
+          break;
         default:
           label = 'Unknown';
       }
@@ -222,12 +233,13 @@ describe('eAccountComponents (v3.1.0)', () => {
         [eAccountComponents.Logo]: true,
         [eAccountComponents.EmailConfirmation]: true,
         [eAccountComponents.MySecurityLogs]: true,
+        [eAccountComponents.ProfilePicture]: true,
       };
 
       expect(
         componentConfig[eAccountComponents.Login as AccountComponentKey]
       ).toBe(true);
-      expect(Object.keys(componentConfig)).toHaveLength(12);
+      expect(Object.keys(componentConfig)).toHaveLength(13);
     });
   });
 });
