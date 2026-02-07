@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as accountProExports from '../index';
 
-describe('package root exports (v3.0.0)', () => {
+describe('package root exports (v3.2.0)', () => {
   describe('config exports (v3.0.0)', () => {
     it('should export eAccountRouteNames from config', () => {
       expect(accountProExports.eAccountRouteNames).toBeDefined();
@@ -180,6 +180,106 @@ describe('package root exports (v3.0.0)', () => {
 
     it('should export Logo with correct componentKey (v2.9.0)', () => {
       expect(accountProExports.Logo.componentKey).toBe('Account.LogoComponent');
+    });
+  });
+
+  describe('v3.2.0 exports', () => {
+    describe('enum exports (v3.2.0)', () => {
+      it('should export eAccountManageProfileTabNames', () => {
+        expect(accountProExports.eAccountManageProfileTabNames).toBeDefined();
+        expect(typeof accountProExports.eAccountManageProfileTabNames).toBe(
+          'object'
+        );
+      });
+
+      it('should export ProfilePictureType', () => {
+        expect(accountProExports.ProfilePictureType).toBeDefined();
+        expect(typeof accountProExports.ProfilePictureType).toBe('object');
+      });
+
+      it('should export eTwoFactorBehaviour', () => {
+        expect(accountProExports.eTwoFactorBehaviour).toBeDefined();
+        expect(typeof accountProExports.eTwoFactorBehaviour).toBe('object');
+      });
+
+      it('should have ProfilePicture in eAccountComponents', () => {
+        expect(accountProExports.eAccountComponents.ProfilePicture).toBe(
+          'Account.ProfilePicture'
+        );
+      });
+    });
+
+    describe('service exports (v3.2.0)', () => {
+      it('should export ProfileService', () => {
+        expect(accountProExports.ProfileService).toBeDefined();
+        expect(typeof accountProExports.ProfileService).toBe('function');
+      });
+
+      it('should export ManageProfileTabsService', () => {
+        expect(accountProExports.ManageProfileTabsService).toBeDefined();
+        expect(typeof accountProExports.ManageProfileTabsService).toBe(
+          'function'
+        );
+      });
+
+      it('should export getManageProfileTabsService', () => {
+        expect(accountProExports.getManageProfileTabsService).toBeDefined();
+        expect(typeof accountProExports.getManageProfileTabsService).toBe(
+          'function'
+        );
+      });
+    });
+
+    describe('constants exports (v3.2.0)', () => {
+      it('should export ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS', () => {
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS
+        ).toBeDefined();
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS.PROFILE_PICTURE
+        ).toBe('profile-picture');
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS.CHANGE_PASSWORD
+        ).toBe('change-password');
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS.PERSONAL_SETTINGS
+        ).toBe('personal-settings');
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS.TWO_FACTOR
+        ).toBe('two-factor');
+      });
+
+      it('should export ACCOUNT_MANAGE_PROFILE_TAB_ORDERS', () => {
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_ORDERS
+        ).toBeDefined();
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_ORDERS['profile-picture']
+        ).toBe(10);
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_ORDERS['change-password']
+        ).toBe(20);
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_ORDERS[
+            'personal-settings'
+          ]
+        ).toBe(30);
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_ORDERS['two-factor']
+        ).toBe(40);
+      });
+
+      it('should export ACCOUNT_MANAGE_PROFILE_TAB_NAMES', () => {
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_NAMES
+        ).toBeDefined();
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_NAMES['profile-picture']
+        ).toBe('AbpAccount::ProfilePicture');
+        expect(
+          accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_NAMES['change-password']
+        ).toBe('AbpUi::ChangePassword');
+      });
     });
   });
 });

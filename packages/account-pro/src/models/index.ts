@@ -1,11 +1,75 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * @abpjs/account-pro Models
- * Translated from @volo/abp.ng.account v3.1.0
+ * Translated from @volo/abp.ng.account v3.2.0
+ *
+ * @changelog
+ * v3.2.0:
+ * - Added ProfilePictureInput, ProfilePictureSourceDto
+ * - Added AccountTwoFactorSettingsDto
  */
 
 // Config options (v3.0.0)
 export * from './config-options';
+
+import { ProfilePictureType } from '../config/enums/profile-picture-type';
+import { eTwoFactorBehaviour } from '../config/enums/two-factor-behaviour';
+
+/**
+ * Input for setting a profile picture
+ * @since 3.2.0
+ */
+export interface ProfilePictureInput {
+  /**
+   * The type of profile picture source
+   */
+  type: ProfilePictureType;
+
+  /**
+   * The file bytes for image upload (base64 encoded)
+   * Required when type is ProfilePictureType.Image
+   */
+  fileBytes?: string;
+}
+
+/**
+ * Profile picture source information
+ * @since 3.2.0
+ */
+export interface ProfilePictureSourceDto {
+  /**
+   * The type of profile picture source
+   */
+  type: ProfilePictureType;
+
+  /**
+   * The source URL of the profile picture
+   * May be a Gravatar URL, blob URL, or empty string depending on type
+   */
+  source: string;
+
+  /**
+   * The file content for download (base64 encoded)
+   * Only populated for type=Image when specifically requested
+   */
+  fileContent?: string;
+}
+
+/**
+ * Two-factor authentication settings for the account
+ * @since 3.2.0
+ */
+export interface AccountTwoFactorSettingsDto {
+  /**
+   * Whether two-factor authentication is enabled for the account
+   */
+  isEnabled: boolean;
+
+  /**
+   * The two-factor authentication behaviour policy
+   */
+  behaviour: eTwoFactorBehaviour;
+}
 
 /**
  * Account settings for general configuration
