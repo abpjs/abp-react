@@ -42,7 +42,7 @@
     "@abpjs/permission-management": "workspace:*"
   },
   "devDependencies": {
-    "@abp/ng.setting-management": "3.0.0",
+    "@abp/ng.setting-management": "3.1.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.6.1",
