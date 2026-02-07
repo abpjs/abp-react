@@ -160,6 +160,37 @@ describe('DEFAULT_STYLES (constants/styles.ts)', () => {
     expect(DEFAULT_STYLES).toContain('.abp-ellipsis');
     expect(DEFAULT_STYLES).toContain('text-overflow: ellipsis');
   });
+
+  // v3.2.0 - datatable-scroll styles
+  describe('datatable-scroll styles (v3.2.0)', () => {
+    it('should contain datatable-scroll class', () => {
+      expect(DEFAULT_STYLES).toContain('.datatable-scroll');
+    });
+
+    it('should have margin-bottom style for datatable-scroll', () => {
+      expect(DEFAULT_STYLES).toContain('margin-bottom: 5px !important');
+    });
+
+    it('should have width unset style for datatable-scroll', () => {
+      expect(DEFAULT_STYLES).toContain('width: unset !important');
+    });
+
+    it('should have complete datatable-scroll rule', () => {
+      // Verify the full rule is present
+      expect(DEFAULT_STYLES).toMatch(/\.datatable-scroll\s*\{[^}]*margin-bottom:\s*5px\s*!important/);
+      expect(DEFAULT_STYLES).toMatch(/\.datatable-scroll\s*\{[^}]*width:\s*unset\s*!important/);
+    });
+
+    it('should place datatable-scroll before ui-table-scrollable-body', () => {
+      // Verify ordering: datatable-scroll should come before ui-table-scrollable-body
+      const datatableScrollIndex = DEFAULT_STYLES.indexOf('.datatable-scroll');
+      const uiTableIndex = DEFAULT_STYLES.indexOf('.ui-table-scrollable-body');
+
+      expect(datatableScrollIndex).toBeGreaterThan(-1);
+      expect(uiTableIndex).toBeGreaterThan(-1);
+      expect(datatableScrollIndex).toBeLessThan(uiTableIndex);
+    });
+  });
 });
 
 describe('BOOTSTRAP constant (v2.9.0)', () => {

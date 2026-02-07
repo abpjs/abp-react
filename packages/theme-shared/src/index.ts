@@ -2,10 +2,14 @@
  * @abpjs/theme-shared
  *
  * ABP Framework Theme Shared components for React.
- * Translated from @abp/ng.theme.shared v3.0.0
+ * Translated from @abp/ng.theme.shared v3.2.0
  *
  * This package provides shared UI components, services, and utilities
  * for theme/modal management in ABP Framework React applications.
+ *
+ * Changes in v3.2.0:
+ * - Added .datatable-scroll CSS styles for ngx-datatable horizontal scroll fix
+ * - Dependency updates to @abp/ng.core v3.2.0
  *
  * Changes in v3.0.0:
  * - Added NavItemsService (replaces nav-items utility functions)

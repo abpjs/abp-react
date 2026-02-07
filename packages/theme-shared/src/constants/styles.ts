@@ -9,6 +9,8 @@
  *
  * @since 2.9.0 - Added RTL support for data-tables-filter
  *
+ * @since 3.2.0 - Added .datatable-scroll styles for ngx-datatable horizontal scroll fix
+ *
  * @example
  * ```tsx
  * // Option 1: Use with a style tag in your app
@@ -67,6 +69,12 @@ export const DEFAULT_STYLES = `
 
 .navbar .dropdown-menu {
   min-width: 215px;
+}
+
+/* ngx-datatable scroll fix - @since 3.2.0 */
+.datatable-scroll {
+  margin-bottom: 5px !important;
+  width: unset !important;
 }
 
 .ui-table-scrollable-body::-webkit-scrollbar {
