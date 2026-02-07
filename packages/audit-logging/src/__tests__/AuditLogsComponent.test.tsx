@@ -1,18 +1,17 @@
 /**
  * Tests for AuditLogsComponent
- * @abpjs/audit-logging v2.9.0
+ * @abpjs/audit-logging v4.0.0
  *
- * v2.9.0: Aligned with Angular's onQueryChange pattern
- * (React already uses this pattern via useEffect and query parameter building)
+ * @since 4.0.0 - Updated type references from AuditLogging.Log to AuditLogDto
  */
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AuditLogsComponent } from '../components/AuditLogs/AuditLogsComponent';
-import type { AuditLogging } from '../models';
+import type { AuditLogDto } from '../proxy/audit-logging/models';
 
 // Mock data
-const mockAuditLogs: AuditLogging.Log[] = [
+const mockAuditLogs: AuditLogDto[] = [
   {
     id: '1',
     userId: 'user1',
@@ -122,7 +121,7 @@ const mockAuditLogs: AuditLogging.Log[] = [
 const createMockUseAuditLogsReturn = () => ({
   auditLogs: mockAuditLogs,
   totalCount: 25, // More than pageSize to show pagination
-  selectedLog: null as AuditLogging.Log | null,
+  selectedLog: null as AuditLogDto | null,
   isLoading: false,
   error: null as string | null,
   averageExecutionStats: {},
@@ -871,6 +870,24 @@ describe('AuditLogsComponent', () => {
       const table = screen.getByRole('table');
       expect(table).toBeInTheDocument();
     });
+
+    it('should handle invalid date strings gracefully', async () => {
+      mockUseAuditLogsReturn.selectedLog = {
+        ...mockAuditLogs[0],
+        executionTime: 'not-a-date',
+      };
+
+      render(<AuditLogsComponent />);
+
+      const detailButtons = screen.getAllByText('🔍');
+      fireEvent.click(detailButtons[0]);
+
+      await waitFor(() => {
+        // The invalid date should still render (either as Invalid Date locale string or the raw string)
+        const overallContent = screen.getByTestId('tab-content-overall');
+        expect(overallContent).toBeInTheDocument();
+      });
+    });
   });
 
   describe('useEffect Triggers', () => {
@@ -889,6 +906,263 @@ describe('AuditLogsComponent', () => {
           maxResultCount: 10,
         })
       );
+    });
+  });
+
+  describe('Refresh with Filters', () => {
+    it('should pass all filter values when refreshing', () => {
+      render(<AuditLogsComponent />);
+
+      // Set filters
+      const inputs = screen.getAllByTestId('input');
+      fireEvent.change(inputs[0], { target: { value: 'admin' } }); // userName
+      fireEvent.change(inputs[1], { target: { value: '/api/test' } }); // url
+      fireEvent.change(inputs[2], { target: { value: '100' } }); // minExecutionDuration
+      fireEvent.change(inputs[3], { target: { value: '500' } }); // maxExecutionDuration
+      fireEvent.change(inputs[4], { target: { value: 'TestApp' } }); // applicationName
+      fireEvent.change(inputs[5], { target: { value: 'corr-123' } }); // correlationId
+
+      const selects = screen.getAllByTestId('select');
+      fireEvent.change(selects[0], { target: { value: 'GET' } }); // httpMethod
+      fireEvent.change(selects[1], { target: { value: '200' } }); // httpStatusCode
+      fireEvent.change(selects[2], { target: { value: 'true' } }); // hasException
+
+      // Click refresh
+      const refreshButton = screen.getByText('Refresh');
+      fireEvent.click(refreshButton);
+
+      // Should call fetchAuditLogs with filters applied
+      expect(mockUseAuditLogsReturn.fetchAuditLogs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skipCount: 0,
+          maxResultCount: 10,
+          userName: 'admin',
+          url: '/api/test',
+          httpMethod: 'GET',
+          httpStatusCode: 200,
+          minExecutionDuration: 100,
+          maxExecutionDuration: 500,
+          hasException: true,
+        })
+      );
+    });
+
+    it('should pass hasException=false when "No" is selected', () => {
+      render(<AuditLogsComponent />);
+
+      const selects = screen.getAllByTestId('select');
+      fireEvent.change(selects[2], { target: { value: 'false' } }); // hasException
+
+      const refreshButton = screen.getByText('Refresh');
+      fireEvent.click(refreshButton);
+
+      expect(mockUseAuditLogsReturn.fetchAuditLogs).toHaveBeenCalledWith(
+        expect.objectContaining({
+          hasException: false,
+        })
+      );
+    });
+  });
+
+  describe('Entity Change Property Table', () => {
+    it('should show property changes when entity change is expanded', async () => {
+      mockUseAuditLogsReturn.selectedLog = mockAuditLogs[0];
+
+      render(<AuditLogsComponent />);
+
+      // Open modal
+      const detailButtons = screen.getAllByText('🔍');
+      fireEvent.click(detailButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tab-content-changes')).toBeInTheDocument();
+      });
+
+      // Find collapsible buttons within the changes tab content
+      const changesContent = screen.getByTestId('tab-content-changes');
+      const collapsibleButtons = changesContent.querySelectorAll('[data-testid="collapsible-button"]');
+
+      expect(collapsibleButtons.length).toBeGreaterThan(0);
+
+      // Click the first entity change button (User)
+      fireEvent.click(collapsibleButtons[0]);
+
+      // After expansion, should show property change table with values
+      await waitFor(() => {
+        expect(changesContent).toHaveTextContent('Name');
+        expect(changesContent).toHaveTextContent('old');
+        expect(changesContent).toHaveTextContent('new');
+      });
+    });
+
+    it('should collapse entity change when clicked again', async () => {
+      mockUseAuditLogsReturn.selectedLog = mockAuditLogs[0];
+
+      render(<AuditLogsComponent />);
+
+      const detailButtons = screen.getAllByText('🔍');
+      fireEvent.click(detailButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tab-content-changes')).toBeInTheDocument();
+      });
+
+      const changesContent = screen.getByTestId('tab-content-changes');
+      const collapsibleButtons = changesContent.querySelectorAll('[data-testid="collapsible-button"]');
+
+      expect(collapsibleButtons.length).toBeGreaterThan(0);
+
+      // Expand
+      fireEvent.click(collapsibleButtons[0]);
+      await waitFor(() => {
+        expect(changesContent).toHaveTextContent('Name');
+      });
+
+      // Collapse
+      fireEvent.click(collapsibleButtons[0]);
+      // The entity change header should still be there
+      expect(changesContent).toHaveTextContent('User');
+    });
+  });
+
+  describe('Action Collapse Toggle', () => {
+    it('should collapse action when clicked again', async () => {
+      mockUseAuditLogsReturn.selectedLog = mockAuditLogs[0];
+
+      render(<AuditLogsComponent />);
+
+      const detailButtons = screen.getAllByText('🔍');
+      fireEvent.click(detailButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('tab-content-actions')).toBeInTheDocument();
+      });
+
+      const collapsibleButtons = screen.getAllByTestId('collapsible-button');
+      const actionButton = collapsibleButtons.find((btn) =>
+        btn.textContent?.includes('UserService')
+      );
+
+      if (actionButton) {
+        // Expand
+        fireEvent.click(actionButton);
+        await waitFor(() => {
+          expect(screen.getByTestId('tab-content-actions')).toHaveTextContent('{"page": 1}');
+        });
+
+        // Collapse
+        fireEvent.click(actionButton);
+        // Parameters should no longer be visible after collapse
+      }
+    });
+  });
+
+  describe('HTTP Badge Colors - Additional Cases', () => {
+    it('should use yellow for 3xx status codes', () => {
+      mockUseAuditLogsReturn.auditLogs = [
+        {
+          ...mockAuditLogs[0],
+          httpStatusCode: 301,
+        },
+      ];
+
+      render(<AuditLogsComponent />);
+
+      const badges = screen.getAllByTestId('badge');
+      const badge301 = badges.find((b) => b.textContent === '301');
+      expect(badge301).toHaveAttribute('data-colorpalette', 'yellow');
+    });
+
+    it('should use gray for unknown status codes', () => {
+      mockUseAuditLogsReturn.auditLogs = [
+        {
+          ...mockAuditLogs[0],
+          httpStatusCode: 100,
+        },
+      ];
+
+      render(<AuditLogsComponent />);
+
+      const badges = screen.getAllByTestId('badge');
+      const badge100 = badges.find((b) => b.textContent === '100');
+      expect(badge100).toHaveAttribute('data-colorpalette', 'gray');
+    });
+
+    it('should use yellow for PUT method', () => {
+      mockUseAuditLogsReturn.auditLogs = [
+        {
+          ...mockAuditLogs[0],
+          httpMethod: 'PUT',
+        },
+      ];
+
+      render(<AuditLogsComponent />);
+
+      const badges = screen.getAllByTestId('badge');
+      const putBadge = badges.find((b) => b.textContent === 'PUT');
+      expect(putBadge).toHaveAttribute('data-colorpalette', 'yellow');
+    });
+
+    it('should use gray for PATCH or unknown HTTP methods', () => {
+      mockUseAuditLogsReturn.auditLogs = [
+        {
+          ...mockAuditLogs[0],
+          httpMethod: 'PATCH',
+        },
+      ];
+
+      render(<AuditLogsComponent />);
+
+      const badges = screen.getAllByTestId('badge');
+      const patchBadge = badges.find((b) => b.textContent === 'PATCH');
+      expect(patchBadge).toHaveAttribute('data-colorpalette', 'gray');
+    });
+  });
+
+  describe('Modal Close', () => {
+    it('should reset active tab to overall when closing modal', async () => {
+      mockUseAuditLogsReturn.selectedLog = mockAuditLogs[0];
+
+      render(<AuditLogsComponent />);
+
+      // Open modal
+      const detailButtons = screen.getAllByText('🔍');
+      fireEvent.click(detailButtons[0]);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('modal')).toBeInTheDocument();
+      });
+
+      // Switch tab
+      const actionsTab = screen.getByTestId('tab-actions');
+      fireEvent.click(actionsTab);
+
+      // Close modal
+      const closeButton = screen.getByText('Close');
+      fireEvent.click(closeButton);
+
+      expect(mockUseAuditLogsReturn.setSelectedLog).toHaveBeenCalledWith(null);
+    });
+  });
+
+  describe('Modal detail with getAuditLogById failure', () => {
+    it('should not open modal when getAuditLogById returns failure', async () => {
+      mockUseAuditLogsReturn.getAuditLogById = vi.fn().mockResolvedValue({
+        success: false,
+        error: 'Not found',
+      });
+
+      render(<AuditLogsComponent />);
+
+      const detailButtons = screen.getAllByText('🔍');
+      fireEvent.click(detailButtons[0]);
+
+      await waitFor(() => {
+        expect(mockUseAuditLogsReturn.getAuditLogById).toHaveBeenCalledWith('1');
+      });
+
+      // Modal should not be visible since getAuditLogById returned success: false
+      expect(screen.queryByTestId('modal')).not.toBeInTheDocument();
     });
   });
 

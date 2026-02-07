@@ -1,19 +1,20 @@
 /**
  * Default Audit Logs Entity Props
- * Translated from @volo/abp.ng.audit-logging v3.0.0
+ * Translated from @volo/abp.ng.audit-logging v4.0.0
  *
  * Default entity properties for the AuditLogsComponent.
  * @since 3.0.0
+ * @since 4.0.0 - Updated type from AuditLogging.Log to AuditLogDto
  */
 
 import type { EntityProp } from '../tokens/extensions.token';
-import type { AuditLogging } from '../models/audit-logging';
+import type { AuditLogDto } from '../proxy/audit-logging/models';
 
 /**
  * Default entity properties for audit logs.
  * These properties define the columns displayed in the audit logs table.
  */
-export const DEFAULT_AUDIT_LOGS_ENTITY_PROPS: EntityProp<AuditLogging.Log>[] = [
+export const DEFAULT_AUDIT_LOGS_ENTITY_PROPS: EntityProp<AuditLogDto>[] = [
   {
     type: 'string',
     name: 'url',

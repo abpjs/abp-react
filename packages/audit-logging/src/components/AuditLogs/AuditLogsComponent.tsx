@@ -15,15 +15,16 @@ import {
 import { NativeSelectRoot, NativeSelectField } from '@chakra-ui/react';
 import { useAuditLogs } from '../../hooks';
 import { HTTP_METHODS, HTTP_STATUS_CODES } from '../../constants';
-import type { AuditLogging } from '../../models';
+import type { AuditLogDto, GetAuditLogListDto } from '../../proxy/audit-logging/models';
 
 /**
  * Props for AuditLogsComponent
  * @since 0.7.2
+ * @since 4.0.0 - Updated to use AuditLogDto instead of AuditLogging.Log
  */
 export interface AuditLogsComponentProps {
   /** Optional callback when an audit log is selected for viewing */
-  onAuditLogSelected?: (log: AuditLogging.Log) => void;
+  onAuditLogSelected?: (log: AuditLogDto) => void;
 }
 
 /**
@@ -88,7 +89,7 @@ export function AuditLogsComponent({ onAuditLogSelected }: AuditLogsComponentPro
 
   // Fetch audit logs on mount and when filters/pagination change
   useEffect(() => {
-    const params: AuditLogging.AuditLogsQueryParams = {
+    const params: GetAuditLogListDto = {
       skipCount: page * pageSize,
       maxResultCount: pageSize,
       sorting: sortKey ? `${sortKey} ${sortOrder || 'desc'}` : undefined,
@@ -116,7 +117,7 @@ export function AuditLogsComponent({ onAuditLogSelected }: AuditLogsComponentPro
   // Handle search/refresh
   const handleRefresh = useCallback(() => {
     setPage(0);
-    const params: AuditLogging.AuditLogsQueryParams = {
+    const params: GetAuditLogListDto = {
       skipCount: 0,
       maxResultCount: pageSize,
       sorting: sortKey ? `${sortKey} ${sortOrder || 'desc'}` : undefined,
@@ -404,7 +405,7 @@ export function AuditLogsComponent({ onAuditLogSelected }: AuditLogsComponentPro
                   </Table.Cell>
                   <Table.Cell>
                     <Flex gap={2} alignItems="center" flexWrap="wrap">
-                      <Badge colorPalette={getHttpCodeColor(log.httpStatusCode)}>
+                      <Badge colorPalette={getHttpCodeColor(log.httpStatusCode ?? 0)}>
                         {log.httpStatusCode}
                       </Badge>
                       <Badge colorPalette={getHttpMethodColor(log.httpMethod)}>
@@ -493,7 +494,7 @@ export function AuditLogsComponent({ onAuditLogSelected }: AuditLogsComponentPro
                   <Text fontWeight="bold" minW="200px">
                     {t('AbpAuditLogging::HttpStatusCode')}
                   </Text>
-                  <Badge colorPalette={getHttpCodeColor(selectedLog.httpStatusCode)}>
+                  <Badge colorPalette={getHttpCodeColor(selectedLog.httpStatusCode ?? 0)}>
                     {selectedLog.httpStatusCode}
                   </Badge>
                 </Flex>

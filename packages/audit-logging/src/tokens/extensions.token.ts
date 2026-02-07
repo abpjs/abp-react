@@ -1,14 +1,14 @@
 /**
  * Extensions Token
- * Translated from @volo/abp.ng.audit-logging v3.0.0
+ * Translated from @volo/abp.ng.audit-logging v4.0.0
  *
  * Provides extension tokens for customizing audit logging components.
  * @since 3.0.0
+ * @since 4.0.0 - Updated type references from namespace types to proxy DTOs
  */
 
 import type { eAuditLoggingComponents } from '../enums/components';
-import type { AuditLogging } from '../models/audit-logging';
-import type { EntityChange } from '../models/entity-change';
+import type { AuditLogDto, EntityChangeDto } from '../proxy/audit-logging/models';
 
 /**
  * Entity action definition for extensible components
@@ -72,9 +72,9 @@ export type ToolbarActionContributorCallback<T> = (
  * Default entity actions for audit logging components
  */
 export const DEFAULT_AUDIT_LOGGING_ENTITY_ACTIONS: {
-  [key in typeof eAuditLoggingComponents.AuditLogs]?: EntityAction<AuditLogging.Log>[];
+  [key in typeof eAuditLoggingComponents.AuditLogs]?: EntityAction<AuditLogDto>[];
 } & {
-  [key in typeof eAuditLoggingComponents.EntityChanges]?: EntityAction<EntityChange.Item>[];
+  [key in typeof eAuditLoggingComponents.EntityChanges]?: EntityAction<EntityChangeDto>[];
 } = {
   'AuditLogging.AuditLogsComponent': [],
   'AuditLogging.EntityChangesComponent': [],
@@ -84,7 +84,7 @@ export const DEFAULT_AUDIT_LOGGING_ENTITY_ACTIONS: {
  * Default toolbar actions for audit logging components
  */
 export const DEFAULT_AUDIT_LOGGING_TOOLBAR_ACTIONS: {
-  [key in typeof eAuditLoggingComponents.AuditLogs]?: ToolbarAction<AuditLogging.Log[]>[];
+  [key in typeof eAuditLoggingComponents.AuditLogs]?: ToolbarAction<AuditLogDto[]>[];
 } = {
   'AuditLogging.AuditLogsComponent': [],
 };
@@ -93,7 +93,7 @@ export const DEFAULT_AUDIT_LOGGING_TOOLBAR_ACTIONS: {
  * Default entity properties for audit logging components
  */
 export const DEFAULT_AUDIT_LOGGING_ENTITY_PROPS: {
-  [key in typeof eAuditLoggingComponents.AuditLogs]?: EntityProp<AuditLogging.Log>[];
+  [key in typeof eAuditLoggingComponents.AuditLogs]?: EntityProp<AuditLogDto>[];
 } = {
   'AuditLogging.AuditLogsComponent': [],
 };
@@ -102,22 +102,22 @@ export const DEFAULT_AUDIT_LOGGING_ENTITY_PROPS: {
  * Type for audit logging entity action contributors
  */
 export type AuditLoggingEntityActionContributors = Partial<{
-  [eAuditLoggingComponents.AuditLogs]: EntityActionContributorCallback<AuditLogging.Log>[];
-  [eAuditLoggingComponents.EntityChanges]: EntityActionContributorCallback<EntityChange.Item>[];
+  [eAuditLoggingComponents.AuditLogs]: EntityActionContributorCallback<AuditLogDto>[];
+  [eAuditLoggingComponents.EntityChanges]: EntityActionContributorCallback<EntityChangeDto>[];
 }>;
 
 /**
  * Type for audit logging toolbar action contributors
  */
 export type AuditLoggingToolbarActionContributors = Partial<{
-  [eAuditLoggingComponents.AuditLogs]: ToolbarActionContributorCallback<AuditLogging.Log[]>[];
+  [eAuditLoggingComponents.AuditLogs]: ToolbarActionContributorCallback<AuditLogDto[]>[];
 }>;
 
 /**
  * Type for audit logging entity prop contributors
  */
 export type AuditLoggingEntityPropContributors = Partial<{
-  [eAuditLoggingComponents.AuditLogs]: EntityPropContributorCallback<AuditLogging.Log>[];
+  [eAuditLoggingComponents.AuditLogs]: EntityPropContributorCallback<AuditLogDto>[];
 }>;
 
 /**
