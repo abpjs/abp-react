@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { PermissionManagement, PermissionWithMargin } from '../../models';
+import type { PermissionManagement, PermissionWithMargin, PermissionWithStyle } from '../../models';
 
 describe('PermissionManagement models', () => {
   describe('PermissionManagementComponentInputs (v2.0.0)', () => {
@@ -318,6 +318,172 @@ describe('PermissionManagement models', () => {
       expect(level1.margin).toBe(0);
       expect(level2.margin).toBe(24);
       expect(level3.margin).toBe(48);
+    });
+  });
+
+  describe('PermissionWithStyle (v3.2.0)', () => {
+    it('should extend Permission with style property', () => {
+      const permissionWithStyle: PermissionWithStyle = {
+        name: 'AbpIdentity.Users.Create',
+        displayName: 'Create Users',
+        isGranted: true,
+        parentName: 'AbpIdentity.Users',
+        allowedProviders: ['R'],
+        grantedProviders: [],
+        style: 'margin-left: 24px',
+      };
+
+      expect(permissionWithStyle.style).toBe('margin-left: 24px');
+      expect(permissionWithStyle.name).toBe('AbpIdentity.Users.Create');
+    });
+
+    it('should handle empty style string', () => {
+      const permissionWithStyle: PermissionWithStyle = {
+        name: 'AbpIdentity.Users',
+        displayName: 'User Management',
+        isGranted: true,
+        parentName: '',
+        allowedProviders: ['R'],
+        grantedProviders: [],
+        style: '',
+      };
+
+      expect(permissionWithStyle.style).toBe('');
+    });
+
+    it('should handle complex style values', () => {
+      const permissionWithStyle: PermissionWithStyle = {
+        name: 'AbpIdentity.Users.Create',
+        displayName: 'Create Users',
+        isGranted: true,
+        parentName: 'AbpIdentity.Users',
+        allowedProviders: ['R'],
+        grantedProviders: [],
+        style: 'margin-left: 24px; padding: 8px; border-left: 2px solid gray',
+      };
+
+      expect(permissionWithStyle.style).toContain('margin-left: 24px');
+      expect(permissionWithStyle.style).toContain('padding: 8px');
+    });
+
+    it('should handle nested style levels', () => {
+      const level1: PermissionWithStyle = {
+        name: 'AbpIdentity.Users',
+        displayName: 'Users',
+        isGranted: true,
+        parentName: '',
+        allowedProviders: ['R'],
+        grantedProviders: [],
+        style: '',
+      };
+
+      const level2: PermissionWithStyle = {
+        name: 'AbpIdentity.Users.Create',
+        displayName: 'Create Users',
+        isGranted: true,
+        parentName: 'AbpIdentity.Users',
+        allowedProviders: ['R'],
+        grantedProviders: [],
+        style: 'margin-left: 24px',
+      };
+
+      const level3: PermissionWithStyle = {
+        name: 'AbpIdentity.Users.Create.Advanced',
+        displayName: 'Advanced Create',
+        isGranted: false,
+        parentName: 'AbpIdentity.Users.Create',
+        allowedProviders: ['R'],
+        grantedProviders: [],
+        style: 'margin-left: 48px',
+      };
+
+      expect(level1.style).toBe('');
+      expect(level2.style).toBe('margin-left: 24px');
+      expect(level3.style).toBe('margin-left: 48px');
+    });
+
+    it('should preserve all Permission properties', () => {
+      const permission: PermissionWithStyle = {
+        name: 'AbpIdentity.Roles',
+        displayName: 'Role Management',
+        isGranted: false,
+        parentName: '',
+        allowedProviders: ['R', 'U'],
+        grantedProviders: [
+          { providerName: 'R', providerKey: 'admin' },
+        ],
+        style: 'font-weight: bold',
+      };
+
+      expect(permission.name).toBe('AbpIdentity.Roles');
+      expect(permission.displayName).toBe('Role Management');
+      expect(permission.isGranted).toBe(false);
+      expect(permission.parentName).toBe('');
+      expect(permission.allowedProviders).toEqual(['R', 'U']);
+      expect(permission.grantedProviders).toHaveLength(1);
+      expect(permission.style).toBe('font-weight: bold');
+    });
+  });
+
+  describe('Deprecated types (v3.2.0)', () => {
+    // Note: These types are deprecated but still supported for backwards compatibility
+    // Tests verify they still work as expected
+
+    it('should still support deprecated Response type', () => {
+      // @deprecated - use GetPermissionListResultDto from proxy instead
+      const response: PermissionManagement.Response = {
+        entityDisplayName: 'Test',
+        groups: [],
+      };
+
+      expect(response.entityDisplayName).toBe('Test');
+    });
+
+    it('should still support deprecated Group type', () => {
+      // @deprecated - use PermissionGroupDto from proxy instead
+      const group: PermissionManagement.Group = {
+        name: 'Test',
+        displayName: 'Test Group',
+        permissions: [],
+      };
+
+      expect(group.name).toBe('Test');
+    });
+
+    it('should still support deprecated MinimumPermission type', () => {
+      // @deprecated - use UpdatePermissionDto from proxy instead
+      const minPerm: PermissionManagement.MinimumPermission = {
+        name: 'Test',
+        isGranted: true,
+      };
+
+      expect(minPerm.name).toBe('Test');
+    });
+
+    it('should still support deprecated UpdateRequest type', () => {
+      // @deprecated - use UpdatePermissionsDto from proxy instead
+      const request: PermissionManagement.UpdateRequest = {
+        permissions: [],
+        providerKey: 'key',
+        providerName: 'R',
+      };
+
+      expect(request.providerName).toBe('R');
+    });
+
+    it('should still support deprecated PermissionWithMargin type', () => {
+      // @deprecated - use PermissionWithStyle instead
+      const perm: PermissionWithMargin = {
+        name: 'Test',
+        displayName: 'Test',
+        isGranted: true,
+        parentName: '',
+        allowedProviders: [],
+        grantedProviders: [],
+        margin: 24,
+      };
+
+      expect(perm.margin).toBe(24);
     });
   });
 });

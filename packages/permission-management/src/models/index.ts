@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Permission Management module type definitions
- * Translated from @abp/ng.permission-management v1.0.0
+ * Translated from @abp/ng.permission-management v3.2.0
  */
 
 /**
@@ -17,6 +17,7 @@ export namespace PermissionManagement {
 
   /**
    * API response for permission data
+   * @deprecated To be deleted in v4.0. Use GetPermissionListResultDto from proxy instead.
    */
   export interface Response {
     entityDisplayName: string;
@@ -25,6 +26,7 @@ export namespace PermissionManagement {
 
   /**
    * Permission group containing related permissions
+   * @deprecated To be deleted in v4.0. Use PermissionGroupDto from proxy instead.
    */
   export interface Group {
     name: string;
@@ -34,6 +36,7 @@ export namespace PermissionManagement {
 
   /**
    * Minimal permission info for updates
+   * @deprecated To be deleted in v4.0. Use UpdatePermissionDto from proxy instead.
    */
   export interface MinimumPermission {
     name: string;
@@ -42,6 +45,7 @@ export namespace PermissionManagement {
 
   /**
    * Full permission details
+   * @deprecated To be deleted in v4.0. Use PermissionGrantInfoDto from proxy instead.
    */
   export interface Permission extends MinimumPermission {
     displayName: string;
@@ -60,6 +64,7 @@ export namespace PermissionManagement {
 
   /**
    * Request payload for updating permissions
+   * @deprecated To be deleted in v4.0. Use UpdatePermissionsDto from proxy instead.
    */
   export interface UpdateRequest {
     permissions: MinimumPermission[];
@@ -105,7 +110,16 @@ export namespace PermissionManagement {
 }
 
 /**
- * Extended permission with UI-specific properties
+ * Extended permission with UI-specific style property
+ * @since 3.2.0 - Renamed from PermissionWithMargin
+ */
+export interface PermissionWithStyle extends PermissionManagement.Permission {
+  style: string;
+}
+
+/**
+ * Extended permission with margin property for indentation
+ * @deprecated Use PermissionWithStyle instead
  */
 export interface PermissionWithMargin extends PermissionManagement.Permission {
   margin: number;

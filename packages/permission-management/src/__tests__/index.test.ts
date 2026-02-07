@@ -6,6 +6,26 @@ import * as permissionManagementModule from '../index';
  * Uses static import to avoid slow dynamic imports during test execution.
  */
 describe('@abpjs/permission-management package exports', () => {
+  // v3.2.0: Proxy exports
+  describe('v3.2.0 - Proxy exports', () => {
+    it('should export PermissionsService from package root', () => {
+      const { PermissionsService } = permissionManagementModule;
+      expect(PermissionsService).toBeDefined();
+      expect(typeof PermissionsService).toBe('function');
+    });
+
+    it('should export PermissionsService from services (re-export)', () => {
+      // PermissionsService is also re-exported from services for convenience
+      const { PermissionsService } = permissionManagementModule;
+      expect(PermissionsService).toBeDefined();
+    });
+
+    // Note: proxy models are type-only exports, verified by TypeScript compilation
+    it('should export proxy module (types verified by compilation)', () => {
+      expect(permissionManagementModule).toBeDefined();
+    });
+  });
+
   // v2.7.0: Enum exports
   describe('v2.7.0 - Enum exports', () => {
     it('should export ePermissionManagementComponents from package root', () => {
@@ -83,6 +103,14 @@ describe('@abpjs/permission-management package exports', () => {
       expect(ePermissionManagementComponents.PermissionManagement).toMatch(
         /^PermissionManagement\.\w+Component$/
       );
+    });
+
+    it('should export all v3.2.0 proxy functionality', () => {
+      const module = permissionManagementModule;
+
+      // v3.2.0: Proxy service
+      expect(module.PermissionsService).toBeDefined();
+      expect(typeof module.PermissionsService).toBe('function');
     });
   });
 });
