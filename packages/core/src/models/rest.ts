@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import { ResponseType } from 'axios';
 
 export namespace Rest {
   /**
@@ -35,7 +34,12 @@ export namespace Rest {
     method: string;
     params?: Record<string, any>;
     reportProgress?: boolean;
-    responseType?: ResponseType;
+    /**
+     * Response type for the request
+     * Changed to inline literal type in v3.2.0
+     * @since 3.2.0
+     */
+    responseType?: 'arraybuffer' | 'blob' | 'json' | 'text';
     url: string;
     withCredentials?: boolean;
   }

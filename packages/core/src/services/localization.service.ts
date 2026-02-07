@@ -1,9 +1,10 @@
 /**
  * Localization Service
- * Translated from @abp/ng.core v2.9.0
+ * Translated from @abp/ng.core v3.2.0
  *
  * @since 1.0.0
  * @updated 2.9.0 - Added localize, localizeSync, localizeWithFallback, localizeWithFallbackSync methods
+ * @updated 3.2.0 - Added getResource method
  */
 
 import { RootState } from '../store';
@@ -104,6 +105,17 @@ export class LocalizationService {
    */
   getLocalizationValues() {
     return this.getState().config.localization.values;
+  }
+
+  /**
+   * Get an entire localization resource by name
+   * @param resourceName - The resource name (e.g., 'AbpIdentity')
+   * @returns Object containing all key-value pairs for the resource
+   * @since 3.2.0
+   */
+  getResource(resourceName: string): Record<string, string> {
+    const state = this.getState().config;
+    return state.localization?.values?.[resourceName] ?? {};
   }
 
   /**

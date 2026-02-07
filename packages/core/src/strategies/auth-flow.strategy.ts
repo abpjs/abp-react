@@ -1,13 +1,84 @@
 /**
  * Auth Flow Strategy
- * Translated from @abp/ng.core v3.1.0
+ * Translated from @abp/ng.core v3.2.0
  *
  * Provides different authentication flow strategies for OAuth.
  *
  * @since 3.1.0
+ * @updated 3.2.0 - Added oAuthStorage and clearOAuthStorage
  */
 
 import { UserManager } from 'oidc-client-ts';
+
+/**
+ * OAuth storage implementation using sessionStorage
+ * This is the default storage used for OAuth tokens
+ * @since 3.2.0
+ */
+export const oAuthStorage: Storage =
+  typeof window !== 'undefined' ? window.sessionStorage : createMemoryStorage();
+
+/**
+ * Create a memory-based storage for SSR environments
+ */
+function createMemoryStorage(): Storage {
+  const store: Record<string, string> = {};
+  return {
+    get length() {
+      return Object.keys(store).length;
+    },
+    clear() {
+      Object.keys(store).forEach((key) => delete store[key]);
+    },
+    getItem(key: string) {
+      return store[key] ?? null;
+    },
+    key(index: number) {
+      return Object.keys(store)[index] ?? null;
+    },
+    removeItem(key: string) {
+      delete store[key];
+    },
+    setItem(key: string, value: string) {
+      store[key] = value;
+    },
+  };
+}
+
+/**
+ * Clear all OAuth-related items from storage
+ * @param storage - The storage to clear (defaults to oAuthStorage)
+ * @since 3.2.0
+ */
+export function clearOAuthStorage(storage: Storage = oAuthStorage): void {
+  // Common OAuth-related keys that should be cleared
+  const oAuthKeys = [
+    'access_token',
+    'id_token',
+    'refresh_token',
+    'expires_at',
+    'token_type',
+    'scope',
+    'state',
+    'nonce',
+    'session_state',
+  ];
+
+  // Clear known OAuth keys
+  oAuthKeys.forEach((key) => {
+    storage.removeItem(key);
+  });
+
+  // Also clear any keys that look like OIDC keys (prefixed with oidc.)
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i);
+    if (key && (key.startsWith('oidc.') || key.startsWith('oidc-'))) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach((key) => storage.removeItem(key));
+}
 
 /**
  * Abstract base class for authentication flow strategies

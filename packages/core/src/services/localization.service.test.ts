@@ -351,4 +351,78 @@ describe('LocalizationService', () => {
       expect(result).toBe('Goodbye');
     });
   });
+
+  describe('getResource (v3.2.0)', () => {
+    it('should return entire resource by name', () => {
+      const result = service.getResource('TestResource');
+
+      expect(result).toEqual({
+        Hello: 'Hello',
+        Greeting: 'Hello {0}!',
+        DoubleGreeting: 'Hello {0} and {1}!',
+        QuotedGreeting: "Hello '{0}'!",
+        Welcome: 'Welcome to the app',
+      });
+    });
+
+    it('should return empty object for non-existent resource', () => {
+      const result = service.getResource('NonExistent');
+
+      expect(result).toEqual({});
+    });
+
+    it('should return different resource', () => {
+      const result = service.getResource('OtherResource');
+
+      expect(result).toEqual({
+        Goodbye: 'Goodbye',
+      });
+    });
+
+    it('should return empty object when localization values is undefined', () => {
+      mockState.config.localization = undefined as any;
+
+      const result = service.getResource('TestResource');
+
+      expect(result).toEqual({});
+    });
+
+    it('should return empty object when localization is null', () => {
+      mockState.config.localization = null as any;
+
+      const result = service.getResource('TestResource');
+
+      expect(result).toEqual({});
+    });
+
+    it('should handle resource with many keys', () => {
+      mockState.config.localization.values['LargeResource'] = {
+        Key1: 'Value1',
+        Key2: 'Value2',
+        Key3: 'Value3',
+        Key4: 'Value4',
+        Key5: 'Value5',
+      };
+
+      const result = service.getResource('LargeResource');
+
+      expect(Object.keys(result)).toHaveLength(5);
+      expect(result.Key1).toBe('Value1');
+      expect(result.Key5).toBe('Value5');
+    });
+
+    it('should handle resource with special characters in keys', () => {
+      mockState.config.localization.values['SpecialResource'] = {
+        'Key.With.Dots': 'Dotted',
+        'Key::With::Colons': 'Colons',
+        'Key With Spaces': 'Spaced',
+      };
+
+      const result = service.getResource('SpecialResource');
+
+      expect(result['Key.With.Dots']).toBe('Dotted');
+      expect(result['Key::With::Colons']).toBe('Colons');
+      expect(result['Key With Spaces']).toBe('Spaced');
+    });
+  });
 });
