@@ -2,7 +2,7 @@
  * @abpjs/identity
  *
  * ABP Framework identity components for React.
- * Translated from @abp/ng.identity version 3.0.0.
+ * Translated from @abp/ng.identity version 3.1.0.
  *
  * This package provides:
  * - Identity models (User, Role, etc.)
@@ -13,6 +13,9 @@
  * - Route path constants for navigation
  * - Component and route name enums for customization (v2.7.0)
  * - Config subpackage with route providers and policy names (v3.0.0)
+ *
+ * Changes in v3.1.0:
+ * - Version bump only (internal Angular type reference updates, no functional changes)
  *
  * Changes in v3.0.0:
  * - Added config subpackage with eIdentityPolicyNames, IDENTITY_ROUTE_PROVIDERS
