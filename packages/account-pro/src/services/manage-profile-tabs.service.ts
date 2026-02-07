@@ -4,6 +4,7 @@ import { eAccountManageProfileTabNames } from '../config/enums/manage-profile-ta
 /**
  * Tab definition for manage profile tabs
  * @since 3.2.0
+ * @deprecated To be deleted in v5.0. ManageProfileTabsService was removed from Angular config/services in v4.0.0.
  */
 export interface ManageProfileTab {
   /**

@@ -21,7 +21,7 @@ import {
   eAccountRouteNames,
   // v3.0.0 config exports
   eAccountSettingTabNames,
-  ACCOUNT_ROUTE_PROVIDERS,
+  // ACCOUNT_ROUTE_PROVIDERS - removed from config/providers in v4.0.0
   ACCOUNT_SETTING_TAB_PROVIDERS,
   // v3.0.0 tokens
   ACCOUNT_OPTIONS,
@@ -29,13 +29,19 @@ import {
   // v3.0.0 utils
   accountOptionsFactory,
   // v3.2.0 exports
-  eAccountManageProfileTabNames,
+  // eAccountManageProfileTabNames - removed from config/enums barrel in v4.0.0
   ProfilePictureType,
   eTwoFactorBehaviour,
   getManageProfileTabsService,
   ACCOUNT_MANAGE_PROFILE_TAB_PROVIDERS,
   ACCOUNT_MANAGE_PROFILE_TAB_ORDERS,
   ACCOUNT_MANAGE_PROFILE_TAB_NAMES,
+  // v4.0.0 admin exports
+  AbstractAccountSettingsService,
+  useAccountSettings,
+  useAccountSettingsComponent,
+  AccountCaptchaService,
+  AccountExternalProviderService,
 } from '@abpjs/account-pro'
 import { useAuth, useConfig } from '@abpjs/core'
 import { useToaster } from '@abpjs/theme-shared'
@@ -762,6 +768,281 @@ await service.confirmPhoneNumber(token);`}
   )
 }
 
+function TestV400Features() {
+  const [showSettingsDemo, setShowSettingsDemo] = useState(false)
+
+  return (
+    <div className="test-section">
+      <h2>v4.0.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Admin Module <span style={{ color: '#4f4', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <p>New admin module with abstract settings services, React hooks, and tenant-aware components:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`import {
+  // Abstract base class and hook
+  AbstractAccountSettingsService,
+  useAccountSettings,
+
+  // Component hooks
+  useAccountSettingsComponent,
+  useAccountSettingsTwoFactor,
+  useAccountSettingsCaptcha,          // NEW v4.0.0
+  useAccountSettingsExternalProvider, // NEW v4.0.0
+
+  // Services
+  AccountSettingsService,
+  AccountLdapService,
+  AccountTwoFactorSettingService,
+  AccountCaptchaService,              // NEW v4.0.0
+  AccountExternalProviderService,     // NEW v4.0.0
+} from '@abpjs/account-pro';`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>AbstractAccountSettingsService <span style={{ color: '#4f4', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <p>Generic base class for admin settings services. v4.0.0 added a second generic <code>SubmitType</code> parameter:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`// Base class with Type and optional SubmitType (defaults to Type)
+abstract class AbstractAccountSettingsService<Type, SubmitType = Type> {
+  apiName = 'default';
+  protected abstract url: string;
+
+  getSettings(): Promise<Type>;
+  updateSettings(body: Partial<SubmitType>): Promise<SubmitType>;
+}`}
+        </pre>
+        <p style={{ marginTop: '0.5rem' }}>
+          AbstractAccountSettingsService is: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof AbstractAccountSettingsService === 'function' ? 'class ✓' : 'N/A'}
+          </code>
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>useAccountSettings Hook <span style={{ color: '#4f4', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <p>React hook equivalent of Angular's <code>AbstractAccountSettingsComponent</code>. Manages loading, error, and submit state with tenant awareness:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`const result = useAccountSettings({
+  service: mySettingsService,
+  isTenant: true,
+  mapTenantSettingsForSubmit: (settings) => ({
+    // Only submit tenant-specific fields
+    ...settings,
+  }),
+});
+
+// result: { settings, loading, error, isTenant, submit, reload }`}
+        </pre>
+        <p style={{ marginTop: '0.5rem' }}>
+          useAccountSettings is: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof useAccountSettings === 'function' ? 'function ✓' : 'N/A'}
+          </code>
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>useAccountSettingsComponent Hook <span style={{ color: '#4f4', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <p>Main coordinator hook for all account admin settings. Manages feature flags for sub-sections:</p>
+        <button onClick={() => setShowSettingsDemo(!showSettingsDemo)} style={{ marginTop: '0.5rem' }}>
+          {showSettingsDemo ? 'Hide Demo' : 'Show Demo'}
+        </button>
+        {showSettingsDemo && <AccountSettingsDemo />}
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '0.5rem' }}>
+{`const settings = useAccountSettingsComponent({
+  isLdapSettingsEnabled: true,
+  isTwoFactorSettingsEnabled: true,
+  isExternalProviderEnabled: true,  // NEW v4.0.0
+  isCaptchaEnabled: true,           // NEW v4.0.0
+  isTenant: false,                  // NEW v4.0.0
+});
+
+// settings: { isLdapSettingsEnabled, isTwoFactorSettingsEnabled,
+//   isExternalProviderEnabled, isCaptchaEnabled, isTenant, initialize }`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>AccountCaptchaService <span style={{ color: '#4f4', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <p>Service for managing captcha settings. Endpoint: <code>/api/account-admin/settings/captcha</code></p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`interface AccountCaptchaSettings {
+  useCaptchaOnLogin: boolean;
+  useCaptchaOnRegistration: boolean;
+  verifyBaseUrl: string;
+  siteKey: string;
+  siteSecret: string;
+  version: number;
+}
+
+// Usage with hook (tenant-aware)
+const captcha = useAccountSettingsCaptcha({
+  service: captchaService,
+  isTenant: true, // Only submits version, siteKey, siteSecret for tenants
+});`}
+        </pre>
+        <p style={{ marginTop: '0.5rem' }}>
+          AccountCaptchaService is: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof AccountCaptchaService === 'function' ? 'class ✓' : 'N/A'}
+          </code>
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>AccountExternalProviderService <span style={{ color: '#4f4', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <p>Service for managing external provider settings. Endpoint: <code>/api/account-admin/settings/external-provider</code></p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`interface AccountExternalProviderSetting {
+  name: string;
+  enabled: boolean;
+  properties: { name: string; value: string }[];
+  secretProperties: { name: string; value: string }[];
+  useHostSettings?: boolean; // Tenant-specific
+}
+
+interface AccountExternalProviderSettings {
+  settings: AccountExternalProviderSetting[];
+}
+
+// Usage with hook (tenant-aware)
+const externalProvider = useAccountSettingsExternalProvider({
+  service: externalProviderService,
+  isTenant: true, // Clears property values for providers using host settings
+});`}
+        </pre>
+        <p style={{ marginTop: '0.5rem' }}>
+          AccountExternalProviderService is: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
+            {typeof AccountExternalProviderService === 'function' ? 'class ✓' : 'N/A'}
+          </code>
+        </p>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(255,68,68,0.05)', border: '1px solid rgba(255,68,68,0.2)' }}>
+        <h3>Removed/Deprecated in v4.0.0</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}>ACCOUNT_ROUTE_PROVIDERS</td><td style={{ color: '#f88' }}>Removed from barrel</td><td>Use ACCOUNT_PRO_ROUTES directly</td></tr>
+            <tr><td style={{ padding: '8px' }}>configureRoutes</td><td style={{ color: '#f88' }}>Removed from barrel</td><td>Route.provider deprecated</td></tr>
+            <tr><td style={{ padding: '8px' }}>initializeAccountRoutes</td><td style={{ color: '#f88' }}>Removed from barrel</td><td>Route.provider deprecated</td></tr>
+            <tr><td style={{ padding: '8px' }}>eAccountManageProfileTabNames</td><td style={{ color: '#f88' }}>Removed from barrel</td><td>Use ACCOUNT_MANAGE_PROFILE_TAB_NAMES</td></tr>
+            <tr><td style={{ padding: '8px' }}>eAccountComponents</td><td style={{ color: '#fa4' }}>Deprecated</td><td>To be deleted in v5.0</td></tr>
+            <tr><td style={{ padding: '8px' }}>eAccountRouteNames (lib)</td><td style={{ color: '#fa4' }}>Deprecated</td><td>To be deleted in v5.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>v4.0.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AbstractAccountSettingsService</td>
+              <td>class</td>
+              <td>Generic base for admin settings services (SubmitType generic)</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>useAccountSettings</td>
+              <td>hook</td>
+              <td>Base hook for settings loading/submit/tenant mapping</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>useAccountSettingsComponent</td>
+              <td>hook</td>
+              <td>Main coordinator with feature flags and tenant state</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>useAccountSettingsCaptcha</td>
+              <td>hook</td>
+              <td>Captcha settings with tenant-specific mapping</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>useAccountSettingsExternalProvider</td>
+              <td>hook</td>
+              <td>External provider settings with host/tenant mapping</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>useAccountSettingsTwoFactor</td>
+              <td>hook</td>
+              <td>Two-factor settings with eTwoFactorBehaviour enum</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AccountCaptchaService</td>
+              <td>class</td>
+              <td>/api/account-admin/settings/captcha</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AccountExternalProviderService</td>
+              <td>class</td>
+              <td>/api/account-admin/settings/external-provider</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AccountSettingsDto</td>
+              <td>interface</td>
+              <td>General account settings (isSelfRegistration, enableLocalLogin)</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AccountCaptchaSettings</td>
+              <td>interface</td>
+              <td>Captcha settings DTO</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AccountExternalProviderSetting(s)</td>
+              <td>interface</td>
+              <td>External provider settings DTOs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+function AccountSettingsDemo() {
+  const settings = useAccountSettingsComponent({
+    isLdapSettingsEnabled: true,
+    isTwoFactorSettingsEnabled: true,
+    isExternalProviderEnabled: true,
+    isCaptchaEnabled: true,
+    isTenant: false,
+  })
+
+  return (
+    <div style={{ marginTop: '1rem', padding: '1rem', border: '1px solid #333', borderRadius: '8px' }}>
+      <h4>Live Demo: useAccountSettingsComponent</h4>
+      <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+        <thead>
+          <tr style={{ borderBottom: '1px solid #333' }}>
+            <th style={{ textAlign: 'left', padding: '4px 8px' }}>Flag</th>
+            <th style={{ textAlign: 'left', padding: '4px 8px' }}>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td style={{ padding: '4px 8px' }}>isLdapSettingsEnabled</td><td>{String(settings.isLdapSettingsEnabled)}</td></tr>
+          <tr><td style={{ padding: '4px 8px' }}>isTwoFactorSettingsEnabled</td><td>{String(settings.isTwoFactorSettingsEnabled)}</td></tr>
+          <tr><td style={{ padding: '4px 8px' }}>isExternalProviderEnabled</td><td>{String(settings.isExternalProviderEnabled)}</td></tr>
+          <tr><td style={{ padding: '4px 8px' }}>isCaptchaEnabled</td><td>{String(settings.isCaptchaEnabled)}</td></tr>
+          <tr><td style={{ padding: '4px 8px' }}>isTenant</td><td>{String(settings.isTenant)}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 function TestV320Features() {
   const tabsService = getManageProfileTabsService()
   const [tabCount, setTabCount] = useState(tabsService.getTabs().length)
@@ -805,25 +1086,12 @@ function TestV320Features() {
         </table>
       </div>
 
-      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
-        <h3>eAccountManageProfileTabNames <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
-        <p>New enum for manage profile tab localization keys:</p>
-        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid #333' }}>
-              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
-              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(eAccountManageProfileTabNames).map(([key, value]) => (
-              <tr key={key} style={{ background: 'rgba(68,255,68,0.05)' }}>
-                <td style={{ padding: '8px', fontFamily: 'monospace' }}>{key}</td>
-                <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="test-card" style={{ background: 'rgba(255,68,68,0.05)', border: '1px solid rgba(255,68,68,0.2)' }}>
+        <h3>eAccountManageProfileTabNames <span style={{ color: '#f44', fontSize: '12px' }}>(v3.2.0 - removed from barrel in v4.0.0)</span></h3>
+        <p style={{ color: '#f88' }}>This enum was removed from the config/enums barrel export in v4.0.0. The file still exists but is no longer re-exported at the package root.</p>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          Tab names are still available via <code>ACCOUNT_MANAGE_PROFILE_TAB_NAMES</code> constant.
+        </p>
       </div>
 
       <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
@@ -1059,10 +1327,10 @@ interface AccountTwoFactorSettingsDto {
               <td>string</td>
               <td>Component key for profile picture</td>
             </tr>
-            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
-              <td style={{ padding: '8px' }}>eAccountManageProfileTabNames</td>
+            <tr style={{ background: 'rgba(255,68,68,0.05)' }}>
+              <td style={{ padding: '8px', textDecoration: 'line-through' }}>eAccountManageProfileTabNames</td>
               <td>const object</td>
-              <td>Manage profile tab name keys</td>
+              <td style={{ color: '#f88' }}>Removed from barrel in v4.0.0</td>
             </tr>
             <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
               <td style={{ padding: '8px' }}>ProfilePictureType</td>
@@ -1484,14 +1752,14 @@ function TestV300Features() {
 {`import {
   // Config enums
   eAccountRouteNames,       // Route name localization keys
-  eAccountSettingTabNames,  // Setting tab name keys (NEW)
+  eAccountSettingTabNames,  // Setting tab name keys
 
-  // Route providers
-  ACCOUNT_ROUTE_PROVIDERS,
-  configureRoutes,
-  initializeAccountRoutes,
+  // Route providers (removed in v4.0.0)
+  // ACCOUNT_ROUTE_PROVIDERS,  // deprecated
+  // configureRoutes,          // deprecated
+  // initializeAccountRoutes,  // deprecated
 
-  // Setting tab providers
+  // Setting tab providers (still available)
   ACCOUNT_SETTING_TAB_PROVIDERS,
   configureSettingTabs,
 } from '@abpjs/account-pro';`}
@@ -1519,33 +1787,11 @@ function TestV300Features() {
         </table>
       </div>
 
-      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
-        <h3>ACCOUNT_ROUTE_PROVIDERS <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.0.0)</span></h3>
-        <p>Route provider configuration for initializing account routes:</p>
-        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
-{`import {
-  ACCOUNT_ROUTE_PROVIDERS,
-  configureRoutes,
-  initializeAccountRoutes
-} from '@abpjs/account-pro';
-import { getRoutesService } from '@abpjs/core';
-
-// Method 1: Using ACCOUNT_ROUTE_PROVIDERS
-const routes = getRoutesService();
-const addRoutes = ACCOUNT_ROUTE_PROVIDERS.configureRoutes(routes);
-addRoutes();
-
-// Method 2: Using configureRoutes directly
-const addRoutes2 = configureRoutes(routes);
-addRoutes2();
-
-// Method 3: Using the helper function (simplest)
-initializeAccountRoutes();`}
-        </pre>
-        <p style={{ marginTop: '0.5rem' }}>
-          Available function: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
-            {typeof ACCOUNT_ROUTE_PROVIDERS.configureRoutes === 'function' ? 'configureRoutes ✓' : 'N/A'}
-          </code>
+      <div className="test-card" style={{ background: 'rgba(255,68,68,0.05)', border: '1px solid rgba(255,68,68,0.2)' }}>
+        <h3>ACCOUNT_ROUTE_PROVIDERS <span style={{ color: '#f44', fontSize: '12px' }}>(v3.0.0 - removed in v4.0.0)</span></h3>
+        <p style={{ color: '#f88' }}>ACCOUNT_ROUTE_PROVIDERS, configureRoutes, and initializeAccountRoutes were removed from config/providers in v4.0.0.</p>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          Routes are now configured via <code>ACCOUNT_PRO_ROUTES</code> directly.
         </p>
       </div>
 
@@ -1643,20 +1889,20 @@ const defaultOptions = accountOptionsFactory({});
               <td>const object</td>
               <td>Setting tab name localization keys</td>
             </tr>
-            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
-              <td style={{ padding: '8px' }}>ACCOUNT_ROUTE_PROVIDERS</td>
+            <tr style={{ background: 'rgba(255,68,68,0.05)' }}>
+              <td style={{ padding: '8px', textDecoration: 'line-through' }}>ACCOUNT_ROUTE_PROVIDERS</td>
               <td>object</td>
-              <td>Route provider configuration</td>
+              <td style={{ color: '#f88' }}>Removed in v4.0.0</td>
             </tr>
-            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
-              <td style={{ padding: '8px' }}>configureRoutes</td>
+            <tr style={{ background: 'rgba(255,68,68,0.05)' }}>
+              <td style={{ padding: '8px', textDecoration: 'line-through' }}>configureRoutes</td>
               <td>function</td>
-              <td>Configure account routes</td>
+              <td style={{ color: '#f88' }}>Removed in v4.0.0</td>
             </tr>
-            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
-              <td style={{ padding: '8px' }}>initializeAccountRoutes</td>
+            <tr style={{ background: 'rgba(255,68,68,0.05)' }}>
+              <td style={{ padding: '8px', textDecoration: 'line-through' }}>initializeAccountRoutes</td>
               <td>function</td>
-              <td>Initialize routes helper</td>
+              <td style={{ color: '#f88' }}>Removed in v4.0.0</td>
             </tr>
             <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
               <td style={{ padding: '8px' }}>ACCOUNT_SETTING_TAB_PROVIDERS</td>
@@ -2006,9 +2252,9 @@ function TestAuthState() {
 export function TestAccountProPage() {
   return (
     <div>
-      <h1>@abpjs/account-pro Tests v3.2.0</h1>
-      <p>Testing Pro account features: password reset, profile management, enhanced components.</p>
-      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 3.2.0 - Added profile picture management, 2FA settings, and manage profile tabs service</p>
+      <h1>@abpjs/account-pro Tests v4.0.0</h1>
+      <p>Testing Pro account features: password reset, profile management, enhanced components, admin settings.</p>
+      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 4.0.0 - Added admin module with captcha, external provider settings, and tenant-aware hooks</p>
 
       <div className="test-card" style={{ backgroundColor: '#1a365d', border: '1px solid #2b6cb0' }}>
         <h3 style={{ color: '#90cdf4' }}>Pro Package Features</h3>
@@ -2024,9 +2270,11 @@ export function TestAccountProPage() {
           <li style={{ color: '#4f4' }}>v3.0.0: Config subpackage, eAccountSettingTabNames, ACCOUNT_ROUTE_PROVIDERS, ACCOUNT_SETTING_TAB_PROVIDERS, ACCOUNT_OPTIONS token, accountOptionsFactory</li>
           <li style={{ color: '#4f4' }}>v3.1.0: EmailConfirmation/MySecurityLogs routes & components, sendEmailConfirmationToken(), confirmEmail(), getMySecurityLogs(), AccountSettings, AccountLdapSettings interfaces</li>
           <li style={{ color: '#4f4' }}>v3.2.0: ProfilePicture component, ProfilePictureType/eTwoFactorBehaviour enums, ProfileService, ManageProfileTabsService, eAccountManageProfileTabNames, ACCOUNT_MANAGE_PROFILE_TAB_* constants</li>
+          <li style={{ color: '#4f4' }}>v4.0.0: Admin module (AbstractAccountSettingsService, useAccountSettings, useAccountSettingsComponent, useAccountSettingsCaptcha, useAccountSettingsExternalProvider, useAccountSettingsTwoFactor), AccountCaptchaService, AccountExternalProviderService, tenant-aware settings. Removed: ACCOUNT_ROUTE_PROVIDERS, eAccountManageProfileTabNames from barrel.</li>
         </ul>
       </div>
 
+      <TestV400Features />
       <TestV320Features />
       <TestV310Features />
       <TestV300Features />

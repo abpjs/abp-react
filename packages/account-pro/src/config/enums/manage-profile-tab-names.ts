@@ -2,6 +2,7 @@
  * Manage profile tab name constants for the Account Pro module.
  * These are the localization keys used for manage profile tabs.
  * @since 3.2.0
+ * @deprecated Removed from Angular config/enums in v4.0.0. To be deleted in v5.0.
  */
 export const eAccountManageProfileTabNames = {
   /**

@@ -1,20 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import * as enumsExports from '../../../config/enums';
 
-describe('config/enums barrel exports (v3.2.0)', () => {
-  describe('route-names exports', () => {
-    it('should export eAccountRouteNames', () => {
-      expect(enumsExports.eAccountRouteNames).toBeDefined();
-      expect(typeof enumsExports.eAccountRouteNames).toBe('object');
-    });
-
-    it('should export eAccountRouteNames with all keys', () => {
-      expect(enumsExports.eAccountRouteNames.Account).toBe('AbpAccount::Menu:Account');
-      expect(enumsExports.eAccountRouteNames.Login).toBe('AbpAccount::Login');
-      expect(enumsExports.eAccountRouteNames.Register).toBe('AbpAccount::Register');
-      expect(enumsExports.eAccountRouteNames.ForgotPassword).toBe('AbpAccount::ForgotPassword');
-      expect(enumsExports.eAccountRouteNames.ResetPassword).toBe('AbpAccount::ResetPassword');
-      expect(enumsExports.eAccountRouteNames.ManageProfile).toBe('AbpAccount::ManageYourProfile');
+describe('config/enums barrel exports (v4.0.0)', () => {
+  // v4.0.0: route-names and manage-profile-tab-names removed from config/enums exports
+  describe('route-names exports (removed in v4.0.0)', () => {
+    it('should NOT export eAccountRouteNames from config/enums (removed in v4.0.0)', () => {
+      expect((enumsExports as Record<string, unknown>).eAccountRouteNames).toBeUndefined();
     });
   });
 
@@ -29,25 +20,11 @@ describe('config/enums barrel exports (v3.2.0)', () => {
     });
   });
 
-  describe('manage-profile-tab-names exports (v3.2.0)', () => {
-    it('should export eAccountManageProfileTabNames', () => {
-      expect(enumsExports.eAccountManageProfileTabNames).toBeDefined();
-      expect(typeof enumsExports.eAccountManageProfileTabNames).toBe('object');
-    });
-
-    it('should export eAccountManageProfileTabNames with all keys', () => {
-      expect(enumsExports.eAccountManageProfileTabNames.ProfilePicture).toBe(
-        'AbpAccount::ProfilePicture'
-      );
-      expect(enumsExports.eAccountManageProfileTabNames.ChangePassword).toBe(
-        'AbpUi::ChangePassword'
-      );
-      expect(enumsExports.eAccountManageProfileTabNames.PersonalSettings).toBe(
-        'AbpAccount::PersonalSettings'
-      );
-      expect(enumsExports.eAccountManageProfileTabNames.TwoFactor).toBe(
-        'AbpAccount::AccountSettingsTwoFactor'
-      );
+  describe('manage-profile-tab-names exports (removed in v4.0.0)', () => {
+    it('should NOT export eAccountManageProfileTabNames from config/enums (removed in v4.0.0)', () => {
+      expect(
+        (enumsExports as Record<string, unknown>).eAccountManageProfileTabNames
+      ).toBeUndefined();
     });
   });
 
@@ -78,18 +55,19 @@ describe('config/enums barrel exports (v3.2.0)', () => {
   });
 
   describe('exports completeness', () => {
-    it('should export all expected enums', () => {
+    it('should export only setting-tab-names, profile-picture-type, and two-factor-behaviour', () => {
       const exportKeys = Object.keys(enumsExports);
-      expect(exportKeys).toContain('eAccountRouteNames');
       expect(exportKeys).toContain('eAccountSettingTabNames');
-      expect(exportKeys).toContain('eAccountManageProfileTabNames');
       expect(exportKeys).toContain('ProfilePictureType');
       expect(exportKeys).toContain('eTwoFactorBehaviour');
+      // Removed in v4.0.0
+      expect(exportKeys).not.toContain('eAccountRouteNames');
+      expect(exportKeys).not.toContain('eAccountManageProfileTabNames');
     });
 
-    it('should have at least 5 exports', () => {
+    it('should have exactly 3 exports (v4.0.0)', () => {
       const exportKeys = Object.keys(enumsExports);
-      expect(exportKeys.length).toBeGreaterThanOrEqual(5);
+      expect(exportKeys.length).toBe(3);
     });
   });
 });

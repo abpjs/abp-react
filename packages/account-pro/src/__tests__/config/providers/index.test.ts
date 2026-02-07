@@ -1,21 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import * as providersExports from '../../../config/providers';
 
-describe('config/providers barrel exports (v3.0.0)', () => {
-  describe('route.provider exports', () => {
-    it('should export configureRoutes', () => {
-      expect(providersExports.configureRoutes).toBeDefined();
-      expect(typeof providersExports.configureRoutes).toBe('function');
+describe('config/providers barrel exports (v4.0.0)', () => {
+  // v4.0.0: route.provider removed from config/providers exports
+  describe('route.provider exports (removed in v4.0.0)', () => {
+    it('should NOT export configureRoutes (removed in v4.0.0)', () => {
+      expect((providersExports as Record<string, unknown>).configureRoutes).toBeUndefined();
     });
 
-    it('should export ACCOUNT_ROUTE_PROVIDERS', () => {
-      expect(providersExports.ACCOUNT_ROUTE_PROVIDERS).toBeDefined();
-      expect(typeof providersExports.ACCOUNT_ROUTE_PROVIDERS).toBe('object');
+    it('should NOT export ACCOUNT_ROUTE_PROVIDERS (removed in v4.0.0)', () => {
+      expect((providersExports as Record<string, unknown>).ACCOUNT_ROUTE_PROVIDERS).toBeUndefined();
     });
 
-    it('should export initializeAccountRoutes', () => {
-      expect(providersExports.initializeAccountRoutes).toBeDefined();
-      expect(typeof providersExports.initializeAccountRoutes).toBe('function');
+    it('should NOT export initializeAccountRoutes (removed in v4.0.0)', () => {
+      expect((providersExports as Record<string, unknown>).initializeAccountRoutes).toBeUndefined();
     });
   });
 
@@ -37,19 +35,20 @@ describe('config/providers barrel exports (v3.0.0)', () => {
   });
 
   describe('exports completeness', () => {
-    it('should export all expected provider functions and objects', () => {
+    it('should export only setting-tab provider functions and objects', () => {
       const exportKeys = Object.keys(providersExports);
-      expect(exportKeys).toContain('configureRoutes');
-      expect(exportKeys).toContain('ACCOUNT_ROUTE_PROVIDERS');
-      expect(exportKeys).toContain('initializeAccountRoutes');
       expect(exportKeys).toContain('configureSettingTabs');
       expect(exportKeys).toContain('ACCOUNT_SETTING_TAB_PROVIDERS');
       expect(exportKeys).toContain('getSettingTabsService');
+      // route.provider removed in v4.0.0
+      expect(exportKeys).not.toContain('configureRoutes');
+      expect(exportKeys).not.toContain('ACCOUNT_ROUTE_PROVIDERS');
+      expect(exportKeys).not.toContain('initializeAccountRoutes');
     });
 
-    it('should have at least 6 exports', () => {
+    it('should have exactly 3 exports (v4.0.0)', () => {
       const exportKeys = Object.keys(providersExports);
-      expect(exportKeys.length).toBeGreaterThanOrEqual(6);
+      expect(exportKeys.length).toBe(3);
     });
   });
 });
