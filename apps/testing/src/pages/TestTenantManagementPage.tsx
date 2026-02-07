@@ -1,5 +1,5 @@
 /**
- * Test page for @abpjs/tenant-management package
+ * Test page for @abpjs/tenant-management package v3.1.0
  * Tests: TenantManagementModal, useTenantManagement hook
  */
 import { useState, useEffect } from 'react'
@@ -1836,13 +1836,46 @@ const localizedName = localize(eTenantManagementRouteNames.TenantManagement);`}
   )
 }
 
+function TestV310Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.1.0</h2>
+
+      <div className="test-card" style={{ background: 'rgba(155,89,182,0.05)', border: '1px solid rgba(155,89,182,0.2)' }}>
+        <h3>Version Bump Only</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
+          Version 3.1.0 is a maintenance release with no functional changes.
+          The update includes dependency version bumps that do not affect the React translation.
+        </p>
+        <ul style={{ fontSize: '14px', color: '#888' }}>
+          <li>Dependency update: @abp/ng.feature-management ~3.0.0 → ~3.1.0</li>
+          <li>Dependency update: @abp/ng.theme.shared ~3.0.0 → ~3.1.0</li>
+        </ul>
+        <p style={{ fontSize: '14px', color: '#9b59b6', marginTop: '12px' }}>
+          All v3.0.0 features and APIs remain unchanged.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export function TestTenantManagementPage() {
   return (
     <div>
-      <h1>@abpjs/tenant-management Tests v3.0.0</h1>
+      <h1>@abpjs/tenant-management Tests v3.1.0</h1>
       <p>Testing tenant management modal and hooks for creating, updating, and managing tenants.</p>
-      <p style={{ color: '#22c55e', fontSize: '0.9rem' }}>Version 3.0.0 - Config route providers, policy names, Administration removed</p>
+      <p style={{ color: '#9b59b6', fontSize: '0.9rem' }}>Version 3.1.0 - Version bump only (no functional changes)</p>
 
+      {/* v3.1.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #9b59b6', paddingTop: '1rem' }}>
+        v3.1.0 Changes
+      </h2>
+      <TestV310Features />
+
+      {/* v3.0.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #22c55e', paddingTop: '1rem' }}>
+        v3.0.0 Features
+      </h2>
       <TestV300Features />
       <TestV270Features />
       <TestV240Features />

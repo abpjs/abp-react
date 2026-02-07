@@ -1,7 +1,10 @@
 /**
  * @abpjs/tenant-management
  * ABP Framework Tenant Management module for React
- * Translated from @abp/ng.tenant-management v3.0.0
+ * Translated from @abp/ng.tenant-management v3.1.0
+ *
+ * Changes in v3.1.0:
+ * - Version bump only (dependency updates to @abp/ng.feature-management v3.1.0, @abp/ng.theme.shared v3.1.0)
  *
  * Changes in v3.0.0:
  * - Added config subpackage with route providers and policy names
