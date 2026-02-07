@@ -2,23 +2,34 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useIdentity } from '../../hooks/useIdentity';
 
-// Mock IdentityService
-const mockGetRoles = vi.fn();
-const mockGetUsers = vi.fn();
+// Mock proxy services (v4.0.0: IdentityService removed, use IdentityRoleService/IdentityUserService)
+const mockGetRoleList = vi.fn();
+const mockGetUserList = vi.fn();
+const mockGetUserRoles = vi.fn();
 
-vi.mock('../../services', () => ({
-  IdentityService: vi.fn().mockImplementation(() => ({
-    getRoles: mockGetRoles,
-    getRoleById: vi.fn(),
-    createRole: vi.fn(),
-    updateRole: vi.fn(),
-    deleteRole: vi.fn(),
-    getUsers: mockGetUsers,
-    getUserById: vi.fn(),
-    getUserRoles: vi.fn(),
-    createUser: vi.fn(),
-    updateUser: vi.fn(),
-    deleteUser: vi.fn(),
+vi.mock('../../proxy/identity/identity-role.service', () => ({
+  IdentityRoleService: vi.fn().mockImplementation(() => ({
+    getList: mockGetRoleList,
+    get: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    getAllList: vi.fn(),
+  })),
+}));
+
+vi.mock('../../proxy/identity/identity-user.service', () => ({
+  IdentityUserService: vi.fn().mockImplementation(() => ({
+    getList: mockGetUserList,
+    get: vi.fn(),
+    getRoles: mockGetUserRoles,
+    getAssignableRoles: vi.fn(),
+    findByUsername: vi.fn(),
+    findByEmail: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    updateRoles: vi.fn(),
+    delete: vi.fn(),
   })),
 }));
 
@@ -27,11 +38,15 @@ vi.mock('@abpjs/core', () => ({
   useRestService: vi.fn(() => ({})),
 }));
 
+/**
+ * @updated 4.0.0 - Migrated mocks from IdentityService to IdentityRoleService/IdentityUserService
+ */
 describe('useIdentity', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetRoles.mockReset();
-    mockGetUsers.mockReset();
+    mockGetRoleList.mockReset();
+    mockGetUserList.mockReset();
+    mockGetUserRoles.mockReset();
   });
 
   it('should return combined hooks', () => {
@@ -76,10 +91,10 @@ describe('useIdentity', () => {
   it('should combine loading states', async () => {
     // Simulate loading state by having a pending promise
     let resolveRoles: (value: any) => void;
-    mockGetRoles.mockImplementation(() => new Promise((resolve) => {
+    mockGetRoleList.mockImplementation(() => new Promise((resolve) => {
       resolveRoles = resolve;
     }));
-    mockGetUsers.mockResolvedValue({ items: [], totalCount: 0 });
+    mockGetUserList.mockResolvedValue({ items: [], totalCount: 0 });
 
     const { result } = renderHook(() => useIdentity());
 
@@ -100,8 +115,8 @@ describe('useIdentity', () => {
   });
 
   it('should combine error states - roles error', async () => {
-    mockGetRoles.mockRejectedValue(new Error('Roles error'));
-    mockGetUsers.mockResolvedValue({ items: [], totalCount: 0 });
+    mockGetRoleList.mockRejectedValue(new Error('Roles error'));
+    mockGetUserList.mockResolvedValue({ items: [], totalCount: 0 });
 
     const { result } = renderHook(() => useIdentity());
 
@@ -113,8 +128,8 @@ describe('useIdentity', () => {
   });
 
   it('should combine error states - users error', async () => {
-    mockGetRoles.mockResolvedValue({ items: [], totalCount: 0 });
-    mockGetUsers.mockRejectedValue(new Error('Users error'));
+    mockGetRoleList.mockResolvedValue({ items: [], totalCount: 0 });
+    mockGetUserList.mockRejectedValue(new Error('Users error'));
 
     const { result } = renderHook(() => useIdentity());
 
@@ -126,11 +141,11 @@ describe('useIdentity', () => {
   });
 
   it('should reset all state', async () => {
-    mockGetRoles.mockResolvedValue({
+    mockGetRoleList.mockResolvedValue({
       items: [{ id: 'role-1', name: 'Admin', isDefault: false, isPublic: true, isStatic: false, concurrencyStamp: 'stamp1' }],
       totalCount: 1,
     });
-    mockGetUsers.mockResolvedValue({
+    mockGetUserList.mockResolvedValue({
       items: [{
         id: 'user-1',
         userName: 'admin',
@@ -138,12 +153,10 @@ describe('useIdentity', () => {
         surname: 'User',
         email: 'admin@example.com',
         phoneNumber: '',
-        twoFactorEnabled: false,
         lockoutEnabled: true,
         tenantId: '',
         emailConfirmed: true,
         phoneNumberConfirmed: false,
-        isLockedOut: false,
         concurrencyStamp: 'stamp1',
       }],
       totalCount: 1,
@@ -172,11 +185,11 @@ describe('useIdentity', () => {
   });
 
   it('should allow fetching roles and users independently', async () => {
-    mockGetRoles.mockResolvedValue({
+    mockGetRoleList.mockResolvedValue({
       items: [{ id: 'role-1', name: 'Admin', isDefault: false, isPublic: true, isStatic: false, concurrencyStamp: 'stamp1' }],
       totalCount: 1,
     });
-    mockGetUsers.mockResolvedValue({
+    mockGetUserList.mockResolvedValue({
       items: [],
       totalCount: 0,
     });
@@ -190,6 +203,6 @@ describe('useIdentity', () => {
 
     expect(result.current.roles.roles.length).toBe(1);
     expect(result.current.users.users.length).toBe(0);
-    expect(mockGetUsers).not.toHaveBeenCalled();
+    expect(mockGetUserList).not.toHaveBeenCalled();
   });
 });

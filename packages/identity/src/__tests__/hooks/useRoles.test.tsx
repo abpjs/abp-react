@@ -2,20 +2,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useRoles } from '../../hooks/useRoles';
 
-// Mock IdentityService
-const mockGetRoles = vi.fn();
-const mockGetRoleById = vi.fn();
-const mockCreateRole = vi.fn();
-const mockUpdateRole = vi.fn();
-const mockDeleteRole = vi.fn();
+// Mock IdentityRoleService (v4.0.0: migrated from IdentityService)
+const mockGetList = vi.fn();
+const mockGet = vi.fn();
+const mockCreate = vi.fn();
+const mockUpdate = vi.fn();
+const mockDelete = vi.fn();
 
-vi.mock('../../services', () => ({
-  IdentityService: vi.fn().mockImplementation(() => ({
-    getRoles: mockGetRoles,
-    getRoleById: mockGetRoleById,
-    createRole: mockCreateRole,
-    updateRole: mockUpdateRole,
-    deleteRole: mockDeleteRole,
+vi.mock('../../proxy/identity/identity-role.service', () => ({
+  IdentityRoleService: vi.fn().mockImplementation(() => ({
+    getList: mockGetList,
+    get: mockGet,
+    create: mockCreate,
+    update: mockUpdate,
+    delete: mockDelete,
   })),
 }));
 
@@ -27,11 +27,11 @@ vi.mock('@abpjs/core', () => ({
 describe('useRoles', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetRoles.mockReset();
-    mockGetRoleById.mockReset();
-    mockCreateRole.mockReset();
-    mockUpdateRole.mockReset();
-    mockDeleteRole.mockReset();
+    mockGetList.mockReset();
+    mockGet.mockReset();
+    mockCreate.mockReset();
+    mockUpdate.mockReset();
+    mockDelete.mockReset();
   });
 
   it('should return initial state', () => {
@@ -54,7 +54,7 @@ describe('useRoles', () => {
       ],
       totalCount: 2,
     };
-    mockGetRoles.mockResolvedValue(mockRoles);
+    mockGetList.mockResolvedValue(mockRoles);
 
     const { result } = renderHook(() => useRoles());
 
@@ -69,7 +69,7 @@ describe('useRoles', () => {
   });
 
   it('should handle fetch roles error', async () => {
-    mockGetRoles.mockRejectedValue(new Error('Failed to fetch'));
+    mockGetList.mockRejectedValue(new Error('Failed to fetch'));
 
     const { result } = renderHook(() => useRoles());
 
@@ -83,9 +83,51 @@ describe('useRoles', () => {
     expect(result.current.isLoading).toBe(false);
   });
 
+  it('should handle fetch roles with non-Error throw', async () => {
+    mockGetList.mockRejectedValue('network failure');
+
+    const { result } = renderHook(() => useRoles());
+
+    await act(async () => {
+      const response = await result.current.fetchRoles();
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Failed to fetch roles');
+    });
+
+    expect(result.current.error).toBe('Failed to fetch roles');
+    expect(result.current.isLoading).toBe(false);
+  });
+
+  it('should handle fetch roles with undefined items and totalCount', async () => {
+    mockGetList.mockResolvedValue({});
+
+    const { result } = renderHook(() => useRoles());
+
+    await act(async () => {
+      const response = await result.current.fetchRoles();
+      expect(response.success).toBe(true);
+    });
+
+    expect(result.current.roles).toEqual([]);
+    expect(result.current.totalCount).toBe(0);
+  });
+
+  it('should fetch roles with custom params', async () => {
+    mockGetList.mockResolvedValue({ items: [], totalCount: 0 });
+
+    const { result } = renderHook(() => useRoles());
+    const params = { skipCount: 10, maxResultCount: 5, sorting: 'name desc' };
+
+    await act(async () => {
+      await result.current.fetchRoles(params);
+    });
+
+    expect(mockGetList).toHaveBeenCalledWith(params);
+  });
+
   it('should get role by ID', async () => {
     const mockRole = { id: 'role-1', name: 'Admin', isDefault: false, isPublic: true, isStatic: false, concurrencyStamp: 'stamp1' };
-    mockGetRoleById.mockResolvedValue(mockRole);
+    mockGet.mockResolvedValue(mockRole);
 
     const { result } = renderHook(() => useRoles());
 
@@ -98,7 +140,7 @@ describe('useRoles', () => {
   });
 
   it('should handle get role by ID error', async () => {
-    mockGetRoleById.mockRejectedValue(new Error('Role not found'));
+    mockGet.mockRejectedValue(new Error('Role not found'));
 
     const { result } = renderHook(() => useRoles());
 
@@ -111,10 +153,24 @@ describe('useRoles', () => {
     expect(result.current.error).toBe('Role not found');
   });
 
+  it('should handle get role by ID with non-Error throw', async () => {
+    mockGet.mockRejectedValue('string error');
+
+    const { result } = renderHook(() => useRoles());
+
+    await act(async () => {
+      const response = await result.current.getRoleById('invalid-id');
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Failed to fetch role');
+    });
+
+    expect(result.current.error).toBe('Failed to fetch role');
+  });
+
   it('should create role successfully', async () => {
     const newRole = { name: 'NewRole', isDefault: false, isPublic: true };
-    mockCreateRole.mockResolvedValue({ id: 'new-id', ...newRole, isStatic: false, concurrencyStamp: 'stamp' });
-    mockGetRoles.mockResolvedValue({ items: [], totalCount: 0 });
+    mockCreate.mockResolvedValue({ id: 'new-id', ...newRole, isStatic: false, concurrencyStamp: 'stamp' });
+    mockGetList.mockResolvedValue({ items: [], totalCount: 0 });
 
     const { result } = renderHook(() => useRoles());
 
@@ -123,12 +179,12 @@ describe('useRoles', () => {
       expect(response.success).toBe(true);
     });
 
-    expect(mockCreateRole).toHaveBeenCalledWith(newRole);
-    expect(mockGetRoles).toHaveBeenCalled(); // Should refresh list
+    expect(mockCreate).toHaveBeenCalledWith(newRole);
+    expect(mockGetList).toHaveBeenCalled(); // Should refresh list
   });
 
   it('should handle create role error', async () => {
-    mockCreateRole.mockRejectedValue(new Error('Creation failed'));
+    mockCreate.mockRejectedValue(new Error('Creation failed'));
 
     const { result } = renderHook(() => useRoles());
 
@@ -141,10 +197,24 @@ describe('useRoles', () => {
     expect(result.current.error).toBe('Creation failed');
   });
 
+  it('should handle create role with non-Error throw', async () => {
+    mockCreate.mockRejectedValue({ code: 500 });
+
+    const { result } = renderHook(() => useRoles());
+
+    await act(async () => {
+      const response = await result.current.createRole({ name: 'Test', isDefault: false, isPublic: true });
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Failed to create role');
+    });
+
+    expect(result.current.error).toBe('Failed to create role');
+  });
+
   it('should update role successfully', async () => {
     const updatedRole = { name: 'UpdatedRole', isDefault: true, isPublic: false };
-    mockUpdateRole.mockResolvedValue({ id: 'role-1', ...updatedRole, isStatic: false, concurrencyStamp: 'new-stamp' });
-    mockGetRoles.mockResolvedValue({ items: [], totalCount: 0 });
+    mockUpdate.mockResolvedValue({ id: 'role-1', ...updatedRole, isStatic: false, concurrencyStamp: 'new-stamp' });
+    mockGetList.mockResolvedValue({ items: [], totalCount: 0 });
 
     const { result } = renderHook(() => useRoles());
 
@@ -153,12 +223,12 @@ describe('useRoles', () => {
       expect(response.success).toBe(true);
     });
 
-    expect(mockUpdateRole).toHaveBeenCalledWith('role-1', updatedRole);
-    expect(mockGetRoles).toHaveBeenCalled(); // Should refresh list
+    expect(mockUpdate).toHaveBeenCalledWith('role-1', updatedRole);
+    expect(mockGetList).toHaveBeenCalled(); // Should refresh list
   });
 
   it('should handle update role error', async () => {
-    mockUpdateRole.mockRejectedValue(new Error('Update failed'));
+    mockUpdate.mockRejectedValue(new Error('Update failed'));
 
     const { result } = renderHook(() => useRoles());
 
@@ -171,9 +241,23 @@ describe('useRoles', () => {
     expect(result.current.error).toBe('Update failed');
   });
 
+  it('should handle update role with non-Error throw', async () => {
+    mockUpdate.mockRejectedValue(null);
+
+    const { result } = renderHook(() => useRoles());
+
+    await act(async () => {
+      const response = await result.current.updateRole('role-1', { name: 'Test', isDefault: false, isPublic: true });
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Failed to update role');
+    });
+
+    expect(result.current.error).toBe('Failed to update role');
+  });
+
   it('should delete role successfully', async () => {
-    mockDeleteRole.mockResolvedValue({});
-    mockGetRoles.mockResolvedValue({ items: [], totalCount: 0 });
+    mockDelete.mockResolvedValue({});
+    mockGetList.mockResolvedValue({ items: [], totalCount: 0 });
 
     const { result } = renderHook(() => useRoles());
 
@@ -182,12 +266,12 @@ describe('useRoles', () => {
       expect(response.success).toBe(true);
     });
 
-    expect(mockDeleteRole).toHaveBeenCalledWith('role-1');
-    expect(mockGetRoles).toHaveBeenCalled(); // Should refresh list
+    expect(mockDelete).toHaveBeenCalledWith('role-1');
+    expect(mockGetList).toHaveBeenCalled(); // Should refresh list
   });
 
   it('should handle delete role error', async () => {
-    mockDeleteRole.mockRejectedValue(new Error('Delete failed'));
+    mockDelete.mockRejectedValue(new Error('Delete failed'));
 
     const { result } = renderHook(() => useRoles());
 
@@ -198,6 +282,20 @@ describe('useRoles', () => {
     });
 
     expect(result.current.error).toBe('Delete failed');
+  });
+
+  it('should handle delete role with non-Error throw', async () => {
+    mockDelete.mockRejectedValue(undefined);
+
+    const { result } = renderHook(() => useRoles());
+
+    await act(async () => {
+      const response = await result.current.deleteRole('role-1');
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Failed to delete role');
+    });
+
+    expect(result.current.error).toBe('Failed to delete role');
   });
 
   it('should set selected role', () => {
@@ -232,7 +330,7 @@ describe('useRoles', () => {
   });
 
   it('should reset state', async () => {
-    mockGetRoles.mockResolvedValue({
+    mockGetList.mockResolvedValue({
       items: [{ id: 'role-1', name: 'Admin', isDefault: false, isPublic: true, isStatic: false, concurrencyStamp: 'stamp1' }],
       totalCount: 1,
     });

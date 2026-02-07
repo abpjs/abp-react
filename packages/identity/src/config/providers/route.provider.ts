@@ -12,19 +12,19 @@ import { eIdentityPolicyNames } from '../enums/policy-names';
  * Configures the identity module routes.
  * Returns a function that adds the routes to the RoutesService.
  *
- * @param routes - The RoutesService instance to add routes to
+ * @param routesService - The RoutesService instance to add routes to
  * @returns A function that adds the identity routes when called
  *
  * @example
  * ```typescript
  * const routes = getRoutesService();
- * const addRoutes = configureRoutes(routes);
+ * const addRoutes = configureRoutes(routesService);
  * addRoutes();
  * ```
  */
-export function configureRoutes(routes: RoutesService): () => void {
+export function configureRoutes(routesService: RoutesService): () => void {
   return () => {
-    routes.add([
+    routesService.add([
       {
         path: '/identity',
         name: eIdentityRouteNames.IdentityManagement,
@@ -60,7 +60,7 @@ export function configureRoutes(routes: RoutesService): () => void {
  * ```typescript
  * // In your app initialization:
  * const routes = getRoutesService();
- * const addRoutes = IDENTITY_ROUTE_PROVIDERS.configureRoutes(routes);
+ * const addRoutes = IDENTITY_ROUTE_PROVIDERS.configureRoutes(routesService);
  * addRoutes();
  * ```
  */
@@ -79,7 +79,7 @@ export const IDENTITY_ROUTE_PROVIDERS = {
  * ```
  */
 export function initializeIdentityRoutes(): void {
-  const routes = getRoutesService();
-  const addRoutes = configureRoutes(routes);
+  const routesService = getRoutesService();
+  const addRoutes = configureRoutes(routesService);
   addRoutes();
 }

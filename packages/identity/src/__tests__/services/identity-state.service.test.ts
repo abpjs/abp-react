@@ -1,30 +1,40 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { IdentityStateService } from '../../services/identity-state.service';
-import { IdentityService } from '../../services/identity.service';
-import type { Identity } from '../../models';
+import { IdentityRoleService } from '../../proxy/identity/identity-role.service';
+import { IdentityUserService } from '../../proxy/identity/identity-user.service';
+import type { IdentityRoleDto, IdentityUserDto } from '../../proxy/identity/models';
 
-// Mock IdentityService
-const mockIdentityService = {
+// Mock IdentityRoleService
+const mockRoleService = {
+  getList: vi.fn(),
+  get: vi.fn(),
+  delete: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  getAllList: vi.fn(),
+} as unknown as IdentityRoleService;
+
+// Mock IdentityUserService
+const mockUserService = {
+  getList: vi.fn(),
+  get: vi.fn(),
+  delete: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
   getRoles: vi.fn(),
-  getRoleById: vi.fn(),
-  deleteRole: vi.fn(),
-  createRole: vi.fn(),
-  updateRole: vi.fn(),
-  getUsers: vi.fn(),
-  getUserById: vi.fn(),
-  getUserRoles: vi.fn(),
-  deleteUser: vi.fn(),
-  createUser: vi.fn(),
-  updateUser: vi.fn(),
-} as unknown as IdentityService;
+  getAssignableRoles: vi.fn(),
+  findByUsername: vi.fn(),
+  findByEmail: vi.fn(),
+  updateRoles: vi.fn(),
+} as unknown as IdentityUserService;
 
 // Mock data
-const mockRoles: Identity.RoleItem[] = [
+const mockRoles: IdentityRoleDto[] = [
   { id: 'role-1', name: 'admin', isDefault: false, isPublic: true, isStatic: true, concurrencyStamp: 'stamp-1' },
   { id: 'role-2', name: 'user', isDefault: true, isPublic: true, isStatic: false, concurrencyStamp: 'stamp-2' },
 ];
 
-const mockUsers: Identity.UserItem[] = [
+const mockUsers: IdentityUserDto[] = [
   {
     id: 'user-1',
     userName: 'admin',
@@ -57,12 +67,15 @@ const mockUsers: Identity.UserItem[] = [
   },
 ];
 
+/**
+ * @updated 4.0.0 - Migrated from IdentityService to IdentityRoleService/IdentityUserService
+ */
 describe('IdentityStateService', () => {
   let stateService: IdentityStateService;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    stateService = new IdentityStateService(mockIdentityService);
+    stateService = new IdentityStateService(mockRoleService, mockUserService);
   });
 
   describe('Initial State', () => {
@@ -86,39 +99,48 @@ describe('IdentityStateService', () => {
   describe('Role Operations', () => {
     describe('dispatchGetRoles', () => {
       it('should fetch roles and update state', async () => {
-        const mockResponse: Identity.RoleResponse = {
+        const mockResponse = {
           items: mockRoles,
           totalCount: 2,
         };
-        vi.mocked(mockIdentityService.getRoles).mockResolvedValue(mockResponse);
+        vi.mocked(mockRoleService.getList).mockResolvedValue(mockResponse);
 
         const result = await stateService.dispatchGetRoles();
 
-        expect(mockIdentityService.getRoles).toHaveBeenCalledWith(undefined);
+        expect(mockRoleService.getList).toHaveBeenCalled();
         expect(result).toEqual(mockResponse);
         expect(stateService.getRoles()).toEqual(mockRoles);
         expect(stateService.getRolesTotalCount()).toBe(2);
       });
 
       it('should pass query parameters to service', async () => {
-        const mockResponse: Identity.RoleResponse = {
+        const mockResponse = {
           items: mockRoles,
           totalCount: 2,
         };
-        vi.mocked(mockIdentityService.getRoles).mockResolvedValue(mockResponse);
+        vi.mocked(mockRoleService.getList).mockResolvedValue(mockResponse);
 
-        const params = { skipCount: 10, maxResultCount: 5, filter: 'admin' };
+        const params = { skipCount: 10, maxResultCount: 5, sorting: 'name' };
         await stateService.dispatchGetRoles(params);
 
-        expect(mockIdentityService.getRoles).toHaveBeenCalledWith(params);
+        expect(mockRoleService.getList).toHaveBeenCalledWith(params);
       });
 
       it('should handle empty response', async () => {
-        const mockResponse: Identity.RoleResponse = {
+        const mockResponse = {
           items: [],
           totalCount: 0,
         };
-        vi.mocked(mockIdentityService.getRoles).mockResolvedValue(mockResponse);
+        vi.mocked(mockRoleService.getList).mockResolvedValue(mockResponse);
+
+        await stateService.dispatchGetRoles();
+
+        expect(stateService.getRoles()).toEqual([]);
+        expect(stateService.getRolesTotalCount()).toBe(0);
+      });
+
+      it('should handle response with undefined items and totalCount', async () => {
+        vi.mocked(mockRoleService.getList).mockResolvedValue({} as any);
 
         await stateService.dispatchGetRoles();
 
@@ -130,29 +152,27 @@ describe('IdentityStateService', () => {
     describe('dispatchGetRoleById', () => {
       it('should fetch a role by ID', async () => {
         const mockRole = mockRoles[0];
-        vi.mocked(mockIdentityService.getRoleById).mockResolvedValue(mockRole);
+        vi.mocked(mockRoleService.get).mockResolvedValue(mockRole);
 
         const result = await stateService.dispatchGetRoleById('role-1');
 
-        expect(mockIdentityService.getRoleById).toHaveBeenCalledWith('role-1');
+        expect(mockRoleService.get).toHaveBeenCalledWith('role-1');
         expect(result).toEqual(mockRole);
       });
     });
 
     describe('dispatchDeleteRole', () => {
       it('should delete a role and refresh the list', async () => {
-        const deletedRole = mockRoles[1];
-        vi.mocked(mockIdentityService.deleteRole).mockResolvedValue(deletedRole);
-        vi.mocked(mockIdentityService.getRoles).mockResolvedValue({
+        vi.mocked(mockRoleService.delete).mockResolvedValue(undefined);
+        vi.mocked(mockRoleService.getList).mockResolvedValue({
           items: [mockRoles[0]],
           totalCount: 1,
         });
 
-        const result = await stateService.dispatchDeleteRole('role-2');
+        await stateService.dispatchDeleteRole('role-2');
 
-        expect(mockIdentityService.deleteRole).toHaveBeenCalledWith('role-2');
-        expect(mockIdentityService.getRoles).toHaveBeenCalled();
-        expect(result).toEqual(deletedRole);
+        expect(mockRoleService.delete).toHaveBeenCalledWith('role-2');
+        expect(mockRoleService.getList).toHaveBeenCalled();
         expect(stateService.getRoles()).toEqual([mockRoles[0]]);
         expect(stateService.getRolesTotalCount()).toBe(1);
       });
@@ -160,27 +180,27 @@ describe('IdentityStateService', () => {
 
     describe('dispatchCreateRole', () => {
       it('should create a role and refresh the list', async () => {
-        const newRole: Identity.RoleSaveRequest = {
+        const newRole = {
           name: 'newRole',
           isDefault: false,
           isPublic: true,
         };
-        const createdRole: Identity.RoleItem = {
+        const createdRole: IdentityRoleDto = {
           ...newRole,
           id: 'role-3',
           isStatic: false,
           concurrencyStamp: 'stamp-3',
         };
-        vi.mocked(mockIdentityService.createRole).mockResolvedValue(createdRole);
-        vi.mocked(mockIdentityService.getRoles).mockResolvedValue({
+        vi.mocked(mockRoleService.create).mockResolvedValue(createdRole);
+        vi.mocked(mockRoleService.getList).mockResolvedValue({
           items: [...mockRoles, createdRole],
           totalCount: 3,
         });
 
         const result = await stateService.dispatchCreateRole(newRole);
 
-        expect(mockIdentityService.createRole).toHaveBeenCalledWith(newRole);
-        expect(mockIdentityService.getRoles).toHaveBeenCalled();
+        expect(mockRoleService.create).toHaveBeenCalledWith(newRole);
+        expect(mockRoleService.getList).toHaveBeenCalled();
         expect(result).toEqual(createdRole);
         expect(stateService.getRolesTotalCount()).toBe(3);
       });
@@ -188,17 +208,17 @@ describe('IdentityStateService', () => {
 
     describe('dispatchUpdateRole', () => {
       it('should update a role and refresh the list', async () => {
-        const updatedData: Identity.RoleSaveRequest = {
+        const updatedData = {
           name: 'updatedAdmin',
           isDefault: true,
           isPublic: false,
         };
-        const updatedRole: Identity.RoleItem = {
+        const updatedRole: IdentityRoleDto = {
           ...mockRoles[0],
           ...updatedData,
         };
-        vi.mocked(mockIdentityService.updateRole).mockResolvedValue(updatedRole);
-        vi.mocked(mockIdentityService.getRoles).mockResolvedValue({
+        vi.mocked(mockRoleService.update).mockResolvedValue(updatedRole);
+        vi.mocked(mockRoleService.getList).mockResolvedValue({
           items: [updatedRole, mockRoles[1]],
           totalCount: 2,
         });
@@ -208,8 +228,8 @@ describe('IdentityStateService', () => {
           body: updatedData,
         });
 
-        expect(mockIdentityService.updateRole).toHaveBeenCalledWith('role-1', updatedData);
-        expect(mockIdentityService.getRoles).toHaveBeenCalled();
+        expect(mockRoleService.update).toHaveBeenCalledWith('role-1', updatedData);
+        expect(mockRoleService.getList).toHaveBeenCalled();
         expect(result).toEqual(updatedRole);
       });
     });
@@ -218,39 +238,48 @@ describe('IdentityStateService', () => {
   describe('User Operations', () => {
     describe('dispatchGetUsers', () => {
       it('should fetch users and update state', async () => {
-        const mockResponse: Identity.UserResponse = {
+        const mockResponse = {
           items: mockUsers,
           totalCount: 2,
         };
-        vi.mocked(mockIdentityService.getUsers).mockResolvedValue(mockResponse);
+        vi.mocked(mockUserService.getList).mockResolvedValue(mockResponse);
 
         const result = await stateService.dispatchGetUsers();
 
-        expect(mockIdentityService.getUsers).toHaveBeenCalledWith(undefined);
+        expect(mockUserService.getList).toHaveBeenCalled();
         expect(result).toEqual(mockResponse);
         expect(stateService.getUsers()).toEqual(mockUsers);
         expect(stateService.getUsersTotalCount()).toBe(2);
       });
 
       it('should pass query parameters to service', async () => {
-        const mockResponse: Identity.UserResponse = {
+        const mockResponse = {
           items: mockUsers,
           totalCount: 2,
         };
-        vi.mocked(mockIdentityService.getUsers).mockResolvedValue(mockResponse);
+        vi.mocked(mockUserService.getList).mockResolvedValue(mockResponse);
 
-        const params = { skipCount: 0, maxResultCount: 10, filter: 'john' };
+        const params = { skipCount: 0, maxResultCount: 10, filter: 'john', sorting: 'userName' };
         await stateService.dispatchGetUsers(params);
 
-        expect(mockIdentityService.getUsers).toHaveBeenCalledWith(params);
+        expect(mockUserService.getList).toHaveBeenCalledWith(params);
       });
 
       it('should handle empty response', async () => {
-        const mockResponse: Identity.UserResponse = {
+        const mockResponse = {
           items: [],
           totalCount: 0,
         };
-        vi.mocked(mockIdentityService.getUsers).mockResolvedValue(mockResponse);
+        vi.mocked(mockUserService.getList).mockResolvedValue(mockResponse);
+
+        await stateService.dispatchGetUsers();
+
+        expect(stateService.getUsers()).toEqual([]);
+        expect(stateService.getUsersTotalCount()).toBe(0);
+      });
+
+      it('should handle response with undefined items and totalCount', async () => {
+        vi.mocked(mockUserService.getList).mockResolvedValue({} as any);
 
         await stateService.dispatchGetUsers();
 
@@ -262,27 +291,27 @@ describe('IdentityStateService', () => {
     describe('dispatchGetUserById', () => {
       it('should fetch a user by ID', async () => {
         const mockUser = mockUsers[0];
-        vi.mocked(mockIdentityService.getUserById).mockResolvedValue(mockUser);
+        vi.mocked(mockUserService.get).mockResolvedValue(mockUser);
 
         const result = await stateService.dispatchGetUserById('user-1');
 
-        expect(mockIdentityService.getUserById).toHaveBeenCalledWith('user-1');
+        expect(mockUserService.get).toHaveBeenCalledWith('user-1');
         expect(result).toEqual(mockUser);
       });
     });
 
     describe('dispatchDeleteUser', () => {
       it('should delete a user and refresh the list', async () => {
-        vi.mocked(mockIdentityService.deleteUser).mockResolvedValue(undefined);
-        vi.mocked(mockIdentityService.getUsers).mockResolvedValue({
+        vi.mocked(mockUserService.delete).mockResolvedValue(undefined);
+        vi.mocked(mockUserService.getList).mockResolvedValue({
           items: [mockUsers[1]],
           totalCount: 1,
         });
 
         await stateService.dispatchDeleteUser('user-1');
 
-        expect(mockIdentityService.deleteUser).toHaveBeenCalledWith('user-1');
-        expect(mockIdentityService.getUsers).toHaveBeenCalled();
+        expect(mockUserService.delete).toHaveBeenCalledWith('user-1');
+        expect(mockUserService.getList).toHaveBeenCalled();
         expect(stateService.getUsers()).toEqual([mockUsers[1]]);
         expect(stateService.getUsersTotalCount()).toBe(1);
       });
@@ -290,7 +319,7 @@ describe('IdentityStateService', () => {
 
     describe('dispatchCreateUser', () => {
       it('should create a user and refresh the list', async () => {
-        const newUser: Identity.UserSaveRequest = {
+        const newUser = {
           userName: 'newuser',
           name: 'New',
           surname: 'User',
@@ -301,7 +330,7 @@ describe('IdentityStateService', () => {
           twoFactorEnabled: false,
           roleNames: ['user'],
         };
-        const createdUser: Identity.UserItem = {
+        const createdUser: IdentityUserDto = {
           id: 'user-3',
           userName: newUser.userName,
           name: newUser.name,
@@ -316,16 +345,16 @@ describe('IdentityStateService', () => {
           isLockedOut: false,
           concurrencyStamp: 'stamp-3',
         };
-        vi.mocked(mockIdentityService.createUser).mockResolvedValue(createdUser);
-        vi.mocked(mockIdentityService.getUsers).mockResolvedValue({
+        vi.mocked(mockUserService.create).mockResolvedValue(createdUser);
+        vi.mocked(mockUserService.getList).mockResolvedValue({
           items: [...mockUsers, createdUser],
           totalCount: 3,
         });
 
         const result = await stateService.dispatchCreateUser(newUser);
 
-        expect(mockIdentityService.createUser).toHaveBeenCalledWith(newUser);
-        expect(mockIdentityService.getUsers).toHaveBeenCalled();
+        expect(mockUserService.create).toHaveBeenCalledWith(newUser);
+        expect(mockUserService.getList).toHaveBeenCalled();
         expect(result).toEqual(createdUser);
         expect(stateService.getUsersTotalCount()).toBe(3);
       });
@@ -333,7 +362,7 @@ describe('IdentityStateService', () => {
 
     describe('dispatchUpdateUser', () => {
       it('should update a user and refresh the list', async () => {
-        const updatedData: Identity.UserSaveRequest = {
+        const updatedData = {
           userName: 'admin_updated',
           name: 'Admin Updated',
           surname: 'User',
@@ -344,7 +373,7 @@ describe('IdentityStateService', () => {
           twoFactorEnabled: true,
           roleNames: ['admin', 'user'],
         };
-        const updatedUser: Identity.UserItem = {
+        const updatedUser: IdentityUserDto = {
           ...mockUsers[0],
           userName: updatedData.userName,
           name: updatedData.name,
@@ -353,8 +382,8 @@ describe('IdentityStateService', () => {
           lockoutEnabled: updatedData.lockoutEnabled,
           twoFactorEnabled: updatedData.twoFactorEnabled,
         };
-        vi.mocked(mockIdentityService.updateUser).mockResolvedValue(updatedUser);
-        vi.mocked(mockIdentityService.getUsers).mockResolvedValue({
+        vi.mocked(mockUserService.update).mockResolvedValue(updatedUser);
+        vi.mocked(mockUserService.getList).mockResolvedValue({
           items: [updatedUser, mockUsers[1]],
           totalCount: 2,
         });
@@ -364,23 +393,22 @@ describe('IdentityStateService', () => {
           body: updatedData,
         });
 
-        expect(mockIdentityService.updateUser).toHaveBeenCalledWith('user-1', updatedData);
-        expect(mockIdentityService.getUsers).toHaveBeenCalled();
+        expect(mockUserService.update).toHaveBeenCalledWith('user-1', updatedData);
+        expect(mockUserService.getList).toHaveBeenCalled();
         expect(result).toEqual(updatedUser);
       });
     });
 
     describe('dispatchGetUserRoles', () => {
       it('should fetch user roles', async () => {
-        const mockRoleResponse: Identity.RoleResponse = {
+        const mockRoleResponse = {
           items: mockRoles,
-          totalCount: 2,
         };
-        vi.mocked(mockIdentityService.getUserRoles).mockResolvedValue(mockRoleResponse);
+        vi.mocked(mockUserService.getRoles).mockResolvedValue(mockRoleResponse);
 
         const result = await stateService.dispatchGetUserRoles('user-1');
 
-        expect(mockIdentityService.getUserRoles).toHaveBeenCalledWith('user-1');
+        expect(mockUserService.getRoles).toHaveBeenCalledWith('user-1');
         expect(result).toEqual(mockRoleResponse);
       });
     });
@@ -389,14 +417,14 @@ describe('IdentityStateService', () => {
   describe('Error Handling', () => {
     it('should propagate errors from getRoles', async () => {
       const error = new Error('Network error');
-      vi.mocked(mockIdentityService.getRoles).mockRejectedValue(error);
+      vi.mocked(mockRoleService.getList).mockRejectedValue(error);
 
       await expect(stateService.dispatchGetRoles()).rejects.toThrow('Network error');
     });
 
     it('should propagate errors from createRole', async () => {
       const error = new Error('Validation error');
-      vi.mocked(mockIdentityService.createRole).mockRejectedValue(error);
+      vi.mocked(mockRoleService.create).mockRejectedValue(error);
 
       await expect(
         stateService.dispatchCreateRole({ name: '', isDefault: false, isPublic: false })
@@ -405,23 +433,84 @@ describe('IdentityStateService', () => {
 
     it('should propagate errors from getUsers', async () => {
       const error = new Error('Unauthorized');
-      vi.mocked(mockIdentityService.getUsers).mockRejectedValue(error);
+      vi.mocked(mockUserService.getList).mockRejectedValue(error);
 
       await expect(stateService.dispatchGetUsers()).rejects.toThrow('Unauthorized');
     });
 
     it('should propagate errors from deleteUser', async () => {
       const error = new Error('Not found');
-      vi.mocked(mockIdentityService.deleteUser).mockRejectedValue(error);
+      vi.mocked(mockUserService.delete).mockRejectedValue(error);
 
       await expect(stateService.dispatchDeleteUser('nonexistent')).rejects.toThrow('Not found');
+    });
+
+    it('should propagate errors from updateRole', async () => {
+      const error = new Error('Conflict');
+      vi.mocked(mockRoleService.update).mockRejectedValue(error);
+
+      await expect(
+        stateService.dispatchUpdateRole({ id: 'role-1', body: { name: 'test', isDefault: false, isPublic: false } })
+      ).rejects.toThrow('Conflict');
+    });
+
+    it('should propagate errors from deleteRole', async () => {
+      const error = new Error('Cannot delete static role');
+      vi.mocked(mockRoleService.delete).mockRejectedValue(error);
+
+      await expect(stateService.dispatchDeleteRole('role-1')).rejects.toThrow('Cannot delete static role');
+    });
+
+    it('should propagate errors from getRoleById', async () => {
+      const error = new Error('Not found');
+      vi.mocked(mockRoleService.get).mockRejectedValue(error);
+
+      await expect(stateService.dispatchGetRoleById('nonexistent')).rejects.toThrow('Not found');
+    });
+
+    it('should propagate errors from getUserById', async () => {
+      const error = new Error('User not found');
+      vi.mocked(mockUserService.get).mockRejectedValue(error);
+
+      await expect(stateService.dispatchGetUserById('nonexistent')).rejects.toThrow('User not found');
+    });
+
+    it('should propagate errors from updateUser', async () => {
+      const error = new Error('Validation failed');
+      vi.mocked(mockUserService.update).mockRejectedValue(error);
+
+      await expect(
+        stateService.dispatchUpdateUser({
+          id: 'user-1',
+          body: { userName: '', name: '', surname: '', email: '', phoneNumber: '', password: '', lockoutEnabled: false, roleNames: [] },
+        })
+      ).rejects.toThrow('Validation failed');
+    });
+
+    it('should propagate errors from createUser', async () => {
+      const error = new Error('Duplicate username');
+      vi.mocked(mockUserService.create).mockRejectedValue(error);
+
+      await expect(
+        stateService.dispatchCreateUser({
+          userName: 'admin', name: 'A', surname: 'B', email: 'a@b.com',
+          phoneNumber: '', password: 'Pass123!', lockoutEnabled: true, roleNames: [],
+        })
+      ).rejects.toThrow('Duplicate username');
+    });
+
+    it('should propagate errors from getUserRoles', async () => {
+      const error = new Error('Forbidden');
+      vi.mocked(mockUserService.getRoles).mockRejectedValue(error);
+
+      await expect(stateService.dispatchGetUserRoles('user-1')).rejects.toThrow('Forbidden');
     });
   });
 
   describe('State Persistence', () => {
     it('should maintain roles state across multiple calls', async () => {
       // First call
-      vi.mocked(mockIdentityService.getRoles).mockResolvedValueOnce({
+      vi.mocked(mockRoleService.getList).mockResolvedValueOnce({
         items: [mockRoles[0]],
         totalCount: 1,
       });
@@ -429,7 +518,7 @@ describe('IdentityStateService', () => {
       expect(stateService.getRoles()).toHaveLength(1);
 
       // Second call with different data
-      vi.mocked(mockIdentityService.getRoles).mockResolvedValueOnce({
+      vi.mocked(mockRoleService.getList).mockResolvedValueOnce({
         items: mockRoles,
         totalCount: 2,
       });
@@ -439,7 +528,7 @@ describe('IdentityStateService', () => {
 
     it('should maintain users state across multiple calls', async () => {
       // First call
-      vi.mocked(mockIdentityService.getUsers).mockResolvedValueOnce({
+      vi.mocked(mockUserService.getList).mockResolvedValueOnce({
         items: [mockUsers[0]],
         totalCount: 1,
       });
@@ -447,7 +536,7 @@ describe('IdentityStateService', () => {
       expect(stateService.getUsers()).toHaveLength(1);
 
       // Second call with different data
-      vi.mocked(mockIdentityService.getUsers).mockResolvedValueOnce({
+      vi.mocked(mockUserService.getList).mockResolvedValueOnce({
         items: mockUsers,
         totalCount: 2,
       });

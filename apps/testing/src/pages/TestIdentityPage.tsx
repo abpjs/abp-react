@@ -2,6 +2,18 @@
  * Test page for @abpjs/identity package
  * Tests: RolesComponent, UsersComponent, useRoles, useUsers, useIdentity hooks
  *
+ * v4.0.0 Updates:
+ * - BREAKING: IdentityService removed (use IdentityRoleService/IdentityUserService instead)
+ * - BREAKING: Legacy types removed: Identity.RoleItem, Identity.UserItem, Identity.RoleSaveRequest,
+ *   Identity.UserSaveRequest, Identity.RoleResponse, Identity.UserResponse, Identity.User
+ * - BREAKING: IdentityUserCreateDto no longer has twoFactorEnabled field
+ * - BREAKING: IdentityRoleCreateDto and IdentityRoleUpdateDto now require extraProperties: {}
+ * - BREAKING: IdentityUserCreateDto/IdentityUserUpdateDto now require extraProperties: {}
+ * - BREAKING: IdentityRoleUpdateDto now requires concurrencyStamp field
+ * - Component interface callbacks now use IdentityRoleDto/IdentityUserDto
+ * - IdentityStateService migrated to use IdentityRoleService/IdentityUserService
+ * - useRoles/useUsers hooks migrated to IdentityRoleService/IdentityUserService
+ *
  * v3.2.0 Updates:
  * - New proxy services: IdentityRoleService, IdentityUserService, IdentityUserLookupService, ProfileService
  * - New proxy models: IdentityRoleDto, IdentityUserDto, ProfileDto, etc.
@@ -14,7 +26,7 @@
  * v3.0.0 Updates:
  * - New config subpackage with eIdentityPolicyNames
  * - Moved eIdentityRouteNames to config/enums (removed Administration key)
- * - Added getUserAssignableRoles() method to IdentityService
+ * - Added getUserAssignableRoles() method to IdentityService (removed in v4.0.0)
  * - configureRoutes helper for route setup
  *
  * v2.0.0 Updates:
@@ -33,22 +45,23 @@ import {
   useIdentity,
   IDENTITY_ROUTE_PATHS,
   IDENTITY_POLICIES,
-  IdentityService,
   eIdentityComponents,
   eIdentityRouteNames,
   // v3.0.0 config exports
   eIdentityPolicyNames,
   configureRoutes,
-  // v3.2.0 proxy services
+  // v3.2.0+ proxy services (IdentityService removed in v4.0.0)
   IdentityRoleService,
   IdentityUserService,
   IdentityUserLookupService,
   ProfileService,
+  // v4.0.0: IdentityStateService now takes two services
+  IdentityStateService,
 } from '@abpjs/identity'
 import type {
   Identity,
   PasswordRule,
-  // v3.2.0 proxy models
+  // v3.2.0+ proxy models
   IdentityRoleDto,
   IdentityUserDto,
   GetIdentityUsersInput,
@@ -353,7 +366,7 @@ function TestRolesHook() {
           />
           <button
             onClick={() => {
-              const newQuery = { ...rolePageQuery, filter: roleFilter || undefined }
+              const newQuery = { ...rolePageQuery, maxResultCount: rolePageQuery.maxResultCount || 10, filter: roleFilter || undefined }
               setRolePageQuery(newQuery)
               fetchRoles(newQuery)
             }}
@@ -365,7 +378,7 @@ function TestRolesHook() {
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button
             onClick={() => {
-              const newQuery = { ...rolePageQuery, skipCount: Math.max(0, (rolePageQuery.skipCount || 0) - 10) }
+              const newQuery = { ...rolePageQuery, maxResultCount: rolePageQuery.maxResultCount || 10, skipCount: Math.max(0, (rolePageQuery.skipCount || 0) - 10) }
               setRolePageQuery(newQuery)
               fetchRoles(newQuery)
             }}
@@ -375,7 +388,7 @@ function TestRolesHook() {
           </button>
           <button
             onClick={() => {
-              const newQuery = { ...rolePageQuery, skipCount: (rolePageQuery.skipCount || 0) + 10 }
+              const newQuery = { ...rolePageQuery, maxResultCount: rolePageQuery.maxResultCount || 10, skipCount: (rolePageQuery.skipCount || 0) + 10 }
               setRolePageQuery(newQuery)
               fetchRoles(newQuery)
             }}
@@ -462,6 +475,7 @@ function TestRolesHook() {
                   name: testRoleName,
                   isDefault: testIsDefault,
                   isPublic: testIsPublic,
+                  extraProperties: {},
                 })
                 if (result.success) {
                   setTestRoleName('')
@@ -509,6 +523,8 @@ function TestRolesHook() {
                   name: testRoleName,
                   isDefault: testIsDefault,
                   isPublic: testIsPublic,
+                  extraProperties: {},
+                  concurrencyStamp: '',
                 })
                 if (result.success) {
                   setTestRoleId('')
@@ -580,7 +596,7 @@ function TestRolesHook() {
                 </tr>
               </thead>
               <tbody>
-                {roles.map((role: Identity.RoleItem) => (
+                {roles.map((role: IdentityRoleDto) => (
                   <tr key={role.id} style={{ borderBottom: '1px solid #222' }}>
                     <td style={{ padding: '8px' }}>{role.name}</td>
                     <td style={{ padding: '8px' }}>{role.isDefault ? 'Yes' : 'No'}</td>
@@ -804,8 +820,8 @@ function TestUsersHook() {
                   name: '',
                   surname: '',
                   phoneNumber: '',
-                  twoFactorEnabled: false,
                   lockoutEnabled: true,
+                  extraProperties: {},
                 })
                 if (result.success) {
                   setTestUserName('')
@@ -874,16 +890,16 @@ function TestUsersHook() {
                 <tr style={{ borderBottom: '1px solid #333' }}>
                   <th style={{ textAlign: 'left', padding: '8px' }}>Username</th>
                   <th style={{ textAlign: 'left', padding: '8px' }}>Email</th>
-                  <th style={{ textAlign: 'left', padding: '8px' }}>Active</th>
+                  <th style={{ textAlign: 'left', padding: '8px' }}>Lockout</th>
                   <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((user: Identity.UserItem) => (
+                {users.map((user: IdentityUserDto) => (
                   <tr key={user.id} style={{ borderBottom: '1px solid #222' }}>
                     <td style={{ padding: '8px' }}>{user.userName}</td>
                     <td style={{ padding: '8px' }}>{user.email}</td>
-                    <td style={{ padding: '8px' }}>{!user.isLockedOut ? 'Yes' : 'No'}</td>
+                    <td style={{ padding: '8px' }}>{user.lockoutEnabled ? 'Yes' : 'No'}</td>
                     <td style={{ padding: '8px' }}>
                       <button
                         onClick={() => setSelectedUser(user)}
@@ -1102,17 +1118,18 @@ function TestApiEndpoints() {
       <div className="test-card">
         <h3>Request/Response Formats</h3>
         <div style={{ marginBottom: '1rem' }}>
-          <h4>Create Role Request:</h4>
+          <h4>Create Role Request (v4.0.0: IdentityRoleCreateDto):</h4>
           <pre style={{  padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`{
   "name": "string",
   "isDefault": boolean,
-  "isPublic": boolean
+  "isPublic": boolean,
+  "extraProperties": {}
 }`}
           </pre>
         </div>
         <div style={{ marginBottom: '1rem' }}>
-          <h4>Create User Request:</h4>
+          <h4>Create User Request (v4.0.0: IdentityUserCreateDto):</h4>
           <pre style={{  padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`{
   "userName": "string",
@@ -1123,12 +1140,12 @@ function TestApiEndpoints() {
   "password": "string",
   "roleNames": ["string"],
   "lockoutEnabled": boolean,
-  "twoFactorEnabled": boolean
+  "extraProperties": {}
 }`}
           </pre>
         </div>
         <div>
-          <h4>User Response:</h4>
+          <h4>User Response (v4.0.0: IdentityUserDto):</h4>
           <pre style={{  padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`{
   "id": "string",
@@ -1139,9 +1156,9 @@ function TestApiEndpoints() {
   "emailConfirmed": boolean,
   "phoneNumber": "string",
   "phoneNumberConfirmed": boolean,
-  "isActive": boolean,
   "lockoutEnabled": boolean,
-  "twoFactorEnabled": boolean
+  "concurrencyStamp": "string",
+  "extraProperties": {}
 }`}
           </pre>
         </div>
@@ -1256,7 +1273,8 @@ function TestIdentityStateService() {
       <div className="test-card">
         <h3>Overview</h3>
         <p style={{ marginBottom: '0.5rem', fontSize: '14px', color: '#888' }}>
-          IdentityStateService provides a stateful wrapper around IdentityService, maintaining
+          IdentityStateService provides a stateful wrapper around IdentityRoleService/IdentityUserService
+          (v4.0.0: migrated from deprecated IdentityService), maintaining
           local state for roles and users. It's the React equivalent of Angular's IdentityStateService
           which wraps NGXS store operations.
         </p>
@@ -1269,13 +1287,14 @@ function TestIdentityStateService() {
       <div className="test-card">
         <h3>Usage Example</h3>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
-{`import { IdentityStateService, IdentityService } from '@abpjs/identity';
+{`import { IdentityStateService, IdentityRoleService, IdentityUserService } from '@abpjs/identity';
 import { RestService } from '@abpjs/core';
 
-// Create service instances
+// Create service instances (v4.0.0: IdentityService removed)
 const rest = new RestService();
-const identityService = new IdentityService(rest);
-const stateService = new IdentityStateService(identityService);
+const roleService = new IdentityRoleService(rest);
+const userService = new IdentityUserService(rest);
+const stateService = new IdentityStateService(roleService, userService);
 
 // Fetch and get roles
 await stateService.dispatchGetRoles();
@@ -1283,14 +1302,15 @@ const roles = stateService.getRoles();
 const totalCount = stateService.getRolesTotalCount();
 
 // Fetch and get users
-await stateService.dispatchGetUsers({ skipCount: 0, maxResultCount: 10 });
+await stateService.dispatchGetUsers({ filter: '', skipCount: 0, maxResultCount: 10 });
 const users = stateService.getUsers();
 
-// Create a role
+// Create a role (v4.0.0: extraProperties required)
 const newRole = await stateService.dispatchCreateRole({
   name: 'NewRole',
   isDefault: false,
   isPublic: true,
+  extraProperties: {},
 });`}
         </pre>
       </div>
@@ -1357,9 +1377,10 @@ function TestComponentInterfaces() {
       <div className="test-card">
         <h3>Identity.RolesComponentInputs</h3>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
-{`interface RolesComponentInputs {
-  readonly onRoleCreated?: (role: RoleItem) => void;
-  readonly onRoleUpdated?: (role: RoleItem) => void;
+{`// v4.0.0: Callbacks now use IdentityRoleDto instead of RoleItem
+interface RolesComponentInputs {
+  readonly onRoleCreated?: (role: IdentityRoleDto) => void;
+  readonly onRoleUpdated?: (role: IdentityRoleDto) => void;
   readonly onRoleDeleted?: (id: string) => void;
 }`}
         </pre>
@@ -1385,9 +1406,10 @@ function TestComponentInterfaces() {
       <div className="test-card">
         <h3>Identity.UsersComponentInputs</h3>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
-{`interface UsersComponentInputs {
-  readonly onUserCreated?: (user: UserItem) => void;
-  readonly onUserUpdated?: (user: UserItem) => void;
+{`// v4.0.0: Callbacks now use IdentityUserDto instead of UserItem
+interface UsersComponentInputs {
+  readonly onUserCreated?: (user: IdentityUserDto) => void;
+  readonly onUserUpdated?: (user: IdentityUserDto) => void;
   readonly onUserDeleted?: (id: string) => void;
   readonly passwordRulesArr?: ('number' | 'small' | 'capital' | 'special')[];
   readonly requiredPasswordLength?: number;
@@ -1548,9 +1570,10 @@ console.log(UsersComponent.componentKey) // "Identity.UsersComponent"`}</pre>
 
 function TestV240Features() {
   const restService = useRestService()
-  const identityService = useMemo(() => new IdentityService(restService), [restService])
+  // v4.0.0: IdentityService removed, use IdentityRoleService instead
+  const roleService = useMemo(() => new IdentityRoleService(restService), [restService])
   const { isAuthenticated } = useAuth()
-  const [allRoles, setAllRoles] = useState<Identity.RoleItem[]>([])
+  const [allRoles, setAllRoles] = useState<IdentityRoleDto[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -1558,8 +1581,9 @@ function TestV240Features() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await identityService.getAllRoles()
-      setAllRoles(response.items)
+      // v4.0.0: IdentityService.getAllRoles() replaced by IdentityRoleService.getAllList()
+      const response = await roleService.getAllList()
+      setAllRoles(response.items ?? [])
     } catch (err: any) {
       setError(err.message || 'Failed to fetch all roles')
     } finally {
@@ -1572,28 +1596,33 @@ function TestV240Features() {
       <h2>What's New in v2.4.0</h2>
 
       <div className="test-card">
-        <h3>IdentityService: apiName property</h3>
-        <p>New property exposing the API name used for REST requests:</p>
-        <pre style={{ fontSize: '12px' }}>{`import { IdentityService } from '@abpjs/identity'
+        <h3>apiName property (v4.0.0: now on IdentityRoleService)</h3>
+        <p>Property exposing the API name used for REST requests:</p>
+        <pre style={{ fontSize: '12px' }}>{`// v4.0.0: IdentityService removed, use IdentityRoleService instead
+import { IdentityRoleService } from '@abpjs/identity'
 
-const service = new IdentityService(restService)
+const service = new IdentityRoleService(restService)
 console.log(service.apiName) // "default"`}</pre>
         <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
-          Current value: <code style={{ color: '#2ecc71' }}>{identityService.apiName}</code>
+          Current value: <code style={{ color: '#2ecc71' }}>{roleService.apiName}</code>
         </p>
         <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
           This property identifies which API configuration to use from your environment settings.
           Default value is <code>"default"</code>.
         </p>
+        <p style={{ fontSize: '0.9rem', color: '#f88', marginTop: '0.5rem' }}>
+          <strong>v4.0.0 Breaking Change:</strong> <code>IdentityService</code> has been removed.
+          Use <code>IdentityRoleService</code> or <code>IdentityUserService</code> instead.
+        </p>
       </div>
 
       <div className="test-card">
-        <h3>IdentityService: getAllRoles() method</h3>
-        <p>New method to fetch all roles without pagination:</p>
-        <pre style={{ fontSize: '12px' }}>{`// Fetch all roles in a single request
-const response = await identityService.getAllRoles()
-console.log(response.items) // All roles
-console.log(response.totalCount) // Total count`}</pre>
+        <h3>getAllList() method (v4.0.0: replaces IdentityService.getAllRoles)</h3>
+        <p>Method to fetch all roles without pagination:</p>
+        <pre style={{ fontSize: '12px' }}>{`// v4.0.0: Use IdentityRoleService.getAllList() instead of IdentityService.getAllRoles()
+const roleService = new IdentityRoleService(restService)
+const response = await roleService.getAllList()
+console.log(response.items) // All roles`}</pre>
 
         <div style={{ marginTop: '1rem' }}>
           <button
@@ -1663,9 +1692,10 @@ console.log(response.totalCount) // Total count`}</pre>
 
 function TestV300Features() {
   const restService = useRestService()
-  const identityService = useMemo(() => new IdentityService(restService), [restService])
+  // v4.0.0: IdentityService removed, use IdentityUserService for assignable roles
+  const userService = useMemo(() => new IdentityUserService(restService), [restService])
   const { isAuthenticated } = useAuth()
-  const [assignableRoles, setAssignableRoles] = useState<Identity.RoleItem[]>([])
+  const [assignableRoles, setAssignableRoles] = useState<IdentityRoleDto[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [routesConfigured, setRoutesConfigured] = useState(false)
@@ -1674,8 +1704,9 @@ function TestV300Features() {
     setIsLoading(true)
     setError(null)
     try {
-      const response = await identityService.getUserAssignableRoles()
-      setAssignableRoles(response.items)
+      // v4.0.0: IdentityService.getUserAssignableRoles() replaced by IdentityUserService.getAssignableRoles()
+      const response = await userService.getAssignableRoles()
+      setAssignableRoles(response.items ?? [])
     } catch (err: any) {
       setError(err.message || 'Failed to fetch assignable roles')
     } finally {
@@ -1765,10 +1796,11 @@ configureRoutes(routes)()`}</pre>
       </div>
 
       <div className="test-card">
-        <h3>getUserAssignableRoles() Method</h3>
-        <p>New method to fetch roles that can be assigned to users:</p>
-        <pre style={{ fontSize: '12px' }}>{`const service = new IdentityService(restService)
-const response = await service.getUserAssignableRoles()
+        <h3>getAssignableRoles() Method (v4.0.0: moved to IdentityUserService)</h3>
+        <p>Method to fetch roles that can be assigned to users:</p>
+        <pre style={{ fontSize: '12px' }}>{`// v4.0.0: IdentityService removed, use IdentityUserService instead
+const userService = new IdentityUserService(restService)
+const response = await userService.getAssignableRoles()
 console.log(response.items) // Assignable roles`}</pre>
 
         <div style={{ marginTop: '1rem' }}>
@@ -1831,6 +1863,7 @@ console.log(response.items) // Assignable roles`}</pre>
         <ul>
           <li><code>eIdentityRouteNames.Administration</code> has been removed. Use <code>AbpUiNavigation::Menu:Administration</code> directly.</li>
           <li><code>Toaster.Status</code> usage replaced with <code>Confirmation.Status</code> in components.</li>
+          <li><strong>(v4.0.0)</strong> <code>IdentityService</code> has been removed entirely. Use <code>IdentityRoleService</code> and <code>IdentityUserService</code> instead.</li>
         </ul>
       </div>
     </div>
@@ -1868,6 +1901,170 @@ function TestV310Features() {
           <li>@abp/ng.theme.shared ~3.0.0 → ~3.1.0</li>
         </ul>
       </div>
+    </div>
+  )
+}
+
+function TestV400Features() {
+  const restService = useRestService()
+  const { isAuthenticated } = useAuth()
+  const roleService = useMemo(() => new IdentityRoleService(restService), [restService])
+  const userService = useMemo(() => new IdentityUserService(restService), [restService])
+  const stateService = useMemo(() => new IdentityStateService(roleService, userService), [roleService, userService])
+
+  const [stateRoles, setStateRoles] = useState<IdentityRoleDto[]>([])
+  const [stateUsers, setStateUsers] = useState<IdentityUserDto[]>([])
+  const [foundUser, setFoundUser] = useState<IdentityUserDto | null>(null)
+  const [lookupInput, setLookupInput] = useState('')
+  const [lookupMode, setLookupMode] = useState<'username' | 'email'>('username')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleStateServiceFetch = async () => {
+    setIsLoading(true)
+    setError(null)
+    try {
+      await stateService.dispatchGetRoles()
+      await stateService.dispatchGetUsers({ filter: '', skipCount: 0, maxResultCount: 10 })
+      setStateRoles(stateService.getRoles())
+      setStateUsers(stateService.getUsers())
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleFindUser = async () => {
+    if (!lookupInput.trim()) return
+    setIsLoading(true)
+    setError(null)
+    setFoundUser(null)
+    try {
+      const result = lookupMode === 'username'
+        ? await userService.findByUsername(lookupInput.trim())
+        : await userService.findByEmail(lookupInput.trim())
+      setFoundUser(result)
+    } catch (err: any) {
+      setError(err.message || `User not found by ${lookupMode}`)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v4.0.0</h2>
+
+      <div className="test-card">
+        <h3>IdentityStateService (v4.0.0 constructor)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          v4.0.0 changed the constructor from <code>IdentityStateService(IdentityService)</code> to{' '}
+          <code>IdentityStateService(IdentityRoleService, IdentityUserService)</code>.
+        </p>
+        <pre style={{ fontSize: '12px' }}>{`const roleService = new IdentityRoleService(restService)
+const userService = new IdentityUserService(restService)
+const stateService = new IdentityStateService(roleService, userService)
+
+await stateService.dispatchGetRoles()
+const roles = stateService.getRoles() // IdentityRoleDto[]
+const count = stateService.getRolesTotalCount() // number`}</pre>
+
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={handleStateServiceFetch} disabled={isLoading || !isAuthenticated}>
+            {isLoading ? 'Loading...' : 'Fetch via IdentityStateService'}
+          </button>
+          {!isAuthenticated && (
+            <span style={{ marginLeft: '0.5rem', color: '#f88', fontSize: '12px' }}>(Login required)</span>
+          )}
+        </div>
+
+        {stateRoles.length > 0 && (
+          <div style={{ marginTop: '0.5rem', fontSize: '12px' }}>
+            <strong>Roles ({stateRoles.length}):</strong>
+            <ul style={{ margin: '0.25rem 0', paddingLeft: '1.5rem' }}>
+              {stateRoles.slice(0, 3).map(role => (
+                <li key={role.id}>{role.name} (concurrencyStamp: {role.concurrencyStamp?.slice(0, 8)}...)</li>
+              ))}
+              {stateRoles.length > 3 && <li>... and {stateRoles.length - 3} more</li>}
+            </ul>
+          </div>
+        )}
+        {stateUsers.length > 0 && (
+          <div style={{ marginTop: '0.5rem', fontSize: '12px' }}>
+            <strong>Users ({stateUsers.length}):</strong>
+            <ul style={{ margin: '0.25rem 0', paddingLeft: '1.5rem' }}>
+              {stateUsers.slice(0, 3).map(user => (
+                <li key={user.id}>{user.userName} ({user.email})</li>
+              ))}
+              {stateUsers.length > 3 && <li>... and {stateUsers.length - 3} more</li>}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>findByUsername / findByEmail (on IdentityUserService)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          v4.0.0: These methods moved from <code>IdentityService</code> (removed) to <code>IdentityUserService</code>.
+        </p>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <input
+              type="radio"
+              name="lookupMode"
+              checked={lookupMode === 'username'}
+              onChange={() => setLookupMode('username')}
+            />
+            By Username
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+            <input
+              type="radio"
+              name="lookupMode"
+              checked={lookupMode === 'email'}
+              onChange={() => setLookupMode('email')}
+            />
+            By Email
+          </label>
+        </div>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <input
+            type="text"
+            placeholder={lookupMode === 'username' ? 'Enter username...' : 'Enter email...'}
+            value={lookupInput}
+            onChange={(e) => setLookupInput(e.target.value)}
+            style={{ padding: '8px', borderRadius: '4px', border: '1px solid #333', flex: 1 }}
+          />
+          <button
+            onClick={handleFindUser}
+            disabled={isLoading || !isAuthenticated || !lookupInput.trim()}
+          >
+            {isLoading ? 'Searching...' : 'Find User'}
+          </button>
+        </div>
+        {foundUser && (
+          <div style={{ marginTop: '0.5rem', fontSize: '12px' }}>
+            <strong>Found:</strong>
+            <pre style={{ padding: '0.5rem', borderRadius: '4px', marginTop: '0.25rem' }}>
+{JSON.stringify({
+  id: foundUser.id,
+  userName: foundUser.userName,
+  email: foundUser.email,
+  name: foundUser.name,
+  surname: foundUser.surname,
+  lockoutEnabled: foundUser.lockoutEnabled,
+}, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
+
+      {error && (
+        <div className="test-card" style={{ borderColor: '#f44' }}>
+          <p style={{ color: '#f88' }}>Error: {error}</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -2243,19 +2440,20 @@ const profileService = new ProfileService(restService)`}</pre>
       </div>
 
       <div className="test-card">
-        <h3>Deprecated Types</h3>
-        <p style={{ color: '#f88' }}>The following legacy types are deprecated in v3.2.0:</p>
+        <h3>Legacy Types (Removed in v4.0.0)</h3>
+        <p style={{ color: '#f88' }}>The following legacy types were deprecated in v3.2.0 and <strong>removed in v4.0.0</strong>:</p>
         <ul style={{ fontSize: '14px' }}>
-          <li><code>Identity.RoleItem</code> - Use <code>IdentityRoleDto</code> instead</li>
-          <li><code>Identity.UserItem</code> - Use <code>IdentityUserDto</code> instead</li>
-          <li><code>Identity.RoleSaveRequest</code> - Use <code>IdentityRoleCreateDto</code> or <code>IdentityRoleUpdateDto</code></li>
-          <li><code>Identity.UserSaveRequest</code> - Use <code>IdentityUserCreateDto</code> or <code>IdentityUserUpdateDto</code></li>
+          <li><s>Identity.RoleItem</s> - Use <code>IdentityRoleDto</code> instead</li>
+          <li><s>Identity.UserItem</s> - Use <code>IdentityUserDto</code> instead</li>
+          <li><s>Identity.RoleSaveRequest</s> - Use <code>IdentityRoleCreateDto</code> or <code>IdentityRoleUpdateDto</code></li>
+          <li><s>Identity.UserSaveRequest</s> - Use <code>IdentityUserCreateDto</code> or <code>IdentityUserUpdateDto</code></li>
+          <li><s>IdentityService</s> - Use <code>IdentityRoleService</code> and <code>IdentityUserService</code> instead</li>
         </ul>
-        <pre style={{ fontSize: '12px', marginTop: '0.5rem' }}>{`// Before (deprecated)
-import type { Identity } from '@abpjs/identity'
-const roles: Identity.RoleItem[] = []
+        <pre style={{ fontSize: '12px', marginTop: '0.5rem' }}>{`// Before (removed in v4.0.0)
+// import type { Identity } from '@abpjs/identity'
+// const roles: Identity.RoleItem[] = []  // ERROR: RoleItem no longer exists
 
-// After (v3.2.0)
+// After (v4.0.0)
 import type { IdentityRoleDto } from '@abpjs/identity'
 const roles: IdentityRoleDto[] = []`}</pre>
       </div>
@@ -2272,11 +2470,73 @@ const roles: IdentityRoleDto[] = []`}</pre>
 export function TestIdentityPage() {
   return (
     <div>
-      <h1>@abpjs/identity Tests v3.2.0</h1>
+      <h1>@abpjs/identity Tests v4.0.0</h1>
       <p>Testing identity management components and hooks for role and user management.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 3.2.0 - New proxy services and typed DTOs</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 4.0.0 - Removed IdentityService and legacy types, proxy services are now primary</p>
 
-      {/* v3.2.0 Features - Highlighted at top */}
+      {/* v4.0.0 Breaking Changes - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #dc2626', paddingTop: '1rem' }}>
+        v4.0.0 Breaking Changes
+      </h2>
+      <div className="test-section">
+        <div className="test-card">
+          <h3>Removed: IdentityService</h3>
+          <p style={{ color: '#f88' }}>
+            <code>IdentityService</code> has been deleted in v4.0.0. Use <code>IdentityRoleService</code> and <code>IdentityUserService</code> instead.
+          </p>
+          <pre style={{ fontSize: '12px' }}>{`// Before (v3.x)
+// import { IdentityService } from '@abpjs/identity'
+// const service = new IdentityService(restService)
+
+// After (v4.0.0)
+import { IdentityRoleService, IdentityUserService } from '@abpjs/identity'
+const roleService = new IdentityRoleService(restService)
+const userService = new IdentityUserService(restService)`}</pre>
+        </div>
+        <div className="test-card">
+          <h3>Removed: Legacy Types</h3>
+          <p style={{ color: '#f88' }}>
+            The following types have been removed: <code>Identity.RoleItem</code>, <code>Identity.UserItem</code>,{' '}
+            <code>Identity.RoleSaveRequest</code>, <code>Identity.UserSaveRequest</code>,{' '}
+            <code>Identity.RoleResponse</code>, <code>Identity.UserResponse</code>, <code>Identity.User</code>.
+          </p>
+          <p style={{ marginTop: '0.5rem' }}>Use proxy DTOs instead: <code>IdentityRoleDto</code>, <code>IdentityUserDto</code>, etc.</p>
+        </div>
+        <div className="test-card">
+          <h3>Required: extraProperties in DTOs</h3>
+          <p>All create/update DTOs now require <code>extraProperties: {'{}'}</code> field (from <code>ExtensibleObject</code>).</p>
+          <pre style={{ fontSize: '12px' }}>{`// IdentityRoleCreateDto, IdentityRoleUpdateDto,
+// IdentityUserCreateDto, IdentityUserUpdateDto
+// all require extraProperties: {}
+
+const createRole: IdentityRoleCreateDto = {
+  name: 'Admin',
+  isDefault: false,
+  isPublic: true,
+  extraProperties: {},  // Required in v4.0.0
+}`}</pre>
+        </div>
+        <div className="test-card">
+          <h3>Removed: twoFactorEnabled from IdentityUserCreateDto</h3>
+          <p style={{ color: '#f88' }}>
+            The <code>twoFactorEnabled</code> field has been removed from <code>IdentityUserCreateDto</code>.
+          </p>
+        </div>
+        <div className="test-card">
+          <h3>Required: concurrencyStamp in IdentityRoleUpdateDto</h3>
+          <p>
+            <code>IdentityRoleUpdateDto</code> now requires a <code>concurrencyStamp</code> field for optimistic concurrency.
+          </p>
+        </div>
+      </div>
+
+      {/* v4.0.0 Interactive Demos */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #dc2626', paddingTop: '1rem' }}>
+        v4.0.0 Interactive Demos
+      </h2>
+      <TestV400Features />
+
+      {/* v3.2.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #9333ea', paddingTop: '1rem' }}>
         v3.2.0 New Features
       </h2>
