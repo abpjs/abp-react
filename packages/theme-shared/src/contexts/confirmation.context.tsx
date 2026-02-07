@@ -8,7 +8,7 @@ import React, {
   useEffect,
   type ReactNode,
 } from 'react';
-import type { Config } from '@abpjs/core';
+import type { LocalizationParam } from '@abpjs/core';
 import { Confirmation } from '../models';
 
 /**
@@ -22,7 +22,7 @@ type ConfirmationSubscriber = (data: Confirmation.DialogData | null) => void;
  * @since 2.0.0 - Major changes:
  * - No longer extends AbstractToaster
  * - Added confirmation$ ReplaySubject pattern via subscribe method
- * - Now accepts Config.LocalizationParam for message and title
+ * - Now accepts LocalizationParam for message and title
  *
  * @since 2.1.0 - Changed from Toaster.Status to Confirmation.Status
  */
@@ -34,7 +34,7 @@ export interface ConfirmationService {
    * @param options Confirmation options
    * @returns Promise resolving to user's response status
    */
-  info(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
+  info(message: LocalizationParam, title?: LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
   /**
    * Show a success confirmation
    * @param message Message content (supports localization)
@@ -42,7 +42,7 @@ export interface ConfirmationService {
    * @param options Confirmation options
    * @returns Promise resolving to user's response status
    */
-  success(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
+  success(message: LocalizationParam, title?: LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
   /**
    * Show a warning confirmation
    * @param message Message content (supports localization)
@@ -50,7 +50,7 @@ export interface ConfirmationService {
    * @param options Confirmation options
    * @returns Promise resolving to user's response status
    */
-  warn(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
+  warn(message: LocalizationParam, title?: LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
   /**
    * Show an error confirmation
    * @param message Message content (supports localization)
@@ -58,7 +58,7 @@ export interface ConfirmationService {
    * @param options Confirmation options
    * @returns Promise resolving to user's response status
    */
-  error(message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
+  error(message: LocalizationParam, title?: LocalizationParam, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
   /**
    * Show a confirmation with specified severity
    * @param message Message content (supports localization)
@@ -69,7 +69,7 @@ export interface ConfirmationService {
    * @since 2.0.0
    * @since 2.1.0 - Uses Confirmation.Severity instead of Toaster.Severity
    */
-  show(message: Config.LocalizationParam, title?: Config.LocalizationParam, severity?: Confirmation.Severity, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
+  show(message: LocalizationParam, title?: LocalizationParam, severity?: Confirmation.Severity, options?: Partial<Confirmation.Options>): Promise<Confirmation.Status>;
   /**
    * Clear the current confirmation
    * @param status Optional status to resolve with (default: dismiss)
@@ -122,7 +122,7 @@ export interface ConfirmationProviderProps {
  * Wrap your app with this provider to enable confirmation dialogs.
  *
  * @since 2.0.0 - Major changes:
- * - Now accepts Config.LocalizationParam for message and title
+ * - Now accepts LocalizationParam for message and title
  * - Added subscribe method for observable pattern
  * - Added listenToEscape method
  * - Uses Confirmation.DialogData structure
@@ -176,8 +176,8 @@ export function ConfirmationProvider({ children }: ConfirmationProviderProps): R
 
   const show = useCallback(
     (
-      message: Config.LocalizationParam,
-      title?: Config.LocalizationParam,
+      message: LocalizationParam,
+      title?: LocalizationParam,
       severity: Confirmation.Severity = 'neutral',
       options: Partial<Confirmation.Options> = {}
     ): Promise<Confirmation.Status> => {
@@ -208,25 +208,25 @@ export function ConfirmationProvider({ children }: ConfirmationProviderProps): R
   );
 
   const info = useCallback(
-    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>) =>
+    (message: LocalizationParam, title?: LocalizationParam, options?: Partial<Confirmation.Options>) =>
       show(message, title, 'info', options),
     [show]
   );
 
   const success = useCallback(
-    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>) =>
+    (message: LocalizationParam, title?: LocalizationParam, options?: Partial<Confirmation.Options>) =>
       show(message, title, 'success', options),
     [show]
   );
 
   const warn = useCallback(
-    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>) =>
+    (message: LocalizationParam, title?: LocalizationParam, options?: Partial<Confirmation.Options>) =>
       show(message, title, 'warning', options),
     [show]
   );
 
   const error = useCallback(
-    (message: Config.LocalizationParam, title?: Config.LocalizationParam, options?: Partial<Confirmation.Options>) =>
+    (message: LocalizationParam, title?: LocalizationParam, options?: Partial<Confirmation.Options>) =>
       show(message, title, 'error', options),
     [show]
   );
@@ -279,7 +279,7 @@ export function ConfirmationProvider({ children }: ConfirmationProviderProps): R
  * @returns ConfirmationService with methods to show confirmation dialogs
  * @throws Error if used outside of ConfirmationProvider
  *
- * @since 2.0.0 - Service now accepts Config.LocalizationParam
+ * @since 2.0.0 - Service now accepts LocalizationParam
  * @since 2.1.0 - Uses Confirmation.Status instead of Toaster.Status
  *
  * @example

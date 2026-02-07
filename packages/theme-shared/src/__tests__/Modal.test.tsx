@@ -226,6 +226,70 @@ describe('Modal', () => {
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
   });
+
+  // v4.0.0 - suppressUnsavedChangesWarning prop
+  describe('suppressUnsavedChangesWarning (v4.0.0)', () => {
+    it('should accept suppressUnsavedChangesWarning prop as true', () => {
+      render(
+        <TestWrapper>
+          <Modal visible={true} suppressUnsavedChangesWarning={true}>
+            <p>Modal with suppressed warning</p>
+          </Modal>
+        </TestWrapper>
+      );
+
+      expect(screen.getByText('Modal with suppressed warning')).toBeInTheDocument();
+    });
+
+    it('should accept suppressUnsavedChangesWarning prop as false', () => {
+      render(
+        <TestWrapper>
+          <Modal visible={true} suppressUnsavedChangesWarning={false}>
+            <p>Modal with warning enabled</p>
+          </Modal>
+        </TestWrapper>
+      );
+
+      expect(screen.getByText('Modal with warning enabled')).toBeInTheDocument();
+    });
+
+    it('should default to undefined when suppressUnsavedChangesWarning is not provided', () => {
+      render(
+        <TestWrapper>
+          <Modal visible={true}>
+            <p>Modal without prop</p>
+          </Modal>
+        </TestWrapper>
+      );
+
+      // Modal renders normally without the prop
+      expect(screen.getByText('Modal without prop')).toBeInTheDocument();
+    });
+
+    it('should work with other modal props combined', () => {
+      const onVisibleChange = vi.fn();
+
+      render(
+        <TestWrapper>
+          <Modal
+            visible={true}
+            onVisibleChange={onVisibleChange}
+            header="Form Modal"
+            size="lg"
+            busy={false}
+            suppressUnsavedChangesWarning={true}
+            footer={<button>Submit</button>}
+          >
+            <p>Form content</p>
+          </Modal>
+        </TestWrapper>
+      );
+
+      expect(screen.getByText('Form Modal')).toBeInTheDocument();
+      expect(screen.getByText('Form content')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Submit' })).toBeInTheDocument();
+    });
+  });
 });
 
 describe('AbpModalHeader', () => {

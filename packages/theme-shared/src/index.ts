@@ -2,10 +2,25 @@
  * @abpjs/theme-shared
  *
  * ABP Framework Theme Shared components for React.
- * Translated from @abp/ng.theme.shared v3.2.0
+ * Translated from @abp/ng.theme.shared v4.0.0
  *
  * This package provides shared UI components, services, and utilities
  * for theme/modal management in ABP Framework React applications.
+ *
+ * Changes in v4.0.0:
+ * - Toaster.Toast now uses LocalizationParam instead of Config.LocalizationParam
+ * - Added Toaster.ToasterId type (string | number)
+ * - Added Toaster.Service interface (contract for toaster implementations)
+ * - Added ToasterContract type (Strict<ToasterService, Toaster.Service>)
+ * - Confirmation.Options: cancelText/yesText now use LocalizationParam
+ * - ConfirmationService/ToasterService: parameters use LocalizationParam
+ * - ToasterService methods now return Toaster.ToasterId
+ * - ToasterService.clear parameter renamed from key to containerKey
+ * - Added SUPPRESS_UNSAVED_CHANGES_WARNING token and context
+ * - Added suppressUnsavedChangesWarning prop to Modal component
+ * - Enhanced form validation styles with error icon SVG
+ * - Added typeahead dropdown styles
+ * - Dependency updates to @abp/ng.core v4.0.0
  *
  * Changes in v3.2.0:
  * - Added .datatable-scroll CSS styles for ngx-datatable horizontal scroll fix
