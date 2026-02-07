@@ -65,6 +65,13 @@ export interface ModalProps {
    * @default true
    */
   preventScroll?: boolean;
+  /**
+   * Whether to suppress the unsaved changes warning when closing the modal.
+   * When true, the modal will close without prompting for unsaved changes.
+   * @default false
+   * @since 4.0.0
+   */
+  suppressUnsavedChangesWarning?: boolean;
 }
 
 /**

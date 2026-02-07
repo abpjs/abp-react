@@ -70,6 +70,148 @@ describe('Toaster namespace', () => {
       expect(toast.message).toBe('Test message');
       expect(toast.title).toBeUndefined();
     });
+
+    // v4.0.0 - Toast.message and Toast.title now use LocalizationParam
+    it('should accept LocalizationWithDefault for Toast message (v4.0.0)', () => {
+      const toast: Toaster.Toast = {
+        message: { key: 'Test::Message', defaultValue: 'Default message' },
+        title: { key: 'Test::Title', defaultValue: 'Default title' },
+      };
+
+      expect(toast.message).toEqual({ key: 'Test::Message', defaultValue: 'Default message' });
+      expect(toast.title).toEqual({ key: 'Test::Title', defaultValue: 'Default title' });
+    });
+
+    it('should accept string for Toast message (v4.0.0 backward compatibility)', () => {
+      const toast: Toaster.Toast = {
+        message: 'Simple string message',
+        title: 'Simple string title',
+      };
+
+      expect(toast.message).toBe('Simple string message');
+      expect(toast.title).toBe('Simple string title');
+    });
+  });
+
+  // v4.0.0 - ToasterId type
+  describe('ToasterId (v4.0.0)', () => {
+    it('should accept string value', () => {
+      const id: Toaster.ToasterId = 'toast-123';
+      expect(id).toBe('toast-123');
+    });
+
+    it('should accept number value', () => {
+      const id: Toaster.ToasterId = 42;
+      expect(id).toBe(42);
+    });
+
+    it('should accept zero', () => {
+      const id: Toaster.ToasterId = 0;
+      expect(id).toBe(0);
+    });
+
+    it('should accept empty string', () => {
+      const id: Toaster.ToasterId = '';
+      expect(id).toBe('');
+    });
+
+    it('should accept negative number', () => {
+      const id: Toaster.ToasterId = -1;
+      expect(id).toBe(-1);
+    });
+  });
+
+  // v4.0.0 - Service interface
+  describe('Service interface (v4.0.0)', () => {
+    it('should accept an object implementing the Service interface', () => {
+      const service: Toaster.Service = {
+        show: (_message, _title, _severity, _options) => 1,
+        remove: (_id) => {},
+        clear: (_containerKey) => {},
+        info: (_message, _title, _options) => 2,
+        success: (_message, _title, _options) => 3,
+        warn: (_message, _title, _options) => 4,
+        error: (_message, _title, _options) => 5,
+      };
+
+      expect(service).toBeDefined();
+      expect(typeof service.show).toBe('function');
+      expect(typeof service.remove).toBe('function');
+      expect(typeof service.clear).toBe('function');
+      expect(typeof service.info).toBe('function');
+      expect(typeof service.success).toBe('function');
+      expect(typeof service.warn).toBe('function');
+      expect(typeof service.error).toBe('function');
+    });
+
+    it('should have show method that returns ToasterId', () => {
+      const service: Toaster.Service = {
+        show: () => 'toast-id',
+        remove: () => {},
+        clear: () => {},
+        info: () => 1,
+        success: () => 2,
+        warn: () => 3,
+        error: () => 4,
+      };
+
+      const id = service.show('msg', 'title', 'info', {});
+      expect(id).toBe('toast-id');
+    });
+
+    it('should have convenience methods that return ToasterId', () => {
+      let counter = 0;
+      const service: Toaster.Service = {
+        show: () => ++counter,
+        remove: () => {},
+        clear: () => {},
+        info: () => ++counter,
+        success: () => ++counter,
+        warn: () => ++counter,
+        error: () => ++counter,
+      };
+
+      expect(typeof service.info('msg')).toBe('number');
+      expect(typeof service.success('msg')).toBe('number');
+      expect(typeof service.warn('msg')).toBe('number');
+      expect(typeof service.error('msg')).toBe('number');
+    });
+
+    it('should have clear method with optional containerKey', () => {
+      const clearCalls: (string | undefined)[] = [];
+      const service: Toaster.Service = {
+        show: () => 1,
+        remove: () => {},
+        clear: (containerKey) => { clearCalls.push(containerKey); },
+        info: () => 1,
+        success: () => 1,
+        warn: () => 1,
+        error: () => 1,
+      };
+
+      service.clear();
+      service.clear('my-container');
+
+      expect(clearCalls).toEqual([undefined, 'my-container']);
+    });
+
+    it('should have remove method that accepts number id', () => {
+      const removedIds: number[] = [];
+      const service: Toaster.Service = {
+        show: () => 1,
+        remove: (id) => { removedIds.push(id); },
+        clear: () => {},
+        info: () => 1,
+        success: () => 1,
+        warn: () => 1,
+        error: () => 1,
+      };
+
+      service.remove(42);
+      service.remove(0);
+
+      expect(removedIds).toEqual([42, 0]);
+    });
   });
 });
 
@@ -193,6 +335,41 @@ describe('Confirmation namespace', () => {
 
       expect(options.hideCancelBtn).toBe(true);
       expect(options.hideYesBtn).toBe(true);
+    });
+
+    // v4.0.0 - cancelText/yesText now use LocalizationParam (same as LocalizationWithDefault | string)
+    it('should accept string cancelText and yesText (v4.0.0)', () => {
+      const options: Confirmation.Options = {
+        cancelText: 'Cancel',
+        yesText: 'Confirm',
+      };
+
+      expect(options.cancelText).toBe('Cancel');
+      expect(options.yesText).toBe('Confirm');
+    });
+
+    it('should accept undefined cancelText and yesText (v4.0.0)', () => {
+      const options: Confirmation.Options = {};
+
+      expect(options.cancelText).toBeUndefined();
+      expect(options.yesText).toBeUndefined();
+    });
+
+    it('should accept full options with LocalizationParam texts (v4.0.0)', () => {
+      const options: Confirmation.Options = {
+        id: 'confirm-v4',
+        dismissible: true,
+        hideCancelBtn: false,
+        hideYesBtn: false,
+        cancelText: { key: 'AbpUi::Cancel', defaultValue: 'Cancel' },
+        yesText: { key: 'AbpUi::Yes', defaultValue: 'Yes' },
+        messageLocalizationParams: ['entity'],
+        titleLocalizationParams: [],
+      };
+
+      expect(options.id).toBe('confirm-v4');
+      expect(options.cancelText).toEqual({ key: 'AbpUi::Cancel', defaultValue: 'Cancel' });
+      expect(options.yesText).toEqual({ key: 'AbpUi::Yes', defaultValue: 'Yes' });
     });
   });
 

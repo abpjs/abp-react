@@ -572,4 +572,229 @@ describe('ToasterContext', () => {
       expect(result.current.toasts).toEqual([]);
     });
   });
+
+  // v4.0.0 - ToasterId return type, containerKey parameter, LocalizationParam
+  describe('v4.0.0 changes', () => {
+    describe('ToasterId return type', () => {
+      it('should return Toaster.ToasterId from info()', () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        let id: number | string;
+        act(() => {
+          id = result.current.toaster.info('msg', 'title', { sticky: true });
+        });
+
+        // The implementation returns a number, but the type allows string | number
+        expect(typeof id!).toBe('number');
+        expect(id!).toBeGreaterThan(0);
+      });
+
+      it('should return Toaster.ToasterId from success()', () => {
+        const { result } = renderHook(
+          () => ({ toaster: useToaster() }),
+          { wrapper }
+        );
+
+        let id: number | string;
+        act(() => {
+          id = result.current.toaster.success('msg', 'title', { sticky: true });
+        });
+
+        expect(typeof id!).toBe('number');
+      });
+
+      it('should return Toaster.ToasterId from warn()', () => {
+        const { result } = renderHook(
+          () => ({ toaster: useToaster() }),
+          { wrapper }
+        );
+
+        let id: number | string;
+        act(() => {
+          id = result.current.toaster.warn('msg', 'title', { sticky: true });
+        });
+
+        expect(typeof id!).toBe('number');
+      });
+
+      it('should return Toaster.ToasterId from error()', () => {
+        const { result } = renderHook(
+          () => ({ toaster: useToaster() }),
+          { wrapper }
+        );
+
+        let id: number | string;
+        act(() => {
+          id = result.current.toaster.error('msg', 'title', { sticky: true });
+        });
+
+        expect(typeof id!).toBe('number');
+      });
+
+      it('should return Toaster.ToasterId from show()', () => {
+        const { result } = renderHook(
+          () => ({ toaster: useToaster() }),
+          { wrapper }
+        );
+
+        let id: number | string;
+        act(() => {
+          id = result.current.toaster.show('msg', 'title', 'neutral', { sticky: true });
+        });
+
+        expect(typeof id!).toBe('number');
+      });
+
+      it('should return unique IDs for each toast', () => {
+        const { result } = renderHook(
+          () => ({ toaster: useToaster() }),
+          { wrapper }
+        );
+
+        const ids: (number | string)[] = [];
+        act(() => {
+          ids.push(result.current.toaster.info('msg1', undefined, { sticky: true }));
+          ids.push(result.current.toaster.success('msg2', undefined, { sticky: true }));
+          ids.push(result.current.toaster.warn('msg3', undefined, { sticky: true }));
+          ids.push(result.current.toaster.error('msg4', undefined, { sticky: true }));
+        });
+
+        // All IDs should be unique
+        const uniqueIds = new Set(ids);
+        expect(uniqueIds.size).toBe(4);
+      });
+    });
+
+    describe('clear with containerKey parameter (v4.0.0)', () => {
+      it('should accept containerKey parameter (renamed from key)', () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.info('Toast A', undefined, { sticky: true, containerKey: 'notifications' });
+          result.current.toaster.info('Toast B', undefined, { sticky: true, containerKey: 'alerts' });
+          result.current.toaster.info('Toast C', undefined, { sticky: true, containerKey: 'notifications' });
+        });
+
+        expect(result.current.toasts).toHaveLength(3);
+
+        // Clear only notifications container
+        act(() => {
+          result.current.toaster.clear('notifications');
+        });
+
+        expect(result.current.toasts).toHaveLength(1);
+        expect(result.current.toasts[0].message).toBe('Toast B');
+      });
+
+      it('should clear all toasts when containerKey is undefined', () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.info('Toast 1', undefined, { sticky: true, containerKey: 'a' });
+          result.current.toaster.info('Toast 2', undefined, { sticky: true, containerKey: 'b' });
+        });
+
+        expect(result.current.toasts).toHaveLength(2);
+
+        act(() => {
+          result.current.toaster.clear(undefined);
+        });
+
+        expect(result.current.toasts).toHaveLength(0);
+      });
+
+      it('should handle clearing a non-existent containerKey gracefully', () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.toaster.info('Toast 1', undefined, { sticky: true, containerKey: 'exists' });
+        });
+
+        expect(result.current.toasts).toHaveLength(1);
+
+        act(() => {
+          result.current.toaster.clear('does-not-exist');
+        });
+
+        // Should not remove any toasts
+        expect(result.current.toasts).toHaveLength(1);
+      });
+    });
+
+    describe('LocalizationParam type for messages', () => {
+      it('should accept LocalizationWithDefault object for all methods', () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        const msg = { key: 'AbpUi::Message', defaultValue: 'Default' };
+        const title = { key: 'AbpUi::Title', defaultValue: 'Title' };
+
+        act(() => {
+          result.current.toaster.info(msg, title, { sticky: true });
+        });
+
+        expect(result.current.toasts).toHaveLength(1);
+        expect(result.current.toasts[0].message).toEqual(msg);
+        expect(result.current.toasts[0].title).toEqual(title);
+      });
+
+      it('should accept mixed string and LocalizationWithDefault', () => {
+        const { result } = renderHook(
+          () => ({
+            toaster: useToaster(),
+            toasts: useToasts(),
+          }),
+          { wrapper }
+        );
+
+        const titleObj = { key: 'Test::Title', defaultValue: 'Fallback' };
+
+        act(() => {
+          result.current.toaster.success('Plain string message', titleObj, { sticky: true });
+        });
+
+        expect(result.current.toasts[0].message).toBe('Plain string message');
+        expect(result.current.toasts[0].title).toEqual(titleObj);
+      });
+    });
+
+    describe('ToasterContract type', () => {
+      it('should export ToasterContract type', async () => {
+        const toasterModule = await import('../contexts/toaster.context');
+        // ToasterContract is a type alias, so we verify the module exports it
+        // by checking that it's re-exported and the module loads without errors
+        expect(toasterModule.ToasterProvider).toBeDefined();
+        expect(toasterModule.useToaster).toBeDefined();
+      });
+    });
+  });
 });

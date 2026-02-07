@@ -656,4 +656,192 @@ describe('ConfirmationContext', () => {
       expect(typeof result.current.respond).toBe('function');
     });
   });
+
+  // v4.0.0 - LocalizationParam type for message/title, cancelText/yesText
+  describe('v4.0.0 changes', () => {
+    describe('LocalizationParam for cancelText and yesText', () => {
+      it('should store string cancelText and yesText in options', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.confirmation.warn('Delete?', 'Confirm', {
+            cancelText: 'No, keep it',
+            yesText: 'Yes, delete',
+          });
+        });
+
+        expect(result.current.state.confirmation?.options?.cancelText).toBe('No, keep it');
+        expect(result.current.state.confirmation?.options?.yesText).toBe('Yes, delete');
+      });
+
+      it('should store LocalizationWithDefault cancelText and yesText in options', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        const cancelParam = { key: 'AbpUi::Cancel', defaultValue: 'Cancel' };
+        const yesParam = { key: 'AbpUi::PleaseConfirm', defaultValue: 'Confirm' };
+
+        act(() => {
+          result.current.confirmation.warn('Delete?', 'Confirm', {
+            cancelText: cancelParam,
+            yesText: yesParam,
+          });
+        });
+
+        expect(result.current.state.confirmation?.options?.cancelText).toEqual(cancelParam);
+        expect(result.current.state.confirmation?.options?.yesText).toEqual(yesParam);
+      });
+    });
+
+    describe('LocalizationParam for message and title', () => {
+      it('should accept LocalizationWithDefault for all severity methods', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        const msg = { key: 'Test::ConfirmDelete', defaultValue: 'Are you sure?' };
+        const title = { key: 'Test::Warning', defaultValue: 'Warning' };
+
+        // Test with info
+        act(() => {
+          result.current.confirmation.info(msg, title);
+        });
+        expect(result.current.state.confirmation?.message).toEqual(msg);
+        expect(result.current.state.confirmation?.title).toEqual(title);
+
+        // Clear and test with success
+        act(() => {
+          result.current.state.respond(Confirmation.Status.dismiss);
+        });
+        act(() => {
+          result.current.confirmation.success(msg, title);
+        });
+        expect(result.current.state.confirmation?.message).toEqual(msg);
+
+        // Clear and test with warn
+        act(() => {
+          result.current.state.respond(Confirmation.Status.dismiss);
+        });
+        act(() => {
+          result.current.confirmation.warn(msg, title);
+        });
+        expect(result.current.state.confirmation?.message).toEqual(msg);
+
+        // Clear and test with error
+        act(() => {
+          result.current.state.respond(Confirmation.Status.dismiss);
+        });
+        act(() => {
+          result.current.confirmation.error(msg, title);
+        });
+        expect(result.current.state.confirmation?.message).toEqual(msg);
+      });
+
+      it('should accept mixed string and LocalizationWithDefault', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        const titleObj = { key: 'Test::Title', defaultValue: 'Default Title' };
+
+        act(() => {
+          result.current.confirmation.show('Plain text message', titleObj, 'info');
+        });
+
+        expect(result.current.state.confirmation?.message).toBe('Plain text message');
+        expect(result.current.state.confirmation?.title).toEqual(titleObj);
+      });
+
+      it('should accept undefined title with LocalizationParam message', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        const msg = { key: 'Test::NoTitle', defaultValue: 'No title needed' };
+
+        act(() => {
+          result.current.confirmation.info(msg);
+        });
+
+        expect(result.current.state.confirmation?.message).toEqual(msg);
+        expect(result.current.state.confirmation?.title).toBeUndefined();
+      });
+    });
+
+    describe('edge cases', () => {
+      it('should handle empty string message and title', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        act(() => {
+          result.current.confirmation.info('', '');
+        });
+
+        expect(result.current.state.confirmation?.message).toBe('');
+        expect(result.current.state.confirmation?.title).toBe('');
+      });
+
+      it('should handle options with all v4.0.0 fields together', async () => {
+        const { result } = renderHook(
+          () => ({
+            confirmation: useConfirmation(),
+            state: useConfirmationState(),
+          }),
+          { wrapper }
+        );
+
+        const msg = { key: 'Test::Complex', defaultValue: 'Complex' };
+        const title = { key: 'Test::ComplexTitle', defaultValue: 'Complex Title' };
+
+        act(() => {
+          result.current.confirmation.warn(msg, title, {
+            id: 'v4-test',
+            dismissible: true,
+            cancelText: { key: 'AbpUi::Cancel', defaultValue: 'Cancel' },
+            yesText: { key: 'AbpUi::Confirm', defaultValue: 'Confirm' },
+            hideCancelBtn: false,
+            hideYesBtn: false,
+            messageLocalizationParams: ['param1'],
+            titleLocalizationParams: ['param2'],
+          });
+        });
+
+        const conf = result.current.state.confirmation;
+        expect(conf?.message).toEqual(msg);
+        expect(conf?.title).toEqual(title);
+        expect(conf?.severity).toBe('warning');
+        expect(conf?.options?.cancelText).toEqual({ key: 'AbpUi::Cancel', defaultValue: 'Cancel' });
+        expect(conf?.options?.yesText).toEqual({ key: 'AbpUi::Confirm', defaultValue: 'Confirm' });
+        expect(conf?.options?.messageLocalizationParams).toEqual(['param1']);
+      });
+    });
+  });
 });

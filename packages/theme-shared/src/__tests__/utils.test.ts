@@ -191,6 +191,64 @@ describe('DEFAULT_STYLES (constants/styles.ts)', () => {
       expect(datatableScrollIndex).toBeLessThan(uiTableIndex);
     });
   });
+
+  // v4.0.0 - Enhanced validation styles and new CSS rules
+  describe('enhanced validation styles (v4.0.0)', () => {
+    it('should contain .is-invalid .form-control rule', () => {
+      expect(DEFAULT_STYLES).toContain('.is-invalid .form-control');
+    });
+
+    it('should have border-color for invalid form controls', () => {
+      expect(DEFAULT_STYLES).toContain('border-color: #dc3545');
+    });
+
+    it('should have border-style solid important for invalid form controls', () => {
+      expect(DEFAULT_STYLES).toContain('border-style: solid !important');
+    });
+
+    it('should have error icon SVG background-image', () => {
+      expect(DEFAULT_STYLES).toContain('background-image: url(data:image/svg+xml');
+      // Should contain the SVG with the error icon
+      expect(DEFAULT_STYLES).toContain('%23dc3545');
+    });
+
+    it('should have background-repeat no-repeat for error icon', () => {
+      expect(DEFAULT_STYLES).toContain('background-repeat: no-repeat');
+    });
+
+    it('should have padding-right for error icon space', () => {
+      expect(DEFAULT_STYLES).toContain("padding-right: calc(1.5em + .75rem)");
+    });
+
+    it('should have background-position for error icon', () => {
+      expect(DEFAULT_STYLES).toContain('background-position: right');
+    });
+
+    it('should have background-size for error icon', () => {
+      expect(DEFAULT_STYLES).toContain('background-size: calc');
+    });
+  });
+
+  describe('ngx-datatable material styles (v4.0.0)', () => {
+    it('should contain .ngx-datatable.material rule', () => {
+      expect(DEFAULT_STYLES).toContain('.ngx-datatable.material');
+    });
+
+    it('should remove box-shadow from ngx-datatable material', () => {
+      expect(DEFAULT_STYLES).toContain('box-shadow: none');
+    });
+  });
+
+  describe('typeahead styles (v4.0.0)', () => {
+    it('should contain .abp-typeahead-window rule', () => {
+      expect(DEFAULT_STYLES).toContain('.abp-typeahead-window');
+    });
+
+    it('should set typeahead window to full width', () => {
+      // Verify the typeahead has width: 100%
+      expect(DEFAULT_STYLES).toMatch(/\.abp-typeahead-window\s*\{[^}]*width:\s*100%/);
+    });
+  });
 });
 
 describe('BOOTSTRAP constant (v2.9.0)', () => {
