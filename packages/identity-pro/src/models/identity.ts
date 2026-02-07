@@ -16,6 +16,13 @@ import { OrganizationUnitWithDetailsDto } from './organization-unit-with-details
  * @since 0.7.2
  * @updated 2.9.0 - Added organization units support
  * @updated 3.1.0 - Added UserLockDurationType enum
+ * @updated 3.2.0 - Types deprecated, use proxy/identity/models instead
+ * @deprecated Types in this namespace are deprecated and will be removed in v4.0.
+ * Use the new typed DTOs from proxy/identity/models instead:
+ * - RoleItem -> IdentityRoleDto
+ * - UserItem -> IdentityUserDto
+ * - ClaimType -> ClaimTypeDto
+ * - etc.
  */
 export namespace Identity {
   /**
@@ -39,11 +46,13 @@ export namespace Identity {
 
   /**
    * Paginated response for roles
+   * @deprecated Use PagedResultDto<IdentityRoleDto> from proxy/identity/models instead
    */
   export type RoleResponse = ABP.PagedResponse<RoleItem>;
 
   /**
    * Request payload for creating/updating a role
+   * @deprecated Use IdentityRoleCreateDto or IdentityRoleUpdateDto from proxy/identity/models instead
    */
   export interface RoleSaveRequest {
     name: string;
@@ -53,6 +62,7 @@ export namespace Identity {
 
   /**
    * Role item returned from the API
+   * @deprecated Use IdentityRoleDto from proxy/identity/models instead
    */
   export interface RoleItem extends RoleSaveRequest {
     isStatic: boolean;
@@ -62,11 +72,13 @@ export namespace Identity {
 
   /**
    * Paginated response for users
+   * @deprecated Use PagedResultDto<IdentityUserDto> from proxy/identity/models instead
    */
   export type UserResponse = ABP.PagedResponse<UserItem>;
 
   /**
    * Base user properties
+   * @deprecated Use IdentityUserCreateOrUpdateDtoBase from proxy/identity/models instead
    */
   export interface User {
     userName: string;
@@ -80,6 +92,7 @@ export namespace Identity {
 
   /**
    * User item returned from the API
+   * @deprecated Use IdentityUserDto from proxy/identity/models instead
    */
   export interface UserItem extends User {
     tenantId: string;
@@ -93,6 +106,7 @@ export namespace Identity {
   /**
    * Request payload for creating/updating a user
    * @updated 2.9.0 - Added organizationUnitIds
+   * @deprecated Use IdentityUserCreateDto or IdentityUserUpdateDto from proxy/identity/models instead
    */
   export interface UserSaveRequest extends User {
     password: string;
@@ -117,6 +131,7 @@ export namespace Identity {
   /**
    * Simple claim type name for dropdowns
    * Pro feature since 0.7.2
+   * @deprecated Use ClaimTypeDto from proxy/identity/models instead
    */
   export interface ClaimTypeName {
     name: string;
@@ -125,6 +140,7 @@ export namespace Identity {
   /**
    * Full claim type definition
    * Pro feature since 0.7.2
+   * @deprecated Use ClaimTypeDto from proxy/identity/models instead
    */
   export interface ClaimType {
     /** Optional ID for existing claim types */
@@ -150,6 +166,7 @@ export namespace Identity {
   /**
    * Claim request for assigning claims to users or roles
    * Pro feature since 0.7.2
+   * @deprecated Use IdentityUserClaimDto or IdentityRoleClaimDto from proxy/identity/models instead
    */
   export interface ClaimRequest {
     /** User ID (for user claims) */
@@ -165,12 +182,14 @@ export namespace Identity {
   /**
    * Paginated response for claim types
    * Pro feature since 0.7.2
+   * @deprecated Use PagedResultDto<ClaimTypeDto> from proxy/identity/models instead
    */
   export type ClaimResponse = ABP.PagedResponse<ClaimType>;
 
   /**
    * Value type enumeration for claim types
    * Pro feature since 0.7.2
+   * @deprecated Use IdentityClaimValueType from proxy/identity/identity-claim-value-type.enum instead
    */
   export enum ClaimValueType {
     String = 0,
