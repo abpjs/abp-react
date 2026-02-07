@@ -1,6 +1,11 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { ABP, PagedResultDto } from '@abpjs/core';
-import { OrganizationUnitWithDetailsDto } from './organization-unit-with-details-dto';
+import type {
+  ClaimTypeDto,
+  IdentityRoleDto,
+  IdentityUserDto,
+  OrganizationUnitWithDetailsDto,
+} from '../proxy/identity/models';
 
 /**
  * Identity namespace containing all types related to identity management.
@@ -17,42 +22,42 @@ import { OrganizationUnitWithDetailsDto } from './organization-unit-with-details
  * @updated 2.9.0 - Added organization units support
  * @updated 3.1.0 - Added UserLockDurationType enum
  * @updated 3.2.0 - Types deprecated, use proxy/identity/models instead
- * @deprecated Types in this namespace are deprecated and will be removed in v4.0.
- * Use the new typed DTOs from proxy/identity/models instead:
- * - RoleItem -> IdentityRoleDto
- * - UserItem -> IdentityUserDto
- * - ClaimType -> ClaimTypeDto
- * - etc.
+ * @updated 4.0.0 - Removed deprecated types, State now references proxy types
  */
 export namespace Identity {
   /**
    * Identity state shape for state management
+   * @updated 4.0.0 - Now references proxy DTOs instead of deprecated types
    */
   export interface State {
-    roles: RoleResponse;
-    users: UserResponse;
-    selectedRole: RoleItem;
-    selectedUser: UserItem;
-    selectedUserRoles: RoleItem[];
-    /** Pro: Claim type names for dropdowns */
-    claimTypes: ClaimTypeName[];
+    roles: PagedResultDto<IdentityRoleDto>;
+    users: PagedResultDto<IdentityUserDto>;
+    selectedRole: IdentityRoleDto;
+    selectedUser: IdentityUserDto;
+    selectedUserRoles: IdentityRoleDto[];
     /** Pro: Paginated claim types response */
-    claims: ClaimResponse;
+    claims: PagedResultDto<ClaimTypeDto>;
     /** Pro: Selected claim type for editing */
-    selectedClaim: ClaimType;
+    selectedClaim: ClaimTypeDto;
     /** Pro: Organization units (v2.9.0) */
     organizationUnits: PagedResultDto<OrganizationUnitWithDetailsDto>;
   }
 
+  // ========================
+  // Deprecated types - To be deleted in v5.0
+  // These are kept for backward compatibility with consumers
+  // that haven't migrated to proxy/identity/models yet.
+  // ========================
+
   /**
    * Paginated response for roles
-   * @deprecated Use PagedResultDto<IdentityRoleDto> from proxy/identity/models instead
+   * @deprecated To be deleted in v5.0. Use PagedResultDto<IdentityRoleDto> from proxy/identity/models instead
    */
   export type RoleResponse = ABP.PagedResponse<RoleItem>;
 
   /**
    * Request payload for creating/updating a role
-   * @deprecated Use IdentityRoleCreateDto or IdentityRoleUpdateDto from proxy/identity/models instead
+   * @deprecated To be deleted in v5.0. Use IdentityRoleCreateDto or IdentityRoleUpdateDto from proxy/identity/models instead
    */
   export interface RoleSaveRequest {
     name: string;
@@ -62,7 +67,7 @@ export namespace Identity {
 
   /**
    * Role item returned from the API
-   * @deprecated Use IdentityRoleDto from proxy/identity/models instead
+   * @deprecated To be deleted in v5.0. Use IdentityRoleDto from proxy/identity/models instead
    */
   export interface RoleItem extends RoleSaveRequest {
     isStatic: boolean;
@@ -72,13 +77,13 @@ export namespace Identity {
 
   /**
    * Paginated response for users
-   * @deprecated Use PagedResultDto<IdentityUserDto> from proxy/identity/models instead
+   * @deprecated To be deleted in v5.0. Use PagedResultDto<IdentityUserDto> from proxy/identity/models instead
    */
   export type UserResponse = ABP.PagedResponse<UserItem>;
 
   /**
    * Base user properties
-   * @deprecated Use IdentityUserCreateOrUpdateDtoBase from proxy/identity/models instead
+   * @deprecated To be deleted in v5.0. Use IdentityUserCreateOrUpdateDtoBase from proxy/identity/models instead
    */
   export interface User {
     userName: string;
@@ -92,7 +97,7 @@ export namespace Identity {
 
   /**
    * User item returned from the API
-   * @deprecated Use IdentityUserDto from proxy/identity/models instead
+   * @deprecated To be deleted in v5.0. Use IdentityUserDto from proxy/identity/models instead
    */
   export interface UserItem extends User {
     tenantId: string;
@@ -106,7 +111,7 @@ export namespace Identity {
   /**
    * Request payload for creating/updating a user
    * @updated 2.9.0 - Added organizationUnitIds
-   * @deprecated Use IdentityUserCreateDto or IdentityUserUpdateDto from proxy/identity/models instead
+   * @deprecated To be deleted in v5.0. Use IdentityUserCreateDto or IdentityUserUpdateDto from proxy/identity/models instead
    */
   export interface UserSaveRequest extends User {
     password: string;
@@ -131,7 +136,7 @@ export namespace Identity {
   /**
    * Simple claim type name for dropdowns
    * Pro feature since 0.7.2
-   * @deprecated Use ClaimTypeDto from proxy/identity/models instead
+   * @deprecated To be deleted in v5.0. Use ClaimTypeDto from proxy/identity/models instead
    */
   export interface ClaimTypeName {
     name: string;
@@ -140,7 +145,7 @@ export namespace Identity {
   /**
    * Full claim type definition
    * Pro feature since 0.7.2
-   * @deprecated Use ClaimTypeDto from proxy/identity/models instead
+   * @deprecated To be deleted in v5.0. Use ClaimTypeDto from proxy/identity/models instead
    */
   export interface ClaimType {
     /** Optional ID for existing claim types */
@@ -166,7 +171,7 @@ export namespace Identity {
   /**
    * Claim request for assigning claims to users or roles
    * Pro feature since 0.7.2
-   * @deprecated Use IdentityUserClaimDto or IdentityRoleClaimDto from proxy/identity/models instead
+   * @deprecated To be deleted in v5.0. Use IdentityUserClaimDto or IdentityRoleClaimDto from proxy/identity/models instead
    */
   export interface ClaimRequest {
     /** User ID (for user claims) */
@@ -182,14 +187,14 @@ export namespace Identity {
   /**
    * Paginated response for claim types
    * Pro feature since 0.7.2
-   * @deprecated Use PagedResultDto<ClaimTypeDto> from proxy/identity/models instead
+   * @deprecated To be deleted in v5.0. Use PagedResultDto<ClaimTypeDto> from proxy/identity/models instead
    */
   export type ClaimResponse = ABP.PagedResponse<ClaimType>;
 
   /**
    * Value type enumeration for claim types
    * Pro feature since 0.7.2
-   * @deprecated Use IdentityClaimValueType from proxy/identity/identity-claim-value-type.enum instead
+   * @deprecated To be deleted in v5.0. Use IdentityClaimValueType from proxy/identity/identity-claim-value-type.enum instead
    */
   export enum ClaimValueType {
     String = 0,

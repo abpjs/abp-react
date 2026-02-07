@@ -13,6 +13,10 @@ import { Identity, OrganizationUnitWithDetailsDto } from '../models';
  * Translated from @volo/abp.ng.identity IdentityService
  * @since 2.0.0
  * @updated 3.1.0 - Added getUserAvailableOrganizationUnits, lockUser methods
+ * @deprecated To be deleted in v5.0. Use the proxy services instead:
+ * - IdentityRoleService from proxy/identity/identity-role.service
+ * - IdentityUserService from proxy/identity/identity-user.service
+ * - IdentityClaimTypeService from proxy/identity/identity-claim-type.service
  */
 export class IdentityService {
   /**
