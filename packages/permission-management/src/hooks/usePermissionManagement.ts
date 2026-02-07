@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useRestService } from '@abpjs/core';
+import { useRestService, useCurrentUserInfo } from '@abpjs/core';
 import { PermissionManagement, PermissionWithMargin } from '../models';
 import { PermissionManagementService } from '../services';
 
@@ -72,6 +72,17 @@ export interface UsePermissionManagementReturn {
    * @deprecated Use isGrantedByOtherProviderName instead
    */
   isGrantedByRole: (grantedProviders: PermissionManagement.GrantedProvider[]) => boolean;
+  /**
+   * Determines whether the app configuration should be refreshed after saving permissions.
+   * Returns true if:
+   * - The provider is a role ('R') that the current user belongs to
+   * - The provider is the current user ('U')
+   * @param providerKey The provider key (role ID or user ID)
+   * @param providerName The provider name ('R' for role, 'U' for user)
+   * @returns Whether app config should be refreshed
+   * @since 3.1.0
+   */
+  shouldFetchAppConfig: (providerKey: string, providerName: string) => boolean;
   /** Reset state */
   reset: () => void;
 }
@@ -137,6 +148,7 @@ function getPermissionsFromGroups(
  */
 export function usePermissionManagement(): UsePermissionManagementReturn {
   const restService = useRestService();
+  const currentUser = useCurrentUserInfo();
 
   // Service instance (memoized)
   const service = useMemo(() => new PermissionManagementService(restService), [restService]);
@@ -434,6 +446,35 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
     setSelectAllTab(false);
   }, []);
 
+  /**
+   * Determines whether the app configuration should be refreshed after saving permissions.
+   * Returns true if:
+   * - The provider is a role ('R') that the current user belongs to
+   * - The provider is the current user ('U')
+   * @param providerKey The provider key (role ID or user ID)
+   * @param providerName The provider name ('R' for role, 'U' for user)
+   * @returns Whether app config should be refreshed
+   * @since 3.1.0
+   */
+  const shouldFetchAppConfig = useCallback(
+    (providerKey: string, providerName: string): boolean => {
+      if (!currentUser) return false;
+
+      // If modifying a role, check if current user has that role
+      if (providerName === 'R') {
+        return currentUser.roles?.some((role) => role === providerKey) ?? false;
+      }
+
+      // If modifying a user, check if it's the current user
+      if (providerName === 'U') {
+        return currentUser.id === providerKey;
+      }
+
+      return false;
+    },
+    [currentUser]
+  );
+
   return {
     groups,
     entityDisplayName,
@@ -454,6 +495,7 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
     isGranted,
     isGrantedByOtherProviderName,
     isGrantedByRole,
+    shouldFetchAppConfig,
     reset,
   };
 }
