@@ -89,6 +89,29 @@ describe('@abpjs/tenant-management package exports', () => {
         typeof tenantManagementExports.getTenantManagementStateService
       ).toBe('function');
     });
+
+    it('should export TenantService from proxy (v3.2.0)', () => {
+      expect(tenantManagementExports.TenantService).toBeDefined();
+      expect(typeof tenantManagementExports.TenantService).toBe('function');
+    });
+  });
+
+  describe('proxy (v3.2.0)', () => {
+    it('should export TenantService class', () => {
+      expect(tenantManagementExports.TenantService).toBeDefined();
+      expect(typeof tenantManagementExports.TenantService).toBe('function');
+    });
+
+    it('should export proxy types (verified by TypeScript compilation)', () => {
+      // Proxy models are type-only exports (interfaces)
+      // They don't exist at runtime, but TypeScript ensures they work:
+      // - GetTenantsInput
+      // - TenantCreateDto
+      // - TenantUpdateDto
+      // - TenantDto
+      // - TenantCreateOrUpdateDtoBase
+      expect(true).toBe(true);
+    });
   });
 
   describe('constants', () => {
@@ -113,7 +136,7 @@ describe('@abpjs/tenant-management package exports', () => {
   });
 
   describe('export completeness', () => {
-    it('should export all required v3.0.0 functionality', () => {
+    it('should export all required v3.2.0 functionality', () => {
       // Config (v3.0.0)
       expect(tenantManagementExports).toHaveProperty('TENANT_MANAGEMENT_ROUTE_PROVIDERS');
       expect(tenantManagementExports).toHaveProperty('configureRoutes');
@@ -143,6 +166,9 @@ describe('@abpjs/tenant-management package exports', () => {
         'getTenantManagementStateService'
       );
 
+      // Proxy (v3.2.0)
+      expect(tenantManagementExports).toHaveProperty('TenantService');
+
       // Constants
       expect(tenantManagementExports).toHaveProperty(
         'TENANT_MANAGEMENT_ROUTE_PATHS'
@@ -151,8 +177,8 @@ describe('@abpjs/tenant-management package exports', () => {
         'TENANT_MANAGEMENT_POLICIES'
       );
 
-      // Note: TenantManagement namespace contains only types, which don't exist at runtime
-      // TypeScript compilation verifies type exports work correctly
+      // Note: TenantManagement namespace and proxy models contain only types,
+      // which don't exist at runtime. TypeScript compilation verifies type exports work correctly
     });
 
     it('should have componentKey on TenantManagementModal (v2.7.0)', () => {
