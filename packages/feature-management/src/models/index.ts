@@ -1,17 +1,18 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Feature Management Models
- * Translated from @abp/ng.feature-management v3.2.0
+ * Translated from @abp/ng.feature-management v4.0.0
+ *
+ * Changes in v4.0.0:
+ * - Removed deprecated legacy models (State, ValueType, Feature, Features, Provider)
+ *   These were deprecated in v3.2.0 and deleted in Angular v4.0.0
+ * - Only FeatureManagementComponentInputs/Outputs remain in the namespace
  *
  * Changes in v3.2.0:
  * - Added new proxy models (FeatureDto, FeatureGroupDto, etc.)
  * - Added validation models (IStringValueType, IValueValidator)
  * - Added ValueTypes enum
  * - Added FreeTextType and INPUT_TYPES
- * - Deprecated old State, ValueType, Feature, Features, Provider interfaces (to be deleted in v4.0)
- *
- * Changes in v3.1.0:
- * - Added displayName property to Feature interface
  */
 
 // ============================================================================
@@ -144,70 +145,10 @@ export function getInputType(feature: FreeTextType): string {
 }
 
 // ============================================================================
-// Legacy Models (deprecated in v3.2.0, to be deleted in v4.0)
+// Component Interface Types
 // ============================================================================
 
 export namespace FeatureManagement {
-  /**
-   * Feature management state
-   * @deprecated To be deleted in v4.0. Use GetFeatureListResultDto instead.
-   */
-  export interface State {
-    features: Feature[];
-  }
-
-  /**
-   * Feature value type definition
-   * @deprecated To be deleted in v4.0. Use IStringValueType instead.
-   */
-  export interface ValueType {
-    name: string;
-    properties: object;
-    validator: object;
-  }
-
-  /**
-   * Individual feature definition
-   * @deprecated To be deleted in v4.0. Use FeatureDto instead.
-   */
-  export interface Feature {
-    /** Feature name (identifier) */
-    name: string;
-    /** Display name for the feature (v3.1.0) */
-    displayName: string;
-    /** Feature value */
-    value: string;
-    /** Optional description */
-    description?: string;
-    /** Value type definition */
-    valueType?: ValueType;
-    /** Hierarchy depth level */
-    depth?: number;
-    /** Parent feature name for hierarchy */
-    parentName?: string;
-  }
-
-  /**
-   * Container for features array
-   * @deprecated To be deleted in v4.0. Use UpdateFeaturesDto instead.
-   */
-  export interface Features {
-    features: Feature[];
-  }
-
-  /**
-   * Provider information for feature management
-   * @deprecated To be deleted in v4.0. Use FeatureProviderDto instead.
-   */
-  export interface Provider {
-    providerName: string;
-    providerKey: string;
-  }
-
-  // ============================================================================
-  // Component Interface Types - v2.0.0
-  // ============================================================================
-
   /**
    * Inputs for FeatureManagement component
    *

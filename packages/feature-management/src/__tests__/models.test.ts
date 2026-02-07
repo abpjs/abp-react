@@ -335,101 +335,11 @@ describe('getInputType function (v3.2.0)', () => {
 });
 
 // ============================================================================
-// Legacy Models (deprecated in v3.2.0)
+// Component Interface Types (v2.0.0)
+// v4.0.0: Removed deprecated legacy models (State, ValueType, Feature, Features, Provider)
 // ============================================================================
 
 describe('FeatureManagement Models', () => {
-  describe('State interface', () => {
-    it('should allow creating a state with features array', () => {
-      const state: FeatureManagement.State = {
-        features: [],
-      };
-      expect(state.features).toEqual([]);
-    });
-  });
-
-  describe('ValueType interface', () => {
-    it('should have required properties', () => {
-      const valueType: FeatureManagement.ValueType = {
-        name: 'ToggleStringValueType',
-        properties: {},
-        validator: {},
-      };
-      expect(valueType.name).toBe('ToggleStringValueType');
-      expect(valueType.properties).toEqual({});
-      expect(valueType.validator).toEqual({});
-    });
-  });
-
-  describe('Feature interface', () => {
-    it('should have required properties', () => {
-      const feature: FeatureManagement.Feature = {
-        name: 'TestFeature',
-        displayName: 'Test Feature',
-        value: 'true',
-      };
-      expect(feature.name).toBe('TestFeature');
-      expect(feature.displayName).toBe('Test Feature');
-      expect(feature.value).toBe('true');
-    });
-
-    it('should allow optional properties', () => {
-      const feature: FeatureManagement.Feature = {
-        name: 'TestFeature',
-        displayName: 'Test Feature',
-        value: 'true',
-        description: 'A test feature',
-        valueType: {
-          name: 'ToggleStringValueType',
-          properties: {},
-          validator: {},
-        },
-        depth: 0,
-        parentName: 'ParentFeature',
-      };
-      expect(feature.description).toBe('A test feature');
-      expect(feature.valueType?.name).toBe('ToggleStringValueType');
-      expect(feature.depth).toBe(0);
-      expect(feature.parentName).toBe('ParentFeature');
-    });
-
-    it('should have displayName property (v3.1.0)', () => {
-      const feature: FeatureManagement.Feature = {
-        name: 'MyApp.EnableFeatureX',
-        displayName: 'Enable Feature X',
-        value: 'false',
-      };
-      expect(feature.name).toBe('MyApp.EnableFeatureX');
-      expect(feature.displayName).toBe('Enable Feature X');
-    });
-  });
-
-  describe('Features interface', () => {
-    it('should contain features array', () => {
-      const features: FeatureManagement.Features = {
-        features: [
-          { name: 'Feature1', displayName: 'Feature 1', value: 'true' },
-          { name: 'Feature2', displayName: 'Feature 2', value: 'false' },
-        ],
-      };
-      expect(features.features).toHaveLength(2);
-      expect(features.features[0].name).toBe('Feature1');
-      expect(features.features[0].displayName).toBe('Feature 1');
-    });
-  });
-
-  describe('Provider interface', () => {
-    it('should have providerName and providerKey', () => {
-      const provider: FeatureManagement.Provider = {
-        providerName: 'T',
-        providerKey: 'tenant-123',
-      };
-      expect(provider.providerName).toBe('T');
-      expect(provider.providerKey).toBe('tenant-123');
-    });
-  });
-
-  // v2.0.0: Component Interface Types
   describe('FeatureManagementComponentInputs (v2.0.0)', () => {
     it('should have visible, providerName, and providerKey properties', () => {
       const inputs: FeatureManagement.FeatureManagementComponentInputs = {

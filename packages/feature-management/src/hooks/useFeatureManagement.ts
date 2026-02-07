@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useRestService } from '@abpjs/core';
-import { FeatureManagement } from '../models';
-import { FeatureManagementService } from '../services';
+import type { FeatureDto, FeatureGroupDto } from '../models';
+import { FeaturesService } from '../services';
 
 /**
  * Result from feature management operations
@@ -15,8 +15,10 @@ export interface FeatureManagementResult {
  * Return type for useFeatureManagement hook
  */
 export interface UseFeatureManagementReturn {
-  /** Current features */
-  features: FeatureManagement.Feature[];
+  /** Current feature groups */
+  groups: FeatureGroupDto[];
+  /** All features (flattened from groups) */
+  features: FeatureDto[];
   /** Feature values for form (modifiable) */
   featureValues: Record<string, string>;
   /** Loading state */
@@ -49,11 +51,16 @@ export interface UseFeatureManagementReturn {
  * This hook provides all the state and actions needed for the feature
  * management modal. It handles fetching, modifying, and saving features.
  *
+ * In v4.0.0, this hook was migrated from the deprecated FeatureManagementService
+ * to the new FeaturesService proxy, and from legacy flat Feature[] to grouped
+ * FeatureGroupDto[]/FeatureDto[] response format.
+ *
  * @example
  * ```tsx
  * function FeatureModal({ providerKey, providerName }) {
  *   const {
  *     features,
+ *     groups,
  *     isLoading,
  *     fetchFeatures,
  *     saveFeatures,
@@ -73,11 +80,12 @@ export interface UseFeatureManagementReturn {
 export function useFeatureManagement(): UseFeatureManagementReturn {
   const restService = useRestService();
 
-  // Service instance (memoized)
-  const service = useMemo(() => new FeatureManagementService(restService), [restService]);
+  // Service instance (memoized) - v4.0.0: uses FeaturesService instead of deprecated FeatureManagementService
+  const service = useMemo(() => new FeaturesService(restService), [restService]);
 
   // State
-  const [features, setFeatures] = useState<FeatureManagement.Feature[]>([]);
+  const [groups, setGroups] = useState<FeatureGroupDto[]>([]);
+  const [features, setFeatures] = useState<FeatureDto[]>([]);
   const [featureValues, setFeatureValues] = useState<Record<string, string>>({});
   const [originalValues, setOriginalValues] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -113,16 +121,17 @@ export function useFeatureManagement(): UseFeatureManagementReturn {
       setError(null);
 
       try {
-        const response = await service.getFeatures({
-          providerKey,
-          providerName,
-        });
+        const response = await service.get(providerName, providerKey);
 
-        setFeatures(response.features);
+        setGroups(response.groups);
+
+        // Flatten features from groups
+        const allFeatures = response.groups.flatMap((group) => group.features);
+        setFeatures(allFeatures);
 
         // Build feature values map for form state
         const values: Record<string, string> = {};
-        response.features.forEach((feature) => {
+        allFeatures.forEach((feature) => {
           values[feature.name] = feature.value;
         });
         setFeatureValues(values);
@@ -165,10 +174,8 @@ export function useFeatureManagement(): UseFeatureManagementReturn {
       setError(null);
 
       try {
-        await service.updateFeatures({
-          providerKey,
-          providerName,
-          features: updatedFeatures as FeatureManagement.Feature[],
+        await service.update(providerName, providerKey, {
+          features: updatedFeatures,
         });
 
         // Update original values to match current
@@ -200,6 +207,7 @@ export function useFeatureManagement(): UseFeatureManagementReturn {
    * Reset all state
    */
   const reset = useCallback(() => {
+    setGroups([]);
     setFeatures([]);
     setFeatureValues({});
     setOriginalValues({});
@@ -208,6 +216,7 @@ export function useFeatureManagement(): UseFeatureManagementReturn {
   }, []);
 
   return {
+    groups,
     features,
     featureValues,
     isLoading,
