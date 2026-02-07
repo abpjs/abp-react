@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/file-management",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "description": "ABP Framework file-management components for React - translated from @volo/abp.ng.file-management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
