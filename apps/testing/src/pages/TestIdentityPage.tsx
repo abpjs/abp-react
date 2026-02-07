@@ -2,6 +2,9 @@
  * Test page for @abpjs/identity package
  * Tests: RolesComponent, UsersComponent, useRoles, useUsers, useIdentity hooks
  *
+ * v3.1.0 Updates:
+ * - Version bump only (internal Angular type reference updates, no functional changes)
+ *
  * v3.0.0 Updates:
  * - New config subpackage with eIdentityPolicyNames
  * - Moved eIdentityRouteNames to config/enums (removed Administration key)
@@ -1801,14 +1804,55 @@ console.log(response.items) // Assignable roles`}</pre>
   )
 }
 
+function TestV310Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.1.0</h2>
+
+      <div className="test-card">
+        <h3>Version Bump Only</h3>
+        <p>
+          Version 3.1.0 contains internal Angular type reference updates only.
+          There are <strong>no functional changes</strong> that affect the React translation.
+        </p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`// Angular internal changes (no React impact)
+// Type references updated: ɵbi → ɵbl
+// These are internal Angular symbols not exposed in the public API`}
+        </pre>
+        <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: '#1a2e1a', borderRadius: '4px', border: '1px solid #2e4a2e' }}>
+          <p style={{ color: '#6f6', margin: 0, fontSize: '14px' }}>
+            <strong>No breaking changes!</strong> All existing code continues to work without modifications.
+          </p>
+        </div>
+      </div>
+
+      <div className="test-card">
+        <h3>Dependency Updates</h3>
+        <ul>
+          <li>Updated internal Angular peer dependencies</li>
+          <li>@abp/ng.permission-management ~3.0.0 → ~3.1.0</li>
+          <li>@abp/ng.theme.shared ~3.0.0 → ~3.1.0</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 export function TestIdentityPage() {
   return (
     <div>
-      <h1>@abpjs/identity Tests v3.0.0</h1>
+      <h1>@abpjs/identity Tests v3.1.0</h1>
       <p>Testing identity management components and hooks for role and user management.</p>
-      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 3.0.0 - Config subpackage, route providers, policy names</p>
+      <p style={{ color: '#2ecc71', fontSize: '0.9rem' }}>Version 3.1.0 - Version bump (no functional changes)</p>
 
-      {/* v3.0.0 Features - Highlighted at top */}
+      {/* v3.1.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #f59e0b', paddingTop: '1rem' }}>
+        v3.1.0 Changes
+      </h2>
+      <TestV310Features />
+
+      {/* v3.0.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #e74c3c', paddingTop: '1rem' }}>
         v3.0.0 New Features
       </h2>
