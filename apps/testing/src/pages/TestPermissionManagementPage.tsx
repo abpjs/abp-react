@@ -1,12 +1,13 @@
 /**
- * Test page for @abpjs/permission-management package v3.2.0
+ * Test page for @abpjs/permission-management package v4.0.0
  * Tests: PermissionManagementModal, usePermissionManagement hook, PermissionManagementStateService
  *
- * v3.2.0 Updates:
- * - New proxy service: PermissionsService with typed methods (get, update)
- * - New proxy models: GetPermissionListResultDto, PermissionGrantInfoDto, etc.
- * - PermissionWithStyle type (replaces PermissionWithMargin)
- * - Deprecated legacy types (to be removed in v4.0)
+ * v4.0.0 Updates (Breaking Changes):
+ * - DELETED: PermissionManagementService (use PermissionsService instead)
+ * - REMOVED: All deprecated PermissionManagement namespace types (Response, Group, Permission, etc.)
+ * - State.permissionRes now uses GetPermissionListResultDto
+ * - PermissionWithStyle/PermissionWithMargin now extend PermissionGrantInfoDto
+ * - Hook and state service migrated to PermissionsService
  */
 import { useState, useMemo } from 'react'
 import { useAuth, useConfig, useCurrentUserInfo, useRestService } from '@abpjs/core'
@@ -15,12 +16,12 @@ import {
   usePermissionManagement,
   PermissionManagementStateService,
   ePermissionManagementComponents,
-  // v3.2.0 proxy service
+  // v3.2.0 proxy service (v4.0.0: now the primary service)
   PermissionsService,
 } from '@abpjs/permission-management'
 import type {
   PermissionManagement,
-  // v3.2.0 proxy models
+  // v3.2.0 proxy models (v4.0.0: now the primary DTOs)
   GetPermissionListResultDto,
   UpdatePermissionsDto,
 } from '@abpjs/permission-management'
@@ -487,8 +488,8 @@ function TestPermissionManagementStateService() {
       </div>
 
       <div className="test-card">
-        <h3>Constructor (v2.0.0)</h3>
-        <p>The state service now accepts an optional <code>PermissionManagementService</code> in the constructor:</p>
+        <h3>Constructor (v2.0.0, updated v4.0.0)</h3>
+        <p>The state service accepts an optional <code>PermissionsService</code> in the constructor:</p>
         <pre style={{
           background: 'rgba(50,50,50,0.3)',
           padding: '1rem',
@@ -499,7 +500,9 @@ function TestPermissionManagementStateService() {
 const stateService = new PermissionManagementStateService();
 
 // With service (enables dispatch methods)
-const stateService = new PermissionManagementStateService(permissionService);`}
+// v4.0.0: Uses PermissionsService instead of deleted PermissionManagementService
+const permissionsService = new PermissionsService(restService);
+const stateService = new PermissionManagementStateService(permissionsService);`}
         </pre>
       </div>
     </div>
@@ -951,22 +954,18 @@ const permission: PermissionWithStyle = {
       </div>
 
       <div className="test-card">
-        <h3>Deprecated Types</h3>
-        <p style={{ color: '#f88' }}>The following legacy types are deprecated in v3.2.0 (to be removed in v4.0):</p>
+        <h3>Removed Types (deleted in v4.0.0)</h3>
+        <p style={{ color: '#f88' }}>The following legacy types were deprecated in v3.2.0 and <strong>removed in v4.0.0</strong>:</p>
         <ul style={{ fontSize: '14px' }}>
-          <li><code>PermissionManagement.Response</code> - Use <code>GetPermissionListResultDto</code></li>
-          <li><code>PermissionManagement.Group</code> - Use <code>PermissionGroupDto</code></li>
-          <li><code>PermissionManagement.MinimumPermission</code> - Use <code>UpdatePermissionDto</code></li>
-          <li><code>PermissionManagement.Permission</code> - Use <code>PermissionGrantInfoDto</code></li>
-          <li><code>PermissionManagement.UpdateRequest</code> - Use <code>UpdatePermissionsDto</code></li>
-          <li><code>PermissionWithMargin</code> - Use <code>PermissionWithStyle</code></li>
+          <li><s><code>PermissionManagement.Response</code></s> → <code>GetPermissionListResultDto</code></li>
+          <li><s><code>PermissionManagement.Group</code></s> → <code>PermissionGroupDto</code></li>
+          <li><s><code>PermissionManagement.MinimumPermission</code></s> → <code>UpdatePermissionDto</code></li>
+          <li><s><code>PermissionManagement.Permission</code></s> → <code>PermissionGrantInfoDto</code></li>
+          <li><s><code>PermissionManagement.GrantedProvider</code></s> → <code>ProviderInfoDto</code></li>
+          <li><s><code>PermissionManagement.UpdateRequest</code></s> → <code>UpdatePermissionsDto</code></li>
+          <li><s><code>PermissionManagement.GetPermissionsParams</code></s> → Use <code>ProviderInfoDto</code></li>
         </ul>
-        <pre style={{ fontSize: '12px', marginTop: '0.5rem' }}>{`// Before (deprecated)
-import type { PermissionManagement, PermissionWithMargin } from '@abpjs/permission-management'
-const res: PermissionManagement.Response = ...
-const perm: PermissionWithMargin = { margin: 24, ... }
-
-// After (v3.2.0)
+        <pre style={{ fontSize: '12px', marginTop: '0.5rem' }}>{`// v4.0.0: Use proxy DTOs exclusively
 import type { GetPermissionListResultDto, PermissionWithStyle } from '@abpjs/permission-management'
 const res: GetPermissionListResultDto = ...
 const perm: PermissionWithStyle = { style: 'margin-left: 24px', ... }`}</pre>
@@ -1191,83 +1190,122 @@ const CustomComponent = componentRegistry.get(key);`}
   )
 }
 
-function TestV240Features() {
-  const [apiNameDemo, setApiNameDemo] = useState('default')
+function TestV400Features() {
+  const restService = useRestService()
+
+  // v4.0.0: PermissionsService is now the only service (PermissionManagementService deleted)
+  const permissionsService = useMemo(() => new PermissionsService(restService), [restService])
 
   return (
     <div className="test-section">
-      <h2>v2.4.0 Features</h2>
+      <h2>What's New in v4.0.0 (Breaking Changes)</h2>
 
       <div className="test-card">
-        <h3>apiName Property</h3>
-        <p>New in v2.4.0: <code>PermissionManagementService</code> now has an <code>apiName</code> property.</p>
-        <p>This property specifies which API configuration to use for REST requests (defaults to "default").</p>
-
-        <div style={{ marginTop: '1rem' }}>
-          <h4>Interactive Demo</h4>
-          <p>Simulate changing the apiName property:</p>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
-            <input
-              type="text"
-              value={apiNameDemo}
-              onChange={(e) => setApiNameDemo(e.target.value)}
-              placeholder="Enter API name"
-              style={{
-                padding: '8px',
-                borderRadius: '4px',
-                border: '1px solid #333',
-                flex: 1
-              }}
-            />
-            <button onClick={() => setApiNameDemo('default')}>Reset to Default</button>
-          </div>
-          <p>Current apiName: <code style={{ background: 'rgba(100,108,255,0.2)', padding: '2px 6px', borderRadius: '3px' }}>{apiNameDemo}</code></p>
-        </div>
-
+        <h3>PermissionManagementService Deleted</h3>
+        <p style={{ color: '#f88' }}>
+          The legacy <code>PermissionManagementService</code> has been <strong>deleted</strong> in v4.0.0.
+        </p>
+        <p>Use <code>PermissionsService</code> (introduced in v3.2.0) instead:</p>
         <pre style={{
           background: 'rgba(50,50,50,0.3)',
           padding: '1rem',
           borderRadius: '4px',
           fontSize: '12px',
-          marginTop: '1rem'
+          marginTop: '0.5rem'
         }}>
-{`// v2.4.0: apiName property on PermissionManagementService
-const service = new PermissionManagementService(restService);
-console.log(service.apiName); // "default"
+{`// Before (deleted in v4.0.0)
+// import { PermissionManagementService } from '@abpjs/permission-management'
+// const service = new PermissionManagementService(restService)
+// service.getPermissions({ providerKey, providerName })
+// service.updatePermissions({ providerKey, providerName, permissions })
 
-// Change to use a different API configuration
-service.apiName = "${apiNameDemo}";`}
-        </pre>
+// After (v4.0.0)
+import { PermissionsService } from '@abpjs/permission-management'
+const service = new PermissionsService(restService)
+service.get(providerName, providerKey)
+service.update(providerName, providerKey, { permissions })`}</pre>
       </div>
 
       <div className="test-card">
-        <h3>PermissionManagementService Class</h3>
+        <h3>PermissionsService (v4.0.0 - Primary Service)</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #333' }}>
               <th style={{ textAlign: 'left', padding: '8px' }}>Property/Method</th>
               <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
-              <th style={{ textAlign: 'left', padding: '8px' }}>Version</th>
             </tr>
           </thead>
           <tbody>
-            <tr style={{ background: 'rgba(100,255,100,0.1)' }}>
+            <tr>
               <td style={{ padding: '8px' }}><code>apiName</code></td>
-              <td>string (default: "default")</td>
-              <td>v2.4.0 (NEW)</td>
+              <td style={{ padding: '8px' }}>
+                <code style={{ color: '#2ecc71' }}>{permissionsService.apiName}</code>
+              </td>
             </tr>
             <tr>
-              <td style={{ padding: '8px' }}><code>getPermissions()</code></td>
-              <td>Promise&lt;Response&gt;</td>
-              <td>v0.7.6</td>
+              <td style={{ padding: '8px' }}><code>get(providerName, providerKey)</code></td>
+              <td>Promise&lt;GetPermissionListResultDto&gt;</td>
             </tr>
             <tr>
-              <td style={{ padding: '8px' }}><code>updatePermissions()</code></td>
+              <td style={{ padding: '8px' }}><code>update(providerName, providerKey, input)</code></td>
               <td>Promise&lt;void&gt;</td>
-              <td>v0.7.6</td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Removed Namespace Types</h3>
+        <p>All deprecated types from the <code>PermissionManagement</code> namespace have been removed:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Removed Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Replacement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px' }}><s>PermissionManagement.Response</s></td><td>GetPermissionListResultDto</td></tr>
+            <tr><td style={{ padding: '8px' }}><s>PermissionManagement.Group</s></td><td>PermissionGroupDto</td></tr>
+            <tr><td style={{ padding: '8px' }}><s>PermissionManagement.Permission</s></td><td>PermissionGrantInfoDto</td></tr>
+            <tr><td style={{ padding: '8px' }}><s>PermissionManagement.MinimumPermission</s></td><td>UpdatePermissionDto</td></tr>
+            <tr><td style={{ padding: '8px' }}><s>PermissionManagement.GrantedProvider</s></td><td>ProviderInfoDto</td></tr>
+            <tr><td style={{ padding: '8px' }}><s>PermissionManagement.UpdateRequest</s></td><td>UpdatePermissionsDto</td></tr>
+            <tr><td style={{ padding: '8px' }}><s>PermissionManagement.GetPermissionsParams</s></td><td>ProviderInfoDto</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Updated State Interface</h3>
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px'
+        }}>
+{`// v4.0.0: State.permissionRes uses GetPermissionListResultDto
+interface State {
+  permissionRes: GetPermissionListResultDto; // was PermissionManagement.Response
+}
+
+// PermissionWithStyle and PermissionWithMargin now extend PermissionGrantInfoDto
+interface PermissionWithStyle extends PermissionGrantInfoDto {
+  style: string;
+}
+interface PermissionWithMargin extends PermissionGrantInfoDto {
+  margin: number; // deprecated, use PermissionWithStyle
+}`}</pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Remaining Types</h3>
+        <p>These types are still available in the <code>PermissionManagement</code> namespace:</p>
+        <ul style={{ fontSize: '14px' }}>
+          <li><code>PermissionManagement.State</code> - State interface (updated to use GetPermissionListResultDto)</li>
+          <li><code>PermissionManagement.PermissionManagementComponentInputs</code> - Component input props</li>
+          <li><code>PermissionManagement.PermissionManagementComponentOutputs</code> - Component output callbacks</li>
+        </ul>
       </div>
     </div>
   )
@@ -1317,13 +1355,19 @@ function TestApiEndpoints() {
 export function TestPermissionManagementPage() {
   return (
     <div>
-      <h1>@abpjs/permission-management Tests v3.2.0</h1>
+      <h1>@abpjs/permission-management Tests v4.0.0</h1>
       <p>Testing permission management modal, hooks, and state service.</p>
-      <p style={{ color: '#9333ea', fontSize: '0.9rem' }}>Version 3.2.0 - New proxy service and typed DTOs</p>
+      <p style={{ color: '#e74c3c', fontSize: '0.9rem' }}>Version 4.0.0 - Breaking changes: PermissionManagementService deleted, legacy types removed</p>
 
-      {/* v3.2.0 Features - Highlighted at top */}
+      {/* v4.0.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #e74c3c', paddingTop: '1rem' }}>
+        v4.0.0 Breaking Changes
+      </h2>
+      <TestV400Features />
+
+      {/* v3.2.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #9333ea', paddingTop: '1rem' }}>
-        v3.2.0 New Features
+        v3.2.0 Features
       </h2>
       <TestV320Features />
 
@@ -1345,11 +1389,6 @@ export function TestPermissionManagementPage() {
       </h2>
       <TestV270Features />
 
-      {/* v2.4.0 Features */}
-      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #3498db', paddingTop: '1rem' }}>
-        v2.4.0 Features
-      </h2>
-      <TestV240Features />
       <TestPermissionModal />
       <TestPermissionHook />
       <TestPermissionManagementStateService />

@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import type { PermissionManagement } from '../models';
+import type { GetPermissionListResultDto, ProviderInfoDto } from '../proxy/models';
 
-// Create mock functions
-const mockGetPermissions = vi.fn();
-const mockUpdatePermissions = vi.fn();
+// Create mock functions - v4.0.0: uses PermissionsService.get/update instead of PermissionManagementService
+const mockGet = vi.fn();
+const mockUpdate = vi.fn();
 
-// Mock the service
-vi.mock('../services', () => ({
-  PermissionManagementService: vi.fn().mockImplementation(() => ({
-    getPermissions: mockGetPermissions,
-    updatePermissions: mockUpdatePermissions,
+// Mock the proxy service
+vi.mock('../proxy/permissions.service', () => ({
+  PermissionsService: vi.fn().mockImplementation(() => ({
+    get: mockGet,
+    update: mockUpdate,
   })),
 }));
 
@@ -29,8 +29,8 @@ vi.mock('@abpjs/core', () => ({
 // Import hook after mocks are set up
 import { usePermissionManagement } from '../hooks/usePermissionManagement';
 
-// Sample test data
-const createMockPermissionResponse = (): PermissionManagement.Response => ({
+// Sample test data - v4.0.0: uses GetPermissionListResultDto instead of PermissionManagement.Response
+const createMockPermissionResponse = (): GetPermissionListResultDto => ({
   entityDisplayName: 'Admin Role',
   groups: [
     {
@@ -121,7 +121,7 @@ describe('usePermissionManagement', () => {
     it('should return true when permission is granted by role provider', () => {
       const { result } = renderHook(() => usePermissionManagement());
 
-      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+      const grantedProviders: ProviderInfoDto[] = [
         { providerName: 'R', providerKey: 'admin' },
       ];
 
@@ -131,7 +131,7 @@ describe('usePermissionManagement', () => {
     it('should return false when permission is granted by user provider only', () => {
       const { result } = renderHook(() => usePermissionManagement());
 
-      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+      const grantedProviders: ProviderInfoDto[] = [
         { providerName: 'U', providerKey: 'user123' },
       ];
 
@@ -141,7 +141,7 @@ describe('usePermissionManagement', () => {
     it('should return true when permission is granted by both role and user', () => {
       const { result } = renderHook(() => usePermissionManagement());
 
-      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+      const grantedProviders: ProviderInfoDto[] = [
         { providerName: 'R', providerKey: 'admin' },
         { providerName: 'U', providerKey: 'user123' },
       ];
@@ -158,7 +158,7 @@ describe('usePermissionManagement', () => {
     it('should return false for other provider types', () => {
       const { result } = renderHook(() => usePermissionManagement());
 
-      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+      const grantedProviders: ProviderInfoDto[] = [
         { providerName: 'C', providerKey: 'client123' }, // Client provider
         { providerName: 'T', providerKey: 'tenant123' }, // Tenant provider
       ];
@@ -171,7 +171,7 @@ describe('usePermissionManagement', () => {
     it('should return true when permission is granted by a different provider', () => {
       const { result } = renderHook(() => usePermissionManagement());
 
-      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+      const grantedProviders: ProviderInfoDto[] = [
         { providerName: 'R', providerKey: 'admin' },
       ];
 
@@ -182,7 +182,7 @@ describe('usePermissionManagement', () => {
     it('should return false when permission is only granted by the same provider', () => {
       const { result } = renderHook(() => usePermissionManagement());
 
-      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+      const grantedProviders: ProviderInfoDto[] = [
         { providerName: 'R', providerKey: 'admin' },
       ];
 
@@ -193,7 +193,7 @@ describe('usePermissionManagement', () => {
     it('should return true when permission is granted by multiple providers including different ones', () => {
       const { result } = renderHook(() => usePermissionManagement());
 
-      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+      const grantedProviders: ProviderInfoDto[] = [
         { providerName: 'R', providerKey: 'admin' },
         { providerName: 'U', providerKey: 'user123' },
       ];
@@ -213,7 +213,7 @@ describe('usePermissionManagement', () => {
     it('should work with various provider types', () => {
       const { result } = renderHook(() => usePermissionManagement());
 
-      const grantedProviders: PermissionManagement.GrantedProvider[] = [
+      const grantedProviders: ProviderInfoDto[] = [
         { providerName: 'C', providerKey: 'client123' }, // Client provider
         { providerName: 'T', providerKey: 'tenant123' }, // Tenant provider
       ];
@@ -228,7 +228,7 @@ describe('usePermissionManagement', () => {
   describe('fetchPermissions', () => {
     it('should fetch permissions and set state', async () => {
       const mockResponse = createMockPermissionResponse();
-      mockGetPermissions.mockResolvedValue(mockResponse);
+      mockGet.mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -245,11 +245,11 @@ describe('usePermissionManagement', () => {
     });
 
     it('should set loading state while fetching', async () => {
-      let resolvePromise: (value: PermissionManagement.Response) => void;
-      const pendingPromise = new Promise<PermissionManagement.Response>((resolve) => {
+      let resolvePromise: (value: GetPermissionListResultDto) => void;
+      const pendingPromise = new Promise<GetPermissionListResultDto>((resolve) => {
         resolvePromise = resolve;
       });
-      mockGetPermissions.mockReturnValue(pendingPromise);
+      mockGet.mockReturnValue(pendingPromise);
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -267,7 +267,7 @@ describe('usePermissionManagement', () => {
     });
 
     it('should handle fetch error', async () => {
-      mockGetPermissions.mockRejectedValue(new Error('Network error'));
+      mockGet.mockRejectedValue(new Error('Network error'));
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -282,7 +282,7 @@ describe('usePermissionManagement', () => {
     });
 
     it('should handle non-Error rejection', async () => {
-      mockGetPermissions.mockRejectedValue('String error');
+      mockGet.mockRejectedValue('String error');
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -296,7 +296,7 @@ describe('usePermissionManagement', () => {
 
   describe('isGranted', () => {
     it('should return true for granted permission', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -308,7 +308,7 @@ describe('usePermissionManagement', () => {
     });
 
     it('should return false for non-granted permission', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -320,7 +320,7 @@ describe('usePermissionManagement', () => {
     });
 
     it('should return false for non-existent permission', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -334,8 +334,8 @@ describe('usePermissionManagement', () => {
 
   describe('savePermissions', () => {
     it('should save changed permissions', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
-      mockUpdatePermissions.mockResolvedValue(undefined);
+      mockGet.mockResolvedValue(createMockPermissionResponse());
+      mockUpdate.mockResolvedValue(undefined);
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -354,11 +354,11 @@ describe('usePermissionManagement', () => {
         expect(response.success).toBe(true);
       });
 
-      expect(mockUpdatePermissions).toHaveBeenCalled();
+      expect(mockUpdate).toHaveBeenCalled();
     });
 
     it('should return success without calling API if nothing changed', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -372,12 +372,12 @@ describe('usePermissionManagement', () => {
         expect(response.success).toBe(true);
       });
 
-      expect(mockUpdatePermissions).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
 
     it('should handle save error', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
-      mockUpdatePermissions.mockRejectedValue(new Error('Update failed'));
+      mockGet.mockResolvedValue(createMockPermissionResponse());
+      mockUpdate.mockRejectedValue(new Error('Update failed'));
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -397,11 +397,34 @@ describe('usePermissionManagement', () => {
         expect(response.error).toBe('Update failed');
       });
     });
+
+    it('should handle non-Error rejection', async () => {
+      mockGet.mockResolvedValue(createMockPermissionResponse());
+      mockUpdate.mockRejectedValue('String error');
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      // Toggle a permission to create a change
+      const permission = result.current.groups[0].permissions[1];
+      act(() => {
+        result.current.togglePermission(permission);
+      });
+
+      await act(async () => {
+        const response = await result.current.savePermissions('admin', 'R');
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Failed to update permissions');
+      });
+    });
   });
 
   describe('togglePermission', () => {
     it('should toggle a permission', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -419,11 +442,67 @@ describe('usePermissionManagement', () => {
 
       expect(result.current.isGranted('AbpIdentity.Users.Create')).toBe(true);
     });
+
+    it('should uncheck children when parent is unchecked', async () => {
+      mockGet.mockResolvedValue(createMockPermissionResponse());
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      // AbpIdentity.Users is granted, Users.Update is granted (child of Users)
+      expect(result.current.isGranted('AbpIdentity.Users')).toBe(true);
+      expect(result.current.isGranted('AbpIdentity.Users.Update')).toBe(true);
+
+      // Uncheck the parent permission (AbpIdentity.Users)
+      const parentPermission = result.current.groups[0].permissions[0]; // Users (parent)
+      act(() => {
+        result.current.togglePermission(parentPermission);
+      });
+
+      // Parent should be unchecked
+      expect(result.current.isGranted('AbpIdentity.Users')).toBe(false);
+      // Children should also be unchecked
+      expect(result.current.isGranted('AbpIdentity.Users.Create')).toBe(false);
+      expect(result.current.isGranted('AbpIdentity.Users.Update')).toBe(false);
+    });
+
+    it('should check parent when child is checked', async () => {
+      // Create response where parent is not granted but child will be toggled on
+      const response = createMockPermissionResponse();
+      // Set parent to not granted
+      response.groups[0].permissions[0].isGranted = false;
+      // Set child to not granted
+      response.groups[0].permissions[1].isGranted = false;
+      mockGet.mockResolvedValue(response);
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      expect(result.current.isGranted('AbpIdentity.Users')).toBe(false);
+      expect(result.current.isGranted('AbpIdentity.Users.Create')).toBe(false);
+
+      // Toggle the child on - parent should also be checked
+      const childPermission = result.current.groups[0].permissions[1]; // Users.Create
+      act(() => {
+        result.current.togglePermission(childPermission);
+      });
+
+      // Child should be checked
+      expect(result.current.isGranted('AbpIdentity.Users.Create')).toBe(true);
+      // Parent should also be checked
+      expect(result.current.isGranted('AbpIdentity.Users')).toBe(true);
+    });
   });
 
   describe('toggleSelectAll', () => {
     it('should select all permissions when toggled on', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -441,7 +520,7 @@ describe('usePermissionManagement', () => {
     });
 
     it('should deselect all permissions when toggled off', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -464,6 +543,135 @@ describe('usePermissionManagement', () => {
     });
   });
 
+  describe('toggleSelectThisTab', () => {
+    it('should select all permissions in the current tab when toggled on', async () => {
+      mockGet.mockResolvedValue(createMockPermissionResponse());
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      // Initially not all are granted in first group (Users.Create is false)
+      expect(result.current.selectThisTab).toBe(false);
+
+      act(() => {
+        result.current.toggleSelectThisTab();
+      });
+
+      // All permissions in the selected group (IdentityManagement) should be granted
+      const groupPermNames = ['AbpIdentity.Users', 'AbpIdentity.Users.Create', 'AbpIdentity.Users.Update'];
+      for (const name of groupPermNames) {
+        expect(result.current.isGranted(name)).toBe(true);
+      }
+      expect(result.current.selectThisTab).toBe(true);
+    });
+
+    it('should deselect all permissions in the current tab when toggled off', async () => {
+      mockGet.mockResolvedValue(createMockPermissionResponse());
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      // First select all in tab
+      act(() => {
+        result.current.toggleSelectThisTab();
+      });
+
+      expect(result.current.selectThisTab).toBe(true);
+
+      // Then deselect all in tab
+      act(() => {
+        result.current.toggleSelectThisTab();
+      });
+
+      // All permissions in the selected group should be un-granted
+      const groupPermNames = ['AbpIdentity.Users', 'AbpIdentity.Users.Create', 'AbpIdentity.Users.Update'];
+      for (const name of groupPermNames) {
+        expect(result.current.isGranted(name)).toBe(false);
+      }
+      expect(result.current.selectThisTab).toBe(false);
+    });
+
+    it('should not affect permissions in other groups', async () => {
+      mockGet.mockResolvedValue(createMockPermissionResponse());
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      // TenantManagement permission is initially not granted
+      expect(result.current.isGranted('AbpTenantManagement.Tenants')).toBe(false);
+
+      // Toggle select all in tab (IdentityManagement is selected)
+      act(() => {
+        result.current.toggleSelectThisTab();
+      });
+
+      // TenantManagement permission should still not be granted
+      expect(result.current.isGranted('AbpTenantManagement.Tenants')).toBe(false);
+    });
+
+    it('should do nothing when no group is selected', () => {
+      const { result } = renderHook(() => usePermissionManagement());
+
+      // No group selected, should not throw
+      act(() => {
+        result.current.toggleSelectThisTab();
+      });
+
+      expect(result.current.permissions).toEqual([]);
+    });
+  });
+
+  describe('setSelectedGroup', () => {
+    it('should change the selected group', async () => {
+      mockGet.mockResolvedValue(createMockPermissionResponse());
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      // Initially first group is selected
+      expect(result.current.selectedGroup?.name).toBe('IdentityManagement');
+
+      // Change to second group
+      act(() => {
+        result.current.setSelectedGroup(result.current.groups[1]);
+      });
+
+      expect(result.current.selectedGroup?.name).toBe('TenantManagement');
+    });
+
+    it('should update tab permissions view after group change', async () => {
+      mockGet.mockResolvedValue(createMockPermissionResponse());
+
+      const { result } = renderHook(() => usePermissionManagement());
+
+      await act(async () => {
+        await result.current.fetchPermissions('admin', 'R');
+      });
+
+      // Change to second group
+      act(() => {
+        result.current.setSelectedGroup(result.current.groups[1]);
+      });
+
+      // Get permissions for the new selected group
+      const groupPerms = result.current.getSelectedGroupPermissions();
+      expect(groupPerms.length).toBe(1);
+      expect(groupPerms[0].name).toBe('AbpTenantManagement.Tenants');
+    });
+  });
+
   describe('getSelectedGroupPermissions', () => {
     it('should return empty array when no group selected', () => {
       const { result } = renderHook(() => usePermissionManagement());
@@ -472,7 +680,7 @@ describe('usePermissionManagement', () => {
     });
 
     it('should return permissions with margins for selected group', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -497,7 +705,7 @@ describe('usePermissionManagement', () => {
     });
 
     it('should return 0 for non-existent group', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -509,7 +717,7 @@ describe('usePermissionManagement', () => {
     });
 
     it('should return correct count for group with granted permissions', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -522,7 +730,7 @@ describe('usePermissionManagement', () => {
     });
 
     it('should return 0 for group with no granted permissions', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -535,7 +743,7 @@ describe('usePermissionManagement', () => {
     });
 
     it('should update count when permissions are toggled', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -557,7 +765,7 @@ describe('usePermissionManagement', () => {
     });
 
     it('should reflect changes after toggleSelectAll', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 
@@ -587,7 +795,7 @@ describe('usePermissionManagement', () => {
 
   describe('reset', () => {
     it('should reset all state to initial values', async () => {
-      mockGetPermissions.mockResolvedValue(createMockPermissionResponse());
+      mockGet.mockResolvedValue(createMockPermissionResponse());
 
       const { result } = renderHook(() => usePermissionManagement());
 

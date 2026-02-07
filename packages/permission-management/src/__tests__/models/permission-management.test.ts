@@ -113,8 +113,8 @@ describe('PermissionManagement models', () => {
     });
   });
 
-  describe('PermissionManagement.State', () => {
-    it('should define State interface with permissionRes', () => {
+  describe('PermissionManagement.State (v4.0.0)', () => {
+    it('should define State interface with permissionRes using GetPermissionListResultDto', () => {
       const state: PermissionManagement.State = {
         permissionRes: {
           entityDisplayName: 'Admin',
@@ -127,135 +127,8 @@ describe('PermissionManagement models', () => {
     });
   });
 
-  describe('PermissionManagement.Response', () => {
-    it('should define Response with entityDisplayName and groups', () => {
-      const response: PermissionManagement.Response = {
-        entityDisplayName: 'Test Entity',
-        groups: [
-          {
-            name: 'TestGroup',
-            displayName: 'Test Group',
-            permissions: [],
-          },
-        ],
-      };
-
-      expect(response.entityDisplayName).toBe('Test Entity');
-      expect(response.groups).toHaveLength(1);
-    });
-  });
-
-  describe('PermissionManagement.Group', () => {
-    it('should define Group with name, displayName, and permissions', () => {
-      const group: PermissionManagement.Group = {
-        name: 'IdentityManagement',
-        displayName: 'Identity Management',
-        permissions: [
-          {
-            name: 'AbpIdentity.Users',
-            displayName: 'User Management',
-            isGranted: true,
-            parentName: '',
-            allowedProviders: ['R', 'U'],
-            grantedProviders: [],
-          },
-        ],
-      };
-
-      expect(group.name).toBe('IdentityManagement');
-      expect(group.displayName).toBe('Identity Management');
-      expect(group.permissions).toHaveLength(1);
-    });
-  });
-
-  describe('PermissionManagement.Permission', () => {
-    it('should define Permission with all properties', () => {
-      const permission: PermissionManagement.Permission = {
-        name: 'AbpIdentity.Users',
-        displayName: 'User Management',
-        isGranted: true,
-        parentName: '',
-        allowedProviders: ['R', 'U'],
-        grantedProviders: [{ providerName: 'R', providerKey: 'admin' }],
-      };
-
-      expect(permission.name).toBe('AbpIdentity.Users');
-      expect(permission.displayName).toBe('User Management');
-      expect(permission.isGranted).toBe(true);
-      expect(permission.parentName).toBe('');
-      expect(permission.allowedProviders).toEqual(['R', 'U']);
-      expect(permission.grantedProviders).toHaveLength(1);
-    });
-
-    it('should handle permission with parent', () => {
-      const permission: PermissionManagement.Permission = {
-        name: 'AbpIdentity.Users.Create',
-        displayName: 'Create Users',
-        isGranted: false,
-        parentName: 'AbpIdentity.Users',
-        allowedProviders: ['R'],
-        grantedProviders: [],
-      };
-
-      expect(permission.parentName).toBe('AbpIdentity.Users');
-    });
-  });
-
-  describe('PermissionManagement.MinimumPermission', () => {
-    it('should define MinimumPermission with name and isGranted', () => {
-      const minPermission: PermissionManagement.MinimumPermission = {
-        name: 'AbpIdentity.Users',
-        isGranted: true,
-      };
-
-      expect(minPermission.name).toBe('AbpIdentity.Users');
-      expect(minPermission.isGranted).toBe(true);
-    });
-  });
-
-  describe('PermissionManagement.GrantedProvider', () => {
-    it('should define GrantedProvider with providerName and providerKey', () => {
-      const provider: PermissionManagement.GrantedProvider = {
-        providerName: 'R',
-        providerKey: 'admin',
-      };
-
-      expect(provider.providerName).toBe('R');
-      expect(provider.providerKey).toBe('admin');
-    });
-  });
-
-  describe('PermissionManagement.UpdateRequest', () => {
-    it('should define UpdateRequest with permissions, providerKey, providerName', () => {
-      const request: PermissionManagement.UpdateRequest = {
-        permissions: [
-          { name: 'AbpIdentity.Users', isGranted: true },
-          { name: 'AbpIdentity.Roles', isGranted: false },
-        ],
-        providerKey: 'role-id',
-        providerName: 'R',
-      };
-
-      expect(request.permissions).toHaveLength(2);
-      expect(request.providerKey).toBe('role-id');
-      expect(request.providerName).toBe('R');
-    });
-  });
-
-  describe('PermissionManagement.GetPermissionsParams', () => {
-    it('should define GetPermissionsParams with providerKey and providerName', () => {
-      const params: PermissionManagement.GetPermissionsParams = {
-        providerKey: 'user-id-123',
-        providerName: 'U',
-      };
-
-      expect(params.providerKey).toBe('user-id-123');
-      expect(params.providerName).toBe('U');
-    });
-  });
-
-  describe('PermissionWithMargin', () => {
-    it('should extend Permission with margin property', () => {
+  describe('PermissionWithMargin (v4.0.0 - extends PermissionGrantInfoDto)', () => {
+    it('should extend PermissionGrantInfoDto with margin property', () => {
       const permissionWithMargin: PermissionWithMargin = {
         name: 'AbpIdentity.Users.Create',
         displayName: 'Create Users',
@@ -321,8 +194,8 @@ describe('PermissionManagement models', () => {
     });
   });
 
-  describe('PermissionWithStyle (v3.2.0)', () => {
-    it('should extend Permission with style property', () => {
+  describe('PermissionWithStyle (v3.2.0, v4.0.0 - extends PermissionGrantInfoDto)', () => {
+    it('should extend PermissionGrantInfoDto with style property', () => {
       const permissionWithStyle: PermissionWithStyle = {
         name: 'AbpIdentity.Users.Create',
         displayName: 'Create Users',
@@ -366,43 +239,7 @@ describe('PermissionManagement models', () => {
       expect(permissionWithStyle.style).toContain('padding: 8px');
     });
 
-    it('should handle nested style levels', () => {
-      const level1: PermissionWithStyle = {
-        name: 'AbpIdentity.Users',
-        displayName: 'Users',
-        isGranted: true,
-        parentName: '',
-        allowedProviders: ['R'],
-        grantedProviders: [],
-        style: '',
-      };
-
-      const level2: PermissionWithStyle = {
-        name: 'AbpIdentity.Users.Create',
-        displayName: 'Create Users',
-        isGranted: true,
-        parentName: 'AbpIdentity.Users',
-        allowedProviders: ['R'],
-        grantedProviders: [],
-        style: 'margin-left: 24px',
-      };
-
-      const level3: PermissionWithStyle = {
-        name: 'AbpIdentity.Users.Create.Advanced',
-        displayName: 'Advanced Create',
-        isGranted: false,
-        parentName: 'AbpIdentity.Users.Create',
-        allowedProviders: ['R'],
-        grantedProviders: [],
-        style: 'margin-left: 48px',
-      };
-
-      expect(level1.style).toBe('');
-      expect(level2.style).toBe('margin-left: 24px');
-      expect(level3.style).toBe('margin-left: 48px');
-    });
-
-    it('should preserve all Permission properties', () => {
+    it('should preserve all PermissionGrantInfoDto properties', () => {
       const permission: PermissionWithStyle = {
         name: 'AbpIdentity.Roles',
         displayName: 'Role Management',
@@ -422,68 +259,6 @@ describe('PermissionManagement models', () => {
       expect(permission.allowedProviders).toEqual(['R', 'U']);
       expect(permission.grantedProviders).toHaveLength(1);
       expect(permission.style).toBe('font-weight: bold');
-    });
-  });
-
-  describe('Deprecated types (v3.2.0)', () => {
-    // Note: These types are deprecated but still supported for backwards compatibility
-    // Tests verify they still work as expected
-
-    it('should still support deprecated Response type', () => {
-      // @deprecated - use GetPermissionListResultDto from proxy instead
-      const response: PermissionManagement.Response = {
-        entityDisplayName: 'Test',
-        groups: [],
-      };
-
-      expect(response.entityDisplayName).toBe('Test');
-    });
-
-    it('should still support deprecated Group type', () => {
-      // @deprecated - use PermissionGroupDto from proxy instead
-      const group: PermissionManagement.Group = {
-        name: 'Test',
-        displayName: 'Test Group',
-        permissions: [],
-      };
-
-      expect(group.name).toBe('Test');
-    });
-
-    it('should still support deprecated MinimumPermission type', () => {
-      // @deprecated - use UpdatePermissionDto from proxy instead
-      const minPerm: PermissionManagement.MinimumPermission = {
-        name: 'Test',
-        isGranted: true,
-      };
-
-      expect(minPerm.name).toBe('Test');
-    });
-
-    it('should still support deprecated UpdateRequest type', () => {
-      // @deprecated - use UpdatePermissionsDto from proxy instead
-      const request: PermissionManagement.UpdateRequest = {
-        permissions: [],
-        providerKey: 'key',
-        providerName: 'R',
-      };
-
-      expect(request.providerName).toBe('R');
-    });
-
-    it('should still support deprecated PermissionWithMargin type', () => {
-      // @deprecated - use PermissionWithStyle instead
-      const perm: PermissionWithMargin = {
-        name: 'Test',
-        displayName: 'Test',
-        isGranted: true,
-        parentName: '',
-        allowedProviders: [],
-        grantedProviders: [],
-        margin: 24,
-      };
-
-      expect(perm.margin).toBe(24);
     });
   });
 });

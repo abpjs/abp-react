@@ -9,6 +9,13 @@
  *
  * @since 1.1.0
  *
+ * Changes in v4.0.0:
+ * - Migrated from PermissionManagementService to PermissionsService (proxy)
+ * - Uses proxy DTOs (PermissionGroupDto, ProviderInfoDto, etc.) instead of legacy types
+ * - getPermissionGroups() now returns PermissionGroupDto[] instead of PermissionManagement.Group[]
+ * - dispatchGetPermissions() now accepts ProviderInfoDto and returns GetPermissionListResultDto
+ * - dispatchUpdatePermissions() now accepts ProviderInfoDto & UpdatePermissionsDto
+ *
  * Changes in v2.0.0:
  * - Added dispatchGetPermissions() method
  * - Added dispatchUpdatePermissions() method
@@ -24,11 +31,11 @@
  * }
  *
  * // Or use the state service for programmatic access:
- * import { PermissionManagementStateService, PermissionManagementService } from '@abpjs/permission-management';
+ * import { PermissionManagementStateService, PermissionsService } from '@abpjs/permission-management';
  * import { RestService } from '@abpjs/core';
  *
  * const rest = new RestService();
- * const service = new PermissionManagementService(rest);
+ * const service = new PermissionsService(rest);
  * const stateService = new PermissionManagementStateService(service);
  *
  * // Fetch permissions
@@ -37,32 +44,36 @@
  * ```
  */
 
-import type { PermissionManagement } from '../models';
-import { PermissionManagementService } from './permission-management.service';
+import type { PermissionGroupDto, GetPermissionListResultDto, ProviderInfoDto, UpdatePermissionsDto } from '../proxy/models';
+import { PermissionsService } from '../proxy/permissions.service';
 
 /**
  * State service for permission management
  *
  * Note: In React, this is primarily for API compatibility with Angular.
  * The preferred approach is to use the usePermissionManagement hook directly.
+ *
+ * @updated 4.0.0 - Migrated from PermissionManagementService to PermissionsService
  */
 export class PermissionManagementStateService {
-  private _groups: PermissionManagement.Group[] = [];
+  private _groups: PermissionGroupDto[] = [];
   private _entityDisplayName: string = '';
-  private _permissionService?: PermissionManagementService;
+  private _permissionService?: PermissionsService;
 
   /**
    * Create a new PermissionManagementStateService
    * @param permissionService Optional service for API calls. Required for dispatch methods.
+   * @updated 4.0.0 - Now accepts PermissionsService instead of PermissionManagementService
    */
-  constructor(permissionService?: PermissionManagementService) {
+  constructor(permissionService?: PermissionsService) {
     this._permissionService = permissionService;
   }
 
   /**
    * Set the permission groups
+   * @updated 4.0.0 - Accepts PermissionGroupDto[] instead of PermissionManagement.Group[]
    */
-  setGroups(groups: PermissionManagement.Group[]): void {
+  setGroups(groups: PermissionGroupDto[]): void {
     this._groups = groups;
   }
 
@@ -75,8 +86,9 @@ export class PermissionManagementStateService {
 
   /**
    * Get the permission groups
+   * @updated 4.0.0 - Returns PermissionGroupDto[] instead of PermissionManagement.Group[]
    */
-  getPermissionGroups(): PermissionManagement.Group[] {
+  getPermissionGroups(): PermissionGroupDto[] {
     return this._groups;
   }
 
@@ -90,20 +102,21 @@ export class PermissionManagementStateService {
   /**
    * Dispatch get permissions action
    * Fetches permissions from the API and updates internal state.
-   * @param params Provider key and name
+   * @param params Provider info (providerName and providerKey)
    * @returns Promise with the permission response
    * @since 2.0.0
+   * @updated 4.0.0 - Accepts ProviderInfoDto, returns GetPermissionListResultDto, uses PermissionsService
    */
   async dispatchGetPermissions(
-    params: PermissionManagement.GetPermissionsParams
-  ): Promise<PermissionManagement.Response> {
+    params: ProviderInfoDto
+  ): Promise<GetPermissionListResultDto> {
     if (!this._permissionService) {
       throw new Error(
-        'PermissionManagementService is required for dispatchGetPermissions. Pass it to the constructor.'
+        'PermissionsService is required for dispatchGetPermissions. Pass it to the constructor.'
       );
     }
 
-    const response = await this._permissionService.getPermissions(params);
+    const response = await this._permissionService.get(params.providerName, params.providerKey);
     this._groups = response.groups;
     this._entityDisplayName = response.entityDisplayName;
     return response;
@@ -112,20 +125,23 @@ export class PermissionManagementStateService {
   /**
    * Dispatch update permissions action
    * Updates permissions via the API.
-   * @param request Update request with permissions, providerKey and providerName
+   * @param request Provider info combined with update permissions DTO
    * @returns Promise that resolves when update completes
    * @since 2.0.0
+   * @updated 4.0.0 - Accepts ProviderInfoDto & UpdatePermissionsDto, uses PermissionsService
    */
   async dispatchUpdatePermissions(
-    request: PermissionManagement.UpdateRequest
+    request: ProviderInfoDto & UpdatePermissionsDto
   ): Promise<void> {
     if (!this._permissionService) {
       throw new Error(
-        'PermissionManagementService is required for dispatchUpdatePermissions. Pass it to the constructor.'
+        'PermissionsService is required for dispatchUpdatePermissions. Pass it to the constructor.'
       );
     }
 
-    await this._permissionService.updatePermissions(request);
+    await this._permissionService.update(request.providerName, request.providerKey, {
+      permissions: request.permissions,
+    });
     // Refresh permissions after update
     await this.dispatchGetPermissions({
       providerKey: request.providerKey,
