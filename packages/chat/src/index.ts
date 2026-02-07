@@ -1,7 +1,11 @@
 /**
  * @abpjs/chat
  * ABP Framework Chat module for React
- * Translated from @volo/abp.ng.chat and @volo/abp.ng.chat.config v3.1.0
+ * Translated from @volo/abp.ng.chat and @volo/abp.ng.chat.config v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - Version bump only (dependency updates to @abp/ng.theme.shared ~3.2.0)
+ * - No public API changes
  *
  * Changes in v3.1.0:
  * - Internal Angular refactoring (subscription management in ChatIconComponent)

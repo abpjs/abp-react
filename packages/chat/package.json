@@ -44,7 +44,7 @@
     "@microsoft/signalr": "^8.0.0"
   },
   "devDependencies": {
-    "@volo/abp.ng.chat": "3.1.0",
+    "@volo/abp.ng.chat": "3.2.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.6.1",

@@ -457,8 +457,8 @@ importers:
         specifier: ^1.0.0
         version: 1.6.1(vitest@1.6.1(@types/node@24.10.7)(jsdom@24.1.3))
       '@volo/abp.ng.chat':
-        specifier: 3.1.0
-        version: 3.1.0(@abp/ng.theme.shared@3.2.1(ee9c946870c5320630326589f8390518))(angular-oauth2-oidc@10.0.3(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))
+        specifier: 3.2.0
+        version: 3.2.0(@abp/ng.theme.shared@3.2.1(ee9c946870c5320630326589f8390518))(angular-oauth2-oidc@10.0.3(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))
       autoprefixer:
         specifier: ^10.4.16
         version: 10.4.23(postcss@8.5.6)
@@ -2740,10 +2740,10 @@ packages:
   '@volo/abp.ng.audit-logging@3.2.0':
     resolution: {integrity: sha512-DXK+oaz5vi6loQPl9aecJT0zYx3kMgAlyH+4QFVcz+AfCh8PT2TGSk+wU4h1K2GGBdF35WsjTa5wblKsOJrt9Q==}
 
-  '@volo/abp.ng.chat@3.1.0':
-    resolution: {integrity: sha512-TdZQCB+W0Etw0zU95Maf+iHebf/ToE/3UXqnRJ3aEgXgLKTU5xa+erO4tBcQSatm7xIzESokNEpdw4WpO/r5bA==}
+  '@volo/abp.ng.chat@3.2.0':
+    resolution: {integrity: sha512-u/nuW0S9OPhboHOHsC+WVVlC/VWIVdRXCrKiivECQ+iFl4AWWmdm4eM/2vupb6L3/gDFnkw9USQbF8mZc0LNLw==}
     peerDependencies:
-      '@abp/ng.theme.shared': '>=3.1.0'
+      '@abp/ng.theme.shared': '>=3.2.0'
       angular-oauth2-oidc: '>=9.0.0'
 
   '@volo/abp.ng.identity@3.1.0':
@@ -7782,7 +7782,7 @@ snapshots:
       - rxjs
       - supports-color
 
-  '@volo/abp.ng.chat@3.1.0(@abp/ng.theme.shared@3.2.1(ee9c946870c5320630326589f8390518))(angular-oauth2-oidc@10.0.3(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))':
+  '@volo/abp.ng.chat@3.2.0(@abp/ng.theme.shared@3.2.1(ee9c946870c5320630326589f8390518))(angular-oauth2-oidc@10.0.3(@angular/common@21.1.0(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10))(rxjs@7.8.2))(@angular/core@17.3.12(rxjs@7.8.2)(zone.js@0.14.10)))':
     dependencies:
       '@abp/ng.theme.shared': 3.2.1(ee9c946870c5320630326589f8390518)
       '@microsoft/signalr': 3.1.31
