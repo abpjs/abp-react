@@ -92,3 +92,36 @@ export namespace TextTemplateManagement {
     sorting?: string;
   }
 }
+
+/**
+ * Input for getting template definition list
+ * Extends PagedResultRequestDto with optional filterText
+ * @since 3.1.0
+ */
+export interface GetTemplateDefinitionListInput {
+  /** Filter text for searching templates */
+  filterText?: string;
+  /** Skip count for pagination */
+  skipCount?: number;
+  /** Max result count for pagination */
+  maxResultCount?: number;
+  /** Sorting field and order */
+  sorting?: string;
+}
+
+/**
+ * Factory function to create GetTemplateDefinitionListInput
+ * @param initialValues Optional initial values
+ * @returns GetTemplateDefinitionListInput instance
+ * @since 3.1.0
+ */
+export function createGetTemplateDefinitionListInput(
+  initialValues?: Partial<GetTemplateDefinitionListInput>
+): GetTemplateDefinitionListInput {
+  return {
+    filterText: initialValues?.filterText,
+    skipCount: initialValues?.skipCount ?? 0,
+    maxResultCount: initialValues?.maxResultCount ?? 10,
+    sorting: initialValues?.sorting,
+  };
+}
