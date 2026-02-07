@@ -14,6 +14,9 @@ import { LanguageManagement } from '../models';
  *
  * @since 2.0.0
  * @updated 2.4.0 - Added apiName property
+ * @deprecated To be deleted in v5.0. Use the proxy services instead:
+ * - LanguageService from proxy/language.service
+ * - LanguageTextService from proxy/language-text.service
  */
 export class LanguageManagementService {
   private rest: RestService;

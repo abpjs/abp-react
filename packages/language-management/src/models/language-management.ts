@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Language Management Models
- * Translated from @volo/abp.ng.language-management v3.2.0
+ * Translated from @volo/abp.ng.language-management v4.0.0
  *
  * @since 2.0.0
  * @updated 3.2.0 - State now uses new proxy types, legacy types deprecated
+ * @updated 4.0.0 - State.languageResponse changed to PagedResultDto, deprecated types kept for v5.0
  */
 
-import type { ABP, ListResultDto, PagedResultDto } from '@abpjs/core';
+import type { ABP, PagedResultDto } from '@abpjs/core';
 import type {
   CultureInfoDto,
   LanguageDto,
@@ -23,30 +24,37 @@ export namespace LanguageManagement {
   /**
    * State interface for language management
    * @updated 3.2.0 - Now uses new proxy types
+   * @updated 4.0.0 - languageResponse changed from ListResultDto to PagedResultDto
    */
   export interface State {
-    languageResponse: ListResultDto<LanguageDto>;
+    languageResponse: PagedResultDto<LanguageDto>;
     languageTextsResponse: PagedResultDto<LanguageTextDto>;
     selectedItem: LanguageDto | null;
     cultures: CultureInfoDto[];
     resources: LanguageResourceDto[];
   }
 
+  // ========================
+  // Deprecated types - To be deleted in v5.0
+  // These are kept for backward compatibility with consumers
+  // that haven't migrated to proxy/dto/models yet.
+  // ========================
+
   /**
    * Paginated response of languages
-   * @deprecated To be deleted in v4.0. Use ListResultDto<LanguageDto> instead.
+   * @deprecated To be deleted in v5.0. Use PagedResultDto<LanguageDto> instead.
    */
   export type LanguageResponse = ABP.PagedResponse<Language>;
 
   /**
    * Paginated response of language texts
-   * @deprecated To be deleted in v4.0. Use PagedResultDto<LanguageTextDto> instead.
+   * @deprecated To be deleted in v5.0. Use PagedResultDto<LanguageTextDto> instead.
    */
   export type LanguageTextResponse = ABP.PagedResponse<LanguageText>;
 
   /**
    * Culture information for localization
-   * @deprecated To be deleted in v4.0. Use CultureInfoDto from proxy/dto instead.
+   * @deprecated To be deleted in v5.0. Use CultureInfoDto from proxy/dto instead.
    */
   export interface Culture {
     displayName: string;
@@ -55,7 +63,7 @@ export namespace LanguageManagement {
 
   /**
    * Resource containing localization strings
-   * @deprecated To be deleted in v4.0. Use LanguageResourceDto from proxy/dto instead.
+   * @deprecated To be deleted in v5.0. Use LanguageResourceDto from proxy/dto instead.
    */
   export interface Resource {
     name: string;
@@ -63,7 +71,7 @@ export namespace LanguageManagement {
 
   /**
    * Language entity
-   * @deprecated To be deleted in v4.0. Use LanguageDto from proxy/dto instead.
+   * @deprecated To be deleted in v5.0. Use LanguageDto from proxy/dto instead.
    */
   export interface Language {
     id: string;
@@ -79,7 +87,7 @@ export namespace LanguageManagement {
 
   /**
    * Input for updating a language
-   * @deprecated To be deleted in v4.0. Use UpdateLanguageDto from proxy/dto instead.
+   * @deprecated To be deleted in v5.0. Use UpdateLanguageDto from proxy/dto instead.
    */
   export interface UpdateLanguageInput {
     isEnabled: boolean;
@@ -89,7 +97,7 @@ export namespace LanguageManagement {
 
   /**
    * Input for creating a new language
-   * @deprecated To be deleted in v4.0. Use CreateLanguageDto from proxy/dto instead.
+   * @deprecated To be deleted in v5.0. Use CreateLanguageDto from proxy/dto instead.
    */
   export interface CreateLanguageInput extends UpdateLanguageInput {
     cultureName: string;
@@ -98,7 +106,7 @@ export namespace LanguageManagement {
 
   /**
    * Language text (localization string) entity
-   * @deprecated To be deleted in v4.0. Use LanguageTextDto from proxy/dto instead.
+   * @deprecated To be deleted in v5.0. Use LanguageTextDto from proxy/dto instead.
    */
   export interface LanguageText {
     resourceName: string;
@@ -111,7 +119,7 @@ export namespace LanguageManagement {
 
   /**
    * Query parameters for fetching language texts
-   * @deprecated To be deleted in v4.0. Use GetLanguagesTextsInput from proxy/dto instead.
+   * @deprecated To be deleted in v5.0. Use GetLanguagesTextsInput from proxy/dto instead.
    */
   export interface LanguageTextQueryParams extends ABP.PageQueryParams {
     resourceName?: string;
@@ -122,7 +130,7 @@ export namespace LanguageManagement {
 
   /**
    * Parameters for requesting a language text by name
-   * @deprecated To be deleted in v4.0. Use individual parameters instead.
+   * @deprecated To be deleted in v5.0. Use individual parameters instead.
    */
   export interface LanguageTextRequestByNameParams {
     resourceName: string;
@@ -132,7 +140,7 @@ export namespace LanguageManagement {
 
   /**
    * Parameters for updating a language text by name
-   * @deprecated To be deleted in v4.0. Use individual parameters instead.
+   * @deprecated To be deleted in v5.0. Use individual parameters instead.
    */
   export interface LanguageTextUpdateByNameParams extends LanguageTextRequestByNameParams {
     value?: string;

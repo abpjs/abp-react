@@ -3,6 +3,7 @@
  * @since 2.0.0
  * @updated 3.0.0 - Removed getLanguagesTotalCount() tests (removed in v3.0.0)
  * @updated 3.2.0 - Updated to use new proxy services
+ * @updated 4.0.0 - Re-added getLanguagesTotalCount() tests, mockLanguageResponse now PagedResultDto
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -62,6 +63,7 @@ describe('LanguageManagementStateService', () => {
 
   const mockLanguageResponse = {
     items: [mockLanguage],
+    totalCount: 1,
   };
 
   const mockLanguageText: LanguageTextDto = {
@@ -104,7 +106,7 @@ describe('LanguageManagementStateService', () => {
     });
 
     it('should return zero for initial total counts', () => {
-      // Note: getLanguagesTotalCount() was removed in v3.0.0
+      expect(stateService.getLanguagesTotalCount()).toBe(0);
       expect(stateService.getLanguageTextsTotalCount()).toBe(0);
     });
 
@@ -114,7 +116,7 @@ describe('LanguageManagementStateService', () => {
       await stateService.dispatchGetLanguages();
 
       expect(stateService.getLanguages()).toEqual([mockLanguage]);
-      // Note: getLanguagesTotalCount() was removed in v3.0.0
+      expect(stateService.getLanguagesTotalCount()).toBe(1);
     });
 
     it('should return language texts after dispatch', async () => {
@@ -347,7 +349,7 @@ describe('LanguageManagementStateService', () => {
     });
 
     it('should handle empty responses', async () => {
-      mockLanguageService.getList.mockResolvedValue({ items: [] });
+      mockLanguageService.getList.mockResolvedValue({ items: [], totalCount: 0 });
       mockLanguageTextService.getList.mockResolvedValue({ items: [], totalCount: 0 });
       mockLanguageService.getCulturelist.mockResolvedValue([]);
       mockLanguageService.getResources.mockResolvedValue([]);
@@ -362,7 +364,7 @@ describe('LanguageManagementStateService', () => {
       await stateService.dispatchGetLanguageResources();
 
       expect(stateService.getLanguages()).toEqual([]);
-      // Note: getLanguagesTotalCount() was removed in v3.0.0
+      expect(stateService.getLanguagesTotalCount()).toBe(0);
       expect(stateService.getLanguageTexts()).toEqual([]);
       expect(stateService.getLanguageTextsTotalCount()).toBe(0);
       expect(stateService.getCultures()).toEqual([]);
@@ -374,7 +376,7 @@ describe('LanguageManagementStateService', () => {
     it('should handle undefined languageResponse items gracefully', () => {
       // Access getters before any state is set - should return defaults
       expect(stateService.getLanguages()).toEqual([]);
-      // Note: getLanguagesTotalCount() was removed in v3.0.0
+      expect(stateService.getLanguagesTotalCount()).toBe(0);
     });
 
     it('should handle undefined languageTextsResponse items gracefully', () => {
@@ -399,12 +401,57 @@ describe('LanguageManagementStateService', () => {
 
       mockLanguageService.getList.mockResolvedValue({
         items: manyLanguages,
+        totalCount: 500,
       });
 
       await stateService.dispatchGetLanguages({ maxResultCount: 100 });
 
       expect(stateService.getLanguages()).toHaveLength(100);
-      // Note: getLanguagesTotalCount() was removed in v3.0.0
+      expect(stateService.getLanguagesTotalCount()).toBe(500);
+    });
+  });
+
+  describe('v4.0.0 - getLanguagesTotalCount', () => {
+    it('should return 0 before any dispatch', () => {
+      expect(stateService.getLanguagesTotalCount()).toBe(0);
+    });
+
+    it('should return totalCount from dispatched response', async () => {
+      mockLanguageService.getList.mockResolvedValue({
+        items: [mockLanguage],
+        totalCount: 42,
+      });
+
+      await stateService.dispatchGetLanguages();
+
+      expect(stateService.getLanguagesTotalCount()).toBe(42);
+    });
+
+    it('should update totalCount when response changes', async () => {
+      mockLanguageService.getList.mockResolvedValue({
+        items: [mockLanguage],
+        totalCount: 10,
+      });
+      await stateService.dispatchGetLanguages();
+      expect(stateService.getLanguagesTotalCount()).toBe(10);
+
+      mockLanguageService.getList.mockResolvedValue({
+        items: [],
+        totalCount: 0,
+      });
+      await stateService.dispatchGetLanguages();
+      expect(stateService.getLanguagesTotalCount()).toBe(0);
+    });
+
+    it('should default to 0 when totalCount is undefined', async () => {
+      mockLanguageService.getList.mockResolvedValue({
+        items: [mockLanguage],
+      });
+
+      await stateService.dispatchGetLanguages();
+
+      // totalCount not in response - should fallback to 0
+      expect(stateService.getLanguagesTotalCount()).toBe(0);
     });
   });
 
