@@ -34,12 +34,12 @@ jobs:
         run: pnpm type-check
 
       - name: Test with coverage
-        run: pnpm -r run test -- --coverage
+        run: pnpm -r run test --coverage
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          directory: ./  # This forces a search through all subdirectories
+          files: "packages/**/coverage/lcov.info"
           fail_ci_if_error: true # Helps you see exactly why it fails
           verbose: true # This will show you exactly which files it finds

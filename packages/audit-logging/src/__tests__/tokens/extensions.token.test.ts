@@ -18,7 +18,6 @@ import {
   type ToolbarActionContributorCallback,
 } from '../../tokens/extensions.token';
 import type { AuditLogging } from '../../models/audit-logging';
-import type { EntityChange } from '../../models/entity-change';
 
 describe('extensions.token (v3.0.0)', () => {
   describe('DEFAULT_AUDIT_LOGGING_ENTITY_ACTIONS', () => {

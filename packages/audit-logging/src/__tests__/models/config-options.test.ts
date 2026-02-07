@@ -7,8 +7,6 @@ import {
   type AuditLoggingConfigOptions,
   DEFAULT_AUDIT_LOGGING_CONFIG_OPTIONS,
 } from '../../models/config-options';
-import type { AuditLogging } from '../../models/audit-logging';
-import type { EntityChange } from '../../models/entity-change';
 
 describe('config-options (v3.0.0)', () => {
   describe('DEFAULT_AUDIT_LOGGING_CONFIG_OPTIONS', () => {

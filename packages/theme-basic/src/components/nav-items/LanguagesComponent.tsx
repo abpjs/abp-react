@@ -86,7 +86,7 @@ export function LanguagesComponent({
   }, [languages, language]);
 
   // Get selected language culture
-  const selectedLangCulture = language || '';
+  const _selectedLangCulture = language || '';
 
   // Handle language change
   const handleChangeLang = useCallback(

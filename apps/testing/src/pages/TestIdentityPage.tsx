@@ -1732,6 +1732,19 @@ addRoutes()`}</pre>
       </div>
 
       <div className="test-card">
+        <h3>Route Initialization Example</h3>
+        <p>Simplified route initialization with configureRoutes:</p>
+        <pre style={{ fontSize: '12px' }}>{`import { configureRoutes, getRoutesService } from '@abpjs/identity'
+
+// In your app initialization:
+const routes = getRoutesService()
+configureRoutes(routes)()`}</pre>
+        <p style={{ fontSize: '12px', color: '#888', marginTop: '0.5rem' }}>
+          This helper uses RoutesService to add all identity routes.
+        </p>
+      </div>
+
+      <div className="test-card">
         <h3>getUserAssignableRoles() Method</h3>
         <p>New method to fetch roles that can be assigned to users:</p>
         <pre style={{ fontSize: '12px' }}>{`const service = new IdentityService(restService)

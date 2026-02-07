@@ -2,8 +2,8 @@
  * Tests for extensions.guard.ts
  * @since 3.0.0
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { renderHook, waitFor } from '@testing-library/react';
 import {
   textTemplateManagementExtensionsGuard,
   useTextTemplateManagementExtensionsGuard,

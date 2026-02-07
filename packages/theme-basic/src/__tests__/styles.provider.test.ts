@@ -1,7 +1,7 @@
 /**
  * Tests for styles.provider v3.0.0
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   THEME_BASIC_STYLES,
   injectThemeBasicStyles,
@@ -11,11 +11,8 @@ import {
 } from '../providers/styles.provider';
 
 describe('styles.provider', () => {
-  let originalHead: HTMLElement;
-
   beforeEach(() => {
-    // Store original head and clear any injected styles
-    originalHead = document.head;
+    // Clear any injected styles
     const existingStyle = document.getElementById('abpjs-theme-basic-styles');
     if (existingStyle) {
       existingStyle.remove();

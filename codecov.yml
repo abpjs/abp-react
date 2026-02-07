@@ -3,6 +3,11 @@
 # See: https://docs.codecov.com/docs/components
 # Path fixing: https://docs.codecov.com/docs/fixing-paths
 
+# Exclude demo/testing app: not collected, so its lines are not counted as
+# covered, uncovered, or not testable in the report.
+ignore:
+  - "apps/testing"
+
 fixes:
   # Strip GitHub Actions workspace prefix so paths match git structure
   - "/home/runner/work/abp-react/abp-react/::"
@@ -15,6 +20,9 @@ coverage:
     patch:
       default:
         target: auto
+  precision: 2
+  round: down
+  range: "70...100"
 
 comment:
   layout: "condensed_header, diff, flags, components"

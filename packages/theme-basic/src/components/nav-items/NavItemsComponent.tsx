@@ -32,13 +32,13 @@ export interface NavItemsComponentProps {
  * ```
  */
 export function NavItemsComponent({
-  smallScreen = false,
+  smallScreen: _smallScreen = false,
 }: NavItemsComponentProps): React.ReactElement {
   // Get nav items from NavItemsService
   const navItems = useNavItems();
 
   // Track function for nav items
-  const trackByFn = useCallback((item: NavItem): string | number => {
+  const _trackByFn = useCallback((item: NavItem): string | number => {
     return item.id;
   }, []);
 
