@@ -1,6 +1,6 @@
 /**
  * LanguagesComponent
- * Translated from @abp/ng.theme.basic/lib/components/nav-items/languages.component.ts v3.0.0
+ * Translated from @abp/ng.theme.basic/lib/components/nav-items/languages.component.ts v4.0.0
  *
  * Public API component for displaying the language selector nav item.
  * Can be replaced using the component replacement system with eThemeBasicComponents.Languages.
@@ -18,7 +18,7 @@ import {
   type SystemStyleObject,
 } from '@chakra-ui/react';
 import { LuChevronDown, LuGlobe } from 'react-icons/lu';
-import { useConfig, useSession, ApplicationConfiguration } from '@abpjs/core';
+import { useConfig, useSession, type LanguageInfo } from '@abpjs/core';
 
 /**
  * Props for the LanguagesComponent.
@@ -66,7 +66,7 @@ export function LanguagesComponent({
   const { language, setLanguage } = useSession();
 
   // Get all available languages
-  const languages = useMemo<ApplicationConfiguration.Language[]>(() => {
+  const languages = useMemo<LanguageInfo[]>(() => {
     return localization?.languages || [];
   }, [localization]);
 
@@ -133,8 +133,8 @@ export function LanguagesComponent({
             {dropdownLanguages.map((lang) => (
               <Menu.Item
                 key={lang.cultureName}
-                value={lang.cultureName}
-                onClick={() => handleChangeLang(lang.cultureName)}
+                value={lang.cultureName ?? ''}
+                onClick={() => handleChangeLang(lang.cultureName ?? '')}
               >
                 {lang.displayName || lang.cultureName}
               </Menu.Item>

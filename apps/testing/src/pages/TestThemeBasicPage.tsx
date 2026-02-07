@@ -8,6 +8,7 @@
  * @updated 3.0.0 - NavItemsService, CurrentUserComponent, LanguagesComponent, providers
  * @updated 3.1.0 - Angular SubscriptionService added (no React impact - uses CSS breakpoints)
  * @updated 3.2.0 - Reduced .abp-loading opacity from 0.1 to 0.05
+ * @updated 4.0.0 - LanguagesComponent uses LanguageInfo type, components use new service APIs
  */
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
@@ -770,10 +771,129 @@ layoutStateService.dispatchRemoveNavigationElementByName('my-element');`}
   )
 }
 
+// v4.0.0: Type migration and service API updates
+function TestV400Features() {
+  const config = useConfig()
+  const languages = config.localization?.languages || []
+
+  return (
+    <div className="test-section">
+      <h2>v4.0.0: Type Migrations & Service APIs</h2>
+
+      <div className="test-card">
+        <h3>LanguageInfo Type (replaces ApplicationConfiguration.Language)</h3>
+        <p>
+          In v4.0.0, <code>LanguagesComponent</code> migrated from the deprecated{' '}
+          <code>ApplicationConfiguration.Language</code> type to the new <code>LanguageInfo</code> type
+          from <code>@abpjs/core</code>.
+        </p>
+        <p>Key difference: all <code>LanguageInfo</code> fields are optional (vs required in the old type).</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: 'left', borderBottom: '1px solid #444', padding: '0.25rem' }}>Field</th>
+              <th style={{ textAlign: 'left', borderBottom: '1px solid #444', padding: '0.25rem' }}>Old (Language)</th>
+              <th style={{ textAlign: 'left', borderBottom: '1px solid #444', padding: '0.25rem' }}>New (LanguageInfo)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {['cultureName', 'uiCultureName', 'displayName', 'flagIcon'].map(field => (
+              <tr key={field}>
+                <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}><code>{field}</code></td>
+                <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>string (required)</td>
+                <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>string | undefined (optional)</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Current Languages (live from config)</h3>
+        <p>Languages available ({languages.length}):</p>
+        {languages.length > 0 ? (
+          <ul>
+            {languages.map((lang, i) => (
+              <li key={lang.cultureName || i}>
+                <strong>{lang.displayName || '(no displayName)'}</strong>{' '}
+                — cultureName: {lang.cultureName || '(undefined)'}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p style={{ color: '#888' }}>No languages configured.</p>
+        )}
+      </div>
+
+      <div className="test-card">
+        <h3>Angular → React Service Mapping (v4.0.0)</h3>
+        <p>Angular replaced Store/NGXS with dedicated services. React already uses equivalent hooks:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign: 'left', borderBottom: '1px solid #444', padding: '0.25rem' }}>Component</th>
+              <th style={{ textAlign: 'left', borderBottom: '1px solid #444', padding: '0.25rem' }}>Angular v3.x</th>
+              <th style={{ textAlign: 'left', borderBottom: '1px solid #444', padding: '0.25rem' }}>Angular v4.0</th>
+              <th style={{ textAlign: 'left', borderBottom: '1px solid #444', padding: '0.25rem' }}>React (unchanged)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>Logo</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>Store</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>EnvironmentService</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}><code>useBranding()</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>CurrentUser</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>Store</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>ConfigStateService + EnvironmentService</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}><code>useConfig()</code> + <code>useAuth()</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>Languages</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>Store</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>SessionStateService + ConfigStateService</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}><code>useConfig()</code> + <code>useSession()</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>Routes</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>routes</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}>routesService</td>
+              <td style={{ padding: '0.25rem', borderBottom: '1px solid #333' }}><code>useConfig().routes</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <p style={{ color: '#888', fontSize: '12px', marginTop: '8px' }}>
+          React hooks already abstract away the data source, so Angular's service migration required no React changes beyond the type update.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function TestVersionInfo() {
   return (
     <div className="test-section">
       <h2>Version Info</h2>
+
+      <div className="test-card">
+        <h3>What's New in v4.0.0</h3>
+        <p>Version 4.0.0 migrates to new proxy model types and Angular service APIs.</p>
+        <ul>
+          <li><strong>Type Change:</strong> <code>LanguagesComponent</code> uses <code>LanguageInfo</code> instead of deprecated <code>ApplicationConfiguration.Language</code></li>
+          <li><strong>Angular Change:</strong> <code>LogoComponent</code> uses <code>EnvironmentService</code> + <code>ApplicationInfo</code> instead of <code>Store</code></li>
+          <li><strong>Angular Change:</strong> <code>CurrentUserComponent</code> uses <code>ConfigStateService</code> + <code>CurrentUserDto</code></li>
+          <li><strong>Angular Change:</strong> <code>LanguagesComponent</code> uses <code>SessionStateService</code> + <code>ConfigStateService</code></li>
+          <li><strong>Angular Change:</strong> <code>RoutesComponent</code> renamed <code>routes</code> to <code>routesService</code></li>
+          <li><strong>React Status:</strong> Only <code>LanguagesComponent</code> type import changed; hooks already abstracted service patterns</li>
+        </ul>
+        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#1a2e1a', borderRadius: '4px', border: '1px solid #2e4a2e' }}>
+          <p style={{ color: '#6f6', margin: 0, fontSize: '14px' }}>
+            <strong>Minimal React impact:</strong> React's hook-based architecture already matches Angular's service-based v4.0.0 patterns.
+          </p>
+        </div>
+      </div>
 
       <div className="test-card">
         <h3>What's New in v3.2.0</h3>
@@ -988,12 +1108,13 @@ interface RoutesComponentProps {
 export function TestThemeBasicPage() {
   return (
     <div>
-      <h1>@abpjs/theme-basic Tests (v3.2.0)</h1>
+      <h1>@abpjs/theme-basic Tests (v4.0.0)</h1>
       <p>Testing layouts, navigation, NavItemsService, and new components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.2.0 - Reduced .abp-loading opacity for better UX
+        Version 4.0.0 - LanguagesComponent uses LanguageInfo type, components use new service APIs
       </p>
 
+      <TestV400Features />
       <TestVersionInfo />
       <TestV320Features />
       <TestV300Features />
