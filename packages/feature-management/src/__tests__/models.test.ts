@@ -28,15 +28,18 @@ describe('FeatureManagement Models', () => {
     it('should have required properties', () => {
       const feature: FeatureManagement.Feature = {
         name: 'TestFeature',
+        displayName: 'Test Feature',
         value: 'true',
       };
       expect(feature.name).toBe('TestFeature');
+      expect(feature.displayName).toBe('Test Feature');
       expect(feature.value).toBe('true');
     });
 
     it('should allow optional properties', () => {
       const feature: FeatureManagement.Feature = {
         name: 'TestFeature',
+        displayName: 'Test Feature',
         value: 'true',
         description: 'A test feature',
         valueType: {
@@ -52,18 +55,29 @@ describe('FeatureManagement Models', () => {
       expect(feature.depth).toBe(0);
       expect(feature.parentName).toBe('ParentFeature');
     });
+
+    it('should have displayName property (v3.1.0)', () => {
+      const feature: FeatureManagement.Feature = {
+        name: 'MyApp.EnableFeatureX',
+        displayName: 'Enable Feature X',
+        value: 'false',
+      };
+      expect(feature.name).toBe('MyApp.EnableFeatureX');
+      expect(feature.displayName).toBe('Enable Feature X');
+    });
   });
 
   describe('Features interface', () => {
     it('should contain features array', () => {
       const features: FeatureManagement.Features = {
         features: [
-          { name: 'Feature1', value: 'true' },
-          { name: 'Feature2', value: 'false' },
+          { name: 'Feature1', displayName: 'Feature 1', value: 'true' },
+          { name: 'Feature2', displayName: 'Feature 2', value: 'false' },
         ],
       };
       expect(features.features).toHaveLength(2);
       expect(features.features[0].name).toBe('Feature1');
+      expect(features.features[0].displayName).toBe('Feature 1');
     });
   });
 
