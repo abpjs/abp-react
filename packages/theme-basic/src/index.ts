@@ -2,9 +2,20 @@
  * @abpjs/theme-basic
  *
  * ABP Framework Theme Basic components for React.
- * Translated from @abp/ng.theme.basic v3.2.0
+ * Translated from @abp/ng.theme.basic v4.0.0
  *
  * This package provides the basic theme layout components for ABP React applications.
+ *
+ * Changes in v4.0.0:
+ * - LogoComponent: Angular now uses EnvironmentService + ApplicationInfo instead of Store + Config.Application
+ *   (React: no change needed, uses useBranding() context which already abstracts data source)
+ * - CurrentUserComponent: Angular now uses ConfigStateService + EnvironmentService + CurrentUserDto
+ *   (React: no change needed, already uses useConfig() + useAuth() hooks)
+ * - LanguagesComponent: Angular now uses SessionStateService + ConfigStateService + LanguageInfo
+ *   (React: updated type from deprecated ApplicationConfiguration.Language to LanguageInfo)
+ * - RoutesComponent: Angular renamed 'routes' property to 'routesService'
+ *   (React: no change needed, uses useConfig().routes hook)
+ * - Dependency update to @abp/ng.theme.shared v4.0.0
  *
  * Changes in v3.2.0:
  * - Reduced .abp-loading background opacity from 0.1 to 0.05 for better UX
@@ -51,7 +62,7 @@
  * - Dependency update to @abp/ng.theme.shared v2.2.0
  * - No functional code changes
  *
- * @version 3.2.0
+ * @version 4.0.0
  * @since 2.0.0 - Removed legacy .abp-confirm styles (no impact on React - we use Chakra UI)
  * @since 2.1.0 - Angular: OAuthService replaced with AuthService (already using useAuth in React)
  *              - Angular: Added styles for loading, modal-backdrop, confirmation (handled by Chakra UI)

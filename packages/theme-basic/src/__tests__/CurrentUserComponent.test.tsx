@@ -1,5 +1,5 @@
 /**
- * Tests for CurrentUserComponent v3.0.0
+ * Tests for CurrentUserComponent v4.0.0
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
