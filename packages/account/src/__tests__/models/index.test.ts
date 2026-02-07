@@ -104,7 +104,7 @@ describe('Account Models', () => {
   });
 
   describe('RegisterResponse', () => {
-    it('should have all properties', () => {
+    it('should have all required properties (v3.2.0 - twoFactorEnabled removed)', () => {
       const response: RegisterResponse = {
         tenantId: 'tenant-123',
         userName: 'testuser',
@@ -114,7 +114,7 @@ describe('Account Models', () => {
         emailConfirmed: false,
         phoneNumber: '',
         phoneNumberConfirmed: false,
-        twoFactorEnabled: false,
+        // Note: twoFactorEnabled was removed in v3.2.0
         lockoutEnabled: true,
         lockoutEnd: '',
         concurrencyStamp: 'stamp-123',
@@ -129,6 +129,140 @@ describe('Account Models', () => {
       };
       expect(response.id).toBe('user-123');
       expect(response.userName).toBe('testuser');
+    });
+
+    it('should not include twoFactorEnabled property (v3.2.0)', () => {
+      const response: RegisterResponse = {
+        tenantId: 'tenant-123',
+        userName: 'testuser',
+        name: 'Test',
+        surname: 'User',
+        email: 'test@example.com',
+        emailConfirmed: false,
+        phoneNumber: '',
+        phoneNumberConfirmed: false,
+        lockoutEnabled: true,
+        lockoutEnd: '',
+        concurrencyStamp: 'stamp-123',
+        isDeleted: false,
+        deleterId: '',
+        deletionTime: '',
+        lastModificationTime: '',
+        lastModifierId: '',
+        creationTime: '2024-01-01T00:00:00Z',
+        creatorId: '',
+        id: 'user-123',
+      };
+      // v3.2.0: twoFactorEnabled was removed from RegisterResponse
+      // Verify the property doesn't exist on the type
+      expect('twoFactorEnabled' in response).toBe(false);
+    });
+
+    it('should have all user identification properties', () => {
+      const response: RegisterResponse = {
+        tenantId: 'tenant-abc',
+        userName: 'john.doe',
+        name: 'John',
+        surname: 'Doe',
+        email: 'john.doe@example.com',
+        emailConfirmed: true,
+        phoneNumber: '+1234567890',
+        phoneNumberConfirmed: true,
+        lockoutEnabled: false,
+        lockoutEnd: '2024-12-31T23:59:59Z',
+        concurrencyStamp: 'abc-123-def',
+        isDeleted: false,
+        deleterId: '',
+        deletionTime: '',
+        lastModificationTime: '2024-06-15T10:30:00Z',
+        lastModifierId: 'admin-user',
+        creationTime: '2024-01-01T00:00:00Z',
+        creatorId: 'system',
+        id: 'user-john-doe',
+      };
+
+      // User identification
+      expect(response.id).toBe('user-john-doe');
+      expect(response.userName).toBe('john.doe');
+      expect(response.tenantId).toBe('tenant-abc');
+
+      // Name properties
+      expect(response.name).toBe('John');
+      expect(response.surname).toBe('Doe');
+
+      // Contact properties
+      expect(response.email).toBe('john.doe@example.com');
+      expect(response.emailConfirmed).toBe(true);
+      expect(response.phoneNumber).toBe('+1234567890');
+      expect(response.phoneNumberConfirmed).toBe(true);
+    });
+
+    it('should have security and audit properties', () => {
+      const response: RegisterResponse = {
+        tenantId: '',
+        userName: 'securitytest',
+        name: '',
+        surname: '',
+        email: 'security@test.com',
+        emailConfirmed: false,
+        phoneNumber: '',
+        phoneNumberConfirmed: false,
+        lockoutEnabled: true,
+        lockoutEnd: '2024-12-31T23:59:59Z',
+        concurrencyStamp: 'concurrent-stamp-xyz',
+        isDeleted: false,
+        deleterId: '',
+        deletionTime: '',
+        lastModificationTime: '2024-06-01T00:00:00Z',
+        lastModifierId: 'modifier-id',
+        creationTime: '2024-01-01T00:00:00Z',
+        creatorId: 'creator-id',
+        id: 'security-user',
+      };
+
+      // Security properties
+      expect(response.lockoutEnabled).toBe(true);
+      expect(response.lockoutEnd).toBe('2024-12-31T23:59:59Z');
+      expect(response.concurrencyStamp).toBe('concurrent-stamp-xyz');
+
+      // Audit properties
+      expect(response.creationTime).toBe('2024-01-01T00:00:00Z');
+      expect(response.creatorId).toBe('creator-id');
+      expect(response.lastModificationTime).toBe('2024-06-01T00:00:00Z');
+      expect(response.lastModifierId).toBe('modifier-id');
+
+      // Soft delete properties
+      expect(response.isDeleted).toBe(false);
+      expect(response.deleterId).toBe('');
+      expect(response.deletionTime).toBe('');
+    });
+
+    it('should handle deleted user response', () => {
+      const response: RegisterResponse = {
+        tenantId: 'tenant-123',
+        userName: 'deleteduser',
+        name: 'Deleted',
+        surname: 'User',
+        email: 'deleted@example.com',
+        emailConfirmed: true,
+        phoneNumber: '',
+        phoneNumberConfirmed: false,
+        lockoutEnabled: false,
+        lockoutEnd: '',
+        concurrencyStamp: 'stamp',
+        isDeleted: true,
+        deleterId: 'admin-123',
+        deletionTime: '2024-06-01T12:00:00Z',
+        lastModificationTime: '2024-06-01T12:00:00Z',
+        lastModifierId: 'admin-123',
+        creationTime: '2024-01-01T00:00:00Z',
+        creatorId: 'system',
+        id: 'deleted-user-id',
+      };
+
+      expect(response.isDeleted).toBe(true);
+      expect(response.deleterId).toBe('admin-123');
+      expect(response.deletionTime).toBe('2024-06-01T12:00:00Z');
     });
   });
 

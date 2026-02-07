@@ -4,6 +4,7 @@
  * @updated 2.9.0 - Version bump only (dependency updates)
  * @updated 3.0.0 - Config subpackage, route providers, accountOptionsFactory
  * @updated 3.1.0 - Guards (AuthenticationFlowGuard), social login support (hideCurrentPassword, hideChangePasswordTab)
+ * @updated 3.2.0 - RegisterResponse: Removed twoFactorEnabled property
  */
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -37,7 +38,7 @@ import {
   useAuthenticationFlowGuard,
   AuthenticationFlowGuard,
 } from '@abpjs/account'
-import type { Account } from '@abpjs/account'
+import type { Account, RegisterResponse } from '@abpjs/account'
 import { useAuth, useConfig } from '@abpjs/core'
 import { useToaster } from '@abpjs/theme-shared'
 
@@ -1391,6 +1392,126 @@ if (!guard.canActivate()) return <Redirect />;`}
   )
 }
 
+function TestV320Features() {
+  // Demonstrate the RegisterResponse type without twoFactorEnabled
+  const sampleResponse: RegisterResponse = {
+    tenantId: 'tenant-123',
+    userName: 'newuser',
+    name: 'New',
+    surname: 'User',
+    email: 'newuser@example.com',
+    emailConfirmed: false,
+    phoneNumber: '',
+    phoneNumberConfirmed: false,
+    // Note: twoFactorEnabled was REMOVED in v3.2.0
+    lockoutEnabled: true,
+    lockoutEnd: '',
+    concurrencyStamp: 'stamp-abc',
+    isDeleted: false,
+    deleterId: '',
+    deletionTime: '',
+    lastModificationTime: '',
+    lastModifierId: '',
+    creationTime: new Date().toISOString(),
+    creatorId: '',
+    id: 'user-xyz',
+  }
+
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.2.0</h2>
+
+      <div className="test-card">
+        <h3>Breaking Change: RegisterResponse</h3>
+        <div style={{ padding: '0.75rem', background: '#2e1a1a', borderRadius: '4px', border: '1px solid #4a2e2e', marginBottom: '1rem' }}>
+          <p style={{ color: '#f66', margin: 0, fontSize: '14px' }}>
+            <strong>Breaking:</strong> The <code>twoFactorEnabled</code> property has been removed from <code>RegisterResponse</code>.
+          </p>
+        </div>
+        <p>
+          In v3.2.0, the <code>RegisterResponse</code> interface no longer includes the <code>twoFactorEnabled</code> boolean property.
+          This aligns with changes in the ABP Framework backend API.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>RegisterResponse Interface (v3.2.0)</h3>
+        <p>Current interface definition:</p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', maxHeight: '300px', overflow: 'auto' }}>
+{`interface RegisterResponse {
+  tenantId: string;
+  userName: string;
+  name: string;
+  surname: string;
+  email: string;
+  emailConfirmed: boolean;
+  phoneNumber: string;
+  phoneNumberConfirmed: boolean;
+  // twoFactorEnabled: boolean; // REMOVED in v3.2.0
+  lockoutEnabled: boolean;
+  lockoutEnd: string;
+  concurrencyStamp: string;
+  isDeleted: boolean;
+  deleterId: string;
+  deletionTime: string;
+  lastModificationTime: string;
+  lastModifierId: string;
+  creationTime: string;
+  creatorId: string;
+  id: string;
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Sample RegisterResponse Object</h3>
+        <p>Example response from the registration API (without twoFactorEnabled):</p>
+        <pre style={{ fontSize: '11px', maxHeight: '250px', overflow: 'auto' }}>
+          {JSON.stringify(sampleResponse, null, 2)}
+        </pre>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+          Notice that <code>twoFactorEnabled</code> is not present in the response.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Migration from v3.1.0</h3>
+        <p>If your code relied on <code>twoFactorEnabled</code> from the registration response:</p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`// Before (v3.1.0)
+const response = await register(userData);
+if (response.twoFactorEnabled) {
+  // Handle 2FA setup
+}
+
+// After (v3.2.0)
+const response = await register(userData);
+// twoFactorEnabled is no longer available from registration
+// Check 2FA status through the user profile or settings API instead`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Why This Change?</h3>
+        <ul style={{ fontSize: '0.9rem' }}>
+          <li>Two-factor authentication status is determined post-registration</li>
+          <li>2FA is typically configured by the user after account creation</li>
+          <li>The registration response focuses on user identity properties</li>
+          <li>2FA settings should be queried from dedicated profile/settings endpoints</li>
+        </ul>
+      </div>
+
+      <div className="test-card">
+        <h3>Dependency Updates</h3>
+        <ul>
+          <li>Updated to @abpjs/core@3.2.0</li>
+          <li>Updated to @abpjs/theme-shared@3.2.0</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 function TestV240Features() {
   const accountService = useAccountService()
 
@@ -1435,15 +1556,21 @@ console.log(accountService.apiName) // "default"`}</pre>
 export function TestAccountPage() {
   return (
     <div>
-      <h1>@abpjs/account Tests (v3.1.0)</h1>
+      <h1>@abpjs/account Tests (v3.2.0)</h1>
       <p>Testing login, register, tenant switching, and account-related features.</p>
       <p style={{ color: '#888', fontSize: '0.9rem' }}>
-        Version 3.1.0 - Guards (AuthenticationFlowGuard), social login support (hideCurrentPassword, hideChangePasswordTab)
+        Version 3.2.0 - RegisterResponse: Removed twoFactorEnabled property
       </p>
 
-      {/* v3.1.0 Features - Highlighted at top */}
+      {/* v3.2.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #dc2626', paddingTop: '1rem' }}>
+        v3.2.0 Breaking Changes
+      </h2>
+      <TestV320Features />
+
+      {/* v3.1.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #8b5cf6', paddingTop: '1rem' }}>
-        v3.1.0 New Features
+        v3.1.0 Features
       </h2>
       <TestV310Features />
 

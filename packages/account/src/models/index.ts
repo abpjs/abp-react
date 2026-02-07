@@ -128,6 +128,8 @@ export interface RegisterRequest {
 
 /**
  * Response from user registration API
+ *
+ * @since 3.2.0 - Removed twoFactorEnabled property
  */
 export interface RegisterResponse {
   tenantId: string;
@@ -138,7 +140,6 @@ export interface RegisterResponse {
   emailConfirmed: boolean;
   phoneNumber: string;
   phoneNumberConfirmed: boolean;
-  twoFactorEnabled: boolean;
   lockoutEnabled: boolean;
   lockoutEnd: string;
   concurrencyStamp: string;
