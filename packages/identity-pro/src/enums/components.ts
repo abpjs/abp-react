@@ -1,6 +1,6 @@
 /**
  * Identity Pro Component Identifiers
- * Translated from @volo/abp.ng.identity v2.9.0
+ * Translated from @volo/abp.ng.identity v3.1.0
  */
 
 /**
@@ -9,6 +9,7 @@
  * @since 2.4.0
  * @updated 2.7.0 - Changed from enum to const object
  * @updated 2.9.0 - Added OrganizationUnits, OrganizationMembers, OrganizationRoles
+ * @updated 3.1.0 - Added SecurityLogs
  */
 export const eIdentityComponents = {
   Claims: 'Identity.ClaimsComponent',
@@ -17,6 +18,8 @@ export const eIdentityComponents = {
   OrganizationUnits: 'Identity.OrganizationUnitsComponent',
   OrganizationMembers: 'Identity.OrganizationMembersComponent',
   OrganizationRoles: 'Identity.OrganizationRolesComponent',
+  /** Security logs component (v3.1.0) */
+  SecurityLogs: 'Identity.SecurityLogs',
 } as const;
 
 /**

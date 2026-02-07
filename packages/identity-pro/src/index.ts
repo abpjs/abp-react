@@ -2,7 +2,7 @@
  * @abpjs/identity-pro
  *
  * ABP Framework identity pro components for React.
- * Translated from @volo/abp.ng.identity version 3.0.0.
+ * Translated from @volo/abp.ng.identity version 3.1.0.
  *
  * This package provides:
  * - Identity models (User, Role, ClaimType, OrganizationUnit, etc.)
@@ -18,6 +18,7 @@
  * - Config subpackage with enums, providers, and models (v3.0.0)
  * - Extension tokens for customizing entity actions, props, and forms (v3.0.0)
  * - Extensions guard for route protection (v3.0.0)
+ * - Security logs service and models (v3.1.0)
  *
  * Pro features:
  * - Claim type management (ClaimsComponent)
@@ -27,6 +28,21 @@
  * - useClaims hook for claim operations
  * - IdentityStateService with 17 dispatch methods (v2.0.0)
  * - Admin password change for users (v2.7.0)
+ * - Security logs management (v3.1.0)
+ *
+ * Changes in v3.1.0:
+ * - Added IdentitySecurityLogService for querying security logs
+ * - Added IdentitySecurityLogDto, IdentitySecurityLogGetListInput models
+ * - Added SecurityLogs to eIdentityPolicyNames
+ * - Added SecurityLogs to eIdentityRouteNames
+ * - Added SecurityLogs to eIdentityComponents
+ * - Added UserLockDurationType enum (Second, Minute, Hour, Day, Month, Year)
+ * - Added getUserAvailableOrganizationUnits() method to IdentityService
+ * - Added lockUser(id, lockoutDurationInSeconds) method to IdentityService
+ * - Added DEFAULT_SECURITY_LOGS_ENTITY_ACTIONS to extension tokens
+ * - Added DEFAULT_SECURITY_LOGS_TOOLBAR_ACTIONS to extension tokens
+ * - Added DEFAULT_SECURITY_LOGS_ENTITY_PROPS to extension tokens
+ * - Updated contributor types to include SecurityLogs
  *
  * Changes in v3.0.0:
  * - Added config subpackage with enums (policy-names, route-names, setting-tab-names)
@@ -111,7 +127,7 @@
  *
  * @packageDocumentation
  * @since 2.0.0
- * @updated 3.0.0
+ * @updated 3.1.0
  */
 
 // Config (v3.0.0)

@@ -7,6 +7,7 @@
  * @updated 2.7.0 - Added changePassword method, eIdentityRouteNames enum, IdentityComponentKey/IdentityRouteNameKey types
  * @updated 2.9.0 - Added Organization Units support, OrganizationUnitService, TreeAdapter utility
  * @updated 3.0.0 - Added config subpackage, extension tokens, guards, new claim type methods
+ * @updated 3.1.0 - Added SecurityLogs, IdentitySecurityLogService, UserLockDurationType, lockUser method
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -40,12 +41,19 @@ import {
   // v3.0.0 - Guards
   identityExtensionsGuard,
   useIdentityExtensionsGuard,
+  // v3.1.0 - Security Logs
+  IdentitySecurityLogService,
+  createIdentitySecurityLogGetListInput,
+  DEFAULT_SECURITY_LOGS_ENTITY_PROPS,
+  DEFAULT_SECURITY_LOGS_ENTITY_ACTIONS,
+  DEFAULT_SECURITY_LOGS_TOOLBAR_ACTIONS,
   type BaseNode,
   type Identity,
   type IdentityStateService,
   type IdentityComponentKey,
   type IdentityRouteNameKey,
   type OrganizationUnitWithDetailsDto,
+  type IdentitySecurityLogDto,
 } from '@abpjs/identity-pro'
 
 function TestClaimsComponent() {
@@ -1515,6 +1523,283 @@ function TestV300Features() {
 }
 
 /**
+ * Test section for v3.1.0 features: SecurityLogs, IdentitySecurityLogService, UserLockDurationType, lockUser
+ */
+function TestV310Features() {
+  const { isAuthenticated } = useAuth()
+  const restService = useRestService()
+  const [securityLogService] = useState(() => new IdentitySecurityLogService(restService))
+  const [identityService] = useState(() => new IdentityService(restService))
+  const [securityLogs, setSecurityLogs] = useState<IdentitySecurityLogDto[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [lockUserId, setLockUserId] = useState('')
+  const [lockDuration, setLockDuration] = useState<number>(Identity.UserLockDurationType.Hour)
+  const [lockResult, setLockResult] = useState<string | null>(null)
+
+  const fetchSecurityLogs = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const params = createIdentitySecurityLogGetListInput({ maxResultCount: 10 })
+      const result = await securityLogService.getListByInput(params)
+      setSecurityLogs(result.items)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch security logs')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleLockUser = async () => {
+    if (!lockUserId) return
+    setLockResult(null)
+    try {
+      await identityService.lockUser(lockUserId, lockDuration)
+      setLockResult(`User ${lockUserId} locked for ${lockDuration} seconds`)
+      setLockUserId('')
+    } catch (err) {
+      setLockResult(`Error: ${err instanceof Error ? err.message : 'Failed to lock user'}`)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.1.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(Security Logs, User Lock)</span></h2>
+
+      <div className="test-card">
+        <h3>Security Logs Component Identifier</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          v3.1.0 adds SecurityLogs to components, policy names, and route names.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Enum</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>SecurityLogs Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eIdentityComponents</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{eIdentityComponents.SecurityLogs}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eIdentityPolicyNames</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{eIdentityPolicyNames.SecurityLogs}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>eIdentityRouteNames</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>{eIdentityRouteNames.SecurityLogs}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>UserLockDurationType Enum</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          Duration constants for the lockUser method (in seconds).
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Duration</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Seconds</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Second</code></td>
+              <td style={{ padding: '8px' }}>{Identity.UserLockDurationType.Second}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Minute</code></td>
+              <td style={{ padding: '8px' }}>{Identity.UserLockDurationType.Minute}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Hour</code></td>
+              <td style={{ padding: '8px' }}>{Identity.UserLockDurationType.Hour}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Day</code></td>
+              <td style={{ padding: '8px' }}>{Identity.UserLockDurationType.Day}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Month</code></td>
+              <td style={{ padding: '8px' }}>{Identity.UserLockDurationType.Month}</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Year</code></td>
+              <td style={{ padding: '8px' }}>{Identity.UserLockDurationType.Year}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Security Logs Extension Tokens</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+          Default extension tokens for security logs component.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Token</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_SECURITY_LOGS_ENTITY_PROPS</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>
+                {DEFAULT_SECURITY_LOGS_ENTITY_PROPS.length} props defined
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_SECURITY_LOGS_ENTITY_ACTIONS</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>
+                {DEFAULT_SECURITY_LOGS_ENTITY_ACTIONS.length} actions (read-only)
+              </td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>DEFAULT_SECURITY_LOGS_TOOLBAR_ACTIONS</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}>
+                {DEFAULT_SECURITY_LOGS_TOOLBAR_ACTIONS.length} actions (read-only)
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {isAuthenticated && (
+        <>
+          <div className="test-card">
+            <h3>IdentitySecurityLogService</h3>
+            <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+              Service for querying security logs (login events, logout, password changes, etc.)
+            </p>
+            <button
+              onClick={fetchSecurityLogs}
+              disabled={loading}
+              style={{ padding: '8px 16px', marginBottom: '12px' }}
+            >
+              {loading ? 'Loading...' : 'Fetch Security Logs'}
+            </button>
+            {error && <p style={{ color: '#f88' }}>{error}</p>}
+            {securityLogs.length > 0 && (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid #333' }}>
+                    <th style={{ textAlign: 'left', padding: '8px' }}>Time</th>
+                    <th style={{ textAlign: 'left', padding: '8px' }}>Action</th>
+                    <th style={{ textAlign: 'left', padding: '8px' }}>User</th>
+                    <th style={{ textAlign: 'left', padding: '8px' }}>IP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {securityLogs.slice(0, 5).map((log) => (
+                    <tr key={log.id} style={{ borderBottom: '1px solid #222' }}>
+                      <td style={{ padding: '8px' }}>{new Date(log.creationTime).toLocaleString()}</td>
+                      <td style={{ padding: '8px' }}>{log.action || '-'}</td>
+                      <td style={{ padding: '8px' }}>{log.userName || '-'}</td>
+                      <td style={{ padding: '8px' }}>{log.clientIpAddress || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <div className="test-card">
+            <h3>Lock User (v3.1.0)</h3>
+            <p style={{ fontSize: '14px', color: '#888', marginBottom: '12px' }}>
+              Lock a user for a specified duration using UserLockDurationType.
+            </p>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+              <input
+                type="text"
+                placeholder="User ID"
+                value={lockUserId}
+                onChange={(e) => setLockUserId(e.target.value)}
+                style={{ padding: '8px', width: '200px' }}
+              />
+              <select
+                value={lockDuration}
+                onChange={(e) => setLockDuration(Number(e.target.value))}
+                style={{ padding: '8px' }}
+              >
+                <option value={Identity.UserLockDurationType.Minute}>1 Minute</option>
+                <option value={Identity.UserLockDurationType.Hour}>1 Hour</option>
+                <option value={Identity.UserLockDurationType.Day}>1 Day</option>
+                <option value={Identity.UserLockDurationType.Month}>1 Month</option>
+              </select>
+              <button
+                onClick={handleLockUser}
+                disabled={!lockUserId}
+                style={{ padding: '8px 16px' }}
+              >
+                Lock User
+              </button>
+            </div>
+            {lockResult && (
+              <p style={{ color: lockResult.startsWith('Error') ? '#f88' : '#4ade80' }}>
+                {lockResult}
+              </p>
+            )}
+          </div>
+        </>
+      )}
+
+      <div className="test-card">
+        <h3>v3.1.0 API Methods</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Service</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Method</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentitySecurityLogService</code></td>
+              <td style={{ padding: '8px' }}><code>getListByInput(params)</code></td>
+              <td style={{ padding: '8px' }}>Get paginated security logs</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentitySecurityLogService</code></td>
+              <td style={{ padding: '8px' }}><code>getById(id)</code></td>
+              <td style={{ padding: '8px' }}>Get single security log</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentitySecurityLogService</code></td>
+              <td style={{ padding: '8px' }}><code>getMyListByInput(params)</code></td>
+              <td style={{ padding: '8px' }}>Get current user's security logs</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentitySecurityLogService</code></td>
+              <td style={{ padding: '8px' }}><code>getMyById(id)</code></td>
+              <td style={{ padding: '8px' }}>Get current user's security log</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentityService</code></td>
+              <td style={{ padding: '8px' }}><code>getUserAvailableOrganizationUnits()</code></td>
+              <td style={{ padding: '8px' }}>Get available org units for user assignment</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>IdentityService</code></td>
+              <td style={{ padding: '8px' }}><code>lockUser(id, seconds)</code></td>
+              <td style={{ padding: '8px' }}>Lock user for specified duration</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/**
  * Test section for v2.9.0 features: Organization Units, OrganizationUnitService, TreeAdapter
  */
 function TestV290Features() {
@@ -2420,15 +2705,16 @@ function TestProHookMethods() {
 export function TestIdentityProPage() {
   return (
     <div>
-      <h1>@abpjs/identity-pro Tests (v3.0.0)</h1>
+      <h1>@abpjs/identity-pro Tests (v3.1.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing identity pro components, hooks, and services for claim type management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.0.0 - Added config subpackage, extension tokens, guards, policy names, new claim type API methods
+        Version 3.1.0 - Added SecurityLogs, IdentitySecurityLogService, UserLockDurationType, lockUser method
       </p>
       <p style={{ color: '#6f6', fontSize: '14px' }}>
-        Pro features: Claim type management, user/role claims, IdentityStateService, user unlock, permissions modal, getAllRoles, component identifiers, route names, change password, organization units, config/extensions
+        Pro features: Claim type management, user/role claims, IdentityStateService, user unlock, permissions modal, getAllRoles, component identifiers, route names, change password, organization units, config/extensions, security logs, user lock
       </p>
 
+      <TestV310Features />
       <TestV300Features />
       <TestV290Features />
       <TestV270Features />

@@ -1,6 +1,6 @@
 /**
  * Tests for Identity Policy Names
- * @abpjs/identity-pro v3.0.0
+ * @abpjs/identity-pro v3.1.0
  */
 import { describe, it, expect } from 'vitest';
 import { eIdentityPolicyNames, IdentityPolicyNameKey } from '../../../config/enums/policy-names';
@@ -28,12 +28,16 @@ describe('eIdentityPolicyNames', () => {
     it('should have OrganizationUnits policy name', () => {
       expect(eIdentityPolicyNames.OrganizationUnits).toBe('AbpIdentity.OrganizationUnits');
     });
+
+    it('should have SecurityLogs policy name (v3.1.0)', () => {
+      expect(eIdentityPolicyNames.SecurityLogs).toBe('AbpIdentity.SecurityLogs');
+    });
   });
 
   describe('object structure', () => {
-    it('should have exactly 5 policy names', () => {
+    it('should have exactly 6 policy names (v3.1.0)', () => {
       const keys = Object.keys(eIdentityPolicyNames);
-      expect(keys).toHaveLength(5);
+      expect(keys).toHaveLength(6);
     });
 
     it('should have correct keys', () => {
@@ -43,6 +47,7 @@ describe('eIdentityPolicyNames', () => {
       expect(keys).toContain('Users');
       expect(keys).toContain('ClaimTypes');
       expect(keys).toContain('OrganizationUnits');
+      expect(keys).toContain('SecurityLogs');
     });
 
     it('should be a const object', () => {
@@ -57,6 +62,7 @@ describe('eIdentityPolicyNames', () => {
       expect(eIdentityPolicyNames.Users).toMatch(/^AbpIdentity\./);
       expect(eIdentityPolicyNames.ClaimTypes).toMatch(/^AbpIdentity\./);
       expect(eIdentityPolicyNames.OrganizationUnits).toMatch(/^AbpIdentity\./);
+      expect(eIdentityPolicyNames.SecurityLogs).toMatch(/^AbpIdentity\./);
     });
 
     it('should have compound policy for IdentityManagement', () => {
@@ -75,11 +81,13 @@ describe('IdentityPolicyNameKey type', () => {
     const usersPolicy: IdentityPolicyNameKey = 'AbpIdentity.Users';
     const claimsPolicy: IdentityPolicyNameKey = 'AbpIdentity.ClaimTypes';
     const orgUnitsPolicy: IdentityPolicyNameKey = 'AbpIdentity.OrganizationUnits';
+    const securityLogsPolicy: IdentityPolicyNameKey = 'AbpIdentity.SecurityLogs';
 
     expect(rolesPolicy).toBe(eIdentityPolicyNames.Roles);
     expect(usersPolicy).toBe(eIdentityPolicyNames.Users);
     expect(claimsPolicy).toBe(eIdentityPolicyNames.ClaimTypes);
     expect(orgUnitsPolicy).toBe(eIdentityPolicyNames.OrganizationUnits);
+    expect(securityLogsPolicy).toBe(eIdentityPolicyNames.SecurityLogs);
   });
 
   it('should work with eIdentityPolicyNames values', () => {
@@ -96,5 +104,6 @@ describe('IdentityPolicyNameKey type', () => {
     expect(hasPermission(eIdentityPolicyNames.Users)).toBe(true);
     expect(hasPermission(eIdentityPolicyNames.ClaimTypes)).toBe(true);
     expect(hasPermission(eIdentityPolicyNames.OrganizationUnits)).toBe(true);
+    expect(hasPermission(eIdentityPolicyNames.SecurityLogs)).toBe(true);
   });
 });

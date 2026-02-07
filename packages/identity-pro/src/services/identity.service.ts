@@ -1,4 +1,4 @@
-import { RestService, ABP } from '@abpjs/core';
+import { RestService, ABP, PagedResultDto } from '@abpjs/core';
 import { Identity, OrganizationUnitWithDetailsDto } from '../models';
 
 /**
@@ -8,9 +8,11 @@ import { Identity, OrganizationUnitWithDetailsDto } from '../models';
  * Pro features include:
  * - Claim type management
  * - User/Role claims management
+ * - User lock functionality (v3.1.0)
  *
  * Translated from @volo/abp.ng.identity IdentityService
  * @since 2.0.0
+ * @updated 3.1.0 - Added getUserAvailableOrganizationUnits, lockUser methods
  */
 export class IdentityService {
   /**
@@ -235,6 +237,33 @@ export class IdentityService {
     return this.rest.request<null, Identity.RoleResponse>({
       method: 'GET',
       url: '/api/identity/users/assignable-roles',
+    });
+  }
+
+  /**
+   * Get available organization units for user assignment
+   * @since 3.1.0
+   * @returns Promise with available organization units
+   */
+  getUserAvailableOrganizationUnits(): Promise<PagedResultDto<OrganizationUnitWithDetailsDto>> {
+    return this.rest.request<null, PagedResultDto<OrganizationUnitWithDetailsDto>>({
+      method: 'GET',
+      url: '/api/identity/users/available-organization-units',
+    });
+  }
+
+  /**
+   * Lock a user for a specified duration
+   * @since 3.1.0
+   * @param id - The user ID to lock
+   * @param lockoutDurationInSeconds - Duration to lock the user (in seconds)
+   * @returns Promise resolving when complete
+   */
+  lockUser(id: string, lockoutDurationInSeconds: number): Promise<void> {
+    return this.rest.request<{ lockoutDurationInSeconds: number }, void>({
+      method: 'PUT',
+      url: `/api/identity/users/${id}/lock`,
+      body: { lockoutDurationInSeconds },
     });
   }
 
