@@ -1,7 +1,19 @@
 /**
  * @abpjs/account-pro
  * ABP Framework Account Pro module for React
- * Translated from @volo/abp.ng.account v3.0.0
+ * Translated from @volo/abp.ng.account v3.1.0
+ *
+ * Changes in v3.1.0:
+ * - Added EmailConfirmation route name to eAccountRouteNames
+ * - Added MySecurityLogs route name to eAccountRouteNames
+ * - Added EmailConfirmation component key to eAccountComponents
+ * - Added MySecurityLogs component key to eAccountComponents
+ * - Added AccountSettings interface for general configuration
+ * - Added AccountLdapSettings interface for LDAP authentication configuration
+ * - Added EmailConfirmationInput interface for email confirmation flow
+ * - Added sendEmailConfirmationToken() method to AccountProService
+ * - Added confirmEmail() method to AccountProService
+ * - Added getMySecurityLogs() method to AccountProService for security logs
  *
  * Changes in v3.0.0:
  * - Added config subpackage with enums and providers

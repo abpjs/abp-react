@@ -20,6 +20,12 @@ export const eAccountComponents = {
   Register: 'Account.RegisterComponent',
 
   /**
+   * Key for the EmailConfirmation component.
+   * @since 3.1.0
+   */
+  EmailConfirmation: 'Account.EmailConfirmationComponent',
+
+  /**
    * Key for the ForgotPassword component.
    */
   ForgotPassword: 'Account.ForgotPasswordComponent',
@@ -54,6 +60,12 @@ export const eAccountComponents = {
    * @since 2.9.0
    */
   Logo: 'Account.LogoComponent',
+
+  /**
+   * Key for the MySecurityLogs component.
+   * @since 3.1.0
+   */
+  MySecurityLogs: 'Account.MySecurityLogs',
 } as const;
 
 /**

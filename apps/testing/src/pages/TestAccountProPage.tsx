@@ -754,6 +754,348 @@ await service.confirmPhoneNumber(token);`}
   )
 }
 
+function TestV310Features() {
+  const accountService = useAccountProService()
+  const toaster = useToaster()
+  const [newEmail, setNewEmail] = useState('')
+  const [confirmUserId, setConfirmUserId] = useState('')
+  const [confirmToken, setConfirmToken] = useState('')
+  const [confirmTenantId, setConfirmTenantId] = useState('')
+  const [securityLogs, setSecurityLogs] = useState<any>(null)
+  const [isSendingEmail, setIsSendingEmail] = useState(false)
+  const [isConfirmingEmail, setIsConfirmingEmail] = useState(false)
+  const [isLoadingLogs, setIsLoadingLogs] = useState(false)
+
+  const handleSendEmailToken = async () => {
+    if (!newEmail.trim()) {
+      toaster.error('Please enter an email address', 'Error')
+      return
+    }
+    setIsSendingEmail(true)
+    try {
+      await accountService.sendEmailConfirmationToken(newEmail)
+      toaster.success('Email confirmation token sent!', 'Success')
+    } catch (err: any) {
+      toaster.error(err.message || 'Failed to send email token', 'Error')
+    } finally {
+      setIsSendingEmail(false)
+    }
+  }
+
+  const handleConfirmEmail = async () => {
+    if (!confirmUserId.trim() || !confirmToken.trim()) {
+      toaster.error('Please enter user ID and token', 'Error')
+      return
+    }
+    setIsConfirmingEmail(true)
+    try {
+      await accountService.confirmEmail({
+        userId: confirmUserId,
+        token: confirmToken,
+        tenantId: confirmTenantId || undefined,
+      })
+      toaster.success('Email confirmed!', 'Success')
+      setConfirmUserId('')
+      setConfirmToken('')
+      setConfirmTenantId('')
+    } catch (err: any) {
+      toaster.error(err.message || 'Failed to confirm email', 'Error')
+    } finally {
+      setIsConfirmingEmail(false)
+    }
+  }
+
+  const handleGetSecurityLogs = async () => {
+    setIsLoadingLogs(true)
+    try {
+      const result = await accountService.getMySecurityLogs({
+        maxResultCount: 10,
+        sorting: 'creationTime desc',
+      })
+      setSecurityLogs(result)
+      toaster.success(`Loaded ${result.items.length} of ${result.totalCount} logs`, 'Success')
+    } catch (err: any) {
+      toaster.error(err.message || 'Failed to fetch security logs', 'Error')
+    } finally {
+      setIsLoadingLogs(false)
+    }
+  }
+
+  return (
+    <div className="test-section">
+      <h2>v3.1.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(New)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>New Route Names <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.1.0)</span></h3>
+        <p>Added route names to eAccountRouteNames:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.1)' }}>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>EmailConfirmation</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{eAccountRouteNames.EmailConfirmation}</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.1)' }}>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>MySecurityLogs</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{eAccountRouteNames.MySecurityLogs}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>New Component Keys <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.1.0)</span></h3>
+        <p>Added component keys to eAccountComponents:</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Key</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.1)' }}>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>EmailConfirmation</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{eAccountComponents.EmailConfirmation}</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.1)' }}>
+              <td style={{ padding: '8px', fontFamily: 'monospace' }}>MySecurityLogs</td>
+              <td style={{ padding: '8px', fontFamily: 'monospace', color: '#888' }}>{eAccountComponents.MySecurityLogs}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Email Confirmation Flow <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.1.0)</span></h3>
+        <p>New methods for email confirmation:</p>
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>1. Send Email Confirmation Token</h4>
+          <p style={{ fontSize: '12px', color: '#888' }}>Sends a confirmation token to the specified email address.</p>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.5rem' }}>
+            <input
+              type="email"
+              placeholder="Enter new email address"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+              style={{ padding: '8px', flex: 1, maxWidth: '250px' }}
+            />
+            <button onClick={handleSendEmailToken} disabled={isSendingEmail}>
+              {isSendingEmail ? 'Sending...' : 'Send Token'}
+            </button>
+          </div>
+        </div>
+
+        <div style={{ marginTop: '1rem' }}>
+          <h4>2. Confirm Email</h4>
+          <p style={{ fontSize: '12px', color: '#888' }}>Confirms the email using userId, token, and optional tenantId.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+            <input
+              type="text"
+              placeholder="User ID"
+              value={confirmUserId}
+              onChange={(e) => setConfirmUserId(e.target.value)}
+              style={{ padding: '8px', maxWidth: '250px' }}
+            />
+            <input
+              type="text"
+              placeholder="Confirmation token"
+              value={confirmToken}
+              onChange={(e) => setConfirmToken(e.target.value)}
+              style={{ padding: '8px', maxWidth: '250px' }}
+            />
+            <input
+              type="text"
+              placeholder="Tenant ID (optional)"
+              value={confirmTenantId}
+              onChange={(e) => setConfirmTenantId(e.target.value)}
+              style={{ padding: '8px', maxWidth: '250px' }}
+            />
+            <button onClick={handleConfirmEmail} disabled={isConfirmingEmail} style={{ width: 'fit-content' }}>
+              {isConfirmingEmail ? 'Confirming...' : 'Confirm Email'}
+            </button>
+          </div>
+        </div>
+
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`// Email confirmation flow
+const service = useAccountProService();
+
+// Step 1: Send token to new email
+await service.sendEmailConfirmationToken('new@email.com');
+
+// Step 2: Confirm email with token
+await service.confirmEmail({
+  userId: 'user-guid',
+  token: 'confirmation-token',
+  tenantId: 'tenant-guid', // optional
+});`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Security Logs <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.1.0)</span></h3>
+        <p>New method to retrieve the current user's security logs:</p>
+
+        <div style={{ marginTop: '1rem' }}>
+          <button onClick={handleGetSecurityLogs} disabled={isLoadingLogs}>
+            {isLoadingLogs ? 'Loading...' : 'Get My Security Logs'}
+          </button>
+        </div>
+
+        {securityLogs && (
+          <div style={{ marginTop: '1rem' }}>
+            <p><strong>Total Count:</strong> {securityLogs.totalCount}</p>
+            <p><strong>Returned:</strong> {securityLogs.items.length} items</p>
+            <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '11px', background: 'rgba(0,0,0,0.2)', maxHeight: '200px' }}>
+              {JSON.stringify(securityLogs, null, 2)}
+            </pre>
+          </div>
+        )}
+
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
+{`// Get security logs
+const service = useAccountProService();
+
+const logs = await service.getMySecurityLogs({
+  startTime: '2024-01-01T00:00:00Z',
+  endTime: '2024-12-31T23:59:59Z',
+  applicationName: 'MyApp',
+  identity: 'user-identity',
+  action: 'Login',
+  clientId: 'client-id',
+  correlationId: 'correlation-id',
+  sorting: 'creationTime desc',
+  skipCount: 0,
+  maxResultCount: 10,
+});
+
+// Response type
+interface SecurityLogsResponse {
+  items: Array<{
+    id: string;
+    tenantId?: string;
+    applicationName?: string;
+    identity?: string;
+    action?: string;
+    userId?: string;
+    userName?: string;
+    tenantName?: string;
+    clientId?: string;
+    correlationId?: string;
+    clientIpAddress?: string;
+    browserInfo?: string;
+    creationTime: string;
+  }>;
+  totalCount: number;
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>New Interfaces <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.1.0)</span></h3>
+        <p>Added model interfaces for configuration:</p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`// Account settings configuration
+interface AccountSettings {
+  isSelfRegistrationEnabled: boolean;
+  enableLocalLogin: boolean;
+  isRememberBrowserEnabled: boolean;
+}
+
+// LDAP authentication settings
+interface AccountLdapSettings {
+  enableLdapLogin: boolean;
+  ldapServerHost: string;
+  ldapServerPort: string;
+  ldapBaseDc: string;
+  ldapUserName: string;
+  ldapPassword: string;
+}
+
+// Email confirmation input
+interface EmailConfirmationInput {
+  confirmationToken: string;
+  userId: string;
+  tenantId?: string;
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v3.1.0 API Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAccountRouteNames.EmailConfirmation</td>
+              <td>string</td>
+              <td>Route name for email confirmation page</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAccountRouteNames.MySecurityLogs</td>
+              <td>string</td>
+              <td>Route name for security logs page</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAccountComponents.EmailConfirmation</td>
+              <td>string</td>
+              <td>Component key for email confirmation</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>eAccountComponents.MySecurityLogs</td>
+              <td>string</td>
+              <td>Component key for security logs</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>sendEmailConfirmationToken(email)</td>
+              <td>Promise&lt;void&gt;</td>
+              <td>Send email confirmation token</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>confirmEmail(params)</td>
+              <td>Promise&lt;void&gt;</td>
+              <td>Confirm email with token</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>getMySecurityLogs(params?)</td>
+              <td>Promise&lt;{'{items, totalCount}'}&gt;</td>
+              <td>Get user's security logs</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AccountSettings</td>
+              <td>interface</td>
+              <td>Account settings configuration</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>AccountLdapSettings</td>
+              <td>interface</td>
+              <td>LDAP authentication settings</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>EmailConfirmationInput</td>
+              <td>interface</td>
+              <td>Email confirmation input type</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 function TestV300Features() {
   // Demo: use the factory to create options
   const customOptions = accountOptionsFactory({ redirectUrl: '/dashboard' });
@@ -1292,9 +1634,9 @@ function TestAuthState() {
 export function TestAccountProPage() {
   return (
     <div>
-      <h1>@abpjs/account-pro Tests v3.0.0</h1>
+      <h1>@abpjs/account-pro Tests v3.1.0</h1>
       <p>Testing Pro account features: password reset, profile management, enhanced components.</p>
-      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 3.0.0 - Added config subpackage with route/setting-tab providers</p>
+      <p style={{ color: '#4f4', fontSize: '0.9rem' }}>Version 3.1.0 - Added email confirmation, security logs, and new interfaces</p>
 
       <div className="test-card" style={{ backgroundColor: '#1a365d', border: '1px solid #2b6cb0' }}>
         <h3 style={{ color: '#90cdf4' }}>Pro Package Features</h3>
@@ -1308,9 +1650,11 @@ export function TestAccountProPage() {
           <li style={{ color: '#4f4' }}>v2.7.0: eAccountComponents enum (9 keys), eAccountRouteNames enum (6 keys)</li>
           <li style={{ color: '#4f4' }}>v2.9.0: Logo component, eAccountComponents.Logo key (now 10 keys)</li>
           <li style={{ color: '#4f4' }}>v3.0.0: Config subpackage, eAccountSettingTabNames, ACCOUNT_ROUTE_PROVIDERS, ACCOUNT_SETTING_TAB_PROVIDERS, ACCOUNT_OPTIONS token, accountOptionsFactory</li>
+          <li style={{ color: '#4f4' }}>v3.1.0: EmailConfirmation/MySecurityLogs routes & components, sendEmailConfirmationToken(), confirmEmail(), getMySecurityLogs(), AccountSettings, AccountLdapSettings interfaces</li>
         </ul>
       </div>
 
+      <TestV310Features />
       <TestV300Features />
       <TestV290Features />
       <TestV270Features />

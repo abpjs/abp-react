@@ -1,11 +1,89 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * @abpjs/account-pro Models
- * Translated from @volo/abp.ng.account v3.0.0
+ * Translated from @volo/abp.ng.account v3.1.0
  */
 
 // Config options (v3.0.0)
 export * from './config-options';
+
+/**
+ * Account settings for general configuration
+ * @since 3.1.0
+ */
+export interface AccountSettings {
+  /**
+   * Whether self-registration is enabled
+   */
+  isSelfRegistrationEnabled: boolean;
+
+  /**
+   * Whether local login is enabled
+   */
+  enableLocalLogin: boolean;
+
+  /**
+   * Whether remember browser option is enabled
+   */
+  isRememberBrowserEnabled: boolean;
+}
+
+/**
+ * Account LDAP settings for LDAP authentication configuration
+ * @since 3.1.0
+ */
+export interface AccountLdapSettings {
+  /**
+   * Whether LDAP login is enabled
+   */
+  enableLdapLogin: boolean;
+
+  /**
+   * LDAP server host address
+   */
+  ldapServerHost: string;
+
+  /**
+   * LDAP server port
+   */
+  ldapServerPort: string;
+
+  /**
+   * LDAP base DC (distinguished name component)
+   */
+  ldapBaseDc: string;
+
+  /**
+   * LDAP username for binding
+   */
+  ldapUserName: string;
+
+  /**
+   * LDAP password for binding
+   */
+  ldapPassword: string;
+}
+
+/**
+ * Email confirmation input parameters
+ * @since 3.1.0
+ */
+export interface EmailConfirmationInput {
+  /**
+   * Email confirmation token
+   */
+  confirmationToken: string;
+
+  /**
+   * User ID
+   */
+  userId: string;
+
+  /**
+   * Tenant ID (optional)
+   */
+  tenantId?: string;
+}
 
 /**
  * Account namespace containing component interface types
