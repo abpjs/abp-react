@@ -1,12 +1,26 @@
 /**
  * Tests for AuditLoggingStateService
- * @abpjs/audit-logging v2.0.0
+ * @abpjs/audit-logging v4.0.0
+ *
+ * @since 4.0.0 - Now uses AuditLogsService (proxy) instead of the removed AuditLoggingService
+ *   - dispatchGetAuditLogs takes GetAuditLogListDto, returns PagedResultDto<AuditLogDto>
+ *   - dispatchGetAverageExecutionDurationPerDay takes GetAverageExecutionDurationPerDayInput (required),
+ *     returns GetAverageExecutionDurationPerDayOutput
+ *   - dispatchGetErrorRate takes GetErrorRateFilter (required), returns GetErrorRateOutput
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AuditLoggingStateService } from '../services';
-import type { AuditLogging, Statistics } from '../models';
+import type { PagedResultDto } from '@abpjs/core';
+import type {
+  AuditLogDto,
+  GetAuditLogListDto,
+  GetAverageExecutionDurationPerDayInput,
+  GetAverageExecutionDurationPerDayOutput,
+  GetErrorRateFilter,
+  GetErrorRateOutput,
+} from '../proxy/audit-logging/models';
 
-describe('AuditLoggingStateService', () => {
+describe('AuditLoggingStateService (v4.0.0)', () => {
   let mockRequest: ReturnType<typeof vi.fn>;
   let stateService: AuditLoggingStateService;
 
@@ -38,9 +52,9 @@ describe('AuditLoggingStateService', () => {
     });
   });
 
-  describe('dispatchGetAuditLogs (v2.0.0)', () => {
+  describe('dispatchGetAuditLogs', () => {
     it('should call the API and update state', async () => {
-      const mockResponse: AuditLogging.Response = {
+      const mockResponse: PagedResultDto<AuditLogDto> = {
         items: [
           {
             id: '1',
@@ -83,13 +97,13 @@ describe('AuditLoggingStateService', () => {
     });
 
     it('should pass query parameters to the API', async () => {
-      const mockResponse: AuditLogging.Response = {
+      const mockResponse: PagedResultDto<AuditLogDto> = {
         items: [],
         totalCount: 0,
       };
       mockRequest.mockResolvedValueOnce(mockResponse);
 
-      const params: AuditLogging.AuditLogsQueryParams = {
+      const params: GetAuditLogListDto = {
         userName: 'admin',
         httpMethod: 'POST',
         maxResultCount: 20,
@@ -105,31 +119,36 @@ describe('AuditLoggingStateService', () => {
     });
   });
 
-  describe('dispatchGetAverageExecutionDurationPerDay (v2.0.0)', () => {
+  describe('dispatchGetAverageExecutionDurationPerDay', () => {
     it('should call the API and update state', async () => {
-      const mockResponse: Statistics.Response = {
+      const mockResponse: GetAverageExecutionDurationPerDayOutput = {
         data: { '2024-01-01': 100, '2024-01-02': 150 },
       };
       mockRequest.mockResolvedValueOnce(mockResponse);
 
-      const result = await stateService.dispatchGetAverageExecutionDurationPerDay();
+      const params: GetAverageExecutionDurationPerDayInput = {
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      };
+
+      const result = await stateService.dispatchGetAverageExecutionDurationPerDay(params);
 
       expect(mockRequest).toHaveBeenCalledWith({
         method: 'GET',
         url: '/api/audit-logging/audit-logs/statistics/average-execution-duration-per-day',
-        params: {},
+        params,
       });
       expect(result).toEqual(mockResponse);
       expect(stateService.getAverageExecutionStatistics()).toEqual(mockResponse.data);
     });
 
     it('should pass filter parameters to the API', async () => {
-      const mockResponse: Statistics.Response = {
+      const mockResponse: GetAverageExecutionDurationPerDayOutput = {
         data: { '2024-01-15': 200 },
       };
       mockRequest.mockResolvedValueOnce(mockResponse);
 
-      const params: Statistics.Filter = {
+      const params: GetAverageExecutionDurationPerDayInput = {
         startDate: '2024-01-01',
         endDate: '2024-01-31',
       };
@@ -144,42 +163,52 @@ describe('AuditLoggingStateService', () => {
     });
 
     it('should handle empty data in response', async () => {
-      const mockResponse: Statistics.Response = {
+      const mockResponse: GetAverageExecutionDurationPerDayOutput = {
         data: {},
       };
       mockRequest.mockResolvedValueOnce(mockResponse);
 
-      await stateService.dispatchGetAverageExecutionDurationPerDay();
+      const params: GetAverageExecutionDurationPerDayInput = {
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      };
+
+      await stateService.dispatchGetAverageExecutionDurationPerDay(params);
 
       expect(stateService.getAverageExecutionStatistics()).toEqual({});
     });
   });
 
-  describe('dispatchGetErrorRate (v2.0.0)', () => {
+  describe('dispatchGetErrorRate', () => {
     it('should call the API and update state', async () => {
-      const mockResponse: Statistics.Response = {
+      const mockResponse: GetErrorRateOutput = {
         data: { errors: 5, success: 95 },
       };
       mockRequest.mockResolvedValueOnce(mockResponse);
 
-      const result = await stateService.dispatchGetErrorRate();
+      const params: GetErrorRateFilter = {
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      };
+
+      const result = await stateService.dispatchGetErrorRate(params);
 
       expect(mockRequest).toHaveBeenCalledWith({
         method: 'GET',
         url: '/api/audit-logging/audit-logs/statistics/error-rate',
-        params: {},
+        params,
       });
       expect(result).toEqual(mockResponse);
       expect(stateService.getErrorRateStatistics()).toEqual(mockResponse.data);
     });
 
     it('should pass filter parameters to the API', async () => {
-      const mockResponse: Statistics.Response = {
+      const mockResponse: GetErrorRateOutput = {
         data: { errors: 10, success: 90 },
       };
       mockRequest.mockResolvedValueOnce(mockResponse);
 
-      const params: Statistics.Filter = {
+      const params: GetErrorRateFilter = {
         startDate: '2024-01-01',
         endDate: '2024-01-31',
       };
@@ -194,12 +223,17 @@ describe('AuditLoggingStateService', () => {
     });
 
     it('should handle empty data in response', async () => {
-      const mockResponse: Statistics.Response = {
+      const mockResponse: GetErrorRateOutput = {
         data: {},
       };
       mockRequest.mockResolvedValueOnce(mockResponse);
 
-      await stateService.dispatchGetErrorRate();
+      const params: GetErrorRateFilter = {
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      };
+
+      await stateService.dispatchGetErrorRate(params);
 
       expect(stateService.getErrorRateStatistics()).toEqual({});
     });
@@ -208,10 +242,15 @@ describe('AuditLoggingStateService', () => {
   describe('edge cases and error handling', () => {
     it('should handle response with undefined data in dispatchGetAverageExecutionDurationPerDay', async () => {
       // Response without data property (undefined)
-      const mockResponse = {} as Statistics.Response;
+      const mockResponse = {} as GetAverageExecutionDurationPerDayOutput;
       mockRequest.mockResolvedValueOnce(mockResponse);
 
-      await stateService.dispatchGetAverageExecutionDurationPerDay();
+      const params: GetAverageExecutionDurationPerDayInput = {
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      };
+
+      await stateService.dispatchGetAverageExecutionDurationPerDay(params);
 
       // Should default to empty object when data is undefined
       expect(stateService.getAverageExecutionStatistics()).toEqual({});
@@ -219,10 +258,15 @@ describe('AuditLoggingStateService', () => {
 
     it('should handle response with undefined data in dispatchGetErrorRate', async () => {
       // Response without data property (undefined)
-      const mockResponse = {} as Statistics.Response;
+      const mockResponse = {} as GetErrorRateOutput;
       mockRequest.mockResolvedValueOnce(mockResponse);
 
-      await stateService.dispatchGetErrorRate();
+      const params: GetErrorRateFilter = {
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      };
+
+      await stateService.dispatchGetErrorRate(params);
 
       // Should default to empty object when data is undefined
       expect(stateService.getErrorRateStatistics()).toEqual({});
@@ -232,7 +276,7 @@ describe('AuditLoggingStateService', () => {
       // Response without totalCount (relies on || 0 fallback in getTotalCount)
       const mockResponse = {
         items: [],
-      } as unknown as AuditLogging.Response;
+      } as unknown as PagedResultDto<AuditLogDto>;
       mockRequest.mockResolvedValueOnce(mockResponse);
 
       await stateService.dispatchGetAuditLogs();
@@ -241,19 +285,29 @@ describe('AuditLoggingStateService', () => {
     });
 
     it('should handle null data in dispatchGetAverageExecutionDurationPerDay', async () => {
-      const mockResponse = { data: null } as unknown as Statistics.Response;
+      const mockResponse = { data: null } as unknown as GetAverageExecutionDurationPerDayOutput;
       mockRequest.mockResolvedValueOnce(mockResponse);
 
-      await stateService.dispatchGetAverageExecutionDurationPerDay();
+      const params: GetAverageExecutionDurationPerDayInput = {
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      };
+
+      await stateService.dispatchGetAverageExecutionDurationPerDay(params);
 
       expect(stateService.getAverageExecutionStatistics()).toEqual({});
     });
 
     it('should handle null data in dispatchGetErrorRate', async () => {
-      const mockResponse = { data: null } as unknown as Statistics.Response;
+      const mockResponse = { data: null } as unknown as GetErrorRateOutput;
       mockRequest.mockResolvedValueOnce(mockResponse);
 
-      await stateService.dispatchGetErrorRate();
+      const params: GetErrorRateFilter = {
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      };
+
+      await stateService.dispatchGetErrorRate(params);
 
       expect(stateService.getErrorRateStatistics()).toEqual({});
     });
@@ -262,7 +316,7 @@ describe('AuditLoggingStateService', () => {
   describe('state updates', () => {
     it('should update state after multiple dispatch calls', async () => {
       // First dispatch for audit logs
-      const logsResponse: AuditLogging.Response = {
+      const logsResponse: PagedResultDto<AuditLogDto> = {
         items: [],
         totalCount: 5,
       };
@@ -270,18 +324,24 @@ describe('AuditLoggingStateService', () => {
       await stateService.dispatchGetAuditLogs();
 
       // Second dispatch for average execution stats
-      const avgStatsResponse: Statistics.Response = {
+      const avgStatsResponse: GetAverageExecutionDurationPerDayOutput = {
         data: { '2024-01-01': 100 },
       };
       mockRequest.mockResolvedValueOnce(avgStatsResponse);
-      await stateService.dispatchGetAverageExecutionDurationPerDay();
+      await stateService.dispatchGetAverageExecutionDurationPerDay({
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      });
 
       // Third dispatch for error rate stats
-      const errorRateResponse: Statistics.Response = {
+      const errorRateResponse: GetErrorRateOutput = {
         data: { errors: 2 },
       };
       mockRequest.mockResolvedValueOnce(errorRateResponse);
-      await stateService.dispatchGetErrorRate();
+      await stateService.dispatchGetErrorRate({
+        startDate: '2024-01-01',
+        endDate: '2024-01-31',
+      });
 
       // Verify all state was updated correctly
       expect(stateService.getTotalCount()).toBe(5);

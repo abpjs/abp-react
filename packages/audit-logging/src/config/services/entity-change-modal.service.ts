@@ -1,23 +1,24 @@
 /**
  * Entity Change Modal Service
- * Translated from @volo/abp.ng.audit-logging v3.0.0
+ * Translated from @volo/abp.ng.audit-logging v4.0.0
  *
  * Service for displaying entity change details and history in modals.
  * @since 3.0.0
+ * @since 4.0.0 - Now uses AuditLogsService instead of EntityChangeService
  */
 
-import { EntityChangeService } from '../../services/entity-change.service';
-import type { EntityChange } from '../../models/entity-change';
+import { AuditLogsService } from '../../proxy/audit-logging/audit-logs.service';
+import type { EntityChangeWithUsernameDto } from '../../proxy/audit-logging/models';
 
 /**
  * Callback type for when entity change details are fetched
  */
-export type EntityChangeDetailsCallback = (data: EntityChange.ItemWithUserName) => void;
+export type EntityChangeDetailsCallback = (data: EntityChangeWithUsernameDto) => void;
 
 /**
  * Callback type for when entity change history is fetched
  */
-export type EntityChangeHistoryCallback = (data: EntityChange.ItemWithUserName[]) => void;
+export type EntityChangeHistoryCallback = (data: EntityChangeWithUsernameDto[]) => void;
 
 /**
  * Service for managing entity change modal display.
@@ -27,7 +28,7 @@ export class EntityChangeModalService {
   private detailsCallback: EntityChangeDetailsCallback | null = null;
   private historyCallback: EntityChangeHistoryCallback | null = null;
 
-  constructor(private entityChangeService: EntityChangeService) {}
+  constructor(private auditLogsService: AuditLogsService) {}
 
   /**
    * Register a callback for entity change details display
@@ -51,7 +52,7 @@ export class EntityChangeModalService {
    */
   async showDetails(entityChangeId: string): Promise<void> {
     try {
-      const data = await this.entityChangeService.getEntityChangeWithUserNameById(entityChangeId);
+      const data = await this.auditLogsService.getEntityChangeWithUsername(entityChangeId);
       if (this.detailsCallback) {
         this.detailsCallback(data);
       }
@@ -70,10 +71,10 @@ export class EntityChangeModalService {
    */
   async showHistory(entityId: string, entityTypeFullName: string): Promise<void> {
     try {
-      const data = await this.entityChangeService.getEntityChangesWithUserName(
+      const data = await this.auditLogsService.getEntityChangesWithUsername({
         entityId,
-        entityTypeFullName
-      );
+        entityTypeFullName,
+      });
       if (this.historyCallback) {
         this.historyCallback(data);
       }

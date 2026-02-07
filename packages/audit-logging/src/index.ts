@@ -1,7 +1,25 @@
 /**
  * @abpjs/audit-logging
  * ABP Framework Audit Logging module for React
- * Translated from @volo/abp.ng.audit-logging v3.2.0
+ * Translated from @volo/abp.ng.audit-logging v4.0.0
+ *
+ * Changes in v4.0.0:
+ * - Removed deprecated types:
+ *   - AuditLogging.Response, AuditLogging.AuditLogsQueryParams, AuditLogging.Log
+ *   - AuditLogging.EntityChange, AuditLogging.PropertyChange, AuditLogging.AuditLogAction
+ *   - Statistics namespace (Filter, Data, Response)
+ *   - EntityChange namespace (all types)
+ * - Removed deprecated services:
+ *   - AuditLoggingService (use AuditLogsService from proxy instead)
+ *   - EntityChangeService (use AuditLogsService from proxy instead)
+ * - Updated EntityChangeModalService to use AuditLogsService instead of EntityChangeService
+ * - Updated all extension tokens and defaults to use proxy DTOs:
+ *   - AuditLogging.Log → AuditLogDto
+ *   - EntityChange.Item → EntityChangeDto
+ * - Updated config-options types to use proxy DTOs
+ * - Updated useAuditLogs hook to use AuditLogsService and proxy DTOs
+ * - Updated AuditLoggingStateService to use AuditLogsService and proxy DTOs
+ * - Dependency updates to @abp/ng.theme.shared ~4.0.0, @volo/abp.commercial.ng.ui ~4.0.0
  *
  * Changes in v3.2.0:
  * - Added new proxy subpackage with typed DTOs:

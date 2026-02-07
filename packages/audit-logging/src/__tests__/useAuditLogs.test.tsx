@@ -1,14 +1,19 @@
 /**
  * Tests for useAuditLogs hook
- * @abpjs/audit-logging v2.9.0
+ * @abpjs/audit-logging v4.0.0
  *
- * v2.9.0: Aligned with Angular's onQueryChange pattern
- * (React hook already supports full query parameter building)
+ * @since 4.0.0 - Updated to use AuditLogsService and proxy DTOs
+ *   - fetchAuditLogs calls service.getList(params)
+ *   - getAuditLogById calls service.get(id)
+ *   - fetchAverageExecutionStats calls service.getAverageExecutionDurationPerDay(params)
+ *   - fetchErrorRateStats calls service.getErrorRate(params)
+ *   - All return types use proxy DTOs instead of namespace types
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useAuditLogs } from '../hooks';
-import type { AuditLogging } from '../models';
+import type { AuditLogDto } from '../proxy/audit-logging/models';
+import type { PagedResultDto } from '@abpjs/core';
 
 // Mock @abpjs/core
 const mockRequest = vi.fn();
@@ -18,7 +23,7 @@ vi.mock('@abpjs/core', () => ({
   }),
 }));
 
-describe('useAuditLogs', () => {
+describe('useAuditLogs (v4.0.0)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -39,7 +44,7 @@ describe('useAuditLogs', () => {
 
   describe('fetchAuditLogs', () => {
     it('should fetch audit logs successfully', async () => {
-      const mockResponse: AuditLogging.Response = {
+      const mockResponse: PagedResultDto<AuditLogDto> = {
         items: [
           {
             id: '1',
@@ -109,11 +114,39 @@ describe('useAuditLogs', () => {
         expect(res.error).toBe('Failed to fetch audit logs');
       });
     });
+
+    it('should handle response with undefined items', async () => {
+      mockRequest.mockResolvedValueOnce({ totalCount: 5 });
+
+      const { result } = renderHook(() => useAuditLogs());
+
+      await act(async () => {
+        const res = await result.current.fetchAuditLogs();
+        expect(res.success).toBe(true);
+      });
+
+      expect(result.current.auditLogs).toEqual([]);
+      expect(result.current.totalCount).toBe(5);
+    });
+
+    it('should handle response with undefined totalCount', async () => {
+      mockRequest.mockResolvedValueOnce({ items: [{ id: '1' }] });
+
+      const { result } = renderHook(() => useAuditLogs());
+
+      await act(async () => {
+        const res = await result.current.fetchAuditLogs();
+        expect(res.success).toBe(true);
+      });
+
+      expect(result.current.auditLogs).toEqual([{ id: '1' }]);
+      expect(result.current.totalCount).toBe(0);
+    });
   });
 
   describe('getAuditLogById', () => {
     it('should get audit log by ID successfully', async () => {
-      const mockLog: AuditLogging.Log = {
+      const mockLog: AuditLogDto = {
         id: '123',
         userId: 'user1',
         userName: 'admin',
@@ -184,7 +217,10 @@ describe('useAuditLogs', () => {
       const { result } = renderHook(() => useAuditLogs());
 
       await act(async () => {
-        const res = await result.current.fetchAverageExecutionStats();
+        const res = await result.current.fetchAverageExecutionStats({
+          startDate: '2024-01-01T00:00:00Z',
+          endDate: '2024-01-31T00:00:00Z',
+        });
         expect(res.success).toBe(true);
       });
 
@@ -197,7 +233,10 @@ describe('useAuditLogs', () => {
       const { result } = renderHook(() => useAuditLogs());
 
       await act(async () => {
-        const res = await result.current.fetchAverageExecutionStats();
+        const res = await result.current.fetchAverageExecutionStats({
+          startDate: '2024-01-01T00:00:00Z',
+          endDate: '2024-01-31T00:00:00Z',
+        });
         expect(res.success).toBe(false);
       });
 
@@ -210,10 +249,29 @@ describe('useAuditLogs', () => {
       const { result } = renderHook(() => useAuditLogs());
 
       await act(async () => {
-        const res = await result.current.fetchAverageExecutionStats();
+        const res = await result.current.fetchAverageExecutionStats({
+          startDate: '2024-01-01T00:00:00Z',
+          endDate: '2024-01-31T00:00:00Z',
+        });
         expect(res.success).toBe(false);
         expect(res.error).toBe('Failed to fetch average execution statistics');
       });
+    });
+
+    it('should handle response with undefined data', async () => {
+      mockRequest.mockResolvedValueOnce({});
+
+      const { result } = renderHook(() => useAuditLogs());
+
+      await act(async () => {
+        const res = await result.current.fetchAverageExecutionStats({
+          startDate: '2024-01-01T00:00:00Z',
+          endDate: '2024-01-31T00:00:00Z',
+        });
+        expect(res.success).toBe(true);
+      });
+
+      expect(result.current.averageExecutionStats).toEqual({});
     });
   });
 
@@ -225,7 +283,10 @@ describe('useAuditLogs', () => {
       const { result } = renderHook(() => useAuditLogs());
 
       await act(async () => {
-        const res = await result.current.fetchErrorRateStats();
+        const res = await result.current.fetchErrorRateStats({
+          startDate: '2024-01-01T00:00:00Z',
+          endDate: '2024-01-31T00:00:00Z',
+        });
         expect(res.success).toBe(true);
       });
 
@@ -238,7 +299,10 @@ describe('useAuditLogs', () => {
       const { result } = renderHook(() => useAuditLogs());
 
       await act(async () => {
-        const res = await result.current.fetchErrorRateStats();
+        const res = await result.current.fetchErrorRateStats({
+          startDate: '2024-01-01T00:00:00Z',
+          endDate: '2024-01-31T00:00:00Z',
+        });
         expect(res.success).toBe(false);
         expect(res.error).toBe('Error rate stats error');
       });
@@ -252,12 +316,31 @@ describe('useAuditLogs', () => {
       const { result } = renderHook(() => useAuditLogs());
 
       await act(async () => {
-        const res = await result.current.fetchErrorRateStats();
+        const res = await result.current.fetchErrorRateStats({
+          startDate: '2024-01-01T00:00:00Z',
+          endDate: '2024-01-31T00:00:00Z',
+        });
         expect(res.success).toBe(false);
         expect(res.error).toBe('Failed to fetch error rate statistics');
       });
 
       expect(result.current.error).toBe('Failed to fetch error rate statistics');
+    });
+
+    it('should handle response with undefined data', async () => {
+      mockRequest.mockResolvedValueOnce({});
+
+      const { result } = renderHook(() => useAuditLogs());
+
+      await act(async () => {
+        const res = await result.current.fetchErrorRateStats({
+          startDate: '2024-01-01T00:00:00Z',
+          endDate: '2024-01-31T00:00:00Z',
+        });
+        expect(res.success).toBe(true);
+      });
+
+      expect(result.current.errorRateStats).toEqual({});
     });
 
     it('should pass filter parameters to the API', async () => {
@@ -288,7 +371,7 @@ describe('useAuditLogs', () => {
     it('should set selected log', () => {
       const { result } = renderHook(() => useAuditLogs());
 
-      const mockLog: AuditLogging.Log = {
+      const mockLog: AuditLogDto = {
         id: '1',
         userId: 'user1',
         userName: 'admin',
@@ -342,8 +425,8 @@ describe('useAuditLogs', () => {
 
   describe('reset', () => {
     it('should reset all state', async () => {
-      const mockResponse: AuditLogging.Response = {
-        items: [{ id: '1' } as AuditLogging.Log],
+      const mockResponse: PagedResultDto<AuditLogDto> = {
+        items: [{ id: '1' } as AuditLogDto],
         totalCount: 1,
       };
       mockRequest.mockResolvedValueOnce(mockResponse);
