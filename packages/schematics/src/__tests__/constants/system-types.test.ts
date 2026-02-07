@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { SYSTEM_TYPES } from './system-types';
+import { SYSTEM_TYPES } from '../../constants/system-types';
 
 describe('SYSTEM_TYPES', () => {
   it('should be a Map', () => {

@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { ProxyConfig } from './proxy-config';
+import type { ProxyConfig } from '../../models/proxy-config';
 
 describe('ProxyConfig', () => {
   it('should extend ApiDefinition with generated array', () => {

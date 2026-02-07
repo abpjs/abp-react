@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { Interface, Model, Property } from './model';
+import { Interface, Model, Property } from '../../models/model';
 
 describe('Property', () => {
   it('should create with minimal options', () => {

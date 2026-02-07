@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { API_DEFINITION_ENDPOINT } from './api';
+import { API_DEFINITION_ENDPOINT } from '../../constants/api';
 
 describe('API Constants', () => {
   describe('API_DEFINITION_ENDPOINT', () => {

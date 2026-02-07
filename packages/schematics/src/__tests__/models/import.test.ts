@@ -3,8 +3,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { eImportKeyword } from '../enums';
-import { Import } from './import';
+import { eImportKeyword } from '../../enums';
+import { Import } from '../../models/import';
 
 describe('Import', () => {
   it('should create with minimal options', () => {

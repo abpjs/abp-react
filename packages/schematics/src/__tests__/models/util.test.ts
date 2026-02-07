@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { Omissible } from './util';
+import type { Omissible } from '../../models/util';
 
 describe('Omissible', () => {
   interface TestInterface {

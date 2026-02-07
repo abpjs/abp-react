@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { eBindingSourceId } from './binding-source-id';
+import { eBindingSourceId } from '../../enums/binding-source-id';
 
 describe('eBindingSourceId', () => {
   it('should have Body value', () => {

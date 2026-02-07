@@ -3,10 +3,10 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { eImportKeyword } from '../enums';
-import { Import } from './import';
-import { Body, Method, Signature } from './method';
-import { Service } from './service';
+import { eImportKeyword } from '../../enums';
+import { Import } from '../../models/import';
+import { Body, Method, Signature } from '../../models/method';
+import { Service } from '../../models/service';
 
 describe('Service', () => {
   it('should create with minimal options', () => {

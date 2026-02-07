@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { Project, ProjectDefinition } from './project';
+import type { Project, ProjectDefinition } from '../../models/project';
 
 describe('ProjectDefinition', () => {
   it('should be correctly typed with minimal options', () => {

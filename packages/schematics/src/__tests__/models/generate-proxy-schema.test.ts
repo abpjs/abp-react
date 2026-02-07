@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { GenerateProxySchema } from './generate-proxy-schema';
+import type { GenerateProxySchema } from '../../models/generate-proxy-schema';
 
 describe('GenerateProxySchema', () => {
   it('should be correctly typed with all options', () => {

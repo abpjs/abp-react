@@ -3,9 +3,9 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { eBindingSourceId, eMethodModifier } from '../enums';
-import { Body, Method, Signature } from './method';
-import { Property } from './model';
+import { eBindingSourceId, eMethodModifier } from '../../enums';
+import { Body, Method, Signature } from '../../models/method';
+import { Property } from '../../models/model';
 
 describe('Signature', () => {
   it('should create with minimal options', () => {

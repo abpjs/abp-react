@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { eImportKeyword } from './import-keyword';
+import { eImportKeyword } from '../../enums/import-keyword';
 
 describe('eImportKeyword', () => {
   it('should have Default value', () => {

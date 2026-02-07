@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { eBindingSourceId } from '../enums';
+import { eBindingSourceId } from '../../enums';
 import type {
   Action,
   ApiDefinition,
@@ -15,7 +15,7 @@ import type {
   Type,
   TypeDef,
   TypeWithEnum,
-} from './api-definition';
+} from '../../models/api-definition';
 
 describe('API Definition Types', () => {
   describe('Type', () => {

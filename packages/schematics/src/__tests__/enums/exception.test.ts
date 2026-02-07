@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { Exception } from './exception';
+import { Exception } from '../../enums/exception';
 
 describe('Exception', () => {
   it('should have DirRemoveFailed message', () => {

@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { WriteOp } from './tree';
+import type { WriteOp } from '../../models/tree';
 
 describe('WriteOp', () => {
   it('should accept create value', () => {

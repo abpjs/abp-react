@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { PROXY_CONFIG_PATH, PROXY_PATH, PROXY_WARNING, PROXY_WARNING_PATH } from './proxy';
+import { PROXY_CONFIG_PATH, PROXY_PATH, PROXY_WARNING, PROXY_WARNING_PATH } from '../../constants/proxy';
 
 describe('Proxy Constants', () => {
   describe('PROXY_PATH', () => {

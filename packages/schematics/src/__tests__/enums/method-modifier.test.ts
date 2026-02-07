@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { eMethodModifier } from './method-modifier';
+import { eMethodModifier } from '../../enums/method-modifier';
 
 describe('eMethodModifier', () => {
   it('should have Public value (empty string for no modifier)', () => {

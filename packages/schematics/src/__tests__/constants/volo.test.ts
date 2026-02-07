@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { VOLO_NAME_VALUE, VOLO_REGEX } from './volo';
+import { VOLO_NAME_VALUE, VOLO_REGEX } from '../../constants/volo';
 
 describe('VOLO Constants', () => {
   describe('VOLO_REGEX', () => {

@@ -1,11 +1,11 @@
-/**
- * Index Export Tests
- */
-
 import { describe, expect, it } from 'vitest';
-import * as schematics from './index';
+import * as schematics from '../index';
 
-describe('@abpjs/schematics exports', () => {
+/**
+ * Tests for @abpjs/schematics package exports
+ * Uses static import to avoid slow dynamic imports during test execution.
+ */
+describe('@abpjs/schematics package exports', () => {
   describe('Enums', () => {
     it('should export eBindingSourceId', () => {
       expect(schematics.eBindingSourceId).toBeDefined();
@@ -118,6 +118,43 @@ describe('@abpjs/schematics exports', () => {
         namespace: 'Test',
       });
       expect(service.name).toBe('TestService');
+    });
+  });
+
+  // Verify all major exports are present
+  describe('All exports verification', () => {
+    it('should export all enums', () => {
+      const module = schematics;
+
+      expect(module.eBindingSourceId).toBeDefined();
+      expect(module.Exception).toBeDefined();
+      expect(module.eImportKeyword).toBeDefined();
+      expect(module.eMethodModifier).toBeDefined();
+    });
+
+    it('should export all constants', () => {
+      const module = schematics;
+
+      expect(module.API_DEFINITION_ENDPOINT).toBeDefined();
+      expect(module.PROXY_PATH).toBeDefined();
+      expect(module.PROXY_CONFIG_PATH).toBeDefined();
+      expect(module.PROXY_WARNING).toBeDefined();
+      expect(module.SYSTEM_TYPES).toBeDefined();
+      expect(module.VOLO_REGEX).toBeDefined();
+      expect(module.VOLO_NAME_VALUE).toBeDefined();
+    });
+
+    it('should export all model classes', () => {
+      const module = schematics;
+
+      expect(module.Import).toBeDefined();
+      expect(module.Model).toBeDefined();
+      expect(module.Interface).toBeDefined();
+      expect(module.Property).toBeDefined();
+      expect(module.Method).toBeDefined();
+      expect(module.Signature).toBeDefined();
+      expect(module.Body).toBeDefined();
+      expect(module.Service).toBeDefined();
     });
   });
 });
