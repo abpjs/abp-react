@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useRestService, ABP } from '@abpjs/core';
-import { TenantManagement } from '../models';
-import { TenantManagementService } from '../services';
+import { useRestService } from '@abpjs/core';
+import type { TenantDto, TenantCreateDto, TenantUpdateDto, GetTenantsInput } from '../proxy/models';
+import { TenantService } from '../proxy/tenant.service';
 
 /**
  * Result from tenant management operations
@@ -25,14 +25,15 @@ export type ModalContentType = 'saveConnStr' | 'saveTenant';
 
 /**
  * Return type for useTenantManagement hook
+ * @since 4.0.0 - Uses TenantDto, TenantCreateDto, TenantUpdateDto instead of legacy types
  */
 export interface UseTenantManagementReturn {
   /** List of tenants */
-  tenants: TenantManagement.Item[];
+  tenants: TenantDto[];
   /** Total count of tenants */
   totalCount: number;
   /** Currently selected tenant */
-  selectedTenant: TenantManagement.Item | null;
+  selectedTenant: TenantDto | null;
   /** Loading state */
   isLoading: boolean;
   /** Error message if any */
@@ -48,13 +49,13 @@ export interface UseTenantManagementReturn {
   /** Whether the save button should be disabled @since 1.1.0 */
   isDisabledSaveButton: boolean;
   /** Fetch all tenants (with optional params) */
-  fetchTenants: (params?: ABP.PageQueryParams) => Promise<TenantManagementResult>;
+  fetchTenants: (input?: Partial<GetTenantsInput>) => Promise<TenantManagementResult>;
   /** Fetch a tenant by ID */
   fetchTenantById: (id: string) => Promise<TenantManagementResult>;
   /** Create a new tenant */
-  createTenant: (data: TenantManagement.AddRequest) => Promise<TenantManagementResult>;
+  createTenant: (data: TenantCreateDto) => Promise<TenantManagementResult>;
   /** Update an existing tenant */
-  updateTenant: (data: TenantManagement.UpdateRequest) => Promise<TenantManagementResult>;
+  updateTenant: (id: string, data: TenantUpdateDto) => Promise<TenantManagementResult>;
   /** Delete a tenant */
   deleteTenant: (id: string) => Promise<TenantManagementResult>;
   /** Fetch connection string for a tenant */
@@ -67,7 +68,7 @@ export interface UseTenantManagementReturn {
   /** Delete connection string (use shared database) */
   deleteConnectionString: (id: string) => Promise<TenantManagementResult>;
   /** Set selected tenant */
-  setSelectedTenant: (tenant: TenantManagement.Item | null) => void;
+  setSelectedTenant: (tenant: TenantDto | null) => void;
   /** Set use shared database flag */
   setUseSharedDatabase: (value: boolean) => void;
   /** Set default connection string */
@@ -97,6 +98,8 @@ export interface UseTenantManagementReturn {
  * management modal. It handles fetching, creating, updating, and deleting tenants,
  * as well as managing connection strings.
  *
+ * @since 4.0.0 - Uses TenantService (proxy) instead of TenantManagementService
+ *
  * @example
  * ```tsx
  * function TenantModal() {
@@ -123,13 +126,13 @@ export interface UseTenantManagementReturn {
 export function useTenantManagement(): UseTenantManagementReturn {
   const restService = useRestService();
 
-  // Service instance (memoized)
-  const service = useMemo(() => new TenantManagementService(restService), [restService]);
+  // Service instance (memoized) - v4.0.0: uses TenantService instead of TenantManagementService
+  const service = useMemo(() => new TenantService(restService), [restService]);
 
   // State
-  const [tenants, setTenants] = useState<TenantManagement.Item[]>([]);
+  const [tenants, setTenants] = useState<TenantDto[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
-  const [selectedTenant, setSelectedTenant] = useState<TenantManagement.Item | null>(null);
+  const [selectedTenant, setSelectedTenant] = useState<TenantDto | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [defaultConnectionString, setDefaultConnectionString] = useState<string>('');
@@ -142,16 +145,22 @@ export function useTenantManagement(): UseTenantManagementReturn {
   const [featuresProviderKey, setFeaturesProviderKey] = useState<string>('');
 
   /**
-   * Fetch all tenants (with optional params in v0.9.0)
+   * Fetch all tenants (with optional params)
+   * @since 4.0.0 - Uses TenantService.getList with GetTenantsInput
    */
-  const fetchTenants = useCallback(async (params?: ABP.PageQueryParams): Promise<TenantManagementResult> => {
+  const fetchTenants = useCallback(async (input?: Partial<GetTenantsInput>): Promise<TenantManagementResult> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await service.getAll(params);
-      setTenants(response.items);
-      setTotalCount(response.totalCount);
+      const response = await service.getList({
+        filter: '',
+        maxResultCount: 10,
+        skipCount: 0,
+        ...input,
+      } as GetTenantsInput);
+      setTenants(response.items ?? []);
+      setTotalCount(response.totalCount ?? 0);
       setIsLoading(false);
       return { success: true };
     } catch (err: unknown) {
@@ -164,6 +173,7 @@ export function useTenantManagement(): UseTenantManagementReturn {
 
   /**
    * Fetch a tenant by ID
+   * @since 4.0.0 - Uses TenantService.get
    */
   const fetchTenantById = useCallback(
     async (id: string): Promise<TenantManagementResult> => {
@@ -171,7 +181,7 @@ export function useTenantManagement(): UseTenantManagementReturn {
       setError(null);
 
       try {
-        const tenant = await service.getById(id);
+        const tenant = await service.get(id);
         setSelectedTenant(tenant);
         setIsLoading(false);
         return { success: true };
@@ -187,16 +197,17 @@ export function useTenantManagement(): UseTenantManagementReturn {
 
   /**
    * Create a new tenant
+   * @since 4.0.0 - Uses TenantCreateDto instead of TenantManagement.AddRequest
    */
   const createTenant = useCallback(
-    async (data: TenantManagement.AddRequest): Promise<TenantManagementResult> => {
+    async (data: TenantCreateDto): Promise<TenantManagementResult> => {
       setIsLoading(true);
       setError(null);
 
       try {
         await service.create(data);
         // Refresh the list after creation
-        await service.getAll().then((response) => setTenants(response.items));
+        await service.getList({ filter: '', maxResultCount: 10, skipCount: 0 } as GetTenantsInput).then((response) => setTenants(response.items ?? []));
         setIsLoading(false);
         return { success: true };
       } catch (err: unknown) {
@@ -211,16 +222,17 @@ export function useTenantManagement(): UseTenantManagementReturn {
 
   /**
    * Update an existing tenant
+   * @since 4.0.0 - Uses TenantUpdateDto instead of TenantManagement.UpdateRequest, takes id separately
    */
   const updateTenant = useCallback(
-    async (data: TenantManagement.UpdateRequest): Promise<TenantManagementResult> => {
+    async (id: string, data: TenantUpdateDto): Promise<TenantManagementResult> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        await service.update(data);
+        await service.update(id, data);
         // Refresh the list after update
-        await service.getAll().then((response) => setTenants(response.items));
+        await service.getList({ filter: '', maxResultCount: 10, skipCount: 0 } as GetTenantsInput).then((response) => setTenants(response.items ?? []));
         setIsLoading(false);
         return { success: true };
       } catch (err: unknown) {
@@ -244,7 +256,7 @@ export function useTenantManagement(): UseTenantManagementReturn {
       try {
         await service.delete(id);
         // Refresh the list after deletion
-        await service.getAll().then((response) => setTenants(response.items));
+        await service.getList({ filter: '', maxResultCount: 10, skipCount: 0 } as GetTenantsInput).then((response) => setTenants(response.items ?? []));
         setIsLoading(false);
         return { success: true };
       } catch (err: unknown) {
@@ -284,6 +296,7 @@ export function useTenantManagement(): UseTenantManagementReturn {
 
   /**
    * Update connection string for a tenant
+   * @since 4.0.0 - Uses TenantService.updateDefaultConnectionString(id, connectionString)
    */
   const updateConnectionString = useCallback(
     async (id: string, connectionString: string): Promise<TenantManagementResult> => {
@@ -291,10 +304,7 @@ export function useTenantManagement(): UseTenantManagementReturn {
       setError(null);
 
       try {
-        await service.updateDefaultConnectionString({
-          id,
-          defaultConnectionString: connectionString,
-        });
+        await service.updateDefaultConnectionString(id, connectionString);
         setDefaultConnectionString(connectionString);
         setUseSharedDatabase(false);
         setIsLoading(false);

@@ -73,8 +73,8 @@ describe('@abpjs/tenant-management package exports', () => {
   });
 
   describe('services', () => {
-    it('should export TenantManagementService', () => {
-      expect(tenantManagementExports.TenantManagementService).toBeDefined();
+    it('should NOT export TenantManagementService (removed in v4.0.0)', () => {
+      expect((tenantManagementExports as any).TenantManagementService).toBeUndefined();
     });
 
     it('should export TenantManagementStateService', () => {
@@ -136,7 +136,7 @@ describe('@abpjs/tenant-management package exports', () => {
   });
 
   describe('export completeness', () => {
-    it('should export all required v3.2.0 functionality', () => {
+    it('should export all required v4.0.0 functionality', () => {
       // Config (v3.0.0)
       expect(tenantManagementExports).toHaveProperty('TENANT_MANAGEMENT_ROUTE_PROVIDERS');
       expect(tenantManagementExports).toHaveProperty('configureRoutes');
@@ -157,8 +157,8 @@ describe('@abpjs/tenant-management package exports', () => {
       // Hooks
       expect(tenantManagementExports).toHaveProperty('useTenantManagement');
 
-      // Services
-      expect(tenantManagementExports).toHaveProperty('TenantManagementService');
+      // Services (v4.0.0: TenantManagementService removed)
+      expect(tenantManagementExports).not.toHaveProperty('TenantManagementService');
       expect(tenantManagementExports).toHaveProperty(
         'TenantManagementStateService'
       );

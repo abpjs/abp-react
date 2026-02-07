@@ -1,7 +1,18 @@
 /**
  * @abpjs/tenant-management
  * ABP Framework Tenant Management module for React
- * Translated from @abp/ng.tenant-management v3.2.0
+ * Translated from @abp/ng.tenant-management v4.0.0
+ *
+ * Changes in v4.0.0:
+ * - BREAKING: Removed TenantManagementService (use TenantService from proxy instead)
+ * - BREAKING: Removed deprecated types: TenantManagement.Response, Item, AddRequest, UpdateRequest, DefaultConnectionStringRequest
+ * - BREAKING: useTenantManagement hook now uses TenantService (proxy) internally
+ * - BREAKING: updateTenant signature changed from (data: {id, name}) to (id: string, data: TenantUpdateDto)
+ * - BREAKING: createTenant now takes TenantCreateDto instead of TenantManagement.AddRequest
+ * - BREAKING: fetchTenants now takes Partial<GetTenantsInput> instead of ABP.PageQueryParams
+ * - Updated TenantManagementStateService to use TenantService instead of TenantManagementService
+ * - Updated TenantManagementStateService dispatch methods to use proxy DTOs
+ * - Updated TenantsComponentInputs to use TenantDto instead of legacy Item type
  *
  * Changes in v3.2.0:
  * - Added proxy submodule with typed DTOs and TenantService

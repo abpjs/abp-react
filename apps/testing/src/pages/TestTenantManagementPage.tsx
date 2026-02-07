@@ -1,5 +1,5 @@
 /**
- * Test page for @abpjs/tenant-management package v3.2.0
+ * Test page for @abpjs/tenant-management package v4.0.0
  * Tests: TenantManagementModal, useTenantManagement hook, TenantService
  */
 import { useState, useEffect } from 'react'
@@ -384,7 +384,7 @@ function TestTenantHook() {
           <button
             onClick={async () => {
               if (testTenantId && testTenantName) {
-                const result = await updateTenant({ id: testTenantId, name: testTenantName })
+                const result = await updateTenant(testTenantId, { name: testTenantName })
                 if (result.success) {
                   setTestTenantId('')
                   setTestTenantName('')
@@ -650,7 +650,7 @@ function TestTenantHook() {
                 </tr>
               </thead>
               <tbody>
-                {tenants.map((tenant: TenantManagement.Item) => (
+                {tenants.map((tenant: TenantDto) => (
                   <tr key={tenant.id} style={{ borderBottom: '1px solid #222' }}>
                     <td style={{ padding: '8px' }}>{tenant.id}</td>
                     <td style={{ padding: '8px' }}>{tenant.name}</td>
@@ -815,10 +815,10 @@ function TestApiEndpoints() {
           </pre>
         </div>
         <div style={{ marginBottom: '1rem' }}>
-          <h4>Update Tenant Request <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.4.0 - no longer requires admin credentials)</span>:</h4>
+          <h4>Update Tenant Request <span style={{ color: '#f44', fontSize: '12px' }}>(v4.0.0 - ID is now a URL parameter)</span>:</h4>
           <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`{
-  "id": "string",
+{`// PUT /api/multi-tenancy/tenants/:id
+{
   "name": "string"
 }`}
           </pre>
@@ -845,7 +845,7 @@ function TestApiEndpoints() {
 function TestTenantManagementStateService() {
   const { isAuthenticated } = useAuth()
   const stateService = getTenantManagementStateService()
-  const [tenants, setTenants] = useState<TenantManagement.Item[]>([])
+  const [tenants, setTenants] = useState<TenantDto[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [testTenantName, setTestTenantName] = useState('')
   const [dispatchTenantId, setDispatchTenantId] = useState('')
@@ -871,7 +871,7 @@ function TestTenantManagementStateService() {
 
   const addTenant = () => {
     if (!testTenantName.trim()) return
-    const newTenant: TenantManagement.Item = {
+    const newTenant: TenantDto = {
       id: `test-${Date.now()}`,
       name: testTenantName.trim(),
     }
@@ -932,7 +932,7 @@ function TestTenantManagementStateService() {
     if (!dispatchTenantId || !dispatchTenantName) return
     setIsDispatchLoading(true)
     try {
-      const result = await stateService.dispatchUpdateTenant({ id: dispatchTenantId, name: dispatchTenantName })
+      const result = await stateService.dispatchUpdateTenant(dispatchTenantId, { name: dispatchTenantName })
       setDispatchResult(`dispatchUpdateTenant: ${JSON.stringify(result)}`)
     } catch (err) {
       setDispatchResult(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
@@ -1139,13 +1139,12 @@ function TestTenantManagementStateService() {
             <tr><td style={{ padding: '8px' }}>getTenantsTotalCount()</td><td>Get total count of tenants</td></tr>
             <tr><td style={{ padding: '8px' }}>setTenants(tenants)</td><td>Set tenants array</td></tr>
             <tr><td style={{ padding: '8px' }}>setTotalCount(count)</td><td>Set total count</td></tr>
-            <tr><td style={{ padding: '8px' }}>updateFromResponse(response)</td><td>Update from API response</td></tr>
             <tr><td style={{ padding: '8px' }}>reset()</td><td>Reset to initial state</td></tr>
             <tr><td style={{ padding: '8px' }}>subscribe(callback)</td><td>Subscribe to state changes (returns unsubscribe function)</td></tr>
-            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchGetTenants(params?)</td><td>Fetch tenants from API and update state (v2.0.0)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchGetTenants(input?)</td><td>Fetch tenants from API and update state (v2.0.0, v4.0.0: GetTenantsInput)</td></tr>
             <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchGetTenantById(id)</td><td>Fetch single tenant from API (v2.0.0)</td></tr>
-            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchCreateTenant(body)</td><td>Create tenant via API and refresh state (v2.0.0)</td></tr>
-            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchUpdateTenant(body)</td><td>Update tenant via API and refresh state (v2.0.0)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchCreateTenant(input)</td><td>Create tenant via API and refresh state (v2.0.0, v4.0.0: TenantCreateDto)</td></tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchUpdateTenant(id, input)</td><td>Update tenant via API and refresh state (v4.0.0: id + TenantUpdateDto)</td></tr>
             <tr style={{ background: 'rgba(68,255,68,0.05)' }}><td style={{ padding: '8px' }}>dispatchDeleteTenant(id)</td><td>Delete tenant via API and refresh state (v2.0.0)</td></tr>
           </tbody>
         </table>
@@ -1206,8 +1205,8 @@ function TestComponentInterfaces() {
             </tr>
           </thead>
           <tbody>
-            <tr><td style={{ padding: '8px' }}>onTenantCreated</td><td><code>(tenant: Item) =&gt; void</code></td><td>Called when a tenant is created</td></tr>
-            <tr><td style={{ padding: '8px' }}>onTenantUpdated</td><td><code>(tenant: Item) =&gt; void</code></td><td>Called when a tenant is updated</td></tr>
+            <tr><td style={{ padding: '8px' }}>onTenantCreated</td><td><code>(tenant: TenantDto) =&gt; void</code></td><td>Called when a tenant is created (v4.0.0: TenantDto)</td></tr>
+            <tr><td style={{ padding: '8px' }}>onTenantUpdated</td><td><code>(tenant: TenantDto) =&gt; void</code></td><td>Called when a tenant is updated (v4.0.0: TenantDto)</td></tr>
             <tr><td style={{ padding: '8px' }}>onTenantDeleted</td><td><code>(id: string) =&gt; void</code></td><td>Called when a tenant is deleted</td></tr>
           </tbody>
         </table>
@@ -1322,37 +1321,14 @@ function TestRouteConstants() {
 }
 
 function TestV240Features() {
-  const [apiNameDemo, setApiNameDemo] = useState('default')
-
   return (
     <div className="test-section">
       <h2>v2.4.0 Features</h2>
 
-      <div className="test-card" style={{ background: 'rgba(100,255,100,0.05)', border: '1px solid rgba(100,255,100,0.2)' }}>
-        <h3>apiName Property</h3>
-        <p>New in v2.4.0: <code>TenantManagementService</code> now has an <code>apiName</code> property.</p>
-        <p>This property specifies which API configuration to use for REST requests (defaults to "default").</p>
-
-        <div style={{ marginTop: '1rem' }}>
-          <h4>Interactive Demo</h4>
-          <p>Simulate changing the apiName property:</p>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1rem' }}>
-            <input
-              type="text"
-              value={apiNameDemo}
-              onChange={(e) => setApiNameDemo(e.target.value)}
-              placeholder="Enter API name"
-              style={{
-                padding: '8px',
-                borderRadius: '4px',
-                border: '1px solid #333',
-                flex: 1
-              }}
-            />
-            <button onClick={() => setApiNameDemo('default')}>Reset to Default</button>
-          </div>
-          <p>Current apiName: <code style={{ background: 'rgba(100,255,100,0.2)', padding: '2px 6px', borderRadius: '3px' }}>{apiNameDemo}</code></p>
-        </div>
+      <div className="test-card" style={{ background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.2)' }}>
+        <h3>apiName Property <span style={{ color: '#f44', fontSize: '12px' }}>(Removed in v4.0.0)</span></h3>
+        <p><code>TenantManagementService</code> was removed in v4.0.0. Use <code>TenantService</code> (proxy) instead.</p>
+        <p>The <code>apiName</code> property was part of the legacy service. TenantService uses the core REST service directly.</p>
 
         <pre style={{
           background: 'rgba(50,50,50,0.3)',
@@ -1361,18 +1337,20 @@ function TestV240Features() {
           fontSize: '12px',
           marginTop: '1rem'
         }}>
-{`// v2.4.0: apiName property on TenantManagementService
-const service = new TenantManagementService(restService);
-console.log(service.apiName); // "default"
+{`// v4.0.0: TenantManagementService removed, use TenantService instead
+// Before (v2.4.0):
+// const service = new TenantManagementService(restService);
+// service.apiName = "default";
 
-// Change to use a different API configuration
-service.apiName = "${apiNameDemo}";`}
+// After (v4.0.0):
+const service = new TenantService(restService);
+// TenantService uses core REST service configuration directly`}
         </pre>
       </div>
 
-      <div className="test-card" style={{ background: 'rgba(100,255,100,0.05)', border: '1px solid rgba(100,255,100,0.2)' }}>
-        <h3>AddRequest Changes (v2.4.0)</h3>
-        <p>The <code>AddRequest</code> interface now requires admin credentials when creating a tenant:</p>
+      <div className="test-card" style={{ background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.2)' }}>
+        <h3>AddRequest Changes <span style={{ color: '#f44', fontSize: '12px' }}>(Removed in v4.0.0 - use TenantCreateDto)</span></h3>
+        <p><code>TenantManagement.AddRequest</code> was removed in v4.0.0. Use <code>TenantCreateDto</code> instead:</p>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #333' }}>
@@ -1385,17 +1363,22 @@ service.apiName = "${apiNameDemo}";`}
             <tr>
               <td style={{ padding: '8px' }}><code>name</code></td>
               <td>string</td>
-              <td>Required (existing)</td>
+              <td>Required</td>
             </tr>
-            <tr style={{ background: 'rgba(100,255,100,0.1)' }}>
+            <tr>
               <td style={{ padding: '8px' }}><code>adminEmailAddress</code></td>
               <td>string</td>
-              <td><strong>NEW in v2.4.0</strong></td>
+              <td>Required</td>
             </tr>
-            <tr style={{ background: 'rgba(100,255,100,0.1)' }}>
+            <tr>
               <td style={{ padding: '8px' }}><code>adminPassword</code></td>
               <td>string</td>
-              <td><strong>NEW in v2.4.0</strong></td>
+              <td>Required</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>extraProperties</code></td>
+              <td>Record&lt;string, any&gt;</td>
+              <td>Optional (v4.0.0)</td>
             </tr>
           </tbody>
         </table>
@@ -1407,8 +1390,8 @@ service.apiName = "${apiNameDemo}";`}
           fontSize: '12px',
           marginTop: '1rem'
         }}>
-{`// v2.4.0: AddRequest now requires admin credentials
-const request: TenantManagement.AddRequest = {
+{`// v4.0.0: Use TenantCreateDto instead of TenantManagement.AddRequest
+const request: TenantCreateDto = {
   name: "New Tenant",
   adminEmailAddress: "admin@newtenant.com",
   adminPassword: "SecurePassword123!"
@@ -1418,9 +1401,10 @@ await tenantService.create(request);`}
         </pre>
       </div>
 
-      <div className="test-card" style={{ background: 'rgba(100,255,100,0.05)', border: '1px solid rgba(100,255,100,0.2)' }}>
-        <h3>UpdateRequest Changes (v2.4.0)</h3>
-        <p>The <code>UpdateRequest</code> interface <strong>no longer extends AddRequest</strong>. It now only contains:</p>
+      <div className="test-card" style={{ background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.2)' }}>
+        <h3>UpdateRequest Changes <span style={{ color: '#f44', fontSize: '12px' }}>(Removed in v4.0.0 - use TenantUpdateDto)</span></h3>
+        <p><code>TenantManagement.UpdateRequest</code> was removed in v4.0.0. Use <code>TenantUpdateDto</code> instead.</p>
+        <p style={{ marginTop: '0.5rem' }}><strong>v4.0.0 breaking change:</strong> <code>updateTenant(id, data)</code> now takes ID as a separate first argument.</p>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #333' }}>
@@ -1431,80 +1415,52 @@ await tenantService.create(request);`}
           </thead>
           <tbody>
             <tr>
-              <td style={{ padding: '8px' }}><code>id</code></td>
-              <td>string</td>
-              <td>Required - Tenant ID</td>
-            </tr>
-            <tr>
               <td style={{ padding: '8px' }}><code>name</code></td>
               <td>string</td>
               <td>Required - New tenant name</td>
             </tr>
+            <tr>
+              <td style={{ padding: '8px' }}><code>extraProperties</code></td>
+              <td>Record&lt;string, any&gt;</td>
+              <td>Optional (v4.0.0)</td>
+            </tr>
           </tbody>
         </table>
-        <p style={{ marginTop: '1rem', color: '#888', fontSize: '12px' }}>
-          Note: Admin credentials are NOT needed when updating a tenant (only when creating).
-        </p>
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px',
+          marginTop: '1rem'
+        }}>
+{`// v4.0.0: ID is now a separate parameter
+// Before: updateTenant({ id, name })
+// After:  updateTenant(id, { name })
+await updateTenant('tenant-id', { name: 'Updated Name' });`}
+        </pre>
       </div>
 
-      <div className="test-card">
-        <h3>TenantManagementService Class Summary</h3>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid #333' }}>
-              <th style={{ textAlign: 'left', padding: '8px' }}>Property/Method</th>
-              <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
-              <th style={{ textAlign: 'left', padding: '8px' }}>Version</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr style={{ background: 'rgba(100,255,100,0.1)' }}>
-              <td style={{ padding: '8px' }}><code>apiName</code></td>
-              <td>string (default: "default")</td>
-              <td>v2.4.0 (NEW)</td>
-            </tr>
-            <tr>
-              <td style={{ padding: '8px' }}><code>getAll(params?)</code></td>
-              <td>Promise&lt;Response&gt;</td>
-              <td>v0.7.6</td>
-            </tr>
-            <tr>
-              <td style={{ padding: '8px' }}><code>getById(id)</code></td>
-              <td>Promise&lt;Item&gt;</td>
-              <td>v0.7.6</td>
-            </tr>
-            <tr>
-              <td style={{ padding: '8px' }}><code>create(body)</code></td>
-              <td>Promise&lt;Item&gt;</td>
-              <td>v0.7.6 (body changed in v2.4.0)</td>
-            </tr>
-            <tr>
-              <td style={{ padding: '8px' }}><code>update(body)</code></td>
-              <td>Promise&lt;Item&gt;</td>
-              <td>v0.7.6 (body changed in v2.4.0)</td>
-            </tr>
-            <tr>
-              <td style={{ padding: '8px' }}><code>delete(id)</code></td>
-              <td>Promise&lt;void&gt;</td>
-              <td>v0.7.6</td>
-            </tr>
-            <tr>
-              <td style={{ padding: '8px' }}><code>getDefaultConnectionString(id)</code></td>
-              <td>Promise&lt;string&gt;</td>
-              <td>v0.7.6</td>
-            </tr>
-            <tr>
-              <td style={{ padding: '8px' }}><code>updateDefaultConnectionString(payload)</code></td>
-              <td>Promise&lt;void&gt;</td>
-              <td>v0.7.6</td>
-            </tr>
-            <tr>
-              <td style={{ padding: '8px' }}><code>deleteDefaultConnectionString(id)</code></td>
-              <td>Promise&lt;void&gt;</td>
-              <td>v0.7.6</td>
-            </tr>
-          </tbody>
-        </table>
+      <div className="test-card" style={{ background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.2)' }}>
+        <h3>TenantManagementService <span style={{ color: '#f44', fontSize: '12px' }}>(Removed in v4.0.0)</span></h3>
+        <p style={{ color: '#f87171' }}>
+          <strong>Breaking Change:</strong> <code>TenantManagementService</code> has been completely removed in v4.0.0.
+          Use <code>TenantService</code> (proxy) instead.
+        </p>
+        <pre style={{
+          background: 'rgba(50,50,50,0.3)',
+          padding: '1rem',
+          borderRadius: '4px',
+          fontSize: '12px',
+          marginTop: '1rem'
+        }}>
+{`// Before (v3.2.0):
+// import { TenantManagementService } from '@abpjs/tenant-management';
+// const service = new TenantManagementService(restService);
+
+// After (v4.0.0):
+import { TenantService } from '@abpjs/tenant-management';
+const service = new TenantService(restService);`}
+        </pre>
       </div>
     </div>
   )
@@ -1915,7 +1871,7 @@ function TestV320Features() {
       <div className="test-card" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)' }}>
         <h3>TenantService</h3>
         <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
-          New typed proxy service that replaces the legacy TenantManagementService for API calls.
+          Typed proxy service for tenant API calls. Since v4.0.0, this is the only service (TenantManagementService was removed).
         </p>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
           <thead>
@@ -2042,38 +1998,49 @@ ${JSON.stringify(demoGetTenantsInput, null, 2)}`}
         </pre>
       </div>
 
-      <div className="test-card" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)' }}>
-        <h3>Deprecated Types</h3>
-        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
-          The following types in <code>TenantManagement</code> namespace are deprecated and will be removed in v4.0:
+      <div className="test-card" style={{ background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.2)' }}>
+        <h3>Removed Types <span style={{ color: '#f44', fontSize: '12px' }}>(Removed in v4.0.0)</span></h3>
+        <p style={{ fontSize: '14px', color: '#f87171', marginBottom: '8px' }}>
+          The following deprecated types have been <strong>removed</strong> in v4.0.0:
         </p>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #333' }}>
-              <th style={{ textAlign: 'left', padding: '8px' }}>Deprecated Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Removed Type</th>
               <th style={{ textAlign: 'left', padding: '8px' }}>Replacement</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
             </tr>
           </thead>
           <tbody>
             <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
-              <td style={{ padding: '8px' }}><code>TenantManagement.Response</code></td>
+              <td style={{ padding: '8px' }}><code style={{ textDecoration: 'line-through' }}>TenantManagement.Response</code></td>
               <td><code>PagedResultDto&lt;TenantDto&gt;</code></td>
+              <td style={{ color: '#f44' }}>REMOVED</td>
             </tr>
             <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
-              <td style={{ padding: '8px' }}><code>TenantManagement.Item</code></td>
+              <td style={{ padding: '8px' }}><code style={{ textDecoration: 'line-through' }}>TenantManagement.Item</code></td>
               <td><code>TenantDto</code></td>
+              <td style={{ color: '#f44' }}>REMOVED</td>
             </tr>
             <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
-              <td style={{ padding: '8px' }}><code>TenantManagement.AddRequest</code></td>
+              <td style={{ padding: '8px' }}><code style={{ textDecoration: 'line-through' }}>TenantManagement.AddRequest</code></td>
               <td><code>TenantCreateDto</code></td>
+              <td style={{ color: '#f44' }}>REMOVED</td>
             </tr>
             <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
-              <td style={{ padding: '8px' }}><code>TenantManagement.UpdateRequest</code></td>
+              <td style={{ padding: '8px' }}><code style={{ textDecoration: 'line-through' }}>TenantManagement.UpdateRequest</code></td>
               <td><code>TenantUpdateDto</code></td>
+              <td style={{ color: '#f44' }}>REMOVED</td>
             </tr>
             <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
-              <td style={{ padding: '8px' }}><code>TenantManagement.DefaultConnectionStringRequest</code></td>
+              <td style={{ padding: '8px' }}><code style={{ textDecoration: 'line-through' }}>TenantManagement.DefaultConnectionStringRequest</code></td>
               <td><code>TenantService.updateDefaultConnectionString()</code></td>
+              <td style={{ color: '#f44' }}>REMOVED</td>
+            </tr>
+            <tr style={{ background: 'rgba(248,113,113,0.1)' }}>
+              <td style={{ padding: '8px' }}><code style={{ textDecoration: 'line-through' }}>TenantManagementService</code></td>
+              <td><code>TenantService</code></td>
+              <td style={{ color: '#f44' }}>REMOVED</td>
             </tr>
           </tbody>
         </table>
@@ -2120,12 +2087,66 @@ await tenantService.delete(newTenant.id);`}
   )
 }
 
+function TestV400Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v4.0.0</h2>
+
+      <div className="test-card" style={{ background: 'rgba(248,113,113,0.05)', border: '1px solid rgba(248,113,113,0.2)' }}>
+        <h3>Breaking Changes</h3>
+        <ul style={{ fontSize: '14px', lineHeight: '2' }}>
+          <li><strong>TenantManagementService removed</strong> - Use <code>TenantService</code> (proxy) instead</li>
+          <li><strong>Deprecated types removed</strong> - <code>TenantManagement.Response</code>, <code>Item</code>, <code>AddRequest</code>, <code>UpdateRequest</code>, <code>DefaultConnectionStringRequest</code></li>
+          <li><strong>updateTenant signature changed</strong> - Now takes <code>(id, data)</code> instead of <code>(&#123; id, name &#125;)</code></li>
+          <li><strong>dispatchUpdateTenant signature changed</strong> - Now takes <code>(id, input)</code> instead of <code>(body)</code></li>
+          <li><strong>State service updateFromResponse removed</strong> - Was using deprecated Response type</li>
+          <li><strong>TenantsComponentInputs callbacks</strong> - Now use <code>TenantDto</code> instead of <code>TenantManagement.Item</code></li>
+          <li><strong>extraProperties now optional</strong> - In <code>TenantDto</code> and <code>TenantCreateOrUpdateDtoBase</code></li>
+        </ul>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.2)' }}>
+        <h3>Migration Guide</h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px' }}>
+{`// 1. Replace TenantManagementService with TenantService
+// Before:
+// import { TenantManagementService } from '@abpjs/tenant-management';
+// const service = new TenantManagementService(restService);
+// After:
+import { TenantService } from '@abpjs/tenant-management';
+const service = new TenantService(restService);
+
+// 2. Replace deprecated types with proxy DTOs
+// TenantManagement.Item      -> TenantDto
+// TenantManagement.AddRequest -> TenantCreateDto
+// TenantManagement.UpdateRequest -> TenantUpdateDto
+// TenantManagement.Response  -> PagedResultDto<TenantDto>
+
+// 3. Update updateTenant calls (ID is now a separate parameter)
+// Before: updateTenant({ id: tenantId, name: tenantName })
+// After:  updateTenant(tenantId, { name: tenantName })
+
+// 4. Update dispatchUpdateTenant calls
+// Before: stateService.dispatchUpdateTenant({ id, name })
+// After:  stateService.dispatchUpdateTenant(id, { name })`}
+        </pre>
+      </div>
+    </div>
+  )
+}
+
 export function TestTenantManagementPage() {
   return (
     <div>
-      <h1>@abpjs/tenant-management Tests v3.2.0</h1>
+      <h1>@abpjs/tenant-management Tests v4.0.0</h1>
       <p>Testing tenant management modal, hooks, and TenantService for creating, updating, and managing tenants.</p>
-      <p style={{ color: '#3b82f6', fontSize: '0.9rem' }}>Version 3.2.0 - New proxy module with TenantService and typed DTOs</p>
+      <p style={{ color: '#f44', fontSize: '0.9rem' }}>Version 4.0.0 - TenantManagementService removed, deprecated types removed, proxy-first API</p>
+
+      {/* v4.0.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #f44', paddingTop: '1rem' }}>
+        v4.0.0 Features
+      </h2>
+      <TestV400Features />
 
       {/* v3.2.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #3b82f6', paddingTop: '1rem' }}>

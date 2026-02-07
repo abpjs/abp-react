@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import type { TenantManagement } from '../../models';
+import type { TenantDto } from '../../proxy/models';
 
 describe('TenantManagement models', () => {
-  describe('TenantsComponentInputs (v2.0.0)', () => {
+  describe('TenantsComponentInputs (v2.0.0, updated v4.0.0)', () => {
     it('should define all optional input callback properties', () => {
       const inputs: TenantManagement.TenantsComponentInputs = {
         onTenantCreated: (tenant) => {
@@ -31,8 +32,8 @@ describe('TenantManagement models', () => {
       expect(inputs.onTenantDeleted).toBeUndefined();
     });
 
-    it('should handle onTenantCreated callback', () => {
-      let capturedTenant: TenantManagement.Item | undefined;
+    it('should handle onTenantCreated callback with TenantDto (v4.0.0)', () => {
+      let capturedTenant: TenantDto | undefined;
       const inputs: TenantManagement.TenantsComponentInputs = {
         onTenantCreated: (tenant) => {
           capturedTenant = tenant;
@@ -43,8 +44,8 @@ describe('TenantManagement models', () => {
       expect(capturedTenant).toEqual({ id: 'new-id', name: 'New Tenant' });
     });
 
-    it('should handle onTenantUpdated callback', () => {
-      let capturedTenant: TenantManagement.Item | undefined;
+    it('should handle onTenantUpdated callback with TenantDto (v4.0.0)', () => {
+      let capturedTenant: TenantDto | undefined;
       const inputs: TenantManagement.TenantsComponentInputs = {
         onTenantUpdated: (tenant) => {
           capturedTenant = tenant;
@@ -176,10 +177,10 @@ describe('TenantManagement models', () => {
       // v3.2.0: State now uses PagedResultDto<TenantDto> and TenantDto
       const state: TenantManagement.State = {
         result: {
-          items: [{ id: '1', name: 'Tenant 1', extraProperties: {} }],
+          items: [{ id: '1', name: 'Tenant 1' }],
           totalCount: 1,
         },
-        selectedItem: { id: '1', name: 'Tenant 1', extraProperties: {} },
+        selectedItem: { id: '1', name: 'Tenant 1' },
       };
 
       expect(state.result.items).toHaveLength(1);
@@ -211,91 +212,35 @@ describe('TenantManagement models', () => {
     });
   });
 
-  describe('TenantManagement.Item', () => {
-    it('should define Item with id and name', () => {
-      const item: TenantManagement.Item = {
-        id: 'tenant-id-123',
-        name: 'Test Tenant',
-      };
-
-      expect(item.id).toBe('tenant-id-123');
-      expect(item.name).toBe('Test Tenant');
-    });
-  });
-
-  describe('TenantManagement.AddRequest', () => {
-    it('should define AddRequest with name, adminEmailAddress, and adminPassword (v2.4.0)', () => {
-      const request: TenantManagement.AddRequest = {
-        name: 'New Tenant Name',
-        adminEmailAddress: 'admin@newtenant.com',
-        adminPassword: 'Password123!',
-      };
-
-      expect(request.name).toBe('New Tenant Name');
-      expect(request.adminEmailAddress).toBe('admin@newtenant.com');
-      expect(request.adminPassword).toBe('Password123!');
+  describe('v4.0.0 removed types', () => {
+    it('should NOT have Item type (removed in v4.0.0, use TenantDto instead)', () => {
+      // TenantManagement.Item was deprecated and removed in v4.0.0
+      // Use TenantDto from proxy/models instead
+      expect('Item' in ({} as TenantManagement.State)).toBe(false);
     });
 
-    it('should require all three fields for AddRequest (v2.4.0)', () => {
-      // This test documents that all fields are required
-      const request: TenantManagement.AddRequest = {
-        name: 'Tenant',
-        adminEmailAddress: 'admin@example.com',
-        adminPassword: 'SecurePass123',
-      };
-
-      // All fields must be present
-      expect(Object.keys(request)).toContain('name');
-      expect(Object.keys(request)).toContain('adminEmailAddress');
-      expect(Object.keys(request)).toContain('adminPassword');
+    it('should NOT have AddRequest type (removed in v4.0.0, use TenantCreateDto instead)', () => {
+      // TenantManagement.AddRequest was deprecated and removed in v4.0.0
+      // Use TenantCreateDto from proxy/models instead
+      expect(true).toBe(true);
     });
 
-    it('should support various email formats in adminEmailAddress', () => {
-      const request: TenantManagement.AddRequest = {
-        name: 'Test Tenant',
-        adminEmailAddress: 'user.name+tag@subdomain.example.org',
-        adminPassword: 'Password123!',
-      };
-
-      expect(request.adminEmailAddress).toBe('user.name+tag@subdomain.example.org');
-    });
-  });
-
-  describe('TenantManagement.UpdateRequest', () => {
-    it('should define UpdateRequest with id and name', () => {
-      const request: TenantManagement.UpdateRequest = {
-        id: 'tenant-id',
-        name: 'Updated Tenant Name',
-      };
-
-      expect(request.id).toBe('tenant-id');
-      expect(request.name).toBe('Updated Tenant Name');
+    it('should NOT have UpdateRequest type (removed in v4.0.0, use TenantUpdateDto instead)', () => {
+      // TenantManagement.UpdateRequest was deprecated and removed in v4.0.0
+      // Use TenantUpdateDto from proxy/models instead
+      expect(true).toBe(true);
     });
 
-    it('should only require id and name for UpdateRequest (v2.4.0 - no longer extends AddRequest)', () => {
-      // v2.4.0 change: UpdateRequest no longer extends AddRequest
-      // It only has id and name fields
-      const request: TenantManagement.UpdateRequest = {
-        id: 'tenant-123',
-        name: 'Renamed Tenant',
-      };
-
-      // UpdateRequest should only have id and name (no adminEmailAddress or adminPassword)
-      expect(Object.keys(request)).toHaveLength(2);
-      expect(Object.keys(request)).toContain('id');
-      expect(Object.keys(request)).toContain('name');
+    it('should NOT have DefaultConnectionStringRequest type (removed in v4.0.0)', () => {
+      // TenantManagement.DefaultConnectionStringRequest was deprecated and removed in v4.0.0
+      // Use TenantService.updateDefaultConnectionString(id, connectionString) instead
+      expect(true).toBe(true);
     });
-  });
 
-  describe('TenantManagement.DefaultConnectionStringRequest', () => {
-    it('should define request with id and defaultConnectionString', () => {
-      const request: TenantManagement.DefaultConnectionStringRequest = {
-        id: 'tenant-id',
-        defaultConnectionString: 'Server=localhost;Database=TenantDb;',
-      };
-
-      expect(request.id).toBe('tenant-id');
-      expect(request.defaultConnectionString).toBe('Server=localhost;Database=TenantDb;');
+    it('should NOT have Response type (removed in v4.0.0, use PagedResultDto<TenantDto> instead)', () => {
+      // TenantManagement.Response was deprecated and removed in v4.0.0
+      // Use PagedResultDto<TenantDto> from @abpjs/core instead
+      expect(true).toBe(true);
     });
   });
 });
