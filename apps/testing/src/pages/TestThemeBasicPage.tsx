@@ -7,6 +7,7 @@
  * @updated 2.9.0 - Removed isDropdownChildDynamic prop, RTL support via Chakra UI
  * @updated 3.0.0 - NavItemsService, CurrentUserComponent, LanguagesComponent, providers
  * @updated 3.1.0 - Angular SubscriptionService added (no React impact - uses CSS breakpoints)
+ * @updated 3.2.0 - Reduced .abp-loading opacity from 0.1 to 0.05
  */
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
@@ -24,6 +25,8 @@ import {
   LayoutApplication,
   CurrentUserComponent,
   LanguagesComponent,
+  THEME_BASIC_STYLES,
+  initializeThemeBasicStyles,
 } from '@abpjs/theme-basic'
 
 // These are displayed in code examples but not rendered directly
@@ -282,6 +285,117 @@ function TestApplicationInfo() {
             ))}
           </ul>
         )}
+      </div>
+    </div>
+  )
+}
+
+// v3.2.0: Test style updates
+function TestV320Features() {
+  // Check for the v3.2.0 .abp-loading style change
+  const hasV320Styles = THEME_BASIC_STYLES.includes('rgba(0, 0, 0, 0.05)')
+  const hasOldStyles = THEME_BASIC_STYLES.includes('rgba(0, 0, 0, 0.1)')
+
+  return (
+    <div className="test-section">
+      <h2>v3.2.0: Style Updates</h2>
+
+      <div className="test-card">
+        <h3>.abp-loading Opacity Change</h3>
+        <p>Version 3.2.0 reduced the <code>.abp-loading</code> background opacity from 0.1 to 0.05 for better UX.</p>
+        <div style={{ marginTop: '1rem' }}>
+          <p>
+            <strong>New opacity (0.05):</strong>{' '}
+            <span style={{ color: hasV320Styles ? '#6f6' : '#f66' }}>
+              {hasV320Styles ? '✓ Present' : '✗ Missing'}
+            </span>
+          </p>
+          <p>
+            <strong>Old opacity (0.1):</strong>{' '}
+            <span style={{ color: !hasOldStyles ? '#6f6' : '#f66' }}>
+              {!hasOldStyles ? '✓ Removed' : '✗ Still present'}
+            </span>
+          </p>
+        </div>
+        <div style={{ marginTop: '1rem' }}>
+          <h4>Visual Comparison</h4>
+          <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '120px',
+                height: '80px',
+                background: 'rgba(0, 0, 0, 0.1)',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#888',
+                fontSize: '12px'
+              }}>
+                Old (0.1)
+              </div>
+              <p style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>More visible overlay</p>
+            </div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{
+                width: '120px',
+                height: '80px',
+                background: 'rgba(0, 0, 0, 0.05)',
+                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#888',
+                fontSize: '12px',
+                border: '1px solid #333'
+              }}>
+                New (0.05)
+              </div>
+              <p style={{ fontSize: '12px', color: '#888', marginTop: '4px' }}>Subtler loading state</p>
+            </div>
+          </div>
+        </div>
+        <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px', marginTop: '1rem' }}>
+{`/* v3.2.0 change in styles.provider.ts */
+/* Loading overlay (v3.2.0: reduced opacity from 0.1 to 0.05) */
+.abp-loading {
+    background: rgba(0, 0, 0, 0.05);  /* Was 0.1 in v3.1.0 */
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Style Injection</h3>
+        <p>The <code>initializeThemeBasicStyles()</code> function injects the global CSS styles:</p>
+        <button
+          onClick={() => {
+            initializeThemeBasicStyles()
+            alert('Styles injected! Check document head for <style id="abpjs-theme-basic-styles">')
+          }}
+          style={{ marginTop: '0.5rem' }}
+        >
+          Inject Styles
+        </button>
+        <pre style={{ background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px', fontSize: '12px', marginTop: '1rem' }}>
+{`import { initializeThemeBasicStyles, THEME_BASIC_STYLES } from '@abpjs/theme-basic';
+
+// Inject styles during app initialization
+initializeThemeBasicStyles();
+
+// Or access the raw CSS string
+console.log(THEME_BASIC_STYLES);`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Angular Changes (No React Impact)</h3>
+        <ul>
+          <li><strong>RoutesComponent:</strong> Added <code>closeDropdown()</code> method using Angular's <code>Renderer2</code></li>
+          <li><strong>StylesProvider:</strong> Now uses <code>ReplaceableComponentsService</code> instead of <code>Store</code></li>
+        </ul>
+        <p style={{ color: '#888', fontSize: '12px', marginTop: '8px' }}>
+          These are Angular-specific changes. React handles dropdown closing via state/events and doesn't use Angular's DI system.
+        </p>
       </div>
     </div>
   )
@@ -662,6 +776,22 @@ function TestVersionInfo() {
       <h2>Version Info</h2>
 
       <div className="test-card">
+        <h3>What's New in v3.2.0</h3>
+        <p>Version 3.2.0 includes a UX improvement for loading overlays.</p>
+        <ul>
+          <li><strong>Changed:</strong> <code>.abp-loading</code> background opacity reduced from 0.1 to 0.05</li>
+          <li><strong>Angular Change:</strong> <code>RoutesComponent</code> added <code>closeDropdown()</code> method</li>
+          <li><strong>Angular Change:</strong> <code>StylesProvider</code> now uses <code>ReplaceableComponentsService</code></li>
+          <li><strong>React Status:</strong> Opacity change applied; Angular-specific changes not applicable</li>
+        </ul>
+        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#1a2e1a', borderRadius: '4px', border: '1px solid #2e4a2e' }}>
+          <p style={{ color: '#6f6', margin: 0, fontSize: '14px' }}>
+            <strong>UX Improvement:</strong> The lighter loading overlay (0.05 opacity) is less intrusive while still providing visual feedback.
+          </p>
+        </div>
+      </div>
+
+      <div className="test-card">
         <h3>What's New in v3.1.0</h3>
         <p>Version 3.1.0 is an internal Angular update with no functional changes for React users.</p>
         <ul>
@@ -858,13 +988,14 @@ interface RoutesComponentProps {
 export function TestThemeBasicPage() {
   return (
     <div>
-      <h1>@abpjs/theme-basic Tests (v3.1.0)</h1>
+      <h1>@abpjs/theme-basic Tests (v3.2.0)</h1>
       <p>Testing layouts, navigation, NavItemsService, and new components.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.1.0 - Internal Angular SubscriptionService (no React impact)
+        Version 3.2.0 - Reduced .abp-loading opacity for better UX
       </p>
 
       <TestVersionInfo />
+      <TestV320Features />
       <TestV300Features />
       <TestV270Features />
       <TestLayoutService />
