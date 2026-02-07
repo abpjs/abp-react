@@ -3,6 +3,7 @@
  * Tests: FeatureManagementModal, useFeatureManagement hook
  * @updated 2.9.0 - Version bump only (dependency updates)
  * @updated 3.0.0 - Angular visible getter/setter change (no React impact)
+ * @updated 3.1.0 - Added displayName property to Feature interface
  */
 import { useState, useMemo } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -196,6 +197,7 @@ function TestFeatureHook() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid #333' }}>
+                <th style={{ textAlign: 'left', padding: '8px' }}>Display Name</th>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Name</th>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Value Type</th>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Current Value</th>
@@ -206,10 +208,13 @@ function TestFeatureHook() {
               {features.map((feature) => (
                 <tr key={feature.name} style={{ borderBottom: '1px solid #222' }}>
                   <td style={{ padding: '8px' }}>
-                    <div>{feature.name}</div>
+                    <div style={{ fontWeight: 'bold' }}>{feature.displayName || feature.name}</div>
                     {feature.description && (
                       <div style={{ fontSize: '12px', color: '#888' }}>{feature.description}</div>
                     )}
+                  </td>
+                  <td style={{ padding: '8px' }}>
+                    <code style={{ fontSize: '11px', color: '#888' }}>{feature.name}</code>
                   </td>
                   <td style={{ padding: '8px' }}>
                     <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>
@@ -335,6 +340,7 @@ function TestModels() {
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
 {`interface Feature {
   name: string;
+  displayName: string;  // v3.1.0
   value: string;
   description?: string;
   valueType?: ValueType;
@@ -472,6 +478,67 @@ const key = eFeatureManagementComponents.FeatureManagement
   )
 }
 
+function TestV310Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v3.1.0</h2>
+
+      <div className="test-card">
+        <h3>Feature Interface: displayName Property</h3>
+        <p>
+          New <code>displayName</code> property added to the Feature interface.
+          This provides a human-readable display name for features, separate from
+          the technical <code>name</code> identifier.
+        </p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`// Before v3.1.0
+interface Feature {
+  name: string;
+  value: string;
+  description?: string;
+  // ...
+}
+
+// v3.1.0
+interface Feature {
+  name: string;
+  displayName: string;  // NEW!
+  value: string;
+  description?: string;
+  // ...
+}`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Usage Example</h3>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`// Display user-friendly feature names in your UI
+features.map(feature => (
+  <div key={feature.name}>
+    <label>{feature.displayName}</label>
+    <small>({feature.name})</small>
+  </div>
+))`}
+        </pre>
+        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
+          Use <code>displayName</code> for UI labels and <code>name</code> for programmatic access.
+        </p>
+      </div>
+
+      <div className="test-card">
+        <h3>Migration Notes</h3>
+        <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: '#1a2e1a', borderRadius: '4px', border: '1px solid #2e4a2e' }}>
+          <p style={{ color: '#6f6', margin: 0, fontSize: '14px' }}>
+            <strong>Non-breaking change!</strong> The <code>displayName</code> property is
+            always populated by the backend. Existing code continues to work.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function TestV300Features() {
   return (
     <div className="test-section">
@@ -563,13 +630,19 @@ console.log(service.apiName) // "default"`}</pre>
 export function TestFeatureManagementPage() {
   return (
     <div>
-      <h1>@abpjs/feature-management Tests (v3.0.0)</h1>
+      <h1>@abpjs/feature-management Tests (v3.1.0)</h1>
       <p>Testing feature management modal and hooks.</p>
       <p style={{ color: '#888', fontSize: '0.9rem' }}>
-        Version 3.0.0 - Angular internal changes (no React impact)
+        Version 3.1.0 - Added displayName property to Feature interface
       </p>
 
-      {/* v3.0.0 Features - Highlighted at top */}
+      {/* v3.1.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #f59e0b', paddingTop: '1rem' }}>
+        v3.1.0 Changes
+      </h2>
+      <TestV310Features />
+
+      {/* v3.0.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #ec4899', paddingTop: '1rem' }}>
         v3.0.0 Changes
       </h2>

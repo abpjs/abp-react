@@ -11,6 +11,7 @@ describe('FeatureManagementService', () => {
     features: [
       {
         name: 'Feature.TestFeature1',
+        displayName: 'Test Feature 1',
         value: 'true',
         description: 'Test feature 1',
         valueType: {
@@ -23,6 +24,7 @@ describe('FeatureManagementService', () => {
       },
       {
         name: 'Feature.TestFeature2',
+        displayName: 'Test Feature 2',
         value: 'SomeValue',
         description: 'Test feature 2',
         valueType: {
@@ -112,7 +114,7 @@ describe('FeatureManagementService', () => {
         providerKey: 'TestTenant',
         providerName: 'T',
         features: [
-          { name: 'Feature.TestFeature1', value: 'false' } as FeatureManagement.Feature,
+          { name: 'Feature.TestFeature1', displayName: 'Test Feature 1', value: 'false' },
         ],
       };
 
@@ -130,8 +132,8 @@ describe('FeatureManagementService', () => {
       (mockRestService.request as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
 
       const features = [
-        { name: 'Feature.A', value: 'true' } as FeatureManagement.Feature,
-        { name: 'Feature.B', value: 'customValue' } as FeatureManagement.Feature,
+        { name: 'Feature.A', displayName: 'Feature A', value: 'true' } as FeatureManagement.Feature,
+        { name: 'Feature.B', displayName: 'Feature B', value: 'customValue' } as FeatureManagement.Feature,
       ];
 
       await service.updateFeatures({

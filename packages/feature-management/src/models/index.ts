@@ -1,7 +1,10 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Feature Management Models
- * Translated from @abp/ng.feature-management v2.0.0
+ * Translated from @abp/ng.feature-management v3.1.0
+ *
+ * Changes in v3.1.0:
+ * - Added displayName property to Feature interface
  */
 
 export namespace FeatureManagement {
@@ -25,11 +28,19 @@ export namespace FeatureManagement {
    * Individual feature definition
    */
   export interface Feature {
+    /** Feature name (identifier) */
     name: string;
+    /** Display name for the feature (v3.1.0) */
+    displayName: string;
+    /** Feature value */
     value: string;
+    /** Optional description */
     description?: string;
+    /** Value type definition */
     valueType?: ValueType;
+    /** Hierarchy depth level */
     depth?: number;
+    /** Parent feature name for hierarchy */
     parentName?: string;
   }
 
