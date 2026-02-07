@@ -2,6 +2,7 @@
  * Component keys for the Account Pro module.
  * These keys are used for component replacement/customization.
  * @since 2.7.0
+ * @deprecated Removed from Angular lib/enums in v4.0.0 (public-api now exports {}). To be deleted in v5.0.
  */
 export const eAccountComponents = {
   /**

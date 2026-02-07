@@ -3,6 +3,8 @@
  * These keys are used for route localization and identification.
  *
  * @since 3.0.0
+ * @deprecated Removed from Angular config/enums in v4.0.0. To be deleted in v5.0.
+ * Still available via direct import from config/enums/route-names or enums/route-names.
  */
 export const eAccountRouteNames = {
   /**

@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import * as accountProExports from '../index';
 
-describe('package root exports (v3.2.0)', () => {
-  describe('config exports (v3.0.0)', () => {
-    it('should export eAccountRouteNames from config', () => {
+describe('package root exports (v4.0.0)', () => {
+  describe('config exports (v4.0.0)', () => {
+    // eAccountRouteNames still available via enums/route-names (deprecated but not removed from root)
+    it('should export eAccountRouteNames from enums (deprecated)', () => {
       expect(accountProExports.eAccountRouteNames).toBeDefined();
       expect(typeof accountProExports.eAccountRouteNames).toBe('object');
     });
@@ -16,22 +17,17 @@ describe('package root exports (v3.2.0)', () => {
       );
     });
 
-    it('should export ACCOUNT_ROUTE_PROVIDERS', () => {
-      expect(accountProExports.ACCOUNT_ROUTE_PROVIDERS).toBeDefined();
-      expect(typeof accountProExports.ACCOUNT_ROUTE_PROVIDERS).toBe('object');
-      expect(
-        typeof accountProExports.ACCOUNT_ROUTE_PROVIDERS.configureRoutes
-      ).toBe('function');
+    // v4.0.0: ACCOUNT_ROUTE_PROVIDERS, configureRoutes, initializeAccountRoutes removed from config/providers
+    it('should NOT export ACCOUNT_ROUTE_PROVIDERS (removed in v4.0.0)', () => {
+      expect((accountProExports as Record<string, unknown>).ACCOUNT_ROUTE_PROVIDERS).toBeUndefined();
     });
 
-    it('should export configureRoutes', () => {
-      expect(accountProExports.configureRoutes).toBeDefined();
-      expect(typeof accountProExports.configureRoutes).toBe('function');
+    it('should NOT export configureRoutes from config (removed in v4.0.0)', () => {
+      expect((accountProExports as Record<string, unknown>).configureRoutes).toBeUndefined();
     });
 
-    it('should export initializeAccountRoutes', () => {
-      expect(accountProExports.initializeAccountRoutes).toBeDefined();
-      expect(typeof accountProExports.initializeAccountRoutes).toBe('function');
+    it('should NOT export initializeAccountRoutes (removed in v4.0.0)', () => {
+      expect((accountProExports as Record<string, unknown>).initializeAccountRoutes).toBeUndefined();
     });
 
     it('should export ACCOUNT_SETTING_TAB_PROVIDERS', () => {
@@ -185,11 +181,9 @@ describe('package root exports (v3.2.0)', () => {
 
   describe('v3.2.0 exports', () => {
     describe('enum exports (v3.2.0)', () => {
-      it('should export eAccountManageProfileTabNames', () => {
-        expect(accountProExports.eAccountManageProfileTabNames).toBeDefined();
-        expect(typeof accountProExports.eAccountManageProfileTabNames).toBe(
-          'object'
-        );
+      // v4.0.0: eAccountManageProfileTabNames removed from config/enums barrel
+      it('should NOT export eAccountManageProfileTabNames (removed in v4.0.0)', () => {
+        expect((accountProExports as Record<string, unknown>).eAccountManageProfileTabNames).toBeUndefined();
       });
 
       it('should export ProfilePictureType', () => {
@@ -279,6 +273,91 @@ describe('package root exports (v3.2.0)', () => {
         expect(
           accountProExports.ACCOUNT_MANAGE_PROFILE_TAB_NAMES['change-password']
         ).toBe('AbpUi::ChangePassword');
+      });
+    });
+  });
+
+  describe('v4.0.0 exports', () => {
+    describe('admin abstracts (v4.0.0)', () => {
+      it('should export AbstractAccountSettingsService', () => {
+        expect(accountProExports.AbstractAccountSettingsService).toBeDefined();
+        expect(typeof accountProExports.AbstractAccountSettingsService).toBe(
+          'function'
+        );
+      });
+
+      it('should export useAccountSettings', () => {
+        expect(accountProExports.useAccountSettings).toBeDefined();
+        expect(typeof accountProExports.useAccountSettings).toBe('function');
+      });
+    });
+
+    describe('admin components (v4.0.0)', () => {
+      it('should export useAccountSettingsComponent', () => {
+        expect(accountProExports.useAccountSettingsComponent).toBeDefined();
+        expect(typeof accountProExports.useAccountSettingsComponent).toBe(
+          'function'
+        );
+      });
+
+      it('should export useAccountSettingsTwoFactor', () => {
+        expect(accountProExports.useAccountSettingsTwoFactor).toBeDefined();
+        expect(typeof accountProExports.useAccountSettingsTwoFactor).toBe(
+          'function'
+        );
+      });
+
+      it('should export useAccountSettingsCaptcha', () => {
+        expect(accountProExports.useAccountSettingsCaptcha).toBeDefined();
+        expect(typeof accountProExports.useAccountSettingsCaptcha).toBe(
+          'function'
+        );
+      });
+
+      it('should export useAccountSettingsExternalProvider', () => {
+        expect(
+          accountProExports.useAccountSettingsExternalProvider
+        ).toBeDefined();
+        expect(
+          typeof accountProExports.useAccountSettingsExternalProvider
+        ).toBe('function');
+      });
+    });
+
+    describe('admin services (v4.0.0)', () => {
+      it('should export AccountSettingsService', () => {
+        expect(accountProExports.AccountSettingsService).toBeDefined();
+        expect(typeof accountProExports.AccountSettingsService).toBe(
+          'function'
+        );
+      });
+
+      it('should export AccountLdapService', () => {
+        expect(accountProExports.AccountLdapService).toBeDefined();
+        expect(typeof accountProExports.AccountLdapService).toBe('function');
+      });
+
+      it('should export AccountTwoFactorSettingService', () => {
+        expect(accountProExports.AccountTwoFactorSettingService).toBeDefined();
+        expect(typeof accountProExports.AccountTwoFactorSettingService).toBe(
+          'function'
+        );
+      });
+
+      it('should export AccountCaptchaService', () => {
+        expect(accountProExports.AccountCaptchaService).toBeDefined();
+        expect(typeof accountProExports.AccountCaptchaService).toBe(
+          'function'
+        );
+      });
+
+      it('should export AccountExternalProviderService', () => {
+        expect(
+          accountProExports.AccountExternalProviderService
+        ).toBeDefined();
+        expect(typeof accountProExports.AccountExternalProviderService).toBe(
+          'function'
+        );
       });
     });
   });

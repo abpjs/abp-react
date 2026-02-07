@@ -3,6 +3,7 @@
  * Provides route configuration for the account routes.
  *
  * @since 3.0.0
+ * @deprecated Removed from Angular config/providers in v4.0.0. To be deleted in v5.0.
  */
 import { getRoutesService, RoutesService, eLayoutType } from '@abpjs/core';
 import { eAccountRouteNames } from '../enums/route-names';

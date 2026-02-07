@@ -1,7 +1,23 @@
 /**
  * @abpjs/account-pro
  * ABP Framework Account Pro module for React
- * Translated from @volo/abp.ng.account v3.2.0
+ * Translated from @volo/abp.ng.account v4.0.0
+ *
+ * Changes in v4.0.0:
+ * - Added admin module with abstracts, services, components, models, enums
+ * - Added AbstractAccountSettingsService<Type, SubmitType> (second generic for submit type)
+ * - Added useAccountSettings hook (React equivalent of AbstractAccountSettingsComponent)
+ * - Added AccountCaptchaSettings, AccountExternalProviderSetting, AccountExternalProviderSettings interfaces
+ * - Added AccountCaptchaService for captcha settings management
+ * - Added AccountExternalProviderService for external provider settings management
+ * - Added useAccountSettingsCaptcha hook with tenant-aware settings mapping
+ * - Added useAccountSettingsExternalProvider hook with tenant-aware settings mapping
+ * - Added useAccountSettingsComponent hook with captcha/external provider/tenant support
+ * - Removed eAccountManageProfileTabNames from config/enums (deprecated)
+ * - Removed eAccountRouteNames from config/enums (deprecated)
+ * - Removed route.provider from config/providers (deprecated)
+ * - Removed ManageProfileTabsService from config/services (deprecated)
+ * - Deprecated eAccountComponents, eAccountRouteNames from lib/enums (Angular public-api now exports {})
  *
  * Changes in v3.2.0:
  * - Added ProfilePicture component key to eAccountComponents
@@ -63,10 +79,13 @@
  * - Version bump only (dependency updates to @abp/ng.theme.shared v2.1.0)
  */
 
+// Admin module (v4.0.0)
+export * from './admin';
+
 // Config (v3.0.0)
 export * from './config';
 
-// Enums (v2.7.0)
+// Enums (v2.7.0) - deprecated in v4.0.0 (Angular lib/enums removed from public-api)
 export * from './enums';
 
 // Models
