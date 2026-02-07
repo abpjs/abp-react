@@ -1,7 +1,16 @@
 /**
  * @abpjs/feature-management
  * ABP Framework Feature Management module for React
- * Translated from @abp/ng.feature-management v3.1.0
+ * Translated from @abp/ng.feature-management v3.2.0
+ *
+ * Changes in v3.2.0:
+ * - Added new proxy models: FeatureDto, FeatureGroupDto, FeatureProviderDto, GetFeatureListResultDto, UpdateFeatureDto, UpdateFeaturesDto
+ * - Added validation models: IStringValueType, IValueValidator
+ * - Added ValueTypes enum for feature value types
+ * - Added FreeTextType interface and INPUT_TYPES constant
+ * - Added getInputType() utility function
+ * - Added FeaturesService (new proxy service)
+ * - Deprecated legacy models (State, ValueType, Feature, Features, Provider) - to be deleted in v4.0
  *
  * Changes in v3.1.0:
  * - Added displayName property to Feature interface
@@ -22,7 +31,7 @@
  * - Added apiName property to FeatureManagementService
  * - Dependency updates to @abp/ng.theme.shared v2.4.0
  *
- * @version 3.1.0
+ * @version 3.2.0
  * @since 2.0.0 - Added FeatureManagementComponentInputs/Outputs interfaces
  * @since 2.1.0 - Version bump only (dependency updates to @abp/ng.theme.shared v2.1.0)
  * @since 2.2.0 - Version bump only (dependency updates)
@@ -31,6 +40,7 @@
  * @since 2.9.0 - Version bump only (dependency updates)
  * @since 3.0.0 - Dependency updates (no React changes needed)
  * @since 3.1.0 - Added displayName property to Feature interface
+ * @since 3.2.0 - Added proxy models, validation models, FeaturesService, ValueTypes enum
  */
 
 // Enums (v2.7.0)
