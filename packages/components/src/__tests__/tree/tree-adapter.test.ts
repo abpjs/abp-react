@@ -565,4 +565,13 @@ describe('TreeNode', () => {
     const node = new TreeNode(entity);
     expect(node.title).toBe('Display Name');
   });
+
+  it('should fallback to empty string when neither displayName nor name is set', () => {
+    const entity: BaseNode = {
+      id: '1',
+      parentId: null,
+    };
+    const node = new TreeNode(entity);
+    expect(node.title).toBe('');
+  });
 });
