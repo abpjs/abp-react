@@ -1,15 +1,16 @@
 /**
  * SaaS Extension Tokens
- * Translated from @volo/abp.ng.saas v3.0.0
+ * Translated from @volo/abp.ng.saas v3.2.0
  *
  * Default entity actions, toolbar actions, entity props, and form props
  * for the SaaS module extensibility system.
  *
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses proxy DTOs (EditionDto, SaasTenantDto) instead of Saas.Edition/Saas.Tenant
  */
 
 import { eSaasComponents } from '../enums/components';
-import type { Saas } from '../models/saas';
+import type { EditionDto, SaasTenantDto } from '../proxy/host/dtos/models';
 
 /**
  * Entity action type for extensibility
@@ -74,8 +75,9 @@ export interface FormProp<T = unknown> {
 /**
  * Default entity actions for Editions component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses EditionDto instead of Saas.Edition
  */
-export const DEFAULT_EDITIONS_ENTITY_ACTIONS: EntityAction<Saas.Edition>[] = [
+export const DEFAULT_EDITIONS_ENTITY_ACTIONS: EntityAction<EditionDto>[] = [
   {
     text: 'AbpUi::Edit',
     permission: 'Saas.Editions.Update',
@@ -96,8 +98,9 @@ export const DEFAULT_EDITIONS_ENTITY_ACTIONS: EntityAction<Saas.Edition>[] = [
 /**
  * Default entity actions for Tenants component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses SaasTenantDto instead of Saas.Tenant
  */
-export const DEFAULT_TENANTS_ENTITY_ACTIONS: EntityAction<Saas.Tenant>[] = [
+export const DEFAULT_TENANTS_ENTITY_ACTIONS: EntityAction<SaasTenantDto>[] = [
   {
     text: 'AbpUi::Edit',
     permission: 'Saas.Tenants.Update',
@@ -136,8 +139,9 @@ export const DEFAULT_SAAS_ENTITY_ACTIONS = {
 /**
  * Default toolbar actions for Editions component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses EditionDto instead of Saas.Edition
  */
-export const DEFAULT_EDITIONS_TOOLBAR_ACTIONS: ToolbarAction<Saas.Edition[]>[] = [
+export const DEFAULT_EDITIONS_TOOLBAR_ACTIONS: ToolbarAction<EditionDto[]>[] = [
   {
     text: 'Saas::NewEdition',
     permission: 'Saas.Editions.Create',
@@ -148,8 +152,9 @@ export const DEFAULT_EDITIONS_TOOLBAR_ACTIONS: ToolbarAction<Saas.Edition[]>[] =
 /**
  * Default toolbar actions for Tenants component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses SaasTenantDto instead of Saas.Tenant
  */
-export const DEFAULT_TENANTS_TOOLBAR_ACTIONS: ToolbarAction<Saas.Tenant[]>[] = [
+export const DEFAULT_TENANTS_TOOLBAR_ACTIONS: ToolbarAction<SaasTenantDto[]>[] = [
   {
     text: 'Saas::NewTenant',
     permission: 'Saas.Tenants.Create',
@@ -173,8 +178,9 @@ export const DEFAULT_SAAS_TOOLBAR_ACTIONS = {
 /**
  * Default entity props for Editions component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses EditionDto instead of Saas.Edition
  */
-export const DEFAULT_EDITIONS_ENTITY_PROPS: EntityProp<Saas.Edition>[] = [
+export const DEFAULT_EDITIONS_ENTITY_PROPS: EntityProp<EditionDto>[] = [
   {
     name: 'displayName',
     displayName: 'Saas::EditionName',
@@ -185,8 +191,9 @@ export const DEFAULT_EDITIONS_ENTITY_PROPS: EntityProp<Saas.Edition>[] = [
 /**
  * Default entity props for Tenants component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses SaasTenantDto instead of Saas.Tenant
  */
-export const DEFAULT_TENANTS_ENTITY_PROPS: EntityProp<Saas.Tenant>[] = [
+export const DEFAULT_TENANTS_ENTITY_PROPS: EntityProp<SaasTenantDto>[] = [
   {
     name: 'name',
     displayName: 'Saas::TenantName',
@@ -215,8 +222,9 @@ export const DEFAULT_SAAS_ENTITY_PROPS = {
 /**
  * Default create form props for Editions component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses EditionDto instead of Saas.Edition
  */
-export const DEFAULT_EDITIONS_CREATE_FORM_PROPS: FormProp<Saas.Edition>[] = [
+export const DEFAULT_EDITIONS_CREATE_FORM_PROPS: FormProp<EditionDto>[] = [
   {
     name: 'displayName',
     displayName: 'Saas::EditionName',
@@ -231,8 +239,9 @@ export const DEFAULT_EDITIONS_CREATE_FORM_PROPS: FormProp<Saas.Edition>[] = [
 /**
  * Default create form props for Tenants component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses SaasTenantDto instead of Saas.Tenant
  */
-export const DEFAULT_TENANTS_CREATE_FORM_PROPS: FormProp<Saas.Tenant>[] = [
+export const DEFAULT_TENANTS_CREATE_FORM_PROPS: FormProp<SaasTenantDto>[] = [
   {
     name: 'name',
     displayName: 'Saas::TenantName',
@@ -281,8 +290,9 @@ export const DEFAULT_SAAS_CREATE_FORM_PROPS = {
 /**
  * Default edit form props for Editions component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses EditionDto instead of Saas.Edition
  */
-export const DEFAULT_EDITIONS_EDIT_FORM_PROPS: FormProp<Saas.Edition>[] = [
+export const DEFAULT_EDITIONS_EDIT_FORM_PROPS: FormProp<EditionDto>[] = [
   {
     name: 'displayName',
     displayName: 'Saas::EditionName',
@@ -297,8 +307,9 @@ export const DEFAULT_EDITIONS_EDIT_FORM_PROPS: FormProp<Saas.Edition>[] = [
 /**
  * Default edit form props for Tenants component
  * @since 3.0.0
+ * @updated 3.2.0 - Now uses SaasTenantDto instead of Saas.Tenant
  */
-export const DEFAULT_TENANTS_EDIT_FORM_PROPS: FormProp<Saas.Tenant>[] = [
+export const DEFAULT_TENANTS_EDIT_FORM_PROPS: FormProp<SaasTenantDto>[] = [
   {
     name: 'name',
     displayName: 'Saas::TenantName',
