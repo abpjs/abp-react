@@ -67,4 +67,11 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-expressions': 'off',
     },
   },
+  // Testing app: demo pages import full API surface for documentation purposes
+  {
+    files: ['apps/testing/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'warn',
+    },
+  },
 )

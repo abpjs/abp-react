@@ -1896,7 +1896,7 @@ function TestV320Features() {
     setError(null)
     try {
       const result = await roleService.getList({ skipCount: 0, maxResultCount: 10 })
-      setProxyRoles(result.items)
+      setProxyRoles(result.items ?? [])
     } catch (err: any) {
       setError(err.message || 'Failed to fetch roles')
     } finally {
@@ -1911,7 +1911,7 @@ function TestV320Features() {
     try {
       const input: GetIdentityUsersInput = { filter: '', skipCount: 0, maxResultCount: 10 }
       const result = await userService.getList(input)
-      setProxyUsers(result.items)
+      setProxyUsers(result.items ?? [])
     } catch (err: any) {
       setError(err.message || 'Failed to fetch users')
     } finally {

@@ -1,7 +1,7 @@
 {
   "name": "@abpjs/abp-react-test",
   "private": true,
-  "version": "3.0.0",
+  "version": "3.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,6 +14,7 @@
     "@abpjs/account-pro": "workspace:*",
     "@abpjs/audit-logging": "workspace:*",
     "@abpjs/chat": "workspace:*",
+    "@chakra-ui/react": "^3.2.0",
     "@abpjs/components": "workspace:*",
     "@abpjs/core": "workspace:*",
     "@abpjs/feature-management": "workspace:*",
