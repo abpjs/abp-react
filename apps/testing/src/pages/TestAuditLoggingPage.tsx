@@ -42,7 +42,6 @@ import {
   // v3.2.0 imports - proxy subpackage
   EntityChangeType,
   entityChangeTypeOptions,
-  AuditLogsService,
 } from '@abpjs/audit-logging'
 import type {
   AuditLogging,
@@ -51,17 +50,8 @@ import type {
   AuditLoggingConfigOptions,
   // v3.2.0 types - proxy DTOs
   AuditLogDto,
-  AuditLogActionDto,
   EntityChangeDto,
-  EntityPropertyChangeDto,
-  EntityChangeWithUsernameDto,
   GetAuditLogListDto,
-  GetEntityChangesDto,
-  GetAverageExecutionDurationPerDayInput,
-  GetAverageExecutionDurationPerDayOutput,
-  GetErrorRateFilter,
-  GetErrorRateOutput,
-  EntityChangeFilter,
 } from '@abpjs/audit-logging'
 
 function TestAuditLogsComponent() {

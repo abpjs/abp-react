@@ -8,6 +8,7 @@
  *
  * @since 2.7.0
  * @updated 3.2.0 - Added DeepPartial type
+ * @updated 4.0.0 - Added Strict type
  */
 
 import { ComponentType, ReactElement } from 'react';
@@ -53,3 +54,13 @@ export type ComponentFactory<P = unknown> = ComponentType<P> | ((props: P) => Re
  * @since 2.7.0
  */
 export type RenderProp<C = unknown> = (context: C) => ReactElement;
+
+/**
+ * Strict type utility - ensures a Class implementation matches a Contract exactly.
+ * If Class extends Contract, maps Class keys to Contract types (non-contract keys become never).
+ * Otherwise, returns Contract.
+ * @since 4.0.0
+ */
+export type Strict<Class, Contract> = Class extends Contract
+  ? { [K in keyof Class]: K extends keyof Contract ? Contract[K] : never }
+  : Contract;

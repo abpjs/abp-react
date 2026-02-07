@@ -21,10 +21,6 @@ import {
 import type {
   FeatureManagement,
   FeatureDto,
-  FeatureGroupDto,
-  GetFeatureListResultDto,
-  UpdateFeaturesDto,
-  IStringValueType,
   FreeTextType,
 } from '@abpjs/feature-management'
 
@@ -510,16 +506,6 @@ function TestV320Features() {
     },
     depth: 0,
     parentName: '',
-  }
-
-  const demoGroup: FeatureGroupDto = {
-    name: 'MyApp',
-    displayName: 'My Application',
-    features: [demoFeature],
-  }
-
-  const demoResult: GetFeatureListResultDto = {
-    groups: [demoGroup],
   }
 
   // Test getInputType with different validators

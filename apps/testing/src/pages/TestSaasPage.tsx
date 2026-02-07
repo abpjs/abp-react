@@ -49,8 +49,6 @@ import {
   TenantService,
   type EditionDto,
   type SaasTenantDto,
-  type EditionCreateDto,
-  type SaasTenantCreateDto,
   type GetEditionsInput,
   type GetTenantsInput,
   type GetEditionUsageStatisticsResult,

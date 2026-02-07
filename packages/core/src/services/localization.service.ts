@@ -1,6 +1,6 @@
 /**
  * Localization Service
- * Translated from @abp/ng.core v3.2.0
+ * Translated from @abp/ng.core v4.0.0
  *
  * @since 1.0.0
  * @updated 2.9.0 - Added localize, localizeSync, localizeWithFallback, localizeWithFallbackSync methods
