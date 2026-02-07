@@ -1,0 +1,49 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { useRestService } from '@abpjs/core';
+import { <%= name %>Service } from './<%= kebab(name) %>.service';
+<% for (const {keyword, specifiers, path} of hookImports) { %>
+<%= keyword %> { <%= specifiers.join(', ') %> } from '<%= path %>';
+<% } %>
+
+export const <%= camel(name) %>QueryKeys = {
+  all: ['<%= kebab(name) %>'] as const,
+  lists: () => [...<%= camel(name) %>QueryKeys.all, 'list'] as const,
+  list: (params?: Record<string, unknown>) => [...<%= camel(name) %>QueryKeys.lists(), params] as const,
+  details: () => [...<%= camel(name) %>QueryKeys.all, 'detail'] as const,
+  detail: (...args: unknown[]) => [...<%= camel(name) %>QueryKeys.details(), ...args] as const,
+};
+
+export function use<%= name %>Service() {
+  const restService = useRestService();
+  const service = useMemo(() => new <%= name %>Service(restService), [restService]);
+  const queryClient = useQueryClient();
+
+  return {
+    service,
+    keys: <%= camel(name) %>QueryKeys,
+<% for (let {body, signature} of methods) { %>
+<% if (body.method === 'GET') { %>
+
+    use<%= pascal(signature.name) %>: (<%= serializeParameters(signature.parameters) %><%= signature.parameters.length ? ', ' : '' %>options?: Partial<UseQueryOptions<<%= body.responseType %>>>) =>
+      useQuery({
+        queryKey: <%= camel(name) %>QueryKeys.<%= getQueryKeyType(signature) %>(<%= signature.parameters.map(p => p.name).join(', ') %>),
+        queryFn: () => service.<%= camel(signature.name) %>(<%= signature.parameters.map(p => p.name).join(', ') %>),
+        ...options,
+      }),
+<% } else { %>
+
+    use<%= pascal(signature.name) %>: (options?: UseMutationOptions<<%= body.responseType %>, Error, <%= getMutationVariablesType(signature.parameters) %>>) =>
+      useMutation({
+        mutationFn: (<%= getMutationFnParams(signature.parameters) %>) =>
+          service.<%= camel(signature.name) %>(<%= signature.parameters.map(p => p.name).join(', ') %>),
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: <%= camel(name) %>QueryKeys.all });
+        },
+        ...options,
+      }),
+<% } %>
+<% } %>
+  };
+}
