@@ -26,14 +26,14 @@ describe('Signature', () => {
     const signature = new Signature({
       name: 'getUser',
       generics: '<T>',
-      modifier: eMethodModifier.Protected,
+      modifier: eMethodModifier.Private,
       parameters,
       returnType: 'Observable<UserDto>',
     });
 
     expect(signature.name).toBe('getUser');
     expect(signature.generics).toBe('<T>');
-    expect(signature.modifier).toBe(eMethodModifier.Protected);
+    expect(signature.modifier).toBe(eMethodModifier.Private);
     expect(signature.parameters).toHaveLength(1);
     expect(signature.returnType).toBe('Observable<UserDto>');
   });
@@ -92,7 +92,12 @@ describe('Body', () => {
         bindingSourceId: eBindingSourceId.Query,
         name: 'SearchText',
         nameOnMethod: 'searchText',
-        jsonName: 'searchText',
+        type: 'System.String',
+        typeSimple: 'string',
+        isOptional: false,
+        defaultValue: null,
+        constraintTypes: null,
+        descriptorName: '',
       });
 
       expect(body.params).toContain('searchText: searchText');
@@ -109,7 +114,11 @@ describe('Body', () => {
         bindingSourceId: eBindingSourceId.Model,
         name: 'Filter',
         nameOnMethod: 'filter',
-        jsonName: 'filter',
+        type: 'System.String',
+        typeSimple: 'string',
+        isOptional: false,
+        defaultValue: null,
+        constraintTypes: null,
         descriptorName: 'input',
       });
 
@@ -127,7 +136,12 @@ describe('Body', () => {
         bindingSourceId: eBindingSourceId.Body,
         name: 'Input',
         nameOnMethod: 'input',
-        jsonName: 'input',
+        type: 'MyApp.CreateInput',
+        typeSimple: 'CreateInput',
+        isOptional: false,
+        defaultValue: null,
+        constraintTypes: null,
+        descriptorName: '',
       });
 
       expect(body.body).toBe('input');
@@ -144,7 +158,12 @@ describe('Body', () => {
         bindingSourceId: eBindingSourceId.Path,
         name: 'Id',
         nameOnMethod: 'id',
-        jsonName: 'id',
+        type: 'System.Guid',
+        typeSimple: 'string',
+        isOptional: false,
+        defaultValue: null,
+        constraintTypes: null,
+        descriptorName: '',
       });
 
       expect(body.url).toBe('/api/users/${id}/roles/{roleId}');
@@ -153,7 +172,12 @@ describe('Body', () => {
         bindingSourceId: eBindingSourceId.Path,
         name: 'RoleId',
         nameOnMethod: 'roleId',
-        jsonName: 'roleId',
+        type: 'System.Guid',
+        typeSimple: 'string',
+        isOptional: false,
+        defaultValue: null,
+        constraintTypes: null,
+        descriptorName: '',
       });
 
       expect(body.url).toBe('/api/users/${id}/roles/${roleId}');
@@ -170,7 +194,11 @@ describe('Body', () => {
         bindingSourceId: eBindingSourceId.Path,
         name: 'Id',
         nameOnMethod: 'id',
-        jsonName: 'id',
+        type: 'System.Guid',
+        typeSimple: 'string',
+        isOptional: false,
+        defaultValue: null,
+        constraintTypes: null,
         descriptorName: 'params',
       });
 
@@ -193,7 +221,12 @@ describe('Body', () => {
         bindingSourceId: 'Unknown' as eBindingSourceId,
         name: 'SomeParam',
         nameOnMethod: 'someParam',
-        jsonName: 'someParam',
+        type: 'System.String',
+        typeSimple: 'string',
+        isOptional: false,
+        defaultValue: null,
+        constraintTypes: null,
+        descriptorName: '',
       });
 
       // Nothing should change

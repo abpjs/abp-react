@@ -36,5 +36,32 @@ describe('Proxy Constants', () => {
     it('should mention generate-proxy.json', () => {
       expect(PROXY_WARNING).toContain('generate-proxy.json');
     });
+
+    // v3.2.0 - Important notice about npm publishing
+    describe('npm publishing notice (v3.2.0)', () => {
+      it('should contain Important Notice header', () => {
+        expect(PROXY_WARNING).toContain('**Important Notice:**');
+      });
+
+      it('should mention building a module', () => {
+        expect(PROXY_WARNING).toContain('building a module');
+      });
+
+      it('should mention publishing to npm', () => {
+        expect(PROXY_WARNING).toContain('publish to npm');
+      });
+
+      it('should mention public-api.ts', () => {
+        expect(PROXY_WARNING).toContain('public-api.ts');
+      });
+
+      it('should mention barrel exports warning', () => {
+        expect(PROXY_WARNING).toContain('barrel exports');
+      });
+
+      it('should mention index.ts exports', () => {
+        expect(PROXY_WARNING).toContain('index.ts exports');
+      });
+    });
   });
 });

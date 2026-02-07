@@ -27,7 +27,7 @@ describe('Service', () => {
     const imports = [
       new Import({
         path: '@abpjs/core',
-        keyword: eImportKeyword.Named,
+        keyword: eImportKeyword.Default,
         specifiers: ['RestService'],
       }),
     ];

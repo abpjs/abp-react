@@ -1,6 +1,6 @@
 /**
  * Proxy Constants
- * Translated from @abp/ng.schematics v3.1.0
+ * Translated from @abp/ng.schematics v3.2.0
  */
 
 /**
@@ -20,6 +20,7 @@ export const PROXY_WARNING_PATH = `${PROXY_PATH}/README.md`;
 
 /**
  * Warning message content for the proxy generation output directory.
+ * @since 3.2.0 - Added important notice about module publishing to npm
  */
 export const PROXY_WARNING = `# Proxy Generation Output
 
@@ -34,4 +35,8 @@ Finally, the name of the files and folders should not be changed for two reasons
 - Proxy generator will keep creating them at those paths and you will have multiple copies of the same content.
 - ABP Suite generates files which include imports from this folder.
 
+> **Important Notice:** If you are building a module and are planning to publish to npm,
+> some of the generated proxies are likely to be exported from public-api.ts file. In such a case,
+> please make sure you export files directly and not from barrel exports. In other words,
+> do not include index.ts exports in your public-api.ts exports.
 `;

@@ -20,14 +20,14 @@ describe('Import', () => {
   it('should create with all options', () => {
     const importItem = new Import({
       path: '@abpjs/core',
-      keyword: eImportKeyword.Named,
+      keyword: eImportKeyword.Type,
       refs: ['ConfigState', 'SessionState'],
       specifiers: ['ConfigState', 'SessionState'],
       alias: 'CoreModule',
     });
 
     expect(importItem.path).toBe('@abpjs/core');
-    expect(importItem.keyword).toBe(eImportKeyword.Named);
+    expect(importItem.keyword).toBe(eImportKeyword.Type);
     expect(importItem.refs).toEqual(['ConfigState', 'SessionState']);
     expect(importItem.specifiers).toEqual(['ConfigState', 'SessionState']);
     expect(importItem.alias).toBe('CoreModule');
@@ -36,10 +36,10 @@ describe('Import', () => {
   it('should override default keyword', () => {
     const importItem = new Import({
       path: './models',
-      keyword: eImportKeyword.Namespace,
+      keyword: eImportKeyword.Type,
     });
 
-    expect(importItem.keyword).toBe(eImportKeyword.Namespace);
+    expect(importItem.keyword).toBe(eImportKeyword.Type);
   });
 
   it('should override default refs', () => {

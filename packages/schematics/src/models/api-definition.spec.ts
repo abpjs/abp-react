@@ -3,6 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { eBindingSourceId } from '../enums';
 import type {
   Action,
   ApiDefinition,
@@ -28,10 +29,8 @@ describe('API Definition Types', () => {
         properties: [
           {
             name: 'Id',
-            jsonName: 'id',
             type: 'System.String',
             typeSimple: 'string',
-            isRequired: true,
           },
         ],
       };
@@ -46,15 +45,13 @@ describe('API Definition Types', () => {
     it('should be correctly typed', () => {
       const property: PropertyDef = {
         name: 'Name',
-        jsonName: 'name',
         type: 'System.String',
         typeSimple: 'string',
-        isRequired: false,
       };
 
       expect(property.name).toBe('Name');
-      expect(property.jsonName).toBe('name');
-      expect(property.isRequired).toBe(false);
+      expect(property.type).toBe('System.String');
+      expect(property.typeSimple).toBe('string');
     });
   });
 
@@ -112,12 +109,13 @@ describe('API Definition Types', () => {
           {
             nameOnMethod: 'id',
             name: 'id',
-            jsonName: 'id',
             type: 'System.Guid',
             typeSimple: 'string',
             isOptional: false,
-            bindingSourceId: 'Path',
-            descriptorName: null,
+            defaultValue: null,
+            constraintTypes: null,
+            bindingSourceId: eBindingSourceId.Path,
+            descriptorName: '',
           },
         ],
         returnValue: {
@@ -154,16 +152,17 @@ describe('API Definition Types', () => {
       const param: ParameterInBody = {
         nameOnMethod: 'input',
         name: 'Input',
-        jsonName: 'input',
         type: 'MyApp.CreateUserDto',
         typeSimple: 'MyApp.CreateUserDto',
         isOptional: false,
-        bindingSourceId: 'Body',
-        descriptorName: null,
+        defaultValue: null,
+        constraintTypes: null,
+        bindingSourceId: eBindingSourceId.Body,
+        descriptorName: '',
       };
 
       expect(param.nameOnMethod).toBe('input');
-      expect(param.bindingSourceId).toBe('Body');
+      expect(param.bindingSourceId).toBe(eBindingSourceId.Body);
     });
   });
 
@@ -181,17 +180,12 @@ describe('API Definition Types', () => {
   describe('TypeWithEnum', () => {
     it('should be correctly typed', () => {
       const typeWithEnum: TypeWithEnum = {
-        baseType: null,
         isEnum: true,
-        enumNames: ['Active', 'Inactive'],
-        enumValues: [1, 0],
-        genericArguments: null,
-        properties: null,
+        type: 'MyApp.UserStatus',
       };
 
       expect(typeWithEnum.isEnum).toBe(true);
-      expect(typeWithEnum.enumNames).toEqual(['Active', 'Inactive']);
-      expect(typeWithEnum.enumValues).toEqual([1, 0]);
+      expect(typeWithEnum.type).toBe('MyApp.UserStatus');
     });
   });
 
