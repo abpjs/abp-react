@@ -8,6 +8,7 @@
  * @updated 2.7.0 - Changed eSaasComponents to const object, added eSaasRouteNames, SaasComponentKey, SaasRouteNameKey types
  * @updated 2.9.0 - Internal Angular changes (no new React features)
  * @updated 3.0.0 - Added config subpackage, tokens, guards, removed Administration route name
+ * @updated 3.1.0 - Internal Angular changes (SubscriptionService pattern, type refs) - no new React features
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -1589,10 +1590,10 @@ function TestApiEndpoints() {
 export function TestSaasPage() {
   return (
     <div>
-      <h1>@abpjs/saas Tests (v3.0.0)</h1>
+      <h1>@abpjs/saas Tests (v3.1.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing SaaS module for tenant and edition management.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.0.0 - Added config subpackage, tokens, guards, removed Administration route name
+        Version 3.1.0 - Internal Angular changes (SubscriptionService pattern, type refs) - no new React features
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components for multi-tenant SaaS applications with tenant management,
