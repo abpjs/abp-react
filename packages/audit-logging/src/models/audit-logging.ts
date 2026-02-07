@@ -1,10 +1,17 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Audit Logging Models
- * Translated from @volo/abp.ng.audit-logging v2.0.0
+ * Translated from @volo/abp.ng.audit-logging v3.2.0
+ *
+ * @since 3.2.0 - Updated State type to use new proxy DTOs and Record<string, number>
+ *   - State.result now uses PagedResultDto<AuditLogDto>
+ *   - State.averageExecutionStatistics now uses Record<string, number>
+ *   - State.errorRateStatistics now uses Record<string, number>
+ *   - Response, AuditLogsQueryParams, Log are deprecated (use proxy DTOs)
  */
 
-import type { ABP } from '@abpjs/core';
+import type { ABP, PagedResultDto } from '@abpjs/core';
+import type { AuditLogDto } from '../proxy/audit-logging/models';
 
 /**
  * AuditLogging namespace containing all models
@@ -13,20 +20,23 @@ import type { ABP } from '@abpjs/core';
 export namespace AuditLogging {
   /**
    * State interface for audit logging
+   * @since 3.2.0 - Updated to use new proxy DTOs and Record<string, number>
    */
   export interface State {
-    result: Response;
-    averageExecutionStatistics: Statistics.Data;
-    errorRateStatistics: Statistics.Data;
+    result: PagedResultDto<AuditLogDto>;
+    averageExecutionStatistics: Record<string, number>;
+    errorRateStatistics: Record<string, number>;
   }
 
   /**
    * Paginated response of audit logs
+   * @deprecated To be removed in v4.0. Use PagedResultDto<AuditLogDto> from proxy instead.
    */
   export type Response = ABP.PagedResponse<Log>;
 
   /**
    * Query parameters for fetching audit logs
+   * @deprecated To be removed in v4.0. Use GetAuditLogListDto from proxy instead.
    */
   export interface AuditLogsQueryParams extends ABP.PageQueryParams {
     url?: string;
@@ -44,6 +54,7 @@ export namespace AuditLogging {
 
   /**
    * Audit log entry
+   * @deprecated To be removed in v4.0. Use AuditLogDto from proxy instead.
    */
   export interface Log {
     id: string;
@@ -71,6 +82,7 @@ export namespace AuditLogging {
 
   /**
    * Entity change within an audit log
+   * @deprecated To be removed in v4.0. Use EntityChangeDto from proxy instead.
    */
   export interface EntityChange {
     id: string;
@@ -87,6 +99,7 @@ export namespace AuditLogging {
 
   /**
    * Property change within an entity change
+   * @deprecated To be removed in v4.0. Use EntityPropertyChangeDto from proxy instead.
    */
   export interface PropertyChange {
     id: string;
@@ -99,6 +112,7 @@ export namespace AuditLogging {
 
   /**
    * Action within an audit log
+   * @deprecated To be removed in v4.0. Use AuditLogActionDto from proxy instead.
    */
   export interface AuditLogAction {
     id: string;
@@ -115,10 +129,12 @@ export namespace AuditLogging {
 
 /**
  * Statistics namespace for audit logging metrics
+ * @deprecated To be removed in v4.0. Use GetAverageExecutionDurationPerDayOutput and GetErrorRateOutput from proxy instead.
  */
 export namespace Statistics {
   /**
    * Filter parameters for statistics queries
+   * @deprecated To be removed in v4.0. Use GetAverageExecutionDurationPerDayInput or GetErrorRateFilter from proxy instead.
    */
   export interface Filter {
     startDate?: string;
@@ -127,11 +143,13 @@ export namespace Statistics {
 
   /**
    * Statistics data (key-value pairs)
+   * @deprecated To be removed in v4.0. Use Record<string, number> directly.
    */
   export type Data = Record<string, number>;
 
   /**
    * Statistics response from API
+   * @deprecated To be removed in v4.0. Use GetAverageExecutionDurationPerDayOutput or GetErrorRateOutput from proxy instead.
    */
   export interface Response {
     data: Data;

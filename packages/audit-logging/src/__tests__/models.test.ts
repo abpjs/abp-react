@@ -1,9 +1,13 @@
 /**
  * Tests for audit-logging models
- * @abpjs/audit-logging v0.7.2
+ * @abpjs/audit-logging v3.2.0
+ *
+ * Note: In v3.2.0, many of these types are deprecated in favor of proxy DTOs.
+ * See proxy/audit-logging/models.ts for the new typed DTOs.
  */
 import { describe, it, expect } from 'vitest';
 import type { AuditLogging, Statistics } from '../models';
+import type { AuditLogDto } from '../proxy/audit-logging/models';
 
 describe('AuditLogging Models', () => {
   describe('AuditLogging.Log', () => {
@@ -189,10 +193,120 @@ describe('AuditLogging Models', () => {
       expect(state.result.totalCount).toBe(0);
       expect(state.averageExecutionStatistics).toEqual({});
     });
+
+    it('should use PagedResultDto<AuditLogDto> for result (v3.2.0)', () => {
+      // In v3.2.0, State.result uses the new proxy DTO types
+      const mockAuditLog: AuditLogDto = {
+        id: 'log-1',
+        userName: 'admin',
+        executionTime: '2024-01-15T10:30:00Z',
+        executionDuration: 250,
+        clientIpAddress: '192.168.1.1',
+        clientName: 'WebClient',
+        browserInfo: 'Chrome/120',
+        httpMethod: 'POST',
+        url: '/api/users',
+        exceptions: '',
+        comments: '',
+        applicationName: 'MyApp',
+        correlationId: 'corr-123',
+        entityChanges: [],
+        actions: [],
+      };
+
+      const state: AuditLogging.State = {
+        result: {
+          items: [mockAuditLog],
+          totalCount: 1,
+        },
+        averageExecutionStatistics: { '2024-01-01': 150 },
+        errorRateStatistics: { '2024-01-01': 5 },
+      };
+
+      expect(state.result.items).toHaveLength(1);
+      expect(state.result.items[0].id).toBe('log-1');
+      expect(state.averageExecutionStatistics['2024-01-01']).toBe(150);
+      expect(state.errorRateStatistics['2024-01-01']).toBe(5);
+    });
+
+    it('should use Record<string, number> for statistics (v3.2.0)', () => {
+      // In v3.2.0, statistics use Record<string, number> directly
+      const state: AuditLogging.State = {
+        result: { items: [], totalCount: 0 },
+        averageExecutionStatistics: {
+          '2024-01-01': 100,
+          '2024-01-02': 200,
+        },
+        errorRateStatistics: {
+          '2024-01-01': 5,
+          '2024-01-02': 3,
+        },
+      };
+
+      expect(typeof state.averageExecutionStatistics['2024-01-01']).toBe('number');
+      expect(typeof state.errorRateStatistics['2024-01-01']).toBe('number');
+    });
+  });
+
+  describe('deprecation compatibility (v3.2.0)', () => {
+    it('should still support deprecated Response type', () => {
+      // Response is deprecated but still works for backward compatibility
+      const response: AuditLogging.Response = {
+        items: [],
+        totalCount: 0,
+      };
+
+      expect(response.items).toEqual([]);
+      expect(response.totalCount).toBe(0);
+    });
+
+    it('should still support deprecated AuditLogsQueryParams type', () => {
+      // AuditLogsQueryParams is deprecated, use GetAuditLogListDto instead
+      const params: AuditLogging.AuditLogsQueryParams = {
+        userName: 'admin',
+        hasException: true,
+      };
+
+      expect(params.userName).toBe('admin');
+      expect(params.hasException).toBe(true);
+    });
+
+    it('should still support deprecated Log type', () => {
+      // Log is deprecated, use AuditLogDto instead
+      const log: AuditLogging.Log = {
+        id: '1',
+        userId: 'user1',
+        userName: 'admin',
+        tenantId: 'tenant1',
+        impersonatorUserId: '',
+        impersonatorTenantId: '',
+        executionTime: '2024-01-01T00:00:00Z',
+        executionDuration: 100,
+        clientIpAddress: '127.0.0.1',
+        clientName: 'Browser',
+        browserInfo: 'Chrome/120',
+        httpMethod: 'GET',
+        url: '/api/test',
+        exceptions: '',
+        comments: '',
+        httpStatusCode: 200,
+        applicationName: 'TestApp',
+        correlationId: 'corr-123',
+        extraProperties: {},
+        entityChanges: [],
+        actions: [],
+      };
+
+      expect(log.id).toBe('1');
+    });
   });
 });
 
-describe('Statistics Models', () => {
+/**
+ * Statistics namespace is deprecated in v3.2.0.
+ * Use GetAverageExecutionDurationPerDayOutput and GetErrorRateOutput from proxy instead.
+ */
+describe('Statistics Models (deprecated in v3.2.0)', () => {
   describe('Statistics.Filter', () => {
     it('should define Filter interface correctly', () => {
       const filter: Statistics.Filter = {
