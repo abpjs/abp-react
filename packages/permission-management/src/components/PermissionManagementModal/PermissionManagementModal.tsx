@@ -10,7 +10,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { usePermissionManagement } from '../../hooks';
-import type { PermissionManagement } from '../../models';
+import type { PermissionGrantInfoDto, PermissionGroupDto } from '../../proxy/models';
 
 /**
  * Props for PermissionManagementModal component
@@ -182,7 +182,7 @@ export function PermissionManagementModal({
    * Handle permission checkbox click
    */
   const handlePermissionClick = useCallback(
-    (permission: PermissionManagement.Permission) => {
+    (permission: PermissionGrantInfoDto) => {
       togglePermission(permission);
     },
     [togglePermission]
@@ -192,7 +192,7 @@ export function PermissionManagementModal({
    * Handle group selection
    */
   const handleGroupClick = useCallback(
-    (group: PermissionManagement.Group) => {
+    (group: PermissionGroupDto) => {
       setSelectedGroup(group);
     },
     [setSelectedGroup]

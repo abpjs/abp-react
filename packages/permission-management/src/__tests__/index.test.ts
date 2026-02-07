@@ -48,9 +48,8 @@ describe('@abpjs/permission-management package exports', () => {
 
   // Service exports
   describe('Service exports', () => {
-    it('should export PermissionManagementService', () => {
-      const { PermissionManagementService } = permissionManagementModule;
-      expect(PermissionManagementService).toBeDefined();
+    it('should not export PermissionManagementService (deleted in v4.0.0)', () => {
+      expect((permissionManagementModule as Record<string, unknown>).PermissionManagementService).toBeUndefined();
     });
 
     it('should export PermissionManagementStateService', () => {
@@ -77,14 +76,13 @@ describe('@abpjs/permission-management package exports', () => {
 
   // Verify all major exports are present
   describe('All exports verification', () => {
-    it('should export all v2.7.0 functionality', () => {
+    it('should export all v4.0.0 functionality', () => {
       const module = permissionManagementModule;
 
       // Enums (v2.7.0)
       expect(module.ePermissionManagementComponents).toBeDefined();
 
-      // Services
-      expect(module.PermissionManagementService).toBeDefined();
+      // Services (v4.0.0: PermissionManagementService deleted)
       expect(module.PermissionManagementStateService).toBeDefined();
 
       // Hooks

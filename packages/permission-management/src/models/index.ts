@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Permission Management module type definitions
- * Translated from @abp/ng.permission-management v3.2.0
+ * Translated from @abp/ng.permission-management v4.0.0
  */
+
+import type { GetPermissionListResultDto, PermissionGrantInfoDto } from '../proxy/models';
 
 /**
  * PermissionManagement namespace containing all permission-related types
@@ -10,74 +12,10 @@
 export namespace PermissionManagement {
   /**
    * State interface for permission management store
+   * @updated 4.0.0 - permissionRes changed from Response to GetPermissionListResultDto
    */
   export interface State {
-    permissionRes: Response;
-  }
-
-  /**
-   * API response for permission data
-   * @deprecated To be deleted in v4.0. Use GetPermissionListResultDto from proxy instead.
-   */
-  export interface Response {
-    entityDisplayName: string;
-    groups: Group[];
-  }
-
-  /**
-   * Permission group containing related permissions
-   * @deprecated To be deleted in v4.0. Use PermissionGroupDto from proxy instead.
-   */
-  export interface Group {
-    name: string;
-    displayName: string;
-    permissions: Permission[];
-  }
-
-  /**
-   * Minimal permission info for updates
-   * @deprecated To be deleted in v4.0. Use UpdatePermissionDto from proxy instead.
-   */
-  export interface MinimumPermission {
-    name: string;
-    isGranted: boolean;
-  }
-
-  /**
-   * Full permission details
-   * @deprecated To be deleted in v4.0. Use PermissionGrantInfoDto from proxy instead.
-   */
-  export interface Permission extends MinimumPermission {
-    displayName: string;
-    parentName: string;
-    allowedProviders: string[];
-    grantedProviders: GrantedProvider[];
-  }
-
-  /**
-   * Provider that granted a permission
-   */
-  export interface GrantedProvider {
-    providerName: string;
-    providerKey: string;
-  }
-
-  /**
-   * Request payload for updating permissions
-   * @deprecated To be deleted in v4.0. Use UpdatePermissionsDto from proxy instead.
-   */
-  export interface UpdateRequest {
-    permissions: MinimumPermission[];
-    providerKey: string;
-    providerName: string;
-  }
-
-  /**
-   * Parameters for fetching permissions
-   */
-  export interface GetPermissionsParams {
-    providerKey: string;
-    providerName: string;
+    permissionRes: GetPermissionListResultDto;
   }
 
   // ========================
@@ -112,15 +50,16 @@ export namespace PermissionManagement {
 /**
  * Extended permission with UI-specific style property
  * @since 3.2.0 - Renamed from PermissionWithMargin
+ * @updated 4.0.0 - Now extends PermissionGrantInfoDto instead of PermissionManagement.Permission
  */
-export interface PermissionWithStyle extends PermissionManagement.Permission {
+export interface PermissionWithStyle extends PermissionGrantInfoDto {
   style: string;
 }
 
 /**
  * Extended permission with margin property for indentation
- * @deprecated Use PermissionWithStyle instead
+ * @deprecated Use PermissionWithStyle instead. To be deleted in v5.0.
  */
-export interface PermissionWithMargin extends PermissionManagement.Permission {
+export interface PermissionWithMargin extends PermissionGrantInfoDto {
   margin: number;
 }
