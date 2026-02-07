@@ -7,6 +7,7 @@
  * @updated 2.7.0 - Added eLanguageManagementRouteNames, LanguageManagementComponentKey/RouteNameKey types
  * @updated 2.9.0 - Internal Angular changes (no new React features)
  * @updated 3.0.0 - Added config subpackage (policy names, route providers), extension tokens, extension guards
+ * @updated 3.1.0 - Internal type updates, dependency updates (no new React features)
  */
 import { useState } from 'react'
 import { useRestService } from '@abpjs/core'
@@ -1303,10 +1304,10 @@ function TestModels() {
 export function TestLanguageManagementPage() {
   return (
     <div>
-      <h1>@abpjs/language-management Tests (v3.0.0)</h1>
+      <h1>@abpjs/language-management Tests (v3.1.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing language management components, hooks, and services.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.0.0 - New config subpackage, extension tokens, extension guards
+        Version 3.1.0 - Internal type updates, dependency updates (no new features)
       </p>
 
       <TestV300Features />
