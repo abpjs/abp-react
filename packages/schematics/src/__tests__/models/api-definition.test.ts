@@ -31,6 +31,7 @@ describe('API Definition Types', () => {
             name: 'Id',
             type: 'System.String',
             typeSimple: 'string',
+            isRequired: false,
           },
         ],
       };
@@ -38,6 +39,34 @@ describe('API Definition Types', () => {
       expect(type.baseType).toBe('System.Object');
       expect(type.isEnum).toBe(false);
       expect(type.properties).toHaveLength(1);
+    });
+
+    it('should support properties with isRequired field (v4.0.0)', () => {
+      const type: Type = {
+        baseType: null,
+        isEnum: false,
+        enumNames: null,
+        enumValues: null,
+        genericArguments: null,
+        properties: [
+          {
+            name: 'UserName',
+            type: 'System.String',
+            typeSimple: 'string',
+            isRequired: true,
+          },
+          {
+            name: 'Email',
+            type: 'System.String',
+            typeSimple: 'string?',
+            isRequired: false,
+          },
+        ],
+      };
+
+      expect(type.properties).toHaveLength(2);
+      expect(type.properties![0].isRequired).toBe(true);
+      expect(type.properties![1].isRequired).toBe(false);
     });
   });
 
@@ -47,10 +76,36 @@ describe('API Definition Types', () => {
         name: 'Name',
         type: 'System.String',
         typeSimple: 'string',
+        isRequired: true,
       };
 
       expect(property.name).toBe('Name');
       expect(property.type).toBe('System.String');
+      expect(property.typeSimple).toBe('string');
+      expect(property.isRequired).toBe(true);
+    });
+
+    it('should support isRequired=false for optional properties (v4.0.0)', () => {
+      const property: PropertyDef = {
+        name: 'Email',
+        type: 'System.String',
+        typeSimple: 'string?',
+        isRequired: false,
+      };
+
+      expect(property.isRequired).toBe(false);
+      expect(property.typeSimple).toBe('string?');
+    });
+
+    it('should support isRequired=true for required properties (v4.0.0)', () => {
+      const property: PropertyDef = {
+        name: 'UserName',
+        type: 'System.String',
+        typeSimple: 'string',
+        isRequired: true,
+      };
+
+      expect(property.isRequired).toBe(true);
       expect(property.typeSimple).toBe('string');
     });
   });
