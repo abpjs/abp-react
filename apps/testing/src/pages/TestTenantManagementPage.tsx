@@ -890,7 +890,7 @@ function TestTenantManagementStateService() {
     setIsDispatchLoading(true)
     try {
       const result = await stateService.dispatchGetTenants()
-      setDispatchResult(`dispatchGetTenants: ${result.items.length} tenants, total: ${result.totalCount}`)
+      setDispatchResult(`dispatchGetTenants: ${result.items?.length ?? 0} tenants, total: ${result.totalCount}`)
     } catch (err) {
       setDispatchResult(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
     }
