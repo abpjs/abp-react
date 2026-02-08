@@ -23,9 +23,11 @@ export interface GetTenantsInput extends PagedAndSortedResultRequestDto {
  * Extends ExtensibleObject for extra properties support.
  * @since 3.2.0
  */
-export interface TenantCreateOrUpdateDtoBase extends ExtensibleObject {
+export interface TenantCreateOrUpdateDtoBase extends Omit<ExtensibleObject, 'extraProperties'> {
   /** The name of the tenant */
   name: string;
+  /** Extra properties (optional, defaults to empty object) */
+  extraProperties?: Record<string, any>;
 }
 
 /**
@@ -53,7 +55,9 @@ export interface TenantUpdateDto extends TenantCreateOrUpdateDtoBase {}
  * Extends ExtensibleEntityDto with string ID.
  * @since 3.2.0
  */
-export interface TenantDto extends ExtensibleEntityDto<string> {
+export interface TenantDto extends Omit<ExtensibleEntityDto<string>, 'extraProperties'> {
   /** The name of the tenant */
   name: string;
+  /** Extra properties (optional, defaults to empty object) */
+  extraProperties?: Record<string, any>;
 }

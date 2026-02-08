@@ -4,6 +4,9 @@
  *
  * Provides REST API methods for managing tenants, editions,
  * and connection strings in a multi-tenant SaaS application.
+ *
+ * @deprecated To be deleted in v5.0. Use proxy services (TenantService, EditionService) instead.
+ * This service was deleted in the Angular source at v4.0.0.
  */
 
 import type { RestService } from '@abpjs/core';
@@ -15,6 +18,7 @@ import type { Saas } from '../models';
  *
  * @since 2.0.0
  * @updated 2.4.0 - Added apiName property
+ * @deprecated To be deleted in v5.0. Use proxy services (TenantService, EditionService) instead.
  */
 export class SaasService {
   /**

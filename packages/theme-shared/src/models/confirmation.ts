@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Confirmation namespace containing types for confirmation dialogs.
- * Translated from @abp/ng.theme.shared/lib/models/confirmation.ts v3.0.0
+ * Translated from @abp/ng.theme.shared/lib/models/confirmation.ts v4.0.0
  *
  * @since 2.0.0 - Major changes:
  * - Options no longer extends Toaster.Options
@@ -12,8 +12,9 @@
  * @since 2.1.0 - Added Status enum (confirmation-specific, replaces Toaster.Status usage)
  * @since 2.9.0 - Added dismissible property, deprecated closable
  * @since 3.0.0 - Removed closable property (use dismissible instead)
+ * @since 4.0.0 - Changed cancelText/yesText from Config.LocalizationParam to LocalizationParam
  */
-import type { Config } from '@abpjs/core';
+import type { Config, LocalizationParam } from '@abpjs/core';
 
 export namespace Confirmation {
   /**
@@ -37,10 +38,16 @@ export namespace Confirmation {
     hideCancelBtn?: boolean;
     /** Hide the yes/confirm button */
     hideYesBtn?: boolean;
-    /** Custom text for the cancel button */
-    cancelText?: Config.LocalizationParam;
-    /** Custom text for the yes button */
-    yesText?: Config.LocalizationParam;
+    /**
+     * Custom text for the cancel button
+     * @since 4.0.0 - Changed from Config.LocalizationParam to LocalizationParam
+     */
+    cancelText?: LocalizationParam;
+    /**
+     * Custom text for the yes button
+     * @since 4.0.0 - Changed from Config.LocalizationParam to LocalizationParam
+     */
+    yesText?: LocalizationParam;
   }
 
   /**

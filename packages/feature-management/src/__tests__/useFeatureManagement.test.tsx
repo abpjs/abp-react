@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import type { FeatureManagement } from '../models';
+import type { GetFeatureListResultDto } from '../models';
 
-// Create mock functions
-const mockGetFeatures = vi.fn();
-const mockUpdateFeatures = vi.fn();
+// Create mock functions matching FeaturesService API
+const mockGet = vi.fn();
+const mockUpdate = vi.fn();
 
-// Mock the service
+// Mock the service - v4.0.0: FeaturesService replaces FeatureManagementService
 vi.mock('../services', () => ({
-  FeatureManagementService: vi.fn().mockImplementation(() => ({
-    getFeatures: mockGetFeatures,
-    updateFeatures: mockUpdateFeatures,
+  FeaturesService: vi.fn().mockImplementation(() => ({
+    get: mockGet,
+    update: mockUpdate,
   })),
 }));
 
@@ -23,47 +23,65 @@ vi.mock('@abpjs/core', () => ({
 // Import hook after mocks are set up
 import { useFeatureManagement } from '../hooks/useFeatureManagement';
 
-// Sample test data
-const createMockFeaturesResponse = (): FeatureManagement.Features => ({
-  features: [
+// Sample test data - v4.0.0: uses grouped response format (GetFeatureListResultDto)
+const createMockGroupedResponse = (): GetFeatureListResultDto => ({
+  groups: [
     {
-      name: 'Feature.EnableChat',
-      displayName: 'Enable Chat',
-      value: 'true',
-      description: 'Enable chat functionality',
-      valueType: {
-        name: 'ToggleStringValueType',
-        properties: {},
-        validator: {},
-      },
-      depth: 0,
-      parentName: '',
+      name: 'ChatGroup',
+      displayName: 'Chat Features',
+      features: [
+        {
+          name: 'Feature.EnableChat',
+          displayName: 'Enable Chat',
+          value: 'true',
+          description: 'Enable chat functionality',
+          valueType: {
+            name: 'ToggleStringValueType',
+            item: {},
+            properties: {},
+            validator: { name: '', item: {}, properties: {} },
+          },
+          provider: { name: 'T', key: 'TestTenant' },
+          depth: 0,
+          parentName: '',
+        },
+        {
+          name: 'Feature.Disabled',
+          displayName: 'Disabled Feature',
+          value: 'false',
+          description: 'A disabled feature',
+          valueType: {
+            name: 'ToggleStringValueType',
+            item: {},
+            properties: {},
+            validator: { name: '', item: {}, properties: {} },
+          },
+          provider: { name: 'T', key: 'TestTenant' },
+          depth: 0,
+          parentName: '',
+        },
+      ],
     },
     {
-      name: 'Feature.MaxUsers',
-      displayName: 'Maximum Users',
-      value: '100',
-      description: 'Maximum number of users',
-      valueType: {
-        name: 'FreeTextStringValueType',
-        properties: {},
-        validator: {},
-      },
-      depth: 0,
-      parentName: '',
-    },
-    {
-      name: 'Feature.Disabled',
-      displayName: 'Disabled Feature',
-      value: 'false',
-      description: 'A disabled feature',
-      valueType: {
-        name: 'ToggleStringValueType',
-        properties: {},
-        validator: {},
-      },
-      depth: 0,
-      parentName: '',
+      name: 'LimitsGroup',
+      displayName: 'Limit Features',
+      features: [
+        {
+          name: 'Feature.MaxUsers',
+          displayName: 'Maximum Users',
+          value: '100',
+          description: 'Maximum number of users',
+          valueType: {
+            name: 'FreeTextStringValueType',
+            item: {},
+            properties: {},
+            validator: { name: '', item: {}, properties: {} },
+          },
+          provider: { name: 'T', key: 'TestTenant' },
+          depth: 0,
+          parentName: '',
+        },
+      ],
     },
   ],
 });
@@ -73,9 +91,9 @@ describe('useFeatureManagement', () => {
     vi.clearAllMocks();
   });
 
-  describe('v3.1.0 - displayName support', () => {
-    it('should preserve displayName in features after fetch', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
+  describe('v4.0.0 - grouped response format', () => {
+    it('should flatten features from groups', async () => {
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -83,7 +101,36 @@ describe('useFeatureManagement', () => {
         await result.current.fetchFeatures('TestTenant', 'T');
       });
 
-      // Verify displayName is preserved in features
+      // Features should be flattened from all groups
+      expect(result.current.features).toHaveLength(3);
+      expect(result.current.features[0].name).toBe('Feature.EnableChat');
+      expect(result.current.features[1].name).toBe('Feature.Disabled');
+      expect(result.current.features[2].name).toBe('Feature.MaxUsers');
+    });
+
+    it('should expose groups', async () => {
+      mockGet.mockResolvedValue(createMockGroupedResponse());
+
+      const { result } = renderHook(() => useFeatureManagement());
+
+      await act(async () => {
+        await result.current.fetchFeatures('TestTenant', 'T');
+      });
+
+      expect(result.current.groups).toHaveLength(2);
+      expect(result.current.groups[0].name).toBe('ChatGroup');
+      expect(result.current.groups[1].name).toBe('LimitsGroup');
+    });
+
+    it('should preserve displayName in features after fetch', async () => {
+      mockGet.mockResolvedValue(createMockGroupedResponse());
+
+      const { result } = renderHook(() => useFeatureManagement());
+
+      await act(async () => {
+        await result.current.fetchFeatures('TestTenant', 'T');
+      });
+
       const enableChatFeature = result.current.features.find(
         (f) => f.name === 'Feature.EnableChat'
       );
@@ -93,24 +140,8 @@ describe('useFeatureManagement', () => {
       expect(maxUsersFeature?.displayName).toBe('Maximum Users');
     });
 
-    it('should handle features with and without displayName', async () => {
-      const mixedResponse: FeatureManagement.Features = {
-        features: [
-          {
-            name: 'Feature.WithDisplayName',
-            displayName: 'Feature With Display Name',
-            value: 'true',
-            valueType: { name: 'ToggleStringValueType', properties: {}, validator: {} },
-          },
-          {
-            name: 'Feature.WithoutDisplayName',
-            displayName: '', // Empty displayName
-            value: 'false',
-            valueType: { name: 'ToggleStringValueType', properties: {}, validator: {} },
-          },
-        ],
-      };
-      mockGetFeatures.mockResolvedValue(mixedResponse);
+    it('should call FeaturesService.get with (providerName, providerKey)', async () => {
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -118,9 +149,34 @@ describe('useFeatureManagement', () => {
         await result.current.fetchFeatures('TestTenant', 'T');
       });
 
-      expect(result.current.features).toHaveLength(2);
-      expect(result.current.features[0].displayName).toBe('Feature With Display Name');
-      expect(result.current.features[1].displayName).toBe('');
+      // v4.0.0: FeaturesService.get(providerName, providerKey) — note order
+      expect(mockGet).toHaveBeenCalledWith('T', 'TestTenant');
+    });
+
+    it('should call FeaturesService.update with (providerName, providerKey, input)', async () => {
+      mockGet.mockResolvedValue(createMockGroupedResponse());
+      mockUpdate.mockResolvedValue(undefined);
+
+      const { result } = renderHook(() => useFeatureManagement());
+
+      await act(async () => {
+        await result.current.fetchFeatures('TestTenant', 'T');
+      });
+
+      act(() => {
+        result.current.updateFeatureValue('Feature.MaxUsers', '200');
+      });
+
+      await act(async () => {
+        await result.current.saveFeatures('TestTenant', 'T');
+      });
+
+      // v4.0.0: FeaturesService.update(providerName, providerKey, { features })
+      expect(mockUpdate).toHaveBeenCalledWith('T', 'TestTenant', {
+        features: expect.arrayContaining([
+          expect.objectContaining({ name: 'Feature.MaxUsers', value: '200' }),
+        ]),
+      });
     });
   });
 
@@ -129,6 +185,7 @@ describe('useFeatureManagement', () => {
       const { result } = renderHook(() => useFeatureManagement());
 
       expect(result.current.features).toEqual([]);
+      expect(result.current.groups).toEqual([]);
       expect(result.current.featureValues).toEqual({});
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();
@@ -148,8 +205,7 @@ describe('useFeatureManagement', () => {
 
   describe('fetchFeatures', () => {
     it('should fetch features and set state', async () => {
-      const mockResponse = createMockFeaturesResponse();
-      mockGetFeatures.mockResolvedValue(mockResponse);
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -158,18 +214,18 @@ describe('useFeatureManagement', () => {
         expect(response.success).toBe(true);
       });
 
-      expect(result.current.features).toEqual(mockResponse.features);
+      expect(result.current.features).toHaveLength(3);
       expect(result.current.featureValues['Feature.EnableChat']).toBe('true');
       expect(result.current.featureValues['Feature.MaxUsers']).toBe('100');
       expect(result.current.isLoading).toBe(false);
     });
 
     it('should set loading state while fetching', async () => {
-      let resolvePromise: (value: FeatureManagement.Features) => void;
-      const pendingPromise = new Promise<FeatureManagement.Features>((resolve) => {
+      let resolvePromise: (value: GetFeatureListResultDto) => void;
+      const pendingPromise = new Promise<GetFeatureListResultDto>((resolve) => {
         resolvePromise = resolve;
       });
-      mockGetFeatures.mockReturnValue(pendingPromise);
+      mockGet.mockReturnValue(pendingPromise);
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -180,14 +236,14 @@ describe('useFeatureManagement', () => {
       expect(result.current.isLoading).toBe(true);
 
       await act(async () => {
-        resolvePromise!(createMockFeaturesResponse());
+        resolvePromise!(createMockGroupedResponse());
       });
 
       expect(result.current.isLoading).toBe(false);
     });
 
     it('should handle fetch error', async () => {
-      mockGetFeatures.mockRejectedValue(new Error('Network error'));
+      mockGet.mockRejectedValue(new Error('Network error'));
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -202,7 +258,7 @@ describe('useFeatureManagement', () => {
     });
 
     it('should handle non-Error rejection', async () => {
-      mockGetFeatures.mockRejectedValue('String error');
+      mockGet.mockRejectedValue('String error');
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -216,7 +272,7 @@ describe('useFeatureManagement', () => {
 
   describe('getFeatureValue', () => {
     it('should return feature value from form state', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -229,7 +285,7 @@ describe('useFeatureManagement', () => {
     });
 
     it('should return empty string for non-existent feature', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -243,7 +299,7 @@ describe('useFeatureManagement', () => {
 
   describe('isFeatureEnabled', () => {
     it('should return true for feature with value "true"', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -255,7 +311,7 @@ describe('useFeatureManagement', () => {
     });
 
     it('should return false for feature with value "false"', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -267,7 +323,7 @@ describe('useFeatureManagement', () => {
     });
 
     it('should return false for non-toggle feature', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -275,22 +331,27 @@ describe('useFeatureManagement', () => {
         await result.current.fetchFeatures('TestTenant', 'T');
       });
 
-      // Feature.MaxUsers has value "100" which is not "true" or "True"
       expect(result.current.isFeatureEnabled('Feature.MaxUsers')).toBe(false);
     });
 
     it('should handle "True" case variation', async () => {
-      const response: FeatureManagement.Features = {
-        features: [
-          {
+      const response: GetFeatureListResultDto = {
+        groups: [{
+          name: 'TestGroup',
+          displayName: 'Test',
+          features: [{
             name: 'Feature.CaseSensitive',
             displayName: 'Case Sensitive Feature',
             value: 'True',
-            valueType: { name: 'ToggleStringValueType', properties: {}, validator: {} },
-          },
-        ],
+            description: '',
+            valueType: { name: 'ToggleStringValueType', item: {}, properties: {}, validator: { name: '', item: {}, properties: {} } },
+            provider: { name: 'T', key: 'TestTenant' },
+            depth: 0,
+            parentName: '',
+          }],
+        }],
       };
-      mockGetFeatures.mockResolvedValue(response);
+      mockGet.mockResolvedValue(response);
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -304,7 +365,7 @@ describe('useFeatureManagement', () => {
 
   describe('updateFeatureValue', () => {
     it('should update feature value in form state', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -321,7 +382,7 @@ describe('useFeatureManagement', () => {
     });
 
     it('should update toggle feature value', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -341,8 +402,8 @@ describe('useFeatureManagement', () => {
 
   describe('saveFeatures', () => {
     it('should save changed features', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
-      mockUpdateFeatures.mockResolvedValue(undefined);
+      mockGet.mockResolvedValue(createMockGroupedResponse());
+      mockUpdate.mockResolvedValue(undefined);
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -350,7 +411,6 @@ describe('useFeatureManagement', () => {
         await result.current.fetchFeatures('TestTenant', 'T');
       });
 
-      // Change a feature value
       act(() => {
         result.current.updateFeatureValue('Feature.MaxUsers', '200');
       });
@@ -360,11 +420,11 @@ describe('useFeatureManagement', () => {
         expect(response.success).toBe(true);
       });
 
-      expect(mockUpdateFeatures).toHaveBeenCalled();
+      expect(mockUpdate).toHaveBeenCalled();
     });
 
     it('should return success without calling API if nothing changed', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -372,18 +432,17 @@ describe('useFeatureManagement', () => {
         await result.current.fetchFeatures('TestTenant', 'T');
       });
 
-      // Don't change anything
       await act(async () => {
         const response = await result.current.saveFeatures('TestTenant', 'T');
         expect(response.success).toBe(true);
       });
 
-      expect(mockUpdateFeatures).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
 
     it('should handle save error', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
-      mockUpdateFeatures.mockRejectedValue(new Error('Update failed'));
+      mockGet.mockResolvedValue(createMockGroupedResponse());
+      mockUpdate.mockRejectedValue(new Error('Update failed'));
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -391,7 +450,6 @@ describe('useFeatureManagement', () => {
         await result.current.fetchFeatures('TestTenant', 'T');
       });
 
-      // Change a feature value
       act(() => {
         result.current.updateFeatureValue('Feature.MaxUsers', '200');
       });
@@ -406,8 +464,8 @@ describe('useFeatureManagement', () => {
     });
 
     it('should handle non-Error rejection in save', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
-      mockUpdateFeatures.mockRejectedValue('String error');
+      mockGet.mockResolvedValue(createMockGroupedResponse());
+      mockUpdate.mockRejectedValue('String error');
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -427,10 +485,8 @@ describe('useFeatureManagement', () => {
     });
 
     it('should use original feature value when featureValues entry is undefined', async () => {
-      // Create a response with a new feature added after initial fetch
-      const initialResponse = createMockFeaturesResponse();
-      mockGetFeatures.mockResolvedValue(initialResponse);
-      mockUpdateFeatures.mockResolvedValue(undefined);
+      mockGet.mockResolvedValue(createMockGroupedResponse());
+      mockUpdate.mockResolvedValue(undefined);
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -438,34 +494,28 @@ describe('useFeatureManagement', () => {
         await result.current.fetchFeatures('TestTenant', 'T');
       });
 
-      // Change one feature to trigger hasChanges
       act(() => {
         result.current.updateFeatureValue('Feature.EnableChat', 'false');
       });
-
-      // Simulate a scenario where a feature exists but its featureValues entry might be undefined
-      // by directly manipulating state to clear a specific entry
-      // This tests the fallback: featureValues[feature.name] ?? feature.value
 
       await act(async () => {
         const response = await result.current.saveFeatures('TestTenant', 'T');
         expect(response.success).toBe(true);
       });
 
-      // Verify the API was called with correct feature values
-      expect(mockUpdateFeatures).toHaveBeenCalled();
-      const updateCall = mockUpdateFeatures.mock.calls[0];
-      const requestPayload = updateCall[0]; // First argument is the request object
-      const updatedFeatures = requestPayload.features;
+      expect(mockUpdate).toHaveBeenCalled();
+      const updateCall = mockUpdate.mock.calls[0];
+      // v4.0.0: FeaturesService.update(providerName, providerKey, { features })
+      const updateInput = updateCall[2]; // Third argument is UpdateFeaturesDto
+      const updatedFeatures = updateInput.features;
 
-      // All features should have values (either from featureValues or fallback to feature.value)
       expect(updatedFeatures.every((f: { value: string }) => f.value !== undefined)).toBe(true);
     });
   });
 
   describe('reset', () => {
     it('should reset all state to initial values', async () => {
-      mockGetFeatures.mockResolvedValue(createMockFeaturesResponse());
+      mockGet.mockResolvedValue(createMockGroupedResponse());
 
       const { result } = renderHook(() => useFeatureManagement());
 
@@ -474,12 +524,14 @@ describe('useFeatureManagement', () => {
       });
 
       expect(result.current.features.length).toBeGreaterThan(0);
+      expect(result.current.groups.length).toBeGreaterThan(0);
 
       act(() => {
         result.current.reset();
       });
 
       expect(result.current.features).toEqual([]);
+      expect(result.current.groups).toEqual([]);
       expect(result.current.featureValues).toEqual({});
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();

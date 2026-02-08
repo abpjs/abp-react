@@ -2,12 +2,12 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { TenantManagementModal, type TenantManagementModalProps } from '../../components/TenantManagementModal/TenantManagementModal';
-import type { TenantManagement } from '../../models';
+import type { TenantDto } from '../../proxy/models';
 import { eTenantManagementComponents } from '../../enums';
 
 // Define the hook return type for mocking
 interface MockHookReturn {
-  selectedTenant: TenantManagement.Item | null;
+  selectedTenant: TenantDto | null;
   isLoading: boolean;
   error: string | null;
   defaultConnectionString: string;

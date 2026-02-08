@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useRestService, ABP } from '@abpjs/core';
-import { Identity } from '../models';
-import { IdentityService } from '../services';
+import { useRestService } from '@abpjs/core';
+import type { IdentityUserDto, IdentityUserCreateDto, IdentityUserUpdateDto, IdentityRoleDto, GetIdentityUsersInput } from '../proxy/identity/models';
+import { IdentityUserService } from '../proxy/identity/identity-user.service';
 import { SortOrder } from './useRoles';
 
 /**
@@ -14,42 +14,43 @@ export interface UserOperationResult {
 
 /**
  * Return type for useUsers hook
+ * @updated 4.0.0 - Now uses IdentityUserDto, IdentityUserCreateDto, IdentityUserUpdateDto, IdentityRoleDto
  */
 export interface UseUsersReturn {
   /** List of users */
-  users: Identity.UserItem[];
+  users: IdentityUserDto[];
   /** Total count of users */
   totalCount: number;
   /** Currently selected user for editing */
-  selectedUser: Identity.UserItem | null;
+  selectedUser: IdentityUserDto | null;
   /** Roles assigned to the selected user */
-  selectedUserRoles: Identity.RoleItem[];
+  selectedUserRoles: IdentityRoleDto[];
   /** Loading state */
   isLoading: boolean;
   /** Error message if any */
   error: string | null;
   /** Current page query parameters */
-  pageQuery: ABP.PageQueryParams;
+  pageQuery: GetIdentityUsersInput;
   /** Current sort key @since 1.0.0 */
   sortKey: string;
   /** Current sort order @since 1.0.0 */
   sortOrder: SortOrder;
   /** Fetch users with pagination */
-  fetchUsers: (params?: ABP.PageQueryParams) => Promise<UserOperationResult>;
+  fetchUsers: (params?: GetIdentityUsersInput) => Promise<UserOperationResult>;
   /** Get a user by ID and set it as selected */
   getUserById: (id: string) => Promise<UserOperationResult>;
   /** Get roles for a user */
   getUserRoles: (id: string) => Promise<UserOperationResult>;
   /** Create a new user */
-  createUser: (user: Identity.UserSaveRequest) => Promise<UserOperationResult>;
+  createUser: (user: IdentityUserCreateDto) => Promise<UserOperationResult>;
   /** Update an existing user */
-  updateUser: (id: string, user: Identity.UserSaveRequest) => Promise<UserOperationResult>;
+  updateUser: (id: string, user: IdentityUserUpdateDto) => Promise<UserOperationResult>;
   /** Delete a user */
   deleteUser: (id: string) => Promise<UserOperationResult>;
   /** Set the selected user */
-  setSelectedUser: (user: Identity.UserItem | null) => void;
+  setSelectedUser: (user: IdentityUserDto | null) => void;
   /** Set page query parameters */
-  setPageQuery: (query: ABP.PageQueryParams) => void;
+  setPageQuery: (query: GetIdentityUsersInput) => void;
   /** Set sort key @since 1.0.0 */
   setSortKey: (key: string) => void;
   /** Set sort order @since 1.0.0 */
@@ -58,7 +59,8 @@ export interface UseUsersReturn {
   reset: () => void;
 }
 
-const DEFAULT_PAGE_QUERY: ABP.PageQueryParams = {
+const DEFAULT_PAGE_QUERY: GetIdentityUsersInput = {
+  filter: '',
   sorting: 'userName',
   skipCount: 0,
   maxResultCount: 10,
@@ -69,6 +71,8 @@ const DEFAULT_PAGE_QUERY: ABP.PageQueryParams = {
  *
  * This hook provides all the state and actions needed for user management.
  * It handles fetching, creating, updating, and deleting users with pagination support.
+ *
+ * @updated 4.0.0 - Migrated from deprecated IdentityService to IdentityUserService
  *
  * @example
  * ```tsx
@@ -106,17 +110,17 @@ const DEFAULT_PAGE_QUERY: ABP.PageQueryParams = {
 export function useUsers(): UseUsersReturn {
   const restService = useRestService();
 
-  // Service instance (memoized)
-  const service = useMemo(() => new IdentityService(restService), [restService]);
+  // Service instance (memoized) - v4.0.0: uses IdentityUserService instead of deprecated IdentityService
+  const service = useMemo(() => new IdentityUserService(restService), [restService]);
 
   // State
-  const [users, setUsers] = useState<Identity.UserItem[]>([]);
+  const [users, setUsers] = useState<IdentityUserDto[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
-  const [selectedUser, setSelectedUser] = useState<Identity.UserItem | null>(null);
-  const [selectedUserRoles, setSelectedUserRoles] = useState<Identity.RoleItem[]>([]);
+  const [selectedUser, setSelectedUser] = useState<IdentityUserDto | null>(null);
+  const [selectedUserRoles, setSelectedUserRoles] = useState<IdentityRoleDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [pageQuery, setPageQuery] = useState<ABP.PageQueryParams>(DEFAULT_PAGE_QUERY);
+  const [pageQuery, setPageQuery] = useState<GetIdentityUsersInput>(DEFAULT_PAGE_QUERY);
   // Sorting state (v1.0.0)
   const [sortKey, setSortKey] = useState<string>('userName');
   const [sortOrder, setSortOrder] = useState<SortOrder>('');
@@ -125,14 +129,14 @@ export function useUsers(): UseUsersReturn {
    * Fetch users with pagination
    */
   const fetchUsers = useCallback(
-    async (params?: ABP.PageQueryParams): Promise<UserOperationResult> => {
+    async (params?: GetIdentityUsersInput): Promise<UserOperationResult> => {
       setIsLoading(true);
       setError(null);
 
       const queryParams = params || pageQuery;
 
       try {
-        const response = await service.getUsers(queryParams);
+        const response = await service.getList(queryParams);
         setUsers(response.items || []);
         setTotalCount(response.totalCount || 0);
         setIsLoading(false);
@@ -156,7 +160,7 @@ export function useUsers(): UseUsersReturn {
       setError(null);
 
       try {
-        const user = await service.getUserById(id);
+        const user = await service.get(id);
         setSelectedUser(user);
         setIsLoading(false);
         return { success: true };
@@ -179,7 +183,7 @@ export function useUsers(): UseUsersReturn {
       setError(null);
 
       try {
-        const response = await service.getUserRoles(id);
+        const response = await service.getRoles(id);
         setSelectedUserRoles(response.items || []);
         setIsLoading(false);
         return { success: true };
@@ -197,12 +201,12 @@ export function useUsers(): UseUsersReturn {
    * Create a new user
    */
   const createUser = useCallback(
-    async (user: Identity.UserSaveRequest): Promise<UserOperationResult> => {
+    async (user: IdentityUserCreateDto): Promise<UserOperationResult> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        await service.createUser(user);
+        await service.create(user);
         // Refresh the list after creating
         await fetchUsers();
         return { success: true };
@@ -220,12 +224,12 @@ export function useUsers(): UseUsersReturn {
    * Update an existing user
    */
   const updateUser = useCallback(
-    async (id: string, user: Identity.UserSaveRequest): Promise<UserOperationResult> => {
+    async (id: string, user: IdentityUserUpdateDto): Promise<UserOperationResult> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        await service.updateUser(id, user);
+        await service.update(id, user);
         // Refresh the list after updating
         await fetchUsers();
         return { success: true };
@@ -248,7 +252,7 @@ export function useUsers(): UseUsersReturn {
       setError(null);
 
       try {
-        await service.deleteUser(id);
+        await service.delete(id);
         // Refresh the list after deleting
         await fetchUsers();
         return { success: true };

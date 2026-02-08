@@ -1,16 +1,17 @@
 /**
  * Audit Logging State Service
- * Translated from @volo/abp.ng.audit-logging v2.0.0
+ * Translated from @volo/abp.ng.audit-logging v4.0.0
  *
  * This service provides facade methods for dispatching audit logging actions.
  * In Angular, this uses NGXS store dispatch. In React, we wrap the API calls.
  *
  * @since 2.0.0
+ * @since 4.0.0 - Now uses AuditLogsService (proxy) instead of the removed AuditLoggingService
  */
 
-import type { RestService } from '@abpjs/core';
-import type { AuditLogging, Statistics } from '../models';
-import { AuditLoggingService } from './audit-logging.service';
+import type { PagedResultDto, RestService } from '@abpjs/core';
+import type { AuditLogDto, GetAuditLogListDto, GetAverageExecutionDurationPerDayInput, GetAverageExecutionDurationPerDayOutput, GetErrorRateFilter, GetErrorRateOutput } from '../proxy/audit-logging/models';
+import { AuditLogsService } from '../proxy/audit-logging/audit-logs.service';
 
 /**
  * State service for audit logging operations.
@@ -19,21 +20,21 @@ import { AuditLoggingService } from './audit-logging.service';
  * @since 2.0.0
  */
 export class AuditLoggingStateService {
-  private auditLoggingService: AuditLoggingService;
+  private auditLogsService: AuditLogsService;
 
   // State
-  private _result: AuditLogging.Response = { items: [], totalCount: 0 };
-  private _averageExecutionStatistics: Statistics.Data = {};
-  private _errorRateStatistics: Statistics.Data = {};
+  private _result: PagedResultDto<AuditLogDto> = { items: [], totalCount: 0 };
+  private _averageExecutionStatistics: Record<string, number> = {};
+  private _errorRateStatistics: Record<string, number> = {};
 
   constructor(restService: RestService) {
-    this.auditLoggingService = new AuditLoggingService(restService);
+    this.auditLogsService = new AuditLogsService(restService);
   }
 
   /**
    * Get the current audit logs result
    */
-  getResult(): AuditLogging.Response {
+  getResult(): PagedResultDto<AuditLogDto> {
     return this._result;
   }
 
@@ -47,14 +48,14 @@ export class AuditLoggingStateService {
   /**
    * Get average execution duration statistics
    */
-  getAverageExecutionStatistics(): Statistics.Data {
+  getAverageExecutionStatistics(): Record<string, number> {
     return this._averageExecutionStatistics;
   }
 
   /**
    * Get error rate statistics
    */
-  getErrorRateStatistics(): Statistics.Data {
+  getErrorRateStatistics(): Record<string, number> {
     return this._errorRateStatistics;
   }
 
@@ -65,9 +66,9 @@ export class AuditLoggingStateService {
    * @since 2.0.0
    */
   async dispatchGetAuditLogs(
-    params?: AuditLogging.AuditLogsQueryParams
-  ): Promise<AuditLogging.Response> {
-    const response = await this.auditLoggingService.getAuditLogs(params);
+    params?: GetAuditLogListDto
+  ): Promise<PagedResultDto<AuditLogDto>> {
+    const response = await this.auditLogsService.getList(params);
     this._result = response;
     return response;
   }
@@ -79,9 +80,9 @@ export class AuditLoggingStateService {
    * @since 2.0.0
    */
   async dispatchGetAverageExecutionDurationPerDay(
-    params?: Statistics.Filter
-  ): Promise<Statistics.Response> {
-    const response = await this.auditLoggingService.getAverageExecutionDurationPerDayStatistics(params);
+    params: GetAverageExecutionDurationPerDayInput
+  ): Promise<GetAverageExecutionDurationPerDayOutput> {
+    const response = await this.auditLogsService.getAverageExecutionDurationPerDay(params);
     this._averageExecutionStatistics = response.data || {};
     return response;
   }
@@ -93,9 +94,9 @@ export class AuditLoggingStateService {
    * @since 2.0.0
    */
   async dispatchGetErrorRate(
-    params?: Statistics.Filter
-  ): Promise<Statistics.Response> {
-    const response = await this.auditLoggingService.getErrorRateStatistics(params);
+    params: GetErrorRateFilter
+  ): Promise<GetErrorRateOutput> {
+    const response = await this.auditLogsService.getErrorRate(params);
     this._errorRateStatistics = response.data || {};
     return response;
   }

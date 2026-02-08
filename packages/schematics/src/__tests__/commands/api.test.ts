@@ -375,6 +375,33 @@ describe('API Generation', () => {
     ).rejects.toThrow();
   });
 
+  it('should generate model with optional properties from typeSimple (v4.0.0 isRequired)', async () => {
+    const apiDefinition = createMockApiDefinition();
+    const proxyConfig: ProxyConfig = {
+      ...apiDefinition,
+      generated: [],
+    };
+
+    await generateApi({
+      targetPath: tempDir,
+      solution: 'MyCompany.MyProduct',
+      moduleName: 'app',
+      proxyConfig,
+    });
+
+    // Check model files exist and contain optional markers
+    const modelFiles = findFiles(tempDir, 'models.ts');
+    expect(modelFiles.length).toBeGreaterThan(0);
+
+    const modelContent = fs.readFileSync(modelFiles[0], 'utf-8');
+    // Email is typeSimple 'string?' (isRequired: false) → should be optional
+    expect(modelContent).toContain('email?');
+    // UserName is typeSimple 'string' (isRequired: true) → should not be optional
+    expect(modelContent).toContain('userName');
+    // Verify it doesn't make userName optional
+    expect(modelContent).not.toMatch(/userName\?/);
+  });
+
   it('should not duplicate module in generated list', async () => {
     const apiDefinition = createMockApiDefinition();
     const proxyConfig: ProxyConfig = {

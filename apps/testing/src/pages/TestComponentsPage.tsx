@@ -4,6 +4,7 @@
  * @version 3.1.0 - Initial implementation with Tree component
  * @version 3.2.0 - Custom templates (customNodeTemplate, expandedIconTemplate), handleUpdate, updateTreeFromList
  * @version 3.3.0 - Chakra UI integration, slotProps customization
+ * @version 4.0.0 - Dependency update only (peer dep @abp/ng.core bumped to >=4.0.0)
  */
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
@@ -872,19 +873,55 @@ function TestTreeSlotProps() {
 export function TestComponentsPage() {
   return (
     <div>
-      <h1>@abpjs/components Tests (v3.3.0)</h1>
+      <h1>@abpjs/components Tests (v4.0.0)</h1>
       <p>Testing Tree component, TreeAdapter, and utility functions.</p>
       <p style={{ color: '#888', fontSize: '0.9rem' }}>
-        Version 3.3.0 - Chakra UI integration, slotProps customization
+        Version 4.0.0 - Dependency update only (no source code changes from Angular)
       </p>
 
       <div style={{ marginBottom: '1rem' }}>
         <Link to="/" style={{ color: '#646cff' }}>&larr; Back to Home</Link>
       </div>
 
-      {/* v3.3.0 Features - Highlighted at top */}
+      {/* v4.0.0 Info */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
-        v3.3.0 New Features
+        v4.0.0 Update
+      </h2>
+      <div className="test-section">
+        <div className="test-card">
+          <h3>v4.0.0 Changes</h3>
+          <p>This was a <strong>dependency-only update</strong>. No source code changes were made in the Angular package.</p>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #333' }}>
+                <th style={{ textAlign: 'left', padding: '8px' }}>Change</th>
+                <th style={{ textAlign: 'left', padding: '8px' }}>v3.2.0</th>
+                <th style={{ textAlign: 'left', padding: '8px' }}>v4.0.0</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={{ padding: '8px' }}>Peer dependency <code>@abp/ng.core</code></td>
+                <td style={{ padding: '8px' }}><code>&gt;=3.2.0-rc.2</code></td>
+                <td style={{ padding: '8px' }}><code>&gt;=4.0.0-rc.5</code></td>
+              </tr>
+              <tr>
+                <td style={{ padding: '8px' }}>Package version</td>
+                <td style={{ padding: '8px' }}><code>3.2.0</code></td>
+                <td style={{ padding: '8px' }}><code>4.0.0</code></td>
+              </tr>
+              <tr>
+                <td style={{ padding: '8px' }}>Source code changes</td>
+                <td style={{ padding: '8px' }} colSpan={2}>None — all features from v3.2.0 and v3.3.0 (our Chakra enhancement) carry forward</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* v3.3.0 Features */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #2ecc71', paddingTop: '1rem' }}>
+        v3.3.0 Features
       </h2>
       <TestTreeSlotProps />
 

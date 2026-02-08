@@ -1,6 +1,7 @@
 /**
  * Tests for proxy/language.service.ts
  * @since 3.2.0
+ * @updated 4.0.0 - getList return type changed from ListResultDto to PagedResultDto
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -13,7 +14,7 @@ import type {
   LanguageResourceDto,
   GetLanguagesTextsInput,
 } from '../../proxy/dto/models';
-import type { RestService, ListResultDto } from '@abpjs/core';
+import type { RestService, ListResultDto, PagedResultDto } from '@abpjs/core';
 
 describe('LanguageService', () => {
   let service: LanguageService;
@@ -337,6 +338,51 @@ describe('LanguageService', () => {
         url: '/api/language-management/languages',
         params: input,
       });
+    });
+  });
+
+  describe('getList v4.0.0 - PagedResultDto return type', () => {
+    it('should return PagedResultDto with totalCount', async () => {
+      const pagedResult: PagedResultDto<LanguageDto> = {
+        items: [mockLanguage],
+        totalCount: 42,
+      };
+
+      mockRestService.request.mockResolvedValue(pagedResult);
+
+      const result = await service.getList();
+
+      expect(result).toEqual(pagedResult);
+      expect(result.totalCount).toBe(42);
+      expect(result.items).toHaveLength(1);
+    });
+
+    it('should return empty PagedResultDto', async () => {
+      const emptyResult: PagedResultDto<LanguageDto> = {
+        items: [],
+        totalCount: 0,
+      };
+
+      mockRestService.request.mockResolvedValue(emptyResult);
+
+      const result = await service.getList();
+
+      expect(result.items).toEqual([]);
+      expect(result.totalCount).toBe(0);
+    });
+
+    it('should return totalCount greater than items length for pagination', async () => {
+      const paginatedResult: PagedResultDto<LanguageDto> = {
+        items: [mockLanguage],
+        totalCount: 100,
+      };
+
+      mockRestService.request.mockResolvedValue(paginatedResult);
+
+      const result = await service.getList({ maxResultCount: 1, skipCount: 0 });
+
+      expect(result.items).toHaveLength(1);
+      expect(result.totalCount).toBe(100);
     });
   });
 

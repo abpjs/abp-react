@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
-import { useRestService, ABP } from '@abpjs/core';
-import { Identity } from '../models';
-import { IdentityService } from '../services';
+import { useRestService } from '@abpjs/core';
+import type { PagedAndSortedResultRequestDto } from '@abpjs/core';
+import type { IdentityRoleDto, IdentityRoleCreateDto, IdentityRoleUpdateDto } from '../proxy/identity/models';
+import { IdentityRoleService } from '../proxy/identity/identity-role.service';
 
 /**
  * Result from role operations
@@ -19,14 +20,15 @@ export type SortOrder = 'asc' | 'desc' | '';
 
 /**
  * Return type for useRoles hook
+ * @updated 4.0.0 - Now uses IdentityRoleDto, IdentityRoleCreateDto, IdentityRoleUpdateDto
  */
 export interface UseRolesReturn {
   /** List of roles */
-  roles: Identity.RoleItem[];
+  roles: IdentityRoleDto[];
   /** Total count of roles */
   totalCount: number;
   /** Currently selected role for editing */
-  selectedRole: Identity.RoleItem | null;
+  selectedRole: IdentityRoleDto | null;
   /** Loading state */
   isLoading: boolean;
   /** Error message if any */
@@ -36,17 +38,17 @@ export interface UseRolesReturn {
   /** Current sort order @since 1.0.0 */
   sortOrder: SortOrder;
   /** Fetch all roles with optional pagination/filtering */
-  fetchRoles: (params?: ABP.PageQueryParams) => Promise<RoleOperationResult>;
+  fetchRoles: (params?: PagedAndSortedResultRequestDto) => Promise<RoleOperationResult>;
   /** Get a role by ID and set it as selected */
   getRoleById: (id: string) => Promise<RoleOperationResult>;
   /** Create a new role */
-  createRole: (role: Identity.RoleSaveRequest) => Promise<RoleOperationResult>;
+  createRole: (role: IdentityRoleCreateDto) => Promise<RoleOperationResult>;
   /** Update an existing role */
-  updateRole: (id: string, role: Identity.RoleSaveRequest) => Promise<RoleOperationResult>;
+  updateRole: (id: string, role: IdentityRoleUpdateDto) => Promise<RoleOperationResult>;
   /** Delete a role */
   deleteRole: (id: string) => Promise<RoleOperationResult>;
   /** Set the selected role */
-  setSelectedRole: (role: Identity.RoleItem | null) => void;
+  setSelectedRole: (role: IdentityRoleDto | null) => void;
   /** Set sort key @since 1.0.0 */
   setSortKey: (key: string) => void;
   /** Set sort order @since 1.0.0 */
@@ -60,6 +62,8 @@ export interface UseRolesReturn {
  *
  * This hook provides all the state and actions needed for role management.
  * It handles fetching, creating, updating, and deleting roles.
+ *
+ * @updated 4.0.0 - Migrated from deprecated IdentityService to IdentityRoleService
  *
  * @example
  * ```tsx
@@ -76,7 +80,7 @@ export interface UseRolesReturn {
  *     fetchRoles();
  *   }, [fetchRoles]);
  *
- *   const handleCreate = async (data: Identity.RoleSaveRequest) => {
+ *   const handleCreate = async (data: IdentityRoleCreateDto) => {
  *     const result = await createRole(data);
  *     if (result.success) {
  *       // Handle success
@@ -96,13 +100,13 @@ export interface UseRolesReturn {
 export function useRoles(): UseRolesReturn {
   const restService = useRestService();
 
-  // Service instance (memoized)
-  const service = useMemo(() => new IdentityService(restService), [restService]);
+  // Service instance (memoized) - v4.0.0: uses IdentityRoleService instead of deprecated IdentityService
+  const service = useMemo(() => new IdentityRoleService(restService), [restService]);
 
   // State
-  const [roles, setRoles] = useState<Identity.RoleItem[]>([]);
+  const [roles, setRoles] = useState<IdentityRoleDto[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
-  const [selectedRole, setSelectedRole] = useState<Identity.RoleItem | null>(null);
+  const [selectedRole, setSelectedRole] = useState<IdentityRoleDto | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Sorting state (v1.0.0)
@@ -110,15 +114,15 @@ export function useRoles(): UseRolesReturn {
   const [sortOrder, setSortOrder] = useState<SortOrder>('');
 
   /**
-   * Fetch all roles with optional pagination/filtering (v0.9.0)
-   * @param params - Optional query parameters for pagination and filtering
+   * Fetch all roles with optional pagination/filtering
+   * @param params - Optional pagination/sorting parameters
    */
-  const fetchRoles = useCallback(async (params?: ABP.PageQueryParams): Promise<RoleOperationResult> => {
+  const fetchRoles = useCallback(async (params?: PagedAndSortedResultRequestDto): Promise<RoleOperationResult> => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await service.getRoles(params);
+      const response = await service.getList(params || {} as PagedAndSortedResultRequestDto);
       setRoles(response.items || []);
       setTotalCount(response.totalCount || 0);
       setIsLoading(false);
@@ -140,7 +144,7 @@ export function useRoles(): UseRolesReturn {
       setError(null);
 
       try {
-        const role = await service.getRoleById(id);
+        const role = await service.get(id);
         setSelectedRole(role);
         setIsLoading(false);
         return { success: true };
@@ -158,12 +162,12 @@ export function useRoles(): UseRolesReturn {
    * Create a new role
    */
   const createRole = useCallback(
-    async (role: Identity.RoleSaveRequest): Promise<RoleOperationResult> => {
+    async (role: IdentityRoleCreateDto): Promise<RoleOperationResult> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        await service.createRole(role);
+        await service.create(role);
         // Refresh the list after creating
         await fetchRoles();
         return { success: true };
@@ -181,12 +185,12 @@ export function useRoles(): UseRolesReturn {
    * Update an existing role
    */
   const updateRole = useCallback(
-    async (id: string, role: Identity.RoleSaveRequest): Promise<RoleOperationResult> => {
+    async (id: string, role: IdentityRoleUpdateDto): Promise<RoleOperationResult> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        await service.updateRole(id, role);
+        await service.update(id, role);
         // Refresh the list after updating
         await fetchRoles();
         return { success: true };
@@ -209,7 +213,7 @@ export function useRoles(): UseRolesReturn {
       setError(null);
 
       try {
-        await service.deleteRole(id);
+        await service.delete(id);
         // Refresh the list after deleting
         await fetchRoles();
         return { success: true };

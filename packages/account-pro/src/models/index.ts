@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * @abpjs/account-pro Models
- * Translated from @volo/abp.ng.account v3.2.0
+ * Translated from @volo/abp.ng.account v4.0.0
  *
  * @changelog
+ * v4.0.0:
+ * - Admin models (AccountCaptchaSettings, AccountExternalProviderSetting, etc.) added in admin/models
+ * - Lib models (Account namespace, config-options, profile, tenant, user) deprecated (removed from Angular public-api)
  * v3.2.0:
  * - Added ProfilePictureInput, ProfilePictureSourceDto
  * - Added AccountTwoFactorSettingsDto

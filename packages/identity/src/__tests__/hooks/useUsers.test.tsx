@@ -2,22 +2,22 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useUsers } from '../../hooks/useUsers';
 
-// Mock IdentityService
-const mockGetUsers = vi.fn();
-const mockGetUserById = vi.fn();
-const mockGetUserRoles = vi.fn();
-const mockCreateUser = vi.fn();
-const mockUpdateUser = vi.fn();
-const mockDeleteUser = vi.fn();
+// Mock IdentityUserService (v4.0.0: migrated from IdentityService)
+const mockGetList = vi.fn();
+const mockGet = vi.fn();
+const mockGetRoles = vi.fn();
+const mockCreate = vi.fn();
+const mockUpdate = vi.fn();
+const mockDelete = vi.fn();
 
-vi.mock('../../services', () => ({
-  IdentityService: vi.fn().mockImplementation(() => ({
-    getUsers: mockGetUsers,
-    getUserById: mockGetUserById,
-    getUserRoles: mockGetUserRoles,
-    createUser: mockCreateUser,
-    updateUser: mockUpdateUser,
-    deleteUser: mockDeleteUser,
+vi.mock('../../proxy/identity/identity-user.service', () => ({
+  IdentityUserService: vi.fn().mockImplementation(() => ({
+    getList: mockGetList,
+    get: mockGet,
+    getRoles: mockGetRoles,
+    create: mockCreate,
+    update: mockUpdate,
+    delete: mockDelete,
   })),
 }));
 
@@ -29,12 +29,12 @@ vi.mock('@abpjs/core', () => ({
 describe('useUsers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetUsers.mockReset();
-    mockGetUserById.mockReset();
-    mockGetUserRoles.mockReset();
-    mockCreateUser.mockReset();
-    mockUpdateUser.mockReset();
-    mockDeleteUser.mockReset();
+    mockGetList.mockReset();
+    mockGet.mockReset();
+    mockGetRoles.mockReset();
+    mockCreate.mockReset();
+    mockUpdate.mockReset();
+    mockDelete.mockReset();
   });
 
   it('should return initial state', () => {
@@ -47,6 +47,7 @@ describe('useUsers', () => {
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeNull();
     expect(result.current.pageQuery).toEqual({
+      filter: '',
       sorting: 'userName',
       skipCount: 0,
       maxResultCount: 10,
@@ -76,7 +77,7 @@ describe('useUsers', () => {
       ],
       totalCount: 1,
     };
-    mockGetUsers.mockResolvedValue(mockUsers);
+    mockGetList.mockResolvedValue(mockUsers);
 
     const { result } = renderHook(() => useUsers());
 
@@ -91,7 +92,7 @@ describe('useUsers', () => {
   });
 
   it('should handle fetch users error', async () => {
-    mockGetUsers.mockRejectedValue(new Error('Failed to fetch'));
+    mockGetList.mockRejectedValue(new Error('Failed to fetch'));
 
     const { result } = renderHook(() => useUsers());
 
@@ -103,6 +104,47 @@ describe('useUsers', () => {
 
     expect(result.current.error).toBe('Failed to fetch');
     expect(result.current.isLoading).toBe(false);
+  });
+
+  it('should handle fetch users with non-Error throw', async () => {
+    mockGetList.mockRejectedValue('network failure');
+
+    const { result } = renderHook(() => useUsers());
+
+    await act(async () => {
+      const response = await result.current.fetchUsers();
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Failed to fetch users');
+    });
+
+    expect(result.current.error).toBe('Failed to fetch users');
+  });
+
+  it('should handle fetch users with undefined items and totalCount', async () => {
+    mockGetList.mockResolvedValue({});
+
+    const { result } = renderHook(() => useUsers());
+
+    await act(async () => {
+      const response = await result.current.fetchUsers();
+      expect(response.success).toBe(true);
+    });
+
+    expect(result.current.users).toEqual([]);
+    expect(result.current.totalCount).toBe(0);
+  });
+
+  it('should fetch users with custom params instead of pageQuery', async () => {
+    mockGetList.mockResolvedValue({ items: [], totalCount: 0 });
+
+    const { result } = renderHook(() => useUsers());
+    const params = { filter: 'admin', skipCount: 0, maxResultCount: 25, sorting: 'email desc' };
+
+    await act(async () => {
+      await result.current.fetchUsers(params);
+    });
+
+    expect(mockGetList).toHaveBeenCalledWith(params);
   });
 
   it('should get user by ID', async () => {
@@ -121,7 +163,7 @@ describe('useUsers', () => {
       isLockedOut: false,
       concurrencyStamp: 'stamp1',
     };
-    mockGetUserById.mockResolvedValue(mockUser);
+    mockGet.mockResolvedValue(mockUser);
 
     const { result } = renderHook(() => useUsers());
 
@@ -134,7 +176,7 @@ describe('useUsers', () => {
   });
 
   it('should handle get user by ID error', async () => {
-    mockGetUserById.mockRejectedValue(new Error('User not found'));
+    mockGet.mockRejectedValue(new Error('User not found'));
 
     const { result } = renderHook(() => useUsers());
 
@@ -147,14 +189,28 @@ describe('useUsers', () => {
     expect(result.current.error).toBe('User not found');
   });
 
+  it('should handle get user by ID with non-Error throw', async () => {
+    mockGet.mockRejectedValue({ status: 404 });
+
+    const { result } = renderHook(() => useUsers());
+
+    await act(async () => {
+      const response = await result.current.getUserById('invalid-id');
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Failed to fetch user');
+    });
+
+    expect(result.current.error).toBe('Failed to fetch user');
+  });
+
   it('should get user roles', async () => {
-    const mockRoles = {
+    const mockRolesResponse = {
       items: [
         { id: 'role-1', name: 'Admin', isDefault: false, isPublic: true, isStatic: false, concurrencyStamp: 'stamp1' },
       ],
       totalCount: 1,
     };
-    mockGetUserRoles.mockResolvedValue(mockRoles);
+    mockGetRoles.mockResolvedValue(mockRolesResponse);
 
     const { result } = renderHook(() => useUsers());
 
@@ -163,11 +219,11 @@ describe('useUsers', () => {
       expect(response.success).toBe(true);
     });
 
-    expect(result.current.selectedUserRoles).toEqual(mockRoles.items);
+    expect(result.current.selectedUserRoles).toEqual(mockRolesResponse.items);
   });
 
   it('should handle get user roles error', async () => {
-    mockGetUserRoles.mockRejectedValue(new Error('Failed to fetch roles'));
+    mockGetRoles.mockRejectedValue(new Error('Failed to fetch roles'));
 
     const { result } = renderHook(() => useUsers());
 
@@ -178,6 +234,33 @@ describe('useUsers', () => {
     });
 
     expect(result.current.error).toBe('Failed to fetch roles');
+  });
+
+  it('should handle get user roles with non-Error throw', async () => {
+    mockGetRoles.mockRejectedValue('forbidden');
+
+    const { result } = renderHook(() => useUsers());
+
+    await act(async () => {
+      const response = await result.current.getUserRoles('user-1');
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Failed to fetch user roles');
+    });
+
+    expect(result.current.error).toBe('Failed to fetch user roles');
+  });
+
+  it('should handle get user roles with undefined items', async () => {
+    mockGetRoles.mockResolvedValue({});
+
+    const { result } = renderHook(() => useUsers());
+
+    await act(async () => {
+      const response = await result.current.getUserRoles('user-1');
+      expect(response.success).toBe(true);
+    });
+
+    expect(result.current.selectedUserRoles).toEqual([]);
   });
 
   it('should create user successfully', async () => {
@@ -192,8 +275,8 @@ describe('useUsers', () => {
       password: 'Password123!',
       roleNames: ['User'],
     };
-    mockCreateUser.mockResolvedValue({ id: 'new-id', ...newUser });
-    mockGetUsers.mockResolvedValue({ items: [], totalCount: 0 });
+    mockCreate.mockResolvedValue({ id: 'new-id', ...newUser });
+    mockGetList.mockResolvedValue({ items: [], totalCount: 0 });
 
     const { result } = renderHook(() => useUsers());
 
@@ -202,12 +285,12 @@ describe('useUsers', () => {
       expect(response.success).toBe(true);
     });
 
-    expect(mockCreateUser).toHaveBeenCalledWith(newUser);
-    expect(mockGetUsers).toHaveBeenCalled();
+    expect(mockCreate).toHaveBeenCalledWith(newUser);
+    expect(mockGetList).toHaveBeenCalled();
   });
 
   it('should handle create user error', async () => {
-    mockCreateUser.mockRejectedValue(new Error('Creation failed'));
+    mockCreate.mockRejectedValue(new Error('Creation failed'));
 
     const { result } = renderHook(() => useUsers());
 
@@ -230,6 +313,29 @@ describe('useUsers', () => {
     expect(result.current.error).toBe('Creation failed');
   });
 
+  it('should handle create user with non-Error throw', async () => {
+    mockCreate.mockRejectedValue({ code: 'VALIDATION' });
+
+    const { result } = renderHook(() => useUsers());
+
+    await act(async () => {
+      const response = await result.current.createUser({
+        userName: 'test',
+        name: 'Test',
+        surname: 'User',
+        email: 'test@example.com',
+        phoneNumber: '',
+        lockoutEnabled: true,
+        password: 'Test123!',
+        roleNames: [],
+      });
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Failed to create user');
+    });
+
+    expect(result.current.error).toBe('Failed to create user');
+  });
+
   it('should update user successfully', async () => {
     const updatedUser = {
       userName: 'updateduser',
@@ -242,8 +348,8 @@ describe('useUsers', () => {
       password: 'NewPassword123!',
       roleNames: ['Admin'],
     };
-    mockUpdateUser.mockResolvedValue({ id: 'user-1', ...updatedUser });
-    mockGetUsers.mockResolvedValue({ items: [], totalCount: 0 });
+    mockUpdate.mockResolvedValue({ id: 'user-1', ...updatedUser });
+    mockGetList.mockResolvedValue({ items: [], totalCount: 0 });
 
     const { result } = renderHook(() => useUsers());
 
@@ -252,12 +358,12 @@ describe('useUsers', () => {
       expect(response.success).toBe(true);
     });
 
-    expect(mockUpdateUser).toHaveBeenCalledWith('user-1', updatedUser);
-    expect(mockGetUsers).toHaveBeenCalled();
+    expect(mockUpdate).toHaveBeenCalledWith('user-1', updatedUser);
+    expect(mockGetList).toHaveBeenCalled();
   });
 
   it('should handle update user error', async () => {
-    mockUpdateUser.mockRejectedValue(new Error('Update failed'));
+    mockUpdate.mockRejectedValue(new Error('Update failed'));
 
     const { result } = renderHook(() => useUsers());
 
@@ -280,9 +386,32 @@ describe('useUsers', () => {
     expect(result.current.error).toBe('Update failed');
   });
 
+  it('should handle update user with non-Error throw', async () => {
+    mockUpdate.mockRejectedValue(null);
+
+    const { result } = renderHook(() => useUsers());
+
+    await act(async () => {
+      const response = await result.current.updateUser('user-1', {
+        userName: 'test',
+        name: 'Test',
+        surname: 'User',
+        email: 'test@example.com',
+        phoneNumber: '',
+        lockoutEnabled: true,
+        password: 'Test123!',
+        roleNames: [],
+      });
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Failed to update user');
+    });
+
+    expect(result.current.error).toBe('Failed to update user');
+  });
+
   it('should delete user successfully', async () => {
-    mockDeleteUser.mockResolvedValue(undefined);
-    mockGetUsers.mockResolvedValue({ items: [], totalCount: 0 });
+    mockDelete.mockResolvedValue(undefined);
+    mockGetList.mockResolvedValue({ items: [], totalCount: 0 });
 
     const { result } = renderHook(() => useUsers());
 
@@ -291,12 +420,12 @@ describe('useUsers', () => {
       expect(response.success).toBe(true);
     });
 
-    expect(mockDeleteUser).toHaveBeenCalledWith('user-1');
-    expect(mockGetUsers).toHaveBeenCalled();
+    expect(mockDelete).toHaveBeenCalledWith('user-1');
+    expect(mockGetList).toHaveBeenCalled();
   });
 
   it('should handle delete user error', async () => {
-    mockDeleteUser.mockRejectedValue(new Error('Delete failed'));
+    mockDelete.mockRejectedValue(new Error('Delete failed'));
 
     const { result } = renderHook(() => useUsers());
 
@@ -307,6 +436,20 @@ describe('useUsers', () => {
     });
 
     expect(result.current.error).toBe('Delete failed');
+  });
+
+  it('should handle delete user with non-Error throw', async () => {
+    mockDelete.mockRejectedValue(undefined);
+
+    const { result } = renderHook(() => useUsers());
+
+    await act(async () => {
+      const response = await result.current.deleteUser('user-1');
+      expect(response.success).toBe(false);
+      expect(response.error).toBe('Failed to delete user');
+    });
+
+    expect(result.current.error).toBe('Failed to delete user');
   });
 
   it('should set selected user', () => {
@@ -338,10 +481,10 @@ describe('useUsers', () => {
     const { result } = renderHook(() => useUsers());
 
     act(() => {
-      result.current.setPageQuery({ skipCount: 10, maxResultCount: 20 });
+      result.current.setPageQuery({ filter: '', skipCount: 10, maxResultCount: 20 });
     });
 
-    expect(result.current.pageQuery).toEqual({ skipCount: 10, maxResultCount: 20 });
+    expect(result.current.pageQuery).toEqual({ filter: '', skipCount: 10, maxResultCount: 20 });
   });
 
   it('should set sort key', () => {
@@ -365,7 +508,7 @@ describe('useUsers', () => {
   });
 
   it('should reset state', async () => {
-    mockGetUsers.mockResolvedValue({
+    mockGetList.mockResolvedValue({
       items: [{
         id: 'user-1',
         userName: 'admin',
@@ -405,6 +548,7 @@ describe('useUsers', () => {
     expect(result.current.isLoading).toBe(false);
     expect(result.current.error).toBeNull();
     expect(result.current.pageQuery).toEqual({
+      filter: '',
       sorting: 'userName',
       skipCount: 0,
       maxResultCount: 10,

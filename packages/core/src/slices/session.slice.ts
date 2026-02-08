@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { ABP, Session } from '../models';
+import { Session } from '../models';
+import { CurrentTenantDto } from '../models/proxy/multi-tenancy';
 
 export type SessionState = Session.State;
 
@@ -31,7 +32,7 @@ function loadSessionFromStorage(): SessionState {
   }
   return {
     language: '',
-    tenant: { id: '', name: '' },
+    tenant: { isAvailable: false },
     sessionDetail: { ...defaultSessionDetail },
   };
 }
@@ -54,7 +55,10 @@ export const sessionSlice = createSlice({
       state.language = action.payload;
       saveSessionToStorage(state);
     },
-    setTenant: (state, action: PayloadAction<ABP.BasicItem>) => {
+    /**
+     * @updated 4.0.0 - Changed from ABP.BasicItem to CurrentTenantDto
+     */
+    setTenant: (state, action: PayloadAction<CurrentTenantDto>) => {
       state.tenant = action.payload;
       saveSessionToStorage(state);
     },

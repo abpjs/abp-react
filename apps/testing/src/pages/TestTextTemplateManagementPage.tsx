@@ -6,6 +6,7 @@
  * @updated 3.0.0 - Config subpackage, extension tokens, guards, policy names
  * @updated 3.1.0 - Added GetTemplateDefinitionListInput, createGetTemplateDefinitionListInput
  * @updated 3.2.0 - Added proxy subpackage with typed services and DTOs
+ * @updated 4.0.0 - Internal Angular changes (private field rename in TemplateContentsComponent) - no new React features
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -1315,10 +1316,10 @@ function TestApiEndpoints() {
 export function TestTextTemplateManagementPage() {
   return (
     <div>
-      <h1>@abpjs/text-template-management Tests (v3.2.0)</h1>
+      <h1>@abpjs/text-template-management Tests (v4.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing Text Template Management module for managing text templates and their content.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.2.0 - Added proxy subpackage with typed services and DTOs
+        Version 4.0.0 - Internal Angular changes only (no new React features)
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components and services for managing text templates used in email notifications,

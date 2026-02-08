@@ -7,6 +7,8 @@ import {
   isObject,
   isArray,
   isObjectAndNotArray,
+  isNode,
+  isObjectAndNotArrayNotNode,
 } from './common-utils';
 
 describe('common-utils', () => {
@@ -269,6 +271,85 @@ describe('common-utils', () => {
       const value: unknown = { name: 'test' };
       if (isObjectAndNotArray(value)) {
         // TypeScript should know value is Record<string, unknown> here
+        expect(value.name).toBe('test');
+      }
+    });
+  });
+
+  describe('isNode (v4.0.0)', () => {
+    it('should return false for plain objects', () => {
+      expect(isNode({})).toBe(false);
+      expect(isNode({ nodeType: 1 })).toBe(false);
+    });
+
+    it('should return false for arrays', () => {
+      expect(isNode([])).toBe(false);
+    });
+
+    it('should return false for null', () => {
+      expect(isNode(null)).toBe(false);
+    });
+
+    it('should return false for undefined', () => {
+      expect(isNode(undefined)).toBe(false);
+    });
+
+    it('should return false for primitives', () => {
+      expect(isNode('string')).toBe(false);
+      expect(isNode(123)).toBe(false);
+      expect(isNode(true)).toBe(false);
+    });
+
+    it('should return false for Date objects', () => {
+      expect(isNode(new Date())).toBe(false);
+    });
+
+    it('should return false when Node is not defined (non-browser)', () => {
+      // In vitest (JSDOM), Node is defined, but plain objects are not instances
+      expect(isNode({ nodeType: 1, nodeName: 'DIV' })).toBe(false);
+    });
+  });
+
+  describe('isObjectAndNotArrayNotNode (v4.0.0)', () => {
+    it('should return true for plain objects', () => {
+      expect(isObjectAndNotArrayNotNode({})).toBe(true);
+      expect(isObjectAndNotArrayNotNode({ key: 'value' })).toBe(true);
+    });
+
+    it('should return true for nested objects', () => {
+      expect(isObjectAndNotArrayNotNode({ nested: { deep: true } })).toBe(true);
+    });
+
+    it('should return false for arrays', () => {
+      expect(isObjectAndNotArrayNotNode([])).toBe(false);
+      expect(isObjectAndNotArrayNotNode([1, 2, 3])).toBe(false);
+    });
+
+    it('should return false for null', () => {
+      expect(isObjectAndNotArrayNotNode(null)).toBe(false);
+    });
+
+    it('should return false for undefined', () => {
+      expect(isObjectAndNotArrayNotNode(undefined)).toBe(false);
+    });
+
+    it('should return false for primitives', () => {
+      expect(isObjectAndNotArrayNotNode('string')).toBe(false);
+      expect(isObjectAndNotArrayNotNode(123)).toBe(false);
+      expect(isObjectAndNotArrayNotNode(true)).toBe(false);
+    });
+
+    it('should return true for Date objects (not a Node)', () => {
+      expect(isObjectAndNotArrayNotNode(new Date())).toBe(true);
+    });
+
+    it('should return true for RegExp objects', () => {
+      expect(isObjectAndNotArrayNotNode(/test/)).toBe(true);
+    });
+
+    it('should work as type guard', () => {
+      const value: unknown = { name: 'test' };
+      if (isObjectAndNotArrayNotNode(value)) {
         expect(value.name).toBe('test');
       }
     });

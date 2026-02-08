@@ -1,6 +1,6 @@
 /**
  * Model / Interface Generation Utilities
- * Translated from @abp/ng.schematics v3.2.0
+ * Translated from @abp/ng.schematics v4.0.0
  *
  * Converts type references into Model objects containing
  * TypeScript interface definitions.

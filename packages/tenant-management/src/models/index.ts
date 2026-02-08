@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 /**
  * Tenant Management module type definitions
- * Translated from @abp/ng.tenant-management v3.2.0
+ * Translated from @abp/ng.tenant-management v4.0.0
  */
 
-import type { ABP, PagedResultDto } from '@abpjs/core';
+import type { PagedResultDto } from '@abpjs/core';
 import type { TenantDto } from '../proxy/models';
 
 /**
@@ -20,56 +20,6 @@ export namespace TenantManagement {
     selectedItem: TenantDto;
   }
 
-  /**
-   * API response for tenant list (paginated)
-   * @deprecated To be deleted in v4.0. Use PagedResultDto<TenantDto> from @abpjs/core instead.
-   */
-  export type Response = ABP.PagedResponse<Item>;
-
-  /**
-   * Single tenant item
-   * @deprecated To be deleted in v4.0. Use TenantDto from '@abpjs/tenant-management/proxy' instead.
-   */
-  export interface Item {
-    id: string;
-    name: string;
-  }
-
-  /**
-   * Request payload for creating a new tenant
-   * @since 2.4.0 Added adminEmailAddress and adminPassword fields
-   * @deprecated To be deleted in v4.0. Use TenantCreateDto from '@abpjs/tenant-management/proxy' instead.
-   */
-  export interface AddRequest {
-    /** Admin email address for the new tenant */
-    adminEmailAddress: string;
-    /** Admin password for the new tenant */
-    adminPassword: string;
-    /** Tenant name */
-    name: string;
-  }
-
-  /**
-   * Request payload for updating an existing tenant
-   * @since 2.4.0 No longer extends AddRequest (only id and name needed for update)
-   * @deprecated To be deleted in v4.0. Use TenantUpdateDto from '@abpjs/tenant-management/proxy' instead.
-   */
-  export interface UpdateRequest {
-    /** Tenant ID */
-    id: string;
-    /** Tenant name */
-    name: string;
-  }
-
-  /**
-   * Request payload for updating tenant's default connection string
-   * @deprecated To be deleted in v4.0. Use TenantService.updateDefaultConnectionString instead.
-   */
-  export interface DefaultConnectionStringRequest {
-    id: string;
-    defaultConnectionString: string;
-  }
-
   // ========================
   // Component Interface Types (v2.0.0)
   // ========================
@@ -77,12 +27,13 @@ export namespace TenantManagement {
   /**
    * Input props for TenantsComponent
    * @since 2.0.0
+   * @since 4.0.0 - Uses TenantDto instead of legacy Item type
    */
   export interface TenantsComponentInputs {
     /** Callback when tenant is created */
-    readonly onTenantCreated?: (tenant: Item) => void;
+    readonly onTenantCreated?: (tenant: TenantDto) => void;
     /** Callback when tenant is updated */
-    readonly onTenantUpdated?: (tenant: Item) => void;
+    readonly onTenantUpdated?: (tenant: TenantDto) => void;
     /** Callback when tenant is deleted */
     readonly onTenantDeleted?: (id: string) => void;
   }

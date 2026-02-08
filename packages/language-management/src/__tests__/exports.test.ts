@@ -1,7 +1,8 @@
 /**
  * Tests for module exports
- * @abpjs/language-management v3.2.0
+ * @abpjs/language-management v4.0.0
  * @updated 3.2.0 - Added proxy subpackage exports tests
+ * @updated 4.0.0 - Added LanguageManagementStateService export tests, deprecated type tests
  */
 import { describe, it, expect, vi } from 'vitest';
 
@@ -169,6 +170,39 @@ describe('Module exports', () => {
       const mockRestService = { request: vi.fn() };
       const service = new LanguageManagementService(mockRestService as never);
       expect(service.apiName).toBe('default');
+    });
+  });
+
+  describe('v4.0.0 exports', () => {
+    it('should export LanguageManagementStateService from services', async () => {
+      const { LanguageManagementStateService } = await import('../services');
+      expect(LanguageManagementStateService).toBeDefined();
+      expect(typeof LanguageManagementStateService).toBe('function');
+    });
+
+    it('should export LanguageManagementStateService from index', async () => {
+      const { LanguageManagementStateService } = await import('../index');
+      expect(LanguageManagementStateService).toBeDefined();
+    });
+
+    it('should have getLanguagesTotalCount method on LanguageManagementStateService', async () => {
+      const { LanguageManagementStateService } = await import('../index');
+      const mockRestService = { request: vi.fn() };
+      const service = new LanguageManagementStateService(mockRestService as never);
+      expect(typeof service.getLanguagesTotalCount).toBe('function');
+      expect(service.getLanguagesTotalCount()).toBe(0);
+    });
+
+    it('should have all required methods on LanguageManagementStateService', async () => {
+      const { LanguageManagementStateService } = await import('../index');
+      const mockRestService = { request: vi.fn() };
+      const service = new LanguageManagementStateService(mockRestService as never);
+      expect(typeof service.getLanguages).toBe('function');
+      expect(typeof service.getLanguagesTotalCount).toBe('function');
+      expect(typeof service.getLanguageTexts).toBe('function');
+      expect(typeof service.getLanguageTextsTotalCount).toBe('function');
+      expect(typeof service.getCultures).toBe('function');
+      expect(typeof service.getResources).toBe('function');
     });
   });
 

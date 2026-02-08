@@ -9,6 +9,7 @@
  * @updated 3.0.0 - Added config subpackage (policy names, route providers), extension tokens, extension guards
  * @updated 3.1.0 - Internal type updates, dependency updates (no new React features)
  * @updated 3.2.0 - Added proxy subpackage with typed DTOs and services
+ * @updated 4.0.0 - State.languageResponse now PagedResultDto, getLanguagesTotalCount restored, service deprecations updated
  */
 import { useState } from 'react'
 import { useRestService } from '@abpjs/core'
@@ -86,6 +87,131 @@ void _languageResourceDto
 void _getLanguagesTextsInput
 
 /**
+ * Test section for v4.0.0 features
+ */
+function TestV400Features() {
+  return (
+    <div className="test-section">
+      <h2>v4.0.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      {/* State Migration */}
+      <div className="test-card">
+        <h3>State Type Migration (v4.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          <code>LanguageManagement.State.languageResponse</code> changed from <code>ListResultDto</code> to <code>PagedResultDto</code>.
+          This adds the <code>totalCount</code> field alongside <code>items</code>.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Field</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Before (v3.2.0)</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>After (v4.0.0)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>languageResponse</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}><code>{'ListResultDto<LanguageDto>'}</code></td>
+              <td style={{ padding: '8px', fontSize: '12px' }}><code>{'PagedResultDto<LanguageDto>'}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Restored Method */}
+      <div className="test-card">
+        <h3>Restored: getLanguagesTotalCount() (v4.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          The <code>getLanguagesTotalCount()</code> method was removed in v3.0.0 and has been restored in v4.0.0.
+          It returns the <code>totalCount</code> from the <code>languageResponse</code> state.
+        </p>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Usage
+const stateService = new LanguageManagementStateService(restService);
+await stateService.dispatchGetLanguages({ maxResultCount: 10 });
+
+const languages = stateService.getLanguages();           // LanguageDto[]
+const totalCount = stateService.getLanguagesTotalCount(); // number (restored in v4.0.0)`}
+        </pre>
+      </div>
+
+      {/* Service Deprecations */}
+      <div className="test-card">
+        <h3>Service Deprecations Updated (v4.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          Deprecated types and services are now marked for removal in v5.0 (previously v4.0).
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Deprecated Item</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Replacement</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Removal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagementService</code></td>
+              <td style={{ padding: '8px' }}><code>LanguageService</code> + <code>LanguageTextService</code></td>
+              <td style={{ padding: '8px', color: '#f59e0b' }}>v5.0</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagement.Language</code></td>
+              <td style={{ padding: '8px' }}><code>LanguageDto</code></td>
+              <td style={{ padding: '8px', color: '#f59e0b' }}>v5.0</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagement.LanguageText</code></td>
+              <td style={{ padding: '8px' }}><code>LanguageTextDto</code></td>
+              <td style={{ padding: '8px', color: '#f59e0b' }}>v5.0</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagement.Culture</code></td>
+              <td style={{ padding: '8px' }}><code>CultureInfoDto</code></td>
+              <td style={{ padding: '8px', color: '#f59e0b' }}>v5.0</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px', color: '#888' }}><code>LanguageManagement.Resource</code></td>
+              <td style={{ padding: '8px' }}><code>LanguageResourceDto</code></td>
+              <td style={{ padding: '8px', color: '#f59e0b' }}>v5.0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* LanguageService.getList return type */}
+      <div className="test-card">
+        <h3>LanguageService.getList Return Type (v4.0.0)</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          <code>LanguageService.getList()</code> now returns <code>{'PagedResultDto<LanguageDto>'}</code> instead of <code>{'ListResultDto<LanguageDto>'}</code>.
+          This is a compatible change since <code>PagedResultDto</code> extends <code>ListResultDto</code>.
+        </p>
+        <pre style={{ padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// v4.0.0 - getList now returns PagedResultDto (includes totalCount)
+const result = await languageService.getList({ maxResultCount: 10 });
+console.log(result.items);      // LanguageDto[]
+console.log(result.totalCount); // number (new in v4.0.0)`}
+        </pre>
+      </div>
+
+      {/* Angular-only changes */}
+      <div className="test-card">
+        <h3>Angular-Only Changes (Not Applicable)</h3>
+        <p style={{ fontSize: '14px', color: '#888' }}>
+          The following v4.0.0 Angular changes do not affect the React package:
+        </p>
+        <ul style={{ fontSize: '13px', color: '#666', marginTop: '0.5rem' }}>
+          <li>Flag-icons module (Angular component CSS class list)</li>
+          <li>Locale subpackage (Angular locale registration)</li>
+          <li>Angular DI refactoring (ConfigStateService, ApplicationConfigurationService)</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
+/**
  * Test section for v3.2.0 features: proxy subpackage with typed DTOs and services
  */
 function TestV320Features() {
@@ -106,7 +232,7 @@ Available methods:
 - get(id: string): Promise<LanguageDto>
 - getAllList(): Promise<ListResultDto<LanguageDto>>
 - getCulturelist(): Promise<CultureInfoDto[]>
-- getList(input?: GetLanguagesTextsInput): Promise<ListResultDto<LanguageDto>>
+- getList(input?: GetLanguagesTextsInput): Promise<PagedResultDto<LanguageDto>>
 - getResources(): Promise<LanguageResourceDto[]>
 - setAsDefault(id: string): Promise<void>
 - update(id: string, input: UpdateLanguageDto): Promise<LanguageDto>`)
@@ -140,7 +266,7 @@ Available methods:
           <p style={{ fontSize: '12px', margin: '0.5rem 0 0' }}>
             <code>LanguageManagementService</code>, <code>LanguageManagement.Language</code>, and related legacy types
             are deprecated. Use <code>LanguageService</code>, <code>LanguageTextService</code>, and proxy DTOs instead.
-            Legacy types will be removed in v4.0.0.
+            Legacy types will be removed in v5.0.
           </p>
         </div>
       </div>
@@ -1416,17 +1542,17 @@ function MyComponent() {
 function TestLanguageManagementStateServiceSection() {
   return (
     <div className="test-section">
-      <h2>LanguageManagementStateService (v2.0.0, Updated v3.0.0)</h2>
+      <h2>LanguageManagementStateService (v2.0.0, Updated v4.0.0)</h2>
 
       <div className="test-card">
         <h3>Overview</h3>
         <p>
           The <code>LanguageManagementStateService</code> provides a stateful facade over language management
           operations, maintaining internal state that mirrors the Angular NGXS store pattern.
-          It has <strong>10 dispatch methods</strong> and <strong>5 getter methods</strong> (v3.0.0).
+          It has <strong>10 dispatch methods</strong> and <strong>6 getter methods</strong> (v4.0.0).
         </p>
-        <p style={{ color: '#f59e0b', fontSize: '14px', marginTop: '0.5rem' }}>
-          ⚠️ v3.0.0 Breaking Change: <code>getLanguagesTotalCount()</code> has been removed.
+        <p style={{ color: '#4ade80', fontSize: '14px', marginTop: '0.5rem' }}>
+          v4.0.0: <code>getLanguagesTotalCount()</code> has been restored (was removed in v3.0.0).
         </p>
       </div>
 
@@ -1504,10 +1630,10 @@ function TestLanguageManagementStateServiceSection() {
               <td style={{ padding: '8px' }}>Language[]</td>
               <td>Get languages from state</td>
             </tr>
-            <tr style={{ borderBottom: '1px solid #222', background: '#3b2020' }}>
-              <td style={{ padding: '8px', textDecoration: 'line-through', color: '#888' }}>getLanguagesTotalCount()</td>
-              <td style={{ padding: '8px', color: '#888' }}>number</td>
-              <td style={{ color: '#ef4444' }}>❌ Removed in v3.0.0</td>
+            <tr style={{ borderBottom: '1px solid #222', background: '#1a3b20' }}>
+              <td style={{ padding: '8px' }}>getLanguagesTotalCount()</td>
+              <td style={{ padding: '8px' }}>number</td>
+              <td>Restored in v4.0.0 (was removed in v3.0.0)</td>
             </tr>
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}>getLanguageTexts()</td>
@@ -1548,8 +1674,7 @@ function MyComponent() {
 
   // Access the result from state
   const languages = stateService.getLanguages();
-  // v3.0.0: getLanguagesTotalCount() has been REMOVED
-  // const totalCount = stateService.getLanguagesTotalCount(); // ❌ No longer available
+  const totalCount = stateService.getLanguagesTotalCount(); // Restored in v4.0.0
 
   // Dispatch to fetch cultures and resources
   await stateService.dispatchGetLanguageCultures();
@@ -1655,12 +1780,13 @@ function TestModels() {
 export function TestLanguageManagementPage() {
   return (
     <div>
-      <h1>@abpjs/language-management Tests (v3.2.0)</h1>
+      <h1>@abpjs/language-management Tests (v4.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing language management components, hooks, and services.</p>
       <p style={{ fontSize: '14px', color: '#888', marginBottom: '16px' }}>
-        Version 3.2.0 - Added proxy subpackage with typed DTOs and services
+        Version 4.0.0 - State.languageResponse now PagedResultDto, getLanguagesTotalCount restored, deprecations updated to v5.0
       </p>
 
+      <TestV400Features />
       <TestV320Features />
       <TestV300Features />
       <TestV270Features />

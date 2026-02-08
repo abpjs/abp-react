@@ -2,6 +2,8 @@
  * Identity Security Log Service
  * @since 3.1.0
  * @updated 3.2.0 - New proxy service re-exported, legacy service renamed
+ * @updated 4.0.0 - Angular deleted this file; kept for backward compatibility
+ * @deprecated To be deleted in v5.0. Import IdentitySecurityLogService from proxy/identity instead
  */
 import { RestService, PagedResultDto } from '@abpjs/core';
 import type {

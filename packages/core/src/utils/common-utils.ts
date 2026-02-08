@@ -1,6 +1,7 @@
 /**
  * Common utility functions
  * @since 2.4.0
+ * @updated 4.0.0 - Added isNode, isObjectAndNotArrayNotNode
  */
 
 /**
@@ -58,4 +59,22 @@ export function isObjectAndNotArray(
   obj: unknown
 ): obj is Record<string, unknown> {
   return isObject(obj) && !isArray(obj);
+}
+
+/**
+ * Check if a value is a DOM Node
+ * @since 4.0.0
+ */
+export function isNode(obj: unknown): boolean {
+  return typeof Node !== 'undefined' && obj instanceof Node;
+}
+
+/**
+ * Check if a value is an object but not an array and not a DOM Node
+ * @since 4.0.0
+ */
+export function isObjectAndNotArrayNotNode(
+  obj: unknown
+): obj is Record<string, unknown> {
+  return isObjectAndNotArray(obj) && !isNode(obj);
 }

@@ -9,6 +9,11 @@ export interface ConfigState {
   auth: ApplicationConfiguration.Auth;
   setting: ApplicationConfiguration.Setting;
   currentUser: ApplicationConfiguration.CurrentUser;
+  /**
+   * Current tenant information
+   * @since 4.0.0
+   */
+  currentTenant: ApplicationConfiguration.CurrentTenant;
   features: ApplicationConfiguration.Features;
 }
 
@@ -54,6 +59,7 @@ const initialState: ConfigState = {
     surName: '',
     roles: [],
   },
+  currentTenant: { id: '', name: '' },
   features: { values: {} },
 };
 
@@ -166,11 +172,14 @@ const _configSlice = createSlice({
       state,
       action: PayloadAction<ApplicationConfiguration.Response>
     ) => {
-      const { localization, auth, setting, currentUser, features } = action.payload;
+      const { localization, auth, setting, currentUser, currentTenant, features } = action.payload;
       state.localization = localization;
       state.auth = auth;
       state.setting = setting;
       state.currentUser = currentUser;
+      if (currentTenant) {
+        state.currentTenant = currentTenant;
+      }
       state.features = features;
     },
   },

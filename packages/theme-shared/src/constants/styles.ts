@@ -10,6 +10,7 @@
  * @since 2.9.0 - Added RTL support for data-tables-filter
  *
  * @since 3.2.0 - Added .datatable-scroll styles for ngx-datatable horizontal scroll fix
+ * @since 4.0.0 - Enhanced .is-invalid .form-control with error icon, added typeahead styles
  *
  * @example
  * ```tsx
@@ -37,9 +38,15 @@
  */
 export const BOOTSTRAP = 'bootstrap-{{dir}}.min.css';
 export const DEFAULT_STYLES = `
+/* Enhanced validation styles - @since 4.0.0 */
 .is-invalid .form-control {
   border-color: #dc3545;
   border-style: solid !important;
+  padding-right: calc(1.5em + .75rem);
+  background-image: url(data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23dc3545' viewBox='0 0 12 12'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e);
+  background-repeat: no-repeat;
+  background-position: right calc(.375em + .1875rem) center;
+  background-size: calc(.75em + .375rem) calc(.75em + .375rem);
 }
 
 .is-invalid .invalid-feedback,
@@ -181,6 +188,13 @@ export const DEFAULT_STYLES = `
 }
 .sorting_asc:after {
   opacity: .3;
+}
+.ngx-datatable.material {
+  box-shadow: none;
+}
+/* Typeahead dropdown styles - @since 4.0.0 */
+.abp-typeahead-window {
+  width: 100%;
 }
 
 @keyframes fadeInTop {

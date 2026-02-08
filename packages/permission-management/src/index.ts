@@ -1,14 +1,28 @@
 /**
  * @abpjs/permission-management
  * ABP Framework Permission Management module for React
- * Translated from @abp/ng.permission-management v3.2.0
+ * Translated from @abp/ng.permission-management v4.0.0
+ *
+ * Changes in v4.0.0:
+ * - BREAKING: Deleted PermissionManagementService (replaced by PermissionsService)
+ * - BREAKING: Removed deprecated types from PermissionManagement namespace:
+ *   - Response, Group, MinimumPermission, Permission, GrantedProvider, UpdateRequest, GetPermissionsParams
+ * - BREAKING: PermissionManagement.State.permissionRes now uses GetPermissionListResultDto
+ * - BREAKING: PermissionWithStyle and PermissionWithMargin now extend PermissionGrantInfoDto
+ * - PermissionManagementStateService migrated to use PermissionsService
+ *   - Constructor now accepts PermissionsService instead of PermissionManagementService
+ *   - getPermissionGroups() returns PermissionGroupDto[] instead of PermissionManagement.Group[]
+ *   - dispatchGetPermissions() accepts ProviderInfoDto, returns GetPermissionListResultDto
+ *   - dispatchUpdatePermissions() accepts ProviderInfoDto & UpdatePermissionsDto
+ * - usePermissionManagement hook migrated to use PermissionsService and proxy DTOs
+ * - PermissionManagementModal component updated to use proxy DTOs
  *
  * Changes in v3.2.0:
  * - New proxy service: PermissionsService with typed methods (get, update)
  * - New proxy models: GetPermissionListResultDto, PermissionGrantInfoDto, PermissionGroupDto,
  *   ProviderInfoDto, UpdatePermissionDto, UpdatePermissionsDto
  * - Added PermissionWithStyle interface (replaces PermissionWithMargin internally)
- * - Deprecated legacy types (to be deleted in v4.0):
+ * - Deprecated legacy types (deleted in v4.0):
  *   - PermissionManagement.Response -> use GetPermissionListResultDto
  *   - PermissionManagement.Group -> use PermissionGroupDto
  *   - PermissionManagement.MinimumPermission -> use UpdatePermissionDto

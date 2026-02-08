@@ -250,7 +250,7 @@ export function TenantManagementModal({
 
     let result;
     if (isEditing && tenantId) {
-      result = await updateTenant({ id: tenantId, name: tenantName.trim() });
+      result = await updateTenant(tenantId, { name: tenantName.trim() });
     } else {
       // For new tenants, validate admin email and password (v2.4.0)
       const emailValid = validateAdminEmail(adminEmail);

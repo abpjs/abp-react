@@ -1,4 +1,3 @@
-export { TenantManagementService } from './tenant-management.service';
 export {
   TenantManagementStateService,
   getTenantManagementStateService,

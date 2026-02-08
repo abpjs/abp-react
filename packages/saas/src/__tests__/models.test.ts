@@ -1,5 +1,13 @@
+/**
+ * Tests for SaaS Models
+ * @abpjs/saas v4.0.0
+ *
+ * @updated 4.0.0 - Deprecated types kept for backward compatibility (to be deleted in v5.0),
+ *                   State interface now uses proxy DTOs
+ */
 import { describe, it, expect } from 'vitest';
 import { Saas } from '../models';
+import type { EditionDto, SaasTenantDto } from '../proxy/host/dtos/models';
 
 describe('Saas Models', () => {
   describe('Tenant interface', () => {
@@ -318,7 +326,7 @@ describe('Saas Models', () => {
   });
 
   describe('State interface', () => {
-    it('should hold tenant and edition collections', () => {
+    it('should hold tenant and edition collections with proxy DTOs', () => {
       const state: Saas.State = {
         tenants: {
           items: [{ id: 'tenant-1', name: 'Test' }],
@@ -328,24 +336,174 @@ describe('Saas Models', () => {
           items: [{ id: 'ed-1', displayName: 'Basic' }],
           totalCount: 1,
         },
-        selectedTenant: null,
-        selectedEdition: null,
+        usageStatistics: {},
+        latestTenants: [],
       };
 
       expect(state.tenants.items.length).toBe(1);
       expect(state.editions.items.length).toBe(1);
     });
 
-    it('should allow selected items', () => {
+    it('should support usage statistics and latest tenants', () => {
       const state: Saas.State = {
         tenants: { items: [], totalCount: 0 },
         editions: { items: [], totalCount: 0 },
-        selectedTenant: { id: 'tenant-1', name: 'Selected Tenant' },
-        selectedEdition: { id: 'ed-1', displayName: 'Selected Edition' },
+        usageStatistics: { Basic: 10, Pro: 5 },
+        latestTenants: [
+          { id: 'tenant-1', name: 'Latest Tenant', editionId: 'ed-1', editionName: 'Basic' },
+        ],
       };
 
-      expect(state.selectedTenant?.name).toBe('Selected Tenant');
-      expect(state.selectedEdition?.displayName).toBe('Selected Edition');
+      expect(state.usageStatistics).toEqual({ Basic: 10, Pro: 5 });
+      expect(state.latestTenants).toHaveLength(1);
+      expect(state.latestTenants[0].name).toBe('Latest Tenant');
+    });
+
+    it('should use SaasTenantDto for tenants items (v3.2.0+)', () => {
+      // State.tenants uses PagedResultDto<SaasTenantDto> which includes extra proxy fields
+      const tenantDto: SaasTenantDto = {
+        id: 'tenant-1',
+        name: 'Test',
+        creationTime: '2024-01-01T00:00:00Z',
+        creatorId: 'user-1',
+        extraProperties: {},
+      };
+      const state: Saas.State = {
+        tenants: { items: [tenantDto], totalCount: 1 },
+        editions: { items: [], totalCount: 0 },
+        usageStatistics: {},
+        latestTenants: [],
+      };
+
+      expect(state.tenants.items[0]).toHaveProperty('creationTime');
+    });
+
+    it('should use EditionDto for editions items (v3.2.0+)', () => {
+      // State.editions uses PagedResultDto<EditionDto> which includes extra proxy fields
+      const editionDto: EditionDto = {
+        id: 'ed-1',
+        displayName: 'Pro',
+        creationTime: '2024-01-01T00:00:00Z',
+        creatorId: 'user-1',
+      };
+      const state: Saas.State = {
+        tenants: { items: [], totalCount: 0 },
+        editions: { items: [editionDto], totalCount: 1 },
+        usageStatistics: {},
+        latestTenants: [],
+      };
+
+      expect(state.editions.items[0]).toHaveProperty('creationTime');
+    });
+  });
+
+  describe('v4.0.0 - Deprecated types backward compatibility', () => {
+    it('should still export Saas.Tenant for backward compatibility', () => {
+      // Deprecated: use SaasTenantDto instead. To be deleted in v5.0.
+      const tenant: Saas.Tenant = {
+        id: 'tenant-1',
+        name: 'Test',
+        editionId: 'ed-1',
+      };
+      expect(tenant.id).toBe('tenant-1');
+    });
+
+    it('should still export Saas.Edition for backward compatibility', () => {
+      // Deprecated: use EditionDto instead. To be deleted in v5.0.
+      const edition: Saas.Edition = {
+        id: 'ed-1',
+        displayName: 'Pro',
+      };
+      expect(edition.id).toBe('ed-1');
+    });
+
+    it('should still export Saas.TenantsResponse for backward compatibility', () => {
+      // Deprecated: use PagedResultDto<SaasTenantDto> instead. To be deleted in v5.0.
+      const response: Saas.TenantsResponse = {
+        items: [{ id: 'tenant-1', name: 'Test' }],
+        totalCount: 1,
+      };
+      expect(response.totalCount).toBe(1);
+    });
+
+    it('should still export Saas.EditionsResponse for backward compatibility', () => {
+      // Deprecated: use PagedResultDto<EditionDto> instead. To be deleted in v5.0.
+      const response: Saas.EditionsResponse = {
+        items: [{ id: 'ed-1', displayName: 'Pro' }],
+        totalCount: 1,
+      };
+      expect(response.totalCount).toBe(1);
+    });
+
+    it('should still export Saas.CreateTenantRequest for backward compatibility', () => {
+      // Deprecated: use SaasTenantCreateDto instead. To be deleted in v5.0.
+      const request: Saas.CreateTenantRequest = {
+        name: 'New Tenant',
+        adminEmailAddress: 'admin@test.com',
+        adminPassword: 'Pass123!',
+      };
+      expect(request.name).toBe('New Tenant');
+    });
+
+    it('should still export Saas.UpdateTenantRequest for backward compatibility', () => {
+      // Deprecated: use SaasTenantUpdateDto instead. To be deleted in v5.0.
+      const request: Saas.UpdateTenantRequest = {
+        id: 'tenant-1',
+        name: 'Updated',
+      };
+      expect(request.id).toBe('tenant-1');
+    });
+
+    it('should still export Saas.CreateEditionRequest for backward compatibility', () => {
+      // Deprecated: use EditionCreateDto instead. To be deleted in v5.0.
+      const request: Saas.CreateEditionRequest = {
+        displayName: 'New Edition',
+      };
+      expect(request.displayName).toBe('New Edition');
+    });
+
+    it('should still export Saas.UpdateEditionRequest for backward compatibility', () => {
+      // Deprecated: use EditionUpdateDto instead. To be deleted in v5.0.
+      const request: Saas.UpdateEditionRequest = {
+        id: 'ed-1',
+        displayName: 'Updated Edition',
+      };
+      expect(request.displayName).toBe('Updated Edition');
+    });
+
+    it('should still export Saas.DefaultConnectionStringRequest for backward compatibility', () => {
+      // Deprecated: To be deleted in v5.0.
+      const request: Saas.DefaultConnectionStringRequest = {
+        id: 'tenant-1',
+        defaultConnectionString: 'Server=localhost;Database=Test;',
+      };
+      expect(request.id).toBe('tenant-1');
+    });
+
+    it('should still export Saas.UsageStatisticsResponse for backward compatibility', () => {
+      // Deprecated: To be deleted in v5.0.
+      const response: Saas.UsageStatisticsResponse = {
+        data: { Basic: 10, Pro: 5 },
+      };
+      expect(response.data).toEqual({ Basic: 10, Pro: 5 });
+    });
+
+    it('should still export Saas.TenantsQueryParams for backward compatibility', () => {
+      // Deprecated: use GetTenantsInput instead. To be deleted in v5.0.
+      const params: Saas.TenantsQueryParams = {
+        filter: 'test',
+        getEditionNames: true,
+      };
+      expect(params.filter).toBe('test');
+    });
+
+    it('should still export Saas.EditionsQueryParams for backward compatibility', () => {
+      // Deprecated: use GetEditionsInput instead. To be deleted in v5.0.
+      const params: Saas.EditionsQueryParams = {
+        filter: 'pro',
+        maxResultCount: 10,
+      };
+      expect(params.filter).toBe('pro');
     });
   });
 });

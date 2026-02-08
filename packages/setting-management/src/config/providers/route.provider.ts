@@ -17,19 +17,19 @@ import { eSettingManagementRouteNames } from '../enums/route-names';
  * Configures the setting management module routes.
  * Returns a function that adds the routes to the RoutesService.
  *
- * @param routes - The RoutesService instance to add routes to
+ * @param routesService - The RoutesService instance to add routes to
  * @returns A function that adds the setting management routes when called
  *
  * @example
  * ```typescript
- * const routes = getRoutesService();
- * const addRoutes = configureRoutes(routes);
+ * const routesService = getRoutesService();
+ * const addRoutes = configureRoutes(routesService);
  * addRoutes();
  * ```
  */
-export function configureRoutes(routes: RoutesService): () => void {
+export function configureRoutes(routesService: RoutesService): () => void {
   return () => {
-    routes.add([
+    routesService.add([
       {
         path: '/setting-management',
         name: eSettingManagementRouteNames.Settings,
@@ -47,17 +47,17 @@ export function configureRoutes(routes: RoutesService): () => void {
  * This function checks if there are any visible setting tabs and hides
  * the route if none exist.
  *
- * @param routes - The RoutesService instance
- * @param tabs - The SettingTabsService instance
+ * @param routesService - The RoutesService instance
+ * @param settingTabsService - The SettingTabsService instance
  * @returns A function that conditionally hides the route
  *
  * @since 3.0.0
  */
-export function hideRoutes(routes: RoutesService, tabs: SettingTabsService): () => void {
+export function hideRoutes(routesService: RoutesService, settingTabsService: SettingTabsService): () => void {
   return () => {
-    const visibleTabs = tabs.visible;
+    const visibleTabs = settingTabsService.visible;
     if (!visibleTabs || visibleTabs.length === 0) {
-      routes.patch(eSettingManagementRouteNames.Settings, {
+      routesService.patch(eSettingManagementRouteNames.Settings, {
         invisible: true,
       });
     }
@@ -71,13 +71,13 @@ export function hideRoutes(routes: RoutesService, tabs: SettingTabsService): () 
  * @example
  * ```typescript
  * // In your app initialization:
- * const routes = getRoutesService();
- * const addRoutes = SETTING_MANAGEMENT_ROUTE_PROVIDERS.configureRoutes(routes);
+ * const routesService = getRoutesService();
+ * const addRoutes = SETTING_MANAGEMENT_ROUTE_PROVIDERS.configureRoutes(routesService);
  * addRoutes();
  *
  * // To conditionally hide based on tabs:
- * const tabs = getSettingTabsService();
- * const hideIfEmpty = SETTING_MANAGEMENT_ROUTE_PROVIDERS.hideRoutes(routes, tabs);
+ * const settingTabsService = getSettingTabsService();
+ * const hideIfEmpty = SETTING_MANAGEMENT_ROUTE_PROVIDERS.hideRoutes(routesService, settingTabsService);
  * hideIfEmpty();
  * ```
  */
@@ -97,14 +97,14 @@ export const SETTING_MANAGEMENT_ROUTE_PROVIDERS = {
  * ```
  */
 export function initializeSettingManagementRoutes(): void {
-  const routes = getRoutesService();
-  const tabs = getSettingTabsService();
+  const routesService = getRoutesService();
+  const settingTabsService = getSettingTabsService();
 
   // Add the routes
-  const addRoutes = configureRoutes(routes);
+  const addRoutes = configureRoutes(routesService);
   addRoutes();
 
   // Hide if no tabs
-  const hideIfEmpty = hideRoutes(routes, tabs);
+  const hideIfEmpty = hideRoutes(routesService, settingTabsService);
   hideIfEmpty();
 }

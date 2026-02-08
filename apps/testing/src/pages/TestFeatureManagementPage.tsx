@@ -5,13 +5,13 @@
  * @updated 3.0.0 - Angular visible getter/setter change (no React impact)
  * @updated 3.1.0 - Added displayName property to Feature interface
  * @updated 3.2.0 - Added proxy models, FeaturesService, ValueTypes enum, getInputType
+ * @updated 4.0.0 - Removed deprecated models/services, migrated hook to FeaturesService
  */
 import { useState, useMemo } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
 import {
   FeatureManagementModal,
   useFeatureManagement,
-  FeatureManagementService,
   FeaturesService,
   eFeatureManagementComponents,
   ValueTypes,
@@ -21,10 +21,6 @@ import {
 import type {
   FeatureManagement,
   FeatureDto,
-  FeatureGroupDto,
-  GetFeatureListResultDto,
-  UpdateFeaturesDto,
-  IStringValueType,
   FreeTextType,
 } from '@abpjs/feature-management'
 
@@ -349,32 +345,22 @@ function TestModels() {
       <h2>Models</h2>
 
       <div className="test-card">
-        <h3>FeatureManagement Namespace</h3>
+        <h3>FeatureManagement Namespace (v4.0.0)</h3>
+        <p>After v4.0.0, only component interface types remain in the namespace:</p>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`interface Feature {
-  name: string;
-  displayName: string;  // v3.1.0
-  value: string;
-  description?: string;
-  valueType?: ValueType;
-  depth?: number;
-  parentName?: string;
+{`// Component interface types (kept)
+interface FeatureManagementComponentInputs {
+  visible: boolean;
+  readonly providerName: string;
+  readonly providerKey: string;
 }
 
-interface ValueType {
-  name: string;
-  properties: object;
-  validator: object;
+interface FeatureManagementComponentOutputs {
+  readonly visibleChange?: (visible: boolean) => void;
 }
 
-interface Provider {
-  providerName: string;
-  providerKey: string;
-}
-
-interface Features {
-  features: Feature[];
-}`}
+// Use proxy models instead of deprecated types:
+// FeatureDto, FeatureGroupDto, GetFeatureListResultDto, etc.`}
         </pre>
       </div>
     </div>
@@ -510,16 +496,6 @@ function TestV320Features() {
     },
     depth: 0,
     parentName: '',
-  }
-
-  const demoGroup: FeatureGroupDto = {
-    name: 'MyApp',
-    displayName: 'My Application',
-    features: [demoFeature],
-  }
-
-  const demoResult: GetFeatureListResultDto = {
-    groups: [demoGroup],
   }
 
   // Test getInputType with different validators
@@ -699,17 +675,18 @@ getInputType(textFeature) // 'text'`}
       </div>
 
       <div className="test-card">
-        <h3>Deprecation Notices</h3>
-        <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: '#2e2a1a', borderRadius: '4px', border: '1px solid #4a4a2e' }}>
-          <p style={{ color: '#f0ad4e', margin: 0, fontSize: '14px' }}>
-            <strong>Deprecated (to be deleted in v4.0):</strong>
+        <h3>Migration Notes (v4.0.0)</h3>
+        <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: '#2e1a1a', borderRadius: '4px', border: '1px solid #4a2e2e' }}>
+          <p style={{ color: '#f88', margin: 0, fontSize: '14px' }}>
+            <strong>Removed in v4.0.0:</strong>
           </p>
           <ul style={{ color: '#ccc', margin: '0.5rem 0 0 0', paddingLeft: '1.5rem', fontSize: '13px' }}>
-            <li><code>FeatureManagement.State</code> → Use <code>GetFeatureListResultDto</code></li>
-            <li><code>FeatureManagement.ValueType</code> → Use <code>IStringValueType</code></li>
-            <li><code>FeatureManagement.Feature</code> → Use <code>FeatureDto</code></li>
-            <li><code>FeatureManagement.Features</code> → Use <code>UpdateFeaturesDto</code></li>
-            <li><code>FeatureManagement.Provider</code> → Use <code>FeatureProviderDto</code></li>
+            <li><del><code>FeatureManagement.State</code></del> → Use <code>GetFeatureListResultDto</code></li>
+            <li><del><code>FeatureManagement.ValueType</code></del> → Use <code>IStringValueType</code></li>
+            <li><del><code>FeatureManagement.Feature</code></del> → Use <code>FeatureDto</code></li>
+            <li><del><code>FeatureManagement.Features</code></del> → Use <code>UpdateFeaturesDto</code></li>
+            <li><del><code>FeatureManagement.Provider</code></del> → Use <code>FeatureProviderDto</code></li>
+            <li><del><code>FeatureManagementService</code></del> → Use <code>FeaturesService</code></li>
           </ul>
         </div>
       </div>
@@ -833,27 +810,18 @@ set visible(value: boolean);`}
 }
 
 function TestV240Features() {
-  const restService = useRestService()
-  const service = useMemo(() => new FeatureManagementService(restService), [restService])
-
   return (
     <div className="test-section">
       <h2>What's New in v2.4.0</h2>
 
       <div className="test-card">
         <h3>FeatureManagementService: apiName property</h3>
-        <p>New property exposing the API name used for REST requests:</p>
-        <pre style={{ fontSize: '12px' }}>{`import { FeatureManagementService } from '@abpjs/feature-management'
-
-const service = new FeatureManagementService(restService)
-console.log(service.apiName) // "default"`}</pre>
-        <p style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
-          Current value: <code style={{ color: '#2ecc71' }}>{service.apiName}</code>
-        </p>
-        <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '0.5rem' }}>
-          This property identifies which API configuration to use from your environment settings.
-          Default value is <code>"default"</code>.
-        </p>
+        <div style={{ marginTop: '0.5rem', padding: '0.75rem', background: '#2e1a1a', borderRadius: '4px', border: '1px solid #4a2e2e' }}>
+          <p style={{ color: '#f88', margin: 0, fontSize: '14px' }}>
+            <strong>Removed in v4.0.0</strong> - <code>FeatureManagementService</code> has been deleted.
+            Use <code>FeaturesService</code> instead (available since v3.2.0).
+          </p>
+        </div>
       </div>
 
       <div className="test-card">
@@ -866,16 +834,87 @@ console.log(service.apiName) // "default"`}</pre>
   )
 }
 
+function TestV400Features() {
+  return (
+    <div className="test-section">
+      <h2>What's New in v4.0.0</h2>
+
+      <div className="test-card">
+        <h3>Breaking Changes</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Change</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>Removed <code>FeatureManagementService</code></td>
+              <td>Use <code>FeaturesService</code> (available since v3.2.0)</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>Removed deprecated namespace types</td>
+              <td><code>State</code>, <code>ValueType</code>, <code>Feature</code>, <code>Features</code>, <code>Provider</code></td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>Hook uses <code>FeaturesService</code></td>
+              <td><code>useFeatureManagement</code> now returns <code>groups</code> alongside <code>features</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Hook Return Value: groups</h3>
+        <p>The <code>useFeatureManagement</code> hook now returns grouped features:</p>
+        <pre style={{ fontSize: '12px', background: '#1a1a2e', padding: '0.5rem', borderRadius: '4px' }}>
+{`const { features, groups, ... } = useFeatureManagement()
+
+// groups: FeatureGroupDto[] - features organized by group
+// features: FeatureDto[] - all features flattened from groups`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>Dependency Changes</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Dependency</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>From</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>To</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}><code>@abp/ng.theme.shared</code></td>
+              <td>~3.2.0</td>
+              <td>~4.0.0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
 export function TestFeatureManagementPage() {
   return (
     <div>
-      <h1>@abpjs/feature-management Tests (v3.2.0)</h1>
+      <h1>@abpjs/feature-management Tests (v4.0.0)</h1>
       <p>Testing feature management modal and hooks.</p>
       <p style={{ color: '#888', fontSize: '0.9rem' }}>
-        Version 3.2.0 - Added proxy models, FeaturesService, ValueTypes enum, getInputType
+        Version 4.0.0 - Removed deprecated models/services, migrated hook to FeaturesService
       </p>
 
-      {/* v3.2.0 Features - Highlighted at top */}
+      {/* v4.0.0 Features - Highlighted at top */}
+      <h2 style={{ marginTop: '2rem', borderTop: '2px solid #ef4444', paddingTop: '1rem' }}>
+        v4.0.0 Changes
+      </h2>
+      <TestV400Features />
+
+      {/* v3.2.0 Features */}
       <h2 style={{ marginTop: '2rem', borderTop: '2px solid #8b5cf6', paddingTop: '1rem' }}>
         v3.2.0 Changes
       </h2>

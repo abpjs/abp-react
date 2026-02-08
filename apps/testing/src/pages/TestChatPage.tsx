@@ -5,6 +5,7 @@
  * @updated 3.0.0 - Added config subpackage with policy names, route providers, nav item providers
  * @updated 3.1.0 - Internal Angular refactoring (subscription management, getters), no public API changes
  * @updated 3.2.0 - Version bump only (dependency updates to @abp/ng.theme.shared ~3.2.0)
+ * @updated 4.0.0 - Angular DI refactoring (Actions→PermissionService, Store→ConfigStateService, added EnvironmentService, destroy$), no React API changes
  */
 import { useState } from 'react'
 import {
@@ -1161,10 +1162,61 @@ function TestAPISummary() {
   )
 }
 
+function TestV400Features() {
+  return (
+    <div className="test-section">
+      <h2>v4.0.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(Current)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Angular DI Refactoring <span style={{ color: '#4f4', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <p>
+          Version 4.0.0 refactors Angular dependency injection in the chat module.
+          These are internal Angular-specific changes that do not affect the React translation.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Angular Change</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>React Impact</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ padding: '8px' }}>ChatConfigService</td>
+              <td style={{ padding: '8px' }}>Removed <code>Actions</code>, added <code>PermissionService</code>, <code>ConfigStateService</code>, <code>EnvironmentService</code></td>
+              <td style={{ padding: '8px', color: '#888' }}>None - React uses constructor params</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>ChatComponent</td>
+              <td style={{ padding: '8px' }}>Replaced <code>Store</code> with <code>ConfigStateService</code>, added <code>destroy$: Subject</code></td>
+              <td style={{ padding: '8px', color: '#888' }}>None - React uses props/hooks</td>
+            </tr>
+            <tr>
+              <td style={{ padding: '8px' }}>Dependencies</td>
+              <td style={{ padding: '8px' }}>@abp/ng.theme.shared &gt;=4.0.0</td>
+              <td style={{ padding: '8px', color: '#888' }}>@abpjs/theme-shared workspace:*</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>v4.0.0 Summary</h3>
+        <p style={{ color: '#888' }}>
+          This release refactors Angular dependency injection patterns (replacing NGXS Actions/Store with
+          dedicated services like PermissionService and ConfigStateService). The React translation already
+          handles these concerns through constructor parameters and React hooks. No public API changes.
+        </p>
+      </div>
+    </div>
+  )
+}
+
 function TestV320Features() {
   return (
     <div className="test-section">
-      <h2>v3.2.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(Current)</span></h2>
+      <h2>v3.2.0 Features</h2>
 
       <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
         <h3>Version Bump <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
@@ -1293,12 +1345,13 @@ function Chat({ contacts, userMessages, ... }) {
 export function TestChatPage() {
   return (
     <div>
-      <h1>@abpjs/chat Tests (v3.2.0)</h1>
+      <h1>@abpjs/chat Tests (v4.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing chat components, hooks, services, and SignalR integration.</p>
       <p style={{ fontSize: '14px', color: '#4f4', marginBottom: '16px' }}>
-        Version 3.2.0 - Version bump only (dependency updates)
+        Version 4.0.0 - Angular DI refactoring (no React API changes)
       </p>
 
+      <TestV400Features />
       <TestV320Features />
       <TestV310Features />
       <TestV300Features />

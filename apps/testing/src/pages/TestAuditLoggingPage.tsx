@@ -9,6 +9,7 @@
  * @updated 3.0.0 - Added config subpackage, policy names, route providers, extensions tokens, guards
  * @updated 3.1.0 - Internal Angular refactoring (OnDestroy → SubscriptionService), no public API changes
  * @updated 3.2.0 - Added proxy subpackage with typed DTOs and AuditLogsService
+ * @updated 4.0.0 - Removed deprecated types/services, all code now uses proxy DTOs
  */
 import { useState } from 'react'
 import {
@@ -20,8 +21,6 @@ import {
   eAuditLoggingComponents,
   eEntityChangeType,
   eAuditLoggingRouteNames,
-  AuditLoggingService,
-  EntityChangeService,
   // v3.0.0 imports
   eAuditLoggingPolicyNames,
   AUDIT_LOGGING_ROUTE_PROVIDERS,
@@ -42,26 +41,14 @@ import {
   // v3.2.0 imports - proxy subpackage
   EntityChangeType,
   entityChangeTypeOptions,
-  AuditLogsService,
 } from '@abpjs/audit-logging'
 import type {
-  AuditLogging,
   AuditLoggingStateService,
-  EntityChange,
   AuditLoggingConfigOptions,
-  // v3.2.0 types - proxy DTOs
+  // proxy DTOs (v3.2.0+, required since v4.0.0)
   AuditLogDto,
-  AuditLogActionDto,
   EntityChangeDto,
-  EntityPropertyChangeDto,
-  EntityChangeWithUsernameDto,
   GetAuditLogListDto,
-  GetEntityChangesDto,
-  GetAverageExecutionDurationPerDayInput,
-  GetAverageExecutionDurationPerDayOutput,
-  GetErrorRateFilter,
-  GetErrorRateOutput,
-  EntityChangeFilter,
 } from '@abpjs/audit-logging'
 
 function TestAuditLogsComponent() {
@@ -103,7 +90,7 @@ function TestAuditLogsComponent() {
           <tbody>
             <tr>
               <td style={{ padding: '8px' }}>onAuditLogSelected</td>
-              <td>(log: AuditLogging.Log) =&gt; void</td>
+              <td>(log: AuditLogDto) =&gt; void</td>
               <td>Callback when an audit log is selected for viewing</td>
             </tr>
           </tbody>
@@ -170,10 +157,10 @@ function TestUseAuditLogsHook() {
           <button onClick={() => fetchAuditLogs({ httpStatusCode: 500 })}>
             Fetch 500 Errors
           </button>
-          <button onClick={() => fetchAverageExecutionStats()}>
+          <button onClick={() => fetchAverageExecutionStats({ startDate: '2024-01-01', endDate: '2024-01-31' })}>
             Fetch Avg Execution Stats
           </button>
-          <button onClick={() => fetchErrorRateStats()}>
+          <button onClick={() => fetchErrorRateStats({ startDate: '2024-01-01', endDate: '2024-01-31' })}>
             Fetch Error Rate Stats
           </button>
           <button onClick={reset} style={{ background: '#c44' }}>
@@ -197,9 +184,9 @@ function TestUseAuditLogsHook() {
               </tr>
             </thead>
             <tbody>
-              {auditLogs.slice(0, 10).map((log: AuditLogging.Log) => (
+              {auditLogs.slice(0, 10).map((log: AuditLogDto) => (
                 <tr key={log.id} style={{ borderBottom: '1px solid #222' }}>
-                  <td style={{ padding: '8px', fontSize: '12px' }}>{log.id.slice(0, 8)}...</td>
+                  <td style={{ padding: '8px', fontSize: '12px' }}>{log.id?.slice(0, 8)}...</td>
                   <td style={{ padding: '8px' }}>{log.userName || '-'}</td>
                   <td style={{ padding: '8px' }}>
                     <span style={{
@@ -222,8 +209,8 @@ function TestUseAuditLogsHook() {
                       padding: '2px 6px',
                       borderRadius: '4px',
                       fontSize: '12px',
-                      background: log.httpStatusCode >= 200 && log.httpStatusCode < 300 ? '#166534' :
-                                 log.httpStatusCode >= 400 ? '#991b1b' : '#374151'
+                      background: (log.httpStatusCode ?? 0) >= 200 && (log.httpStatusCode ?? 0) < 300 ? '#166534' :
+                                 (log.httpStatusCode ?? 0) >= 400 ? '#991b1b' : '#374151'
                     }}>
                       {log.httpStatusCode}
                     </span>
@@ -405,12 +392,14 @@ AUDIT_LOGGING_ROUTE_PROVIDERS.configureRoutes(routes);`}
   ENTITY_DETAILS_PROVIDERS,
   ENTITY_HISTORY_PROVIDERS,
   EntityChangeModalService,
+  AuditLogsService,
   SHOW_ENTITY_DETAILS,
   SHOW_ENTITY_HISTORY
 } from '@abpjs/audit-logging';
 
-// Create modal service with entity change service
-const modalService = new EntityChangeModalService(entityChangeService);
+// v4.0.0: Create modal service with AuditLogsService (was EntityChangeService)
+const auditLogsService = new AuditLogsService(restService);
+const modalService = new EntityChangeModalService(auditLogsService);
 
 // Register callbacks for modal display
 modalService.onShowDetails((data) => {
@@ -701,14 +690,6 @@ const params: EntityChange.EntityChangesQueryParams = {
 }
 
 function TestV270Features() {
-  // Create mock services to demonstrate v2.7.0 features
-  const mockRestService = { request: async () => ({}) }
-  const entityChangeService = new EntityChangeService(mockRestService as any)
-
-  // Type check for EntityChange models
-  const _typeCheck: EntityChange.Item | null = null
-  void _typeCheck
-
   return (
     <div className="test-section">
       <h2>v2.7.0 Features</h2>
@@ -801,84 +782,40 @@ switch (change.changeType) {
         </table>
       </div>
 
-      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
-        <h3>EntityChangeService <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.7.0)</span></h3>
-        <p>New service for entity change API operations:</p>
-        <p style={{ marginTop: '0.5rem' }}>
-          <code>apiName:</code> <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{entityChangeService.apiName}</code>
-          {' | '}
-          <code>auditLogsUrl:</code> <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{entityChangeService.auditLogsUrl}</code>
+      <div className="test-card" style={{ background: 'rgba(255,100,100,0.05)', border: '1px solid rgba(255,100,100,0.3)' }}>
+        <h3>EntityChangeService <span style={{ color: '#f44', fontSize: '12px' }}>(Removed in v4.0.0)</span></h3>
+        <p style={{ color: '#f88' }}>
+          <code>EntityChangeService</code> was removed in v4.0.0. Use <code>AuditLogsService</code> from proxy instead.
         </p>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)', marginTop: '1rem' }}>
-{`import { EntityChangeService } from '@abpjs/audit-logging';
+{`// v4.0.0: Use AuditLogsService instead of EntityChangeService
+import { AuditLogsService } from '@abpjs/audit-logging';
 
-const service = new EntityChangeService(restService);
+const service = new AuditLogsService(restService);
 
-// Get paginated entity changes
-const response = await service.getEntityChanges({
+// Get entity changes with usernames
+const changes = await service.getEntityChangesWithUsername({
+  entityId: 'entity-id',
   entityTypeFullName: 'MyApp.Domain.Entities.User',
-  entityChangeType: eEntityChangeType.Updated,
-  maxResultCount: 10
 });
 
-// Get single entity change by ID
-const change = await service.getEntityChangeById('change-123');
-
-// Get entity changes with user names
-const changesWithUsers = await service.getEntityChangesWithUserName(
-  'entity-id',
-  'MyApp.Domain.Entities.User'
-);
-
-// Get single entity change with user name
-const changeWithUser = await service.getEntityChangeWithUserNameById('change-123');`}
+// Get single entity change with username
+const change = await service.getEntityChangeWithUsername('change-123');`}
         </pre>
       </div>
 
-      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
-        <h3>EntityChange Models <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.7.0)</span></h3>
-        <p>New namespace with models for entity change management:</p>
+      <div className="test-card" style={{ background: 'rgba(255,100,100,0.05)', border: '1px solid rgba(255,100,100,0.3)' }}>
+        <h3>EntityChange Namespace <span style={{ color: '#f44', fontSize: '12px' }}>(Removed in v4.0.0)</span></h3>
+        <p style={{ color: '#f88' }}>
+          The <code>EntityChange</code> namespace was removed in v4.0.0. Use proxy DTOs instead.
+        </p>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
-{`import type { EntityChange } from '@abpjs/audit-logging';
+{`// v4.0.0: Use proxy DTOs instead of EntityChange namespace
+import type { EntityChangeDto, EntityChangeWithUsernameDto } from '@abpjs/audit-logging';
 
-// Entity change item
-const item: EntityChange.Item = {
-  id: 'change-123',
-  auditLogId: 'audit-456',
-  tenantId: null,
-  changeTime: '2024-01-01T00:00:00Z',
-  changeType: eEntityChangeType.Created,
-  entityId: 'entity-789',
-  entityTypeFullName: 'MyApp.Domain.Entities.User',
-  propertyChanges: [],
-  extraProperties: {}
-};
-
-// Property change
-const propChange: EntityChange.PropertyChange = {
-  id: 'prop-1',
-  tenantId: null,
-  entityChangeId: 'change-123',
-  propertyName: 'Name',
-  propertyTypeFullName: 'System.String',
-  originalValue: 'Old Name',
-  newValue: 'New Name'
-};
-
-// Item with user name
-const itemWithUser: EntityChange.ItemWithUserName = {
-  entityChange: item,
-  userName: 'admin'
-};
-
-// Query params
-const params: EntityChange.EntityChangesQueryParams = {
-  entityTypeFullName: 'MyApp.Domain.Entities.User',
-  entityChangeType: eEntityChangeType.Updated,
-  startDate: '2024-01-01',
-  endDate: '2024-12-31',
-  maxResultCount: 10
-};`}
+// EntityChange.Item → EntityChangeDto
+// EntityChange.ItemWithUserName → EntityChangeWithUsernameDto
+// EntityChange.PropertyChange → EntityPropertyChangeDto`}
         </pre>
       </div>
 
@@ -889,34 +826,34 @@ const params: EntityChange.EntityChangesQueryParams = {
             <tr style={{ borderBottom: '1px solid #333' }}>
               <th style={{ textAlign: 'left', padding: '8px' }}>Export</th>
               <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
-              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
             </tr>
           </thead>
           <tbody>
             <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
               <td style={{ padding: '8px' }}>eAuditLoggingComponents.EntityChanges</td>
               <td>string</td>
-              <td>New component key for EntityChanges</td>
+              <td>Available</td>
             </tr>
             <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
               <td style={{ padding: '8px' }}>eEntityChangeType</td>
               <td>enum</td>
-              <td>Created (0), Updated (1), Deleted (2)</td>
+              <td>Available</td>
             </tr>
             <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
               <td style={{ padding: '8px' }}>eAuditLoggingRouteNames</td>
               <td>const object</td>
-              <td>Route name localization keys</td>
+              <td>Available</td>
             </tr>
-            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
-              <td style={{ padding: '8px' }}>EntityChangeService</td>
+            <tr style={{ background: 'rgba(255,100,100,0.05)' }}>
+              <td style={{ padding: '8px', textDecoration: 'line-through' }}>EntityChangeService</td>
               <td>class</td>
-              <td>Service for entity change operations</td>
+              <td style={{ color: '#f44' }}>Removed in v4.0.0</td>
             </tr>
-            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
-              <td style={{ padding: '8px' }}>EntityChange namespace</td>
+            <tr style={{ background: 'rgba(255,100,100,0.05)' }}>
+              <td style={{ padding: '8px', textDecoration: 'line-through' }}>EntityChange namespace</td>
               <td>types</td>
-              <td>Item, PropertyChange, ItemWithUserName, etc.</td>
+              <td style={{ color: '#f44' }}>Removed in v4.0.0</td>
             </tr>
           </tbody>
         </table>
@@ -926,28 +863,27 @@ const params: EntityChange.EntityChangesQueryParams = {
 }
 
 function TestV240Features() {
-  // Create a mock service to demonstrate apiName
-  const mockRestService = { request: async () => ({}) }
-  const service = new AuditLoggingService(mockRestService as any)
-
   return (
     <div className="test-section">
       <h2>v2.4.0 Features</h2>
 
-      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
-        <h3>apiName Property <span style={{ color: '#4f4', fontSize: '12px' }}>(v2.4.0)</span></h3>
-        <p>AuditLoggingService now has an <code>apiName</code> property for REST request configuration:</p>
-        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
-{`// Default API name
-const service = new AuditLoggingService(restService);
-console.log(service.apiName); // 'default'
-
-// Can be customized if needed
-service.apiName = 'custom-api';`}
-        </pre>
-        <p style={{ marginTop: '0.5rem' }}>
-          Current apiName: <code style={{ background: '#333', padding: '2px 6px', borderRadius: '4px' }}>{service.apiName}</code>
+      <div className="test-card" style={{ background: 'rgba(255,100,100,0.05)', border: '1px solid rgba(255,100,100,0.3)' }}>
+        <h3>AuditLoggingService <span style={{ color: '#f44', fontSize: '12px' }}>(Removed in v4.0.0)</span></h3>
+        <p style={{ color: '#f88' }}>
+          <code>AuditLoggingService</code> was removed in v4.0.0. Use <code>AuditLogsService</code> from proxy instead.
         </p>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`// v4.0.0: Use AuditLogsService instead of AuditLoggingService
+import { AuditLogsService } from '@abpjs/audit-logging';
+
+const service = new AuditLogsService(restService);
+
+// Get audit logs (typed)
+const result = await service.getList({ maxResultCount: 10, httpMethod: 'GET' });
+
+// Get single audit log
+const log = await service.get('log-id');`}
+        </pre>
       </div>
 
       <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
@@ -991,19 +927,19 @@ const componentRegistry = {
             <tr style={{ borderBottom: '1px solid #333' }}>
               <th style={{ textAlign: 'left', padding: '8px' }}>Feature</th>
               <th style={{ textAlign: 'left', padding: '8px' }}>Type</th>
-              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
             </tr>
           </thead>
           <tbody>
-            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
-              <td style={{ padding: '8px' }}>apiName</td>
-              <td>string</td>
-              <td>REST API name (default: 'default')</td>
+            <tr style={{ background: 'rgba(255,100,100,0.05)' }}>
+              <td style={{ padding: '8px', textDecoration: 'line-through' }}>AuditLoggingService / apiName</td>
+              <td>class / string</td>
+              <td style={{ color: '#f44' }}>Removed in v4.0.0</td>
             </tr>
             <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
               <td style={{ padding: '8px' }}>eAuditLoggingComponents</td>
               <td>enum</td>
-              <td>Component identifiers for registration</td>
+              <td>Available</td>
             </tr>
           </tbody>
         </table>
@@ -1012,25 +948,33 @@ const componentRegistry = {
   )
 }
 
-function TestAuditLoggingServiceSection() {
+function TestAuditLogsServiceSection() {
   const [serviceInfo, setServiceInfo] = useState<string>('')
 
   const testService = () => {
-    setServiceInfo(`Service instantiated. Methods available:
-- apiName (v2.4.0): string property for REST API name
-- getAuditLogs(params)
-- getAuditLogById(id)
-- getAverageExecutionDurationPerDayStatistics(params)
-- getErrorRateStatistics(params)`)
+    setServiceInfo(`AuditLogsService (proxy, v3.2.0+)
+
+Methods available:
+- get(id): Get single audit log by ID
+- getList(input?): Get paginated list of audit logs
+- getEntityChange(id): Get single entity change
+- getEntityChanges(input): Get paginated entity changes
+- getEntityChangeWithUsername(id): Get entity change with username
+- getEntityChangesWithUsername(filter): Get entity changes with usernames
+- getAverageExecutionDurationPerDay(filter): Get avg execution stats
+- getErrorRate(filter): Get error rate stats
+
+v4.0.0: This is now the only audit logs service.
+The old AuditLoggingService and EntityChangeService have been removed.`)
   }
 
   return (
     <div className="test-section">
-      <h2>AuditLoggingService</h2>
+      <h2>AuditLogsService <span style={{ fontSize: '14px', color: '#4ade80' }}>(Proxy)</span></h2>
 
       <div className="test-card">
         <h3>Service Test</h3>
-        <p>Click to instantiate the service and see available methods:</p>
+        <p>Click to see available methods:</p>
         <button onClick={testService}>
           Test Service
         </button>
@@ -1044,24 +988,34 @@ function TestAuditLoggingServiceSection() {
       <div className="test-card">
         <h3>Usage Example</h3>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`import { AuditLoggingService } from '@abpjs/audit-logging';
+{`import { AuditLogsService } from '@abpjs/audit-logging';
+import type { GetAuditLogListDto, AuditLogDto } from '@abpjs/audit-logging';
 import { useRestService } from '@abpjs/core';
 
 function MyComponent() {
   const restService = useRestService();
-  const service = new AuditLoggingService(restService);
+  const service = new AuditLogsService(restService);
 
-  // v2.4.0: Access apiName property
-  console.log(service.apiName); // 'default'
-
-  // Use service methods
-  const logs = await service.getAuditLogs({
-    skipCount: 0,
+  // Get audit logs with typed filters
+  const result = await service.getList({
     maxResultCount: 10,
-    httpMethod: 'GET'
+    httpMethod: 'GET',
   });
 
-  const logDetail = await service.getAuditLogById('log-id');
+  // Get single audit log
+  const log: AuditLogDto = await service.get('log-id');
+
+  // Get entity changes with usernames
+  const changes = await service.getEntityChangesWithUsername({
+    entityId: 'entity-123',
+    entityTypeFullName: 'MyApp.Domain.User',
+  });
+
+  // Get statistics (required params in v4.0.0)
+  const avgStats = await service.getAverageExecutionDurationPerDay({
+    startDate: '2024-01-01',
+    endDate: '2024-01-31',
+  });
 }`}
         </pre>
       </div>
@@ -1070,7 +1024,7 @@ function MyComponent() {
 }
 
 /**
- * Test section for AuditLoggingStateService (v2.0.0)
+ * Test section for AuditLoggingStateService (v2.0.0, updated v4.0.0)
  */
 function TestAuditLoggingStateServiceSection() {
   const [stateServiceInfo, setStateServiceInfo] = useState<string>('')
@@ -1081,21 +1035,21 @@ function TestAuditLoggingStateServiceSection() {
 
   const testStateService = () => {
     // Show available methods
-    setStateServiceInfo(`AuditLoggingStateService (v2.0.0)
+    setStateServiceInfo(`AuditLoggingStateService (v2.0.0, updated v4.0.0)
 
 Getter Methods:
-- getResult(): AuditLogging.Response
+- getResult(): PagedResultDto<AuditLogDto>
 - getTotalCount(): number
-- getAverageExecutionStatistics(): Statistics.Data
-- getErrorRateStatistics(): Statistics.Data
+- getAverageExecutionStatistics(): Record<string, number>
+- getErrorRateStatistics(): Record<string, number>
 
-Dispatch Methods (v2.0.0):
-- dispatchGetAuditLogs(params?): Promise<AuditLogging.Response>
-- dispatchGetAverageExecutionDurationPerDay(params?): Promise<Statistics.Response>
-- dispatchGetErrorRate(params?): Promise<Statistics.Response>
+Dispatch Methods:
+- dispatchGetAuditLogs(params?): Promise<PagedResultDto<AuditLogDto>>
+- dispatchGetAverageExecutionDurationPerDay(params): Promise<GetAverageExecutionDurationPerDayOutput>
+- dispatchGetErrorRate(params): Promise<GetErrorRateOutput>
 
-The state service maintains internal state and provides
-facade methods for dispatching audit logging actions.`)
+v4.0.0: Now uses AuditLogsService (proxy) internally.
+Statistics dispatch methods now require params (startDate, endDate).`)
   }
 
   return (
@@ -1108,6 +1062,9 @@ facade methods for dispatching audit logging actions.`)
           The <code>AuditLoggingStateService</code> provides a stateful facade over the audit logging API.
           It maintains internal state and provides dispatch methods for triggering API calls.
         </p>
+        <p style={{ fontSize: '14px', color: '#fc4', marginTop: '0.5rem' }}>
+          v4.0.0: Now uses <code>AuditLogsService</code> (proxy) internally instead of the removed <code>AuditLoggingService</code>.
+        </p>
         <button onClick={testStateService}>
           Show Methods
         </button>
@@ -1119,10 +1076,7 @@ facade methods for dispatching audit logging actions.`)
       </div>
 
       <div className="test-card">
-        <h3>New in v2.0.0: Dispatch Methods</h3>
-        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
-          The following dispatch methods were added in v2.0.0:
-        </p>
+        <h3>Dispatch Methods</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #333' }}>
@@ -1137,11 +1091,11 @@ facade methods for dispatching audit logging actions.`)
             </tr>
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}><code>dispatchGetAverageExecutionDurationPerDay</code></td>
-              <td>Fetches average execution stats and updates state</td>
+              <td>Fetches average execution stats (params required in v4.0.0)</td>
             </tr>
             <tr style={{ borderBottom: '1px solid #222' }}>
               <td style={{ padding: '8px' }}><code>dispatchGetErrorRate</code></td>
-              <td>Fetches error rate stats and updates state</td>
+              <td>Fetches error rate stats (params required in v4.0.0)</td>
             </tr>
           </tbody>
         </table>
@@ -1161,17 +1115,20 @@ function MyComponent() {
   await stateService.dispatchGetAuditLogs({ maxResultCount: 10 });
 
   // Access state via getters
-  const result = stateService.getResult();
+  const result = stateService.getResult(); // PagedResultDto<AuditLogDto>
   const totalCount = stateService.getTotalCount();
 
-  // Fetch statistics (v2.0.0)
+  // v4.0.0: Statistics params are now required
   await stateService.dispatchGetAverageExecutionDurationPerDay({
-    startDate: '2024-01-01',  // string type in v2.0.0
+    startDate: '2024-01-01',
     endDate: '2024-01-31'
   });
   const avgStats = stateService.getAverageExecutionStatistics();
 
-  await stateService.dispatchGetErrorRate();
+  await stateService.dispatchGetErrorRate({
+    startDate: '2024-01-01',
+    endDate: '2024-01-31'
+  });
   const errorStats = stateService.getErrorRateStatistics();
 }`}
         </pre>
@@ -1265,90 +1222,50 @@ function TestConstants() {
 function TestModels() {
   return (
     <div className="test-section">
-      <h2>Models (AuditLogging namespace)</h2>
+      <h2>Models (Proxy DTOs)</h2>
 
-      <div className="test-card">
-        <h3>Log Interface</h3>
-        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`interface Log {
-  id: string;
-  userId: string;
-  userName: string;
-  tenantId: string;
-  impersonatorUserId: string;
-  impersonatorTenantId: string;
-  executionTime: string;
-  executionDuration: number;
-  clientIpAddress: string;
-  clientName: string;
-  browserInfo: string;
-  httpMethod: string;
-  url: string;
-  exceptions: string;
-  comments: string;
-  httpStatusCode: number;
-  applicationName: string;
-  correlationId: string;
-  extraProperties: Record<string, unknown>;
-  entityChanges: EntityChange[];
-  actions: AuditLogAction[];
-}`}
-        </pre>
+      <div className="test-card" style={{ background: 'rgba(255,100,100,0.05)', border: '1px solid rgba(255,100,100,0.3)', marginBottom: '1rem' }}>
+        <h3>v4.0.0 Breaking Change</h3>
+        <p style={{ color: '#f88' }}>
+          The old <code>AuditLogging.Log</code>, <code>AuditLogging.EntityChange</code>, <code>AuditLogging.PropertyChange</code>,
+          <code>AuditLogging.AuditLogAction</code>, and <code>AuditLogging.AuditLogsQueryParams</code> types were removed in v4.0.0.
+          Use the proxy DTOs below instead.
+        </p>
       </div>
 
       <div className="test-card">
-        <h3>EntityChange Interface</h3>
+        <h3>AuditLogDto (replaces AuditLogging.Log)</h3>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`interface EntityChange {
-  id: string;
-  auditLogId: string;
+{`interface AuditLogDto {
+  id?: string;
+  userId?: string;
+  userName?: string;
   tenantId?: string;
-  changeTime: string;
-  changeType: number;
-  entityTenantId?: string;
-  entityId: string;
-  entityTypeFullName: string;
-  propertyChanges: PropertyChange[];
-  extraProperties: Record<string, unknown>;
+  impersonatorUserId?: string;
+  impersonatorTenantId?: string;
+  executionTime?: string;
+  executionDuration?: number;
+  clientIpAddress?: string;
+  clientName?: string;
+  browserInfo?: string;
+  httpMethod?: string;
+  url?: string;
+  exceptions?: string;
+  comments?: string;
+  httpStatusCode?: number;
+  applicationName?: string;
+  correlationId?: string;
+  extraProperties?: Record<string, unknown>;
+  entityChanges?: EntityChangeDto[];
+  actions?: AuditLogActionDto[];
 }`}
         </pre>
       </div>
 
       <div className="test-card">
-        <h3>PropertyChange Interface</h3>
+        <h3>GetAuditLogListDto (replaces AuditLogging.AuditLogsQueryParams)</h3>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`interface PropertyChange {
-  id: string;
-  entityChangeId: string;
-  newValue?: string;
-  originalValue?: string;
-  propertyName: string;
-  propertyTypeFullName: string;
-}`}
-        </pre>
-      </div>
-
-      <div className="test-card">
-        <h3>AuditLogAction Interface</h3>
-        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`interface AuditLogAction {
-  id: string;
-  auditLogId: string;
-  tenantId?: string;
-  serviceName: string;
-  methodName: string;
-  parameters: string;
-  executionTime: string;
-  executionDuration: number;
-  extraProperties: Record<string, unknown>;
-}`}
-        </pre>
-      </div>
-
-      <div className="test-card">
-        <h3>AuditLogsQueryParams Interface</h3>
-        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`interface AuditLogsQueryParams extends ABP.PageQueryParams {
+{`interface GetAuditLogListDto {
   url?: string;
   userName?: string;
   applicationName?: string;
@@ -1360,6 +1277,9 @@ function TestModels() {
   hasException?: boolean;
   startTime?: string;
   endTime?: string;
+  sorting?: string;
+  skipCount?: number;
+  maxResultCount?: number;
 }`}
         </pre>
       </div>
@@ -1370,21 +1290,26 @@ function TestModels() {
 function TestStatisticsModels() {
   return (
     <div className="test-section">
-      <h2>Models (Statistics namespace)</h2>
+      <h2>Statistics Models (Proxy DTOs)</h2>
+
+      <div className="test-card" style={{ background: 'rgba(255,100,100,0.05)', border: '1px solid rgba(255,100,100,0.3)', marginBottom: '1rem' }}>
+        <h3>v4.0.0 Breaking Change</h3>
+        <p style={{ color: '#f88' }}>
+          The old <code>Statistics</code> namespace (Filter, Data, Response) was removed in v4.0.0.
+          Use the proxy DTOs below instead.
+        </p>
+      </div>
 
       <div className="test-card">
-        <h3>Statistics.Filter Interface <span style={{ fontSize: '12px', color: '#4ade80' }}>(Updated in v2.0.0)</span></h3>
-        <p style={{ fontSize: '14px', color: '#888', marginBottom: '8px' }}>
-          Note: In v2.0.0, <code>startDate</code> and <code>endDate</code> changed from <code>Date</code> to <code>string</code> type.
-        </p>
+        <h3>GetAverageExecutionDurationPerDayInput (replaces Statistics.Filter)</h3>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`interface Filter {
-  startDate?: string;  // v2.0.0: Changed from Date to string
-  endDate?: string;    // v2.0.0: Changed from Date to string
+{`interface GetAverageExecutionDurationPerDayInput {
+  startDate?: string;
+  endDate?: string;
 }
 
 // Example usage:
-const filter: Statistics.Filter = {
+const filter: GetAverageExecutionDurationPerDayInput = {
   startDate: '2024-01-01',
   endDate: '2024-01-31'
 };`}
@@ -1392,26 +1317,154 @@ const filter: Statistics.Filter = {
       </div>
 
       <div className="test-card">
-        <h3>Statistics.Data Type</h3>
+        <h3>GetAverageExecutionDurationPerDayOutput (replaces Statistics.Response)</h3>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`type Data = Record<string, number>;
+{`interface GetAverageExecutionDurationPerDayOutput {
+  data: Record<string, number>;
+}
 
 // Example:
 {
-  "2024-01-01": 150,
-  "2024-01-02": 200,
-  "2024-01-03": 175
+  data: {
+    "2024-01-01": 150,
+    "2024-01-02": 200,
+    "2024-01-03": 175
+  }
 }`}
         </pre>
       </div>
 
       <div className="test-card">
-        <h3>Statistics.Response Interface</h3>
+        <h3>GetErrorRateFilter / GetErrorRateOutput</h3>
         <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
-{`interface Response {
-  data: Data;
+{`interface GetErrorRateFilter {
+  startDate?: string;
+  endDate?: string;
+}
+
+interface GetErrorRateOutput {
+  data: Record<string, number>;
 }`}
         </pre>
+      </div>
+    </div>
+  )
+}
+
+function TestV400Features() {
+  return (
+    <div className="test-section">
+      <h2>v4.0.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(Current)</span></h2>
+
+      <div className="test-card" style={{ background: 'rgba(255,100,100,0.05)', border: '1px solid rgba(255,100,100,0.3)' }}>
+        <h3>Breaking Changes <span style={{ color: '#f44', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <p>Version 4.0.0 removes all deprecated types and services from v3.2.0.</p>
+        <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Removed</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Replacement</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style={{ padding: '8px', textDecoration: 'line-through' }}>AuditLoggingService</td><td style={{ padding: '8px' }}>AuditLogsService (proxy)</td></tr>
+            <tr><td style={{ padding: '8px', textDecoration: 'line-through' }}>EntityChangeService</td><td style={{ padding: '8px' }}>AuditLogsService (proxy)</td></tr>
+            <tr><td style={{ padding: '8px', textDecoration: 'line-through' }}>AuditLogging.Log</td><td style={{ padding: '8px' }}>AuditLogDto</td></tr>
+            <tr><td style={{ padding: '8px', textDecoration: 'line-through' }}>AuditLogging.AuditLogsQueryParams</td><td style={{ padding: '8px' }}>GetAuditLogListDto</td></tr>
+            <tr><td style={{ padding: '8px', textDecoration: 'line-through' }}>AuditLogging.Response</td><td style={{ padding: '8px' }}>{'PagedResultDto<AuditLogDto>'}</td></tr>
+            <tr><td style={{ padding: '8px', textDecoration: 'line-through' }}>AuditLogging.EntityChange</td><td style={{ padding: '8px' }}>EntityChangeDto</td></tr>
+            <tr><td style={{ padding: '8px', textDecoration: 'line-through' }}>AuditLogging.PropertyChange</td><td style={{ padding: '8px' }}>EntityPropertyChangeDto</td></tr>
+            <tr><td style={{ padding: '8px', textDecoration: 'line-through' }}>AuditLogging.AuditLogAction</td><td style={{ padding: '8px' }}>AuditLogActionDto</td></tr>
+            <tr><td style={{ padding: '8px', textDecoration: 'line-through' }}>Statistics namespace</td><td style={{ padding: '8px' }}>{'Get*Input / Get*Output / Get*Filter'}</td></tr>
+            <tr><td style={{ padding: '8px', textDecoration: 'line-through' }}>EntityChange namespace</td><td style={{ padding: '8px' }}>EntityChangeDto, EntityChangeWithUsernameDto, etc.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Updated Services <span style={{ color: '#4f4', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <p>All services now use AuditLogsService and proxy DTOs:</p>
+        <ul style={{ margin: 0, paddingLeft: '20px', marginTop: '0.5rem' }}>
+          <li><code>EntityChangeModalService</code> now takes <code>AuditLogsService</code> instead of <code>EntityChangeService</code></li>
+          <li><code>AuditLoggingStateService</code> now uses <code>AuditLogsService</code> internally</li>
+          <li><code>useAuditLogs</code> hook now uses <code>AuditLogsService</code> and proxy DTOs</li>
+          <li>Extension tokens now typed with <code>AuditLogDto</code> and <code>EntityChangeDto</code></li>
+          <li>Default entity actions/props/toolbar use proxy DTO types</li>
+        </ul>
+      </div>
+
+      <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
+        <h3>Migration Example <span style={{ color: '#4f4', fontSize: '12px' }}>(v4.0.0)</span></h3>
+        <pre style={{ padding: '1rem', borderRadius: '4px', overflow: 'auto', fontSize: '12px', background: 'rgba(0,0,0,0.2)' }}>
+{`// Before (v3.2.0)
+import { AuditLoggingService, EntityChangeService } from '@abpjs/audit-logging';
+import type { AuditLogging, EntityChange, Statistics } from '@abpjs/audit-logging';
+
+const auditService = new AuditLoggingService(restService);
+const entityChangeService = new EntityChangeService(restService);
+const log: AuditLogging.Log = await auditService.getAuditLogById('id');
+
+// After (v4.0.0)
+import { AuditLogsService } from '@abpjs/audit-logging';
+import type { AuditLogDto, GetAuditLogListDto } from '@abpjs/audit-logging';
+
+const service = new AuditLogsService(restService);
+const log: AuditLogDto = await service.get('id');
+const changes = await service.getEntityChangesWithUsername({
+  entityId: 'entity-123',
+  entityTypeFullName: 'MyApp.Domain.User',
+});`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>v4.0.0 Summary</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Change</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Category</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ background: 'rgba(255,100,100,0.05)' }}>
+              <td style={{ padding: '8px' }}>AuditLoggingService</td>
+              <td style={{ color: '#f44' }}>Removed</td>
+              <td>Use AuditLogsService (proxy)</td>
+            </tr>
+            <tr style={{ background: 'rgba(255,100,100,0.05)' }}>
+              <td style={{ padding: '8px' }}>EntityChangeService</td>
+              <td style={{ color: '#f44' }}>Removed</td>
+              <td>Use AuditLogsService (proxy)</td>
+            </tr>
+            <tr style={{ background: 'rgba(255,100,100,0.05)' }}>
+              <td style={{ padding: '8px' }}>AuditLogging namespace types</td>
+              <td style={{ color: '#f44' }}>Removed</td>
+              <td>Use proxy DTOs (AuditLogDto, etc.)</td>
+            </tr>
+            <tr style={{ background: 'rgba(255,100,100,0.05)' }}>
+              <td style={{ padding: '8px' }}>Statistics namespace</td>
+              <td style={{ color: '#f44' }}>Removed</td>
+              <td>{'Use Get*Input / Get*Output DTOs'}</td>
+            </tr>
+            <tr style={{ background: 'rgba(255,100,100,0.05)' }}>
+              <td style={{ padding: '8px' }}>EntityChange namespace</td>
+              <td style={{ color: '#f44' }}>Removed</td>
+              <td>Use EntityChangeDto, etc.</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>EntityChangeModalService</td>
+              <td style={{ color: '#fc4' }}>Updated</td>
+              <td>Now takes AuditLogsService</td>
+            </tr>
+            <tr style={{ background: 'rgba(68,255,68,0.05)' }}>
+              <td style={{ padding: '8px' }}>Extension tokens</td>
+              <td style={{ color: '#fc4' }}>Updated</td>
+              <td>{'Now typed with AuditLogDto / EntityChangeDto'}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   )
@@ -1428,7 +1481,7 @@ function TestV320Features() {
 
   return (
     <div className="test-section">
-      <h2>v3.2.0 Features <span style={{ color: '#4f4', fontSize: '14px' }}>(Current)</span></h2>
+      <h2>v3.2.0 Features</h2>
 
       <div className="test-card" style={{ background: 'rgba(68,255,68,0.05)', border: '1px solid rgba(68,255,68,0.2)' }}>
         <h3>Proxy Subpackage <span style={{ color: '#4f4', fontSize: '12px' }}>(v3.2.0)</span></h3>
@@ -1592,9 +1645,9 @@ interface State {
         </pre>
       </div>
 
-      <div className="test-card" style={{ background: 'rgba(255,200,68,0.05)', border: '1px solid rgba(255,200,68,0.3)' }}>
-        <h3>Deprecations <span style={{ color: '#fc4', fontSize: '12px' }}>(v3.2.0)</span></h3>
-        <p>The following types are deprecated and will be removed in v4.0:</p>
+      <div className="test-card" style={{ background: 'rgba(255,100,100,0.05)', border: '1px solid rgba(255,100,100,0.3)' }}>
+        <h3>Removed in v4.0.0 <span style={{ color: '#f44', fontSize: '12px' }}>(Breaking)</span></h3>
+        <p style={{ color: '#f88' }}>The following types were deprecated in v3.2.0 and removed in v4.0.0:</p>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '0.5rem' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #333' }}>
@@ -1743,12 +1796,13 @@ function AuditLogsWidget() {
 export function TestAuditLoggingPage() {
   return (
     <div>
-      <h1>@abpjs/audit-logging Tests (v3.2.0)</h1>
+      <h1>@abpjs/audit-logging Tests (v4.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing audit logging components, hooks, services, and enums.</p>
       <p style={{ fontSize: '14px', color: '#4f4', marginBottom: '16px' }}>
-        Version 3.2.0 - New proxy subpackage with typed DTOs and AuditLogsService
+        Version 4.0.0 - Removed deprecated types/services, all code now uses proxy DTOs
       </p>
 
+      <TestV400Features />
       <TestV320Features />
       <TestV310Features />
       <TestV300Features />
@@ -1757,7 +1811,7 @@ export function TestAuditLoggingPage() {
       <TestV240Features />
       <TestAuditLogsComponent />
       <TestUseAuditLogsHook />
-      <TestAuditLoggingServiceSection />
+      <TestAuditLogsServiceSection />
       <TestAuditLoggingStateServiceSection />
       <TestConstants />
       <TestModels />

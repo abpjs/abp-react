@@ -1,6 +1,6 @@
 /**
  * CurrentUserComponent
- * Translated from @abp/ng.theme.basic/lib/components/nav-items/current-user.component.ts v3.0.0
+ * Translated from @abp/ng.theme.basic/lib/components/nav-items/current-user.component.ts v4.0.0
  *
  * Public API component for displaying the current user nav item.
  * Can be replaced using the component replacement system with eThemeBasicComponents.CurrentUser.

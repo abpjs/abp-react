@@ -10,6 +10,7 @@
  * @updated 3.0.0 - Added config subpackage, tokens, guards, removed Administration route name
  * @updated 3.1.0 - Internal Angular changes (SubscriptionService pattern, type refs) - no new React features
  * @updated 3.2.0 - Added proxy subpackage with EditionService, TenantService, and typed DTOs
+ * @updated 4.0.0 - Config options use proxy DTOs, SaasService deprecated, deprecation timeline moved to v5.0
  */
 import { useState, useEffect } from 'react'
 import { useAuth, useRestService } from '@abpjs/core'
@@ -49,8 +50,6 @@ import {
   TenantService,
   type EditionDto,
   type SaasTenantDto,
-  type EditionCreateDto,
-  type SaasTenantCreateDto,
   type GetEditionsInput,
   type GetTenantsInput,
   type GetEditionUsageStatisticsResult,
@@ -978,7 +977,7 @@ function TestV320Features() {
           <li><code>EditionService</code> - CRUD operations for editions</li>
           <li><code>TenantService</code> - CRUD operations for tenants + connection string management</li>
           <li>New typed DTOs: <code>EditionDto</code>, <code>SaasTenantDto</code>, etc.</li>
-          <li>Legacy types marked as <code>@deprecated</code> (to be removed in v4.0)</li>
+          <li>Legacy types marked as <code>@deprecated</code> (to be deleted in v5.0)</li>
         </ul>
       </div>
 
@@ -1234,7 +1233,7 @@ function MyComponent() {
       <div className="test-card">
         <h3>Deprecation Notice</h3>
         <p style={{ color: '#f88', fontSize: '14px' }}>
-          Legacy types in <code>Saas</code> namespace are deprecated and will be removed in v4.0.
+          Legacy types in <code>Saas</code> namespace are deprecated and will be deleted in v5.0.
           Migrate to the new proxy DTOs (<code>EditionDto</code>, <code>SaasTenantDto</code>, etc.).
         </p>
         <ul style={{ marginLeft: '1.5rem', fontSize: '14px', color: '#888' }}>
@@ -1941,19 +1940,153 @@ function TestApiEndpoints() {
   )
 }
 
+/**
+ * Test section for v4.0.0 features: config options proxy DTO migration, SaasService deprecated
+ */
+function TestV400Features() {
+  return (
+    <div className="test-section">
+      <h2>v4.0.0 Features <span style={{ fontSize: '14px', color: '#4ade80' }}>(NEW)</span></h2>
+
+      <div className="test-card">
+        <h3>Config Options Type Migration</h3>
+        <p style={{ fontSize: '14px', color: '#888', marginBottom: '0.5rem' }}>
+          In v4.0.0, the config options contributor types now use proxy DTOs instead of
+          legacy <code>Saas</code> namespace types.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Contributor Type</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Before (v3.2.0)</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>After (v4.0.0)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasEntityActionContributors</code></td>
+              <td style={{ padding: '8px' }}><code>Saas.Edition / Saas.Tenant</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}><code>EditionDto / SaasTenantDto</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasToolbarActionContributors</code></td>
+              <td style={{ padding: '8px' }}><code>Saas.Edition / Saas.Tenant</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}><code>EditionDto / SaasTenantDto</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasEntityPropContributors</code></td>
+              <td style={{ padding: '8px' }}><code>Saas.Edition / Saas.Tenant</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}><code>EditionDto / SaasTenantDto</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasCreateFormPropContributors</code></td>
+              <td style={{ padding: '8px' }}><code>Saas.Edition / Saas.Tenant</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}><code>EditionDto / SaasTenantDto</code></td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasEditFormPropContributors</code></td>
+              <td style={{ padding: '8px' }}><code>Saas.Edition / Saas.Tenant</code></td>
+              <td style={{ padding: '8px', color: '#4ade80' }}><code>EditionDto / SaasTenantDto</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <pre style={{ marginTop: '0.5rem', padding: '0.5rem', borderRadius: '4px', fontSize: '12px' }}>
+{`// Before (v3.2.0) - config-options.ts used Saas namespace types
+import { Saas } from '../models';
+export type SaasEntityActionContributors = Partial<{
+  [eSaasComponents.Editions]: EntityActionContributorCallback<Saas.Edition>[];
+  [eSaasComponents.Tenants]: EntityActionContributorCallback<Saas.Tenant>[];
+}>;
+
+// After (v4.0.0) - config-options.ts uses proxy DTOs
+import type { EditionDto, SaasTenantDto } from '../proxy/host/dtos/models';
+export type SaasEntityActionContributors = Partial<{
+  [eSaasComponents.Editions]: EntityActionContributorCallback<EditionDto>[];
+  [eSaasComponents.Tenants]: EntityActionContributorCallback<SaasTenantDto>[];
+}>;`}
+        </pre>
+      </div>
+
+      <div className="test-card">
+        <h3>SaasService Deprecated</h3>
+        <p style={{ color: '#f88', fontSize: '14px', marginBottom: '0.5rem' }}>
+          <code>SaasService</code> is deprecated and will be deleted in v5.0.
+          Use proxy services (<code>TenantService</code>, <code>EditionService</code>) instead.
+        </p>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #333' }}>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Deprecated</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Replacement</th>
+              <th style={{ textAlign: 'left', padding: '8px' }}>Deletion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>SaasService</code></td>
+              <td style={{ padding: '8px' }}><code>TenantService</code> + <code>EditionService</code></td>
+              <td style={{ padding: '8px', color: '#f88' }}>v5.0</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Saas.Tenant</code></td>
+              <td style={{ padding: '8px' }}><code>SaasTenantDto</code></td>
+              <td style={{ padding: '8px', color: '#f88' }}>v5.0</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Saas.Edition</code></td>
+              <td style={{ padding: '8px' }}><code>EditionDto</code></td>
+              <td style={{ padding: '8px', color: '#f88' }}>v5.0</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Saas.CreateTenantRequest</code></td>
+              <td style={{ padding: '8px' }}><code>SaasTenantCreateDto</code></td>
+              <td style={{ padding: '8px', color: '#f88' }}>v5.0</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Saas.UpdateTenantRequest</code></td>
+              <td style={{ padding: '8px' }}><code>SaasTenantUpdateDto</code></td>
+              <td style={{ padding: '8px', color: '#f88' }}>v5.0</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Saas.CreateEditionRequest</code></td>
+              <td style={{ padding: '8px' }}><code>EditionCreateDto</code></td>
+              <td style={{ padding: '8px', color: '#f88' }}>v5.0</td>
+            </tr>
+            <tr style={{ borderBottom: '1px solid #222' }}>
+              <td style={{ padding: '8px' }}><code>Saas.UpdateEditionRequest</code></td>
+              <td style={{ padding: '8px' }}><code>EditionUpdateDto</code></td>
+              <td style={{ padding: '8px', color: '#f88' }}>v5.0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div className="test-card">
+        <h3>Angular-Only Changes (N/A for React)</h3>
+        <ul style={{ marginLeft: '1.5rem', fontSize: '14px', color: '#888' }}>
+          <li><code>PermissionService</code> injection in widget components (Angular DI pattern)</li>
+          <li><code>ConfigStateService</code> replaced with <code>PermissionService</code> in components</li>
+          <li>Internal Angular component refactoring</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
+
 export function TestSaasPage() {
   return (
     <div>
-      <h1>@abpjs/saas Tests (v3.2.0)</h1>
+      <h1>@abpjs/saas Tests (v4.0.0)</h1>
       <p style={{ marginBottom: '8px' }}>Testing SaaS module for tenant and edition management.</p>
       <p style={{ fontSize: '14px', color: '#4ade80', marginBottom: '16px' }}>
-        Version 3.2.0 - New proxy subpackage with EditionService, TenantService, and typed DTOs
+        Version 4.0.0 - Config options use proxy DTOs, SaasService deprecated, deprecation timeline v5.0
       </p>
       <p style={{ fontSize: '14px', color: '#888' }}>
         This package provides components for multi-tenant SaaS applications with tenant management,
         edition management, and connection string management.
       </p>
 
+      <TestV400Features />
       <TestV320Features />
       <TestV300Features />
       <TestV270Features />

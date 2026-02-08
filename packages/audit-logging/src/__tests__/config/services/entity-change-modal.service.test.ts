@@ -1,16 +1,21 @@
 /**
  * Tests for config/services/entity-change-modal.service
- * @abpjs/audit-logging v3.0.0
+ * @abpjs/audit-logging v4.0.0
+ *
+ * @since 4.0.0 - Now uses AuditLogsService instead of EntityChangeService
+ *   - showDetails calls auditLogsService.getEntityChangeWithUsername(entityChangeId)
+ *   - showHistory calls auditLogsService.getEntityChangesWithUsername({entityId, entityTypeFullName})
+ *   - Callback types use EntityChangeWithUsernameDto instead of EntityChange.ItemWithUserName
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { EntityChangeModalService } from '../../../config/services/entity-change-modal.service';
-import type { EntityChange } from '../../../models/entity-change';
+import type { EntityChangeWithUsernameDto } from '../../../proxy/audit-logging/models';
 
-describe('EntityChangeModalService (v3.0.0)', () => {
-  let mockEntityChangeService: any;
+describe('EntityChangeModalService (v4.0.0)', () => {
+  let mockAuditLogsService: any;
   let service: EntityChangeModalService;
 
-  const mockItemWithUserName: EntityChange.ItemWithUserName = {
+  const mockItemWithUserName: EntityChangeWithUsernameDto = {
     entityChange: {
       auditLogId: 'audit-log-1',
       tenantId: 'tenant-1',
@@ -25,7 +30,7 @@ describe('EntityChangeModalService (v3.0.0)', () => {
     userName: 'testuser',
   };
 
-  const mockItemsWithUserName: EntityChange.ItemWithUserName[] = [
+  const mockItemsWithUserName: EntityChangeWithUsernameDto[] = [
     mockItemWithUserName,
     {
       entityChange: {
@@ -38,13 +43,11 @@ describe('EntityChangeModalService (v3.0.0)', () => {
   ];
 
   beforeEach(() => {
-    mockEntityChangeService = {
-      getEntityChangeWithUserNameById: vi.fn().mockResolvedValue(mockItemWithUserName),
-      getEntityChangesWithUserName: vi.fn().mockResolvedValue(mockItemsWithUserName),
-      getEntityChangeById: vi.fn(),
-      getEntityChanges: vi.fn(),
+    mockAuditLogsService = {
+      getEntityChangeWithUsername: vi.fn().mockResolvedValue(mockItemWithUserName),
+      getEntityChangesWithUsername: vi.fn().mockResolvedValue(mockItemsWithUserName),
     };
-    service = new EntityChangeModalService(mockEntityChangeService);
+    service = new EntityChangeModalService(mockAuditLogsService);
   });
 
   afterEach(() => {
@@ -52,7 +55,7 @@ describe('EntityChangeModalService (v3.0.0)', () => {
   });
 
   describe('constructor', () => {
-    it('should create an instance with provided EntityChangeService', () => {
+    it('should create an instance with provided AuditLogsService', () => {
       expect(service).toBeInstanceOf(EntityChangeModalService);
     });
   });
@@ -84,11 +87,11 @@ describe('EntityChangeModalService (v3.0.0)', () => {
   });
 
   describe('showDetails', () => {
-    it('should call getEntityChangeWithUserNameById with correct ID', async () => {
+    it('should call getEntityChangeWithUsername with correct ID', async () => {
       const entityChangeId = 'test-change-id';
       await service.showDetails(entityChangeId);
 
-      expect(mockEntityChangeService.getEntityChangeWithUserNameById).toHaveBeenCalledWith(
+      expect(mockAuditLogsService.getEntityChangeWithUsername).toHaveBeenCalledWith(
         entityChangeId
       );
     });
@@ -108,7 +111,7 @@ describe('EntityChangeModalService (v3.0.0)', () => {
 
     it('should throw error if fetch fails', async () => {
       const error = new Error('Fetch failed');
-      mockEntityChangeService.getEntityChangeWithUserNameById.mockRejectedValue(error);
+      mockAuditLogsService.getEntityChangeWithUsername.mockRejectedValue(error);
 
       await expect(service.showDetails('change-1')).rejects.toThrow('Fetch failed');
     });
@@ -116,7 +119,7 @@ describe('EntityChangeModalService (v3.0.0)', () => {
     it('should log error to console if fetch fails', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const error = new Error('Fetch failed');
-      mockEntityChangeService.getEntityChangeWithUserNameById.mockRejectedValue(error);
+      mockAuditLogsService.getEntityChangeWithUsername.mockRejectedValue(error);
 
       try {
         await service.showDetails('change-1');
@@ -130,16 +133,16 @@ describe('EntityChangeModalService (v3.0.0)', () => {
   });
 
   describe('showHistory', () => {
-    it('should call getEntityChangesWithUserName with correct parameters', async () => {
+    it('should call getEntityChangesWithUsername with correct parameters', async () => {
       const entityId = 'entity-1';
       const entityTypeFullName = 'MyApp.Domain.User';
 
       await service.showHistory(entityId, entityTypeFullName);
 
-      expect(mockEntityChangeService.getEntityChangesWithUserName).toHaveBeenCalledWith(
+      expect(mockAuditLogsService.getEntityChangesWithUsername).toHaveBeenCalledWith({
         entityId,
-        entityTypeFullName
-      );
+        entityTypeFullName,
+      });
     });
 
     it('should trigger registered callback with fetched data', async () => {
@@ -157,7 +160,7 @@ describe('EntityChangeModalService (v3.0.0)', () => {
 
     it('should throw error if fetch fails', async () => {
       const error = new Error('History fetch failed');
-      mockEntityChangeService.getEntityChangesWithUserName.mockRejectedValue(error);
+      mockAuditLogsService.getEntityChangesWithUsername.mockRejectedValue(error);
 
       await expect(service.showHistory('entity-1', 'MyApp.Entity')).rejects.toThrow(
         'History fetch failed'
@@ -167,7 +170,7 @@ describe('EntityChangeModalService (v3.0.0)', () => {
     it('should log error to console if fetch fails', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       const error = new Error('History fetch failed');
-      mockEntityChangeService.getEntityChangesWithUserName.mockRejectedValue(error);
+      mockAuditLogsService.getEntityChangesWithUsername.mockRejectedValue(error);
 
       try {
         await service.showHistory('entity-1', 'MyApp.Entity');

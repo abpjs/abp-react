@@ -1,6 +1,8 @@
 /**
  * Tests for tokens/extensions.token
- * @abpjs/audit-logging v3.0.0
+ * @abpjs/audit-logging v4.0.0
+ *
+ * @since 4.0.0 - Updated type references from namespace types to proxy DTOs
  */
 import { describe, it, expect } from 'vitest';
 import {
@@ -17,9 +19,9 @@ import {
   type EntityPropContributorCallback,
   type ToolbarActionContributorCallback,
 } from '../../tokens/extensions.token';
-import type { AuditLogging } from '../../models/audit-logging';
+import type { AuditLogDto } from '../../proxy/audit-logging/models';
 
-describe('extensions.token (v3.0.0)', () => {
+describe('extensions.token (v4.0.0)', () => {
   describe('DEFAULT_AUDIT_LOGGING_ENTITY_ACTIONS', () => {
     it('should be an object', () => {
       expect(typeof DEFAULT_AUDIT_LOGGING_ENTITY_ACTIONS).toBe('object');
@@ -129,7 +131,7 @@ describe('extensions.token (v3.0.0)', () => {
 
   describe('EntityAction interface', () => {
     it('should accept valid entity action object', () => {
-      const action: EntityAction<AuditLogging.Log> = {
+      const action: EntityAction<AuditLogDto> = {
         text: 'View Details',
         action: ({ record }) => console.log(record.id),
       };
@@ -138,7 +140,7 @@ describe('extensions.token (v3.0.0)', () => {
     });
 
     it('should accept optional properties', () => {
-      const action: EntityAction<AuditLogging.Log> = {
+      const action: EntityAction<AuditLogDto> = {
         text: 'Delete',
         action: () => {},
         permission: 'AuditLogging.Delete',
@@ -154,7 +156,7 @@ describe('extensions.token (v3.0.0)', () => {
 
   describe('EntityProp interface', () => {
     it('should accept valid entity prop object', () => {
-      const prop: EntityProp<AuditLogging.Log> = {
+      const prop: EntityProp<AuditLogDto> = {
         type: 'string',
         name: 'url',
         displayName: 'URL',
@@ -166,7 +168,7 @@ describe('extensions.token (v3.0.0)', () => {
     it('should accept all valid types', () => {
       const types: EntityProp<any>['type'][] = ['string', 'number', 'boolean', 'date', 'enum'];
       types.forEach((type) => {
-        const prop: EntityProp<AuditLogging.Log> = {
+        const prop: EntityProp<AuditLogDto> = {
           type,
           name: 'test',
           displayName: 'Test',
@@ -176,13 +178,13 @@ describe('extensions.token (v3.0.0)', () => {
     });
 
     it('should accept optional properties', () => {
-      const prop: EntityProp<AuditLogging.Log> = {
+      const prop: EntityProp<AuditLogDto> = {
         type: 'number',
         name: 'httpStatusCode',
         displayName: 'Status',
         sortable: true,
         columnWidth: 100,
-        valueResolver: ({ record }) => record.httpStatusCode.toString(),
+        valueResolver: ({ record }) => String(record.httpStatusCode ?? ''),
         visible: true,
       };
       expect(prop.sortable).toBe(true);
@@ -192,7 +194,7 @@ describe('extensions.token (v3.0.0)', () => {
 
   describe('ToolbarAction interface', () => {
     it('should accept valid toolbar action object', () => {
-      const action: ToolbarAction<AuditLogging.Log[]> = {
+      const action: ToolbarAction<AuditLogDto[]> = {
         text: 'Export',
         action: ({ records }) => console.log(records),
       };
@@ -200,7 +202,7 @@ describe('extensions.token (v3.0.0)', () => {
     });
 
     it('should accept optional properties', () => {
-      const action: ToolbarAction<AuditLogging.Log[]> = {
+      const action: ToolbarAction<AuditLogDto[]> = {
         text: 'Refresh',
         action: () => {},
         permission: 'AuditLogging.Read',
@@ -214,7 +216,7 @@ describe('extensions.token (v3.0.0)', () => {
 
   describe('contributor callback types', () => {
     it('should accept EntityActionContributorCallback', () => {
-      const contributor: EntityActionContributorCallback<AuditLogging.Log> = (actionList) => {
+      const contributor: EntityActionContributorCallback<AuditLogDto> = (actionList) => {
         return [
           ...actionList,
           {
@@ -228,7 +230,7 @@ describe('extensions.token (v3.0.0)', () => {
     });
 
     it('should accept EntityPropContributorCallback', () => {
-      const contributor: EntityPropContributorCallback<AuditLogging.Log> = (propList) => {
+      const contributor: EntityPropContributorCallback<AuditLogDto> = (propList) => {
         return [
           ...propList,
           {
@@ -243,7 +245,7 @@ describe('extensions.token (v3.0.0)', () => {
     });
 
     it('should accept ToolbarActionContributorCallback', () => {
-      const contributor: ToolbarActionContributorCallback<AuditLogging.Log[]> = (actionList) => {
+      const contributor: ToolbarActionContributorCallback<AuditLogDto[]> = (actionList) => {
         return [
           ...actionList,
           {

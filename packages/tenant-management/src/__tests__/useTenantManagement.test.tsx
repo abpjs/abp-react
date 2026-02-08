@@ -1,10 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import type { TenantManagement } from '../models';
+import type { TenantDto, TenantCreateDto, TenantUpdateDto } from '../proxy/models';
+import type { PagedResultDto } from '@abpjs/core';
 
-// Create mock functions
-const mockGetAll = vi.fn();
-const mockGetById = vi.fn();
+// Create mock functions matching TenantService arrow function method properties
+const mockGetList = vi.fn();
+const mockGet = vi.fn();
 const mockCreate = vi.fn();
 const mockUpdate = vi.fn();
 const mockDelete = vi.fn();
@@ -12,11 +13,11 @@ const mockGetDefaultConnectionString = vi.fn();
 const mockUpdateDefaultConnectionString = vi.fn();
 const mockDeleteDefaultConnectionString = vi.fn();
 
-// Mock the service
-vi.mock('../services', () => ({
-  TenantManagementService: vi.fn().mockImplementation(() => ({
-    getAll: mockGetAll,
-    getById: mockGetById,
+// Mock the TenantService (class with arrow function properties)
+vi.mock('../proxy/tenant.service', () => ({
+  TenantService: vi.fn().mockImplementation(() => ({
+    getList: mockGetList,
+    get: mockGet,
     create: mockCreate,
     update: mockUpdate,
     delete: mockDelete,
@@ -89,11 +90,11 @@ describe('useTenantManagement', () => {
 
   describe('fetchTenants', () => {
     it('should fetch tenants without params', async () => {
-      const mockResponse: TenantManagement.Response = {
+      const mockResponse: PagedResultDto<TenantDto> = {
         items: [{ id: '1', name: 'Tenant 1' }, { id: '2', name: 'Tenant 2' }],
         totalCount: 2,
       };
-      mockGetAll.mockResolvedValue(mockResponse);
+      mockGetList.mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => useTenantManagement());
 
@@ -109,11 +110,11 @@ describe('useTenantManagement', () => {
     });
 
     it('should fetch tenants with pagination params (v0.9.0 feature)', async () => {
-      const mockResponse: TenantManagement.Response = {
+      const mockResponse: PagedResultDto<TenantDto> = {
         items: [{ id: '3', name: 'Tenant 3' }],
         totalCount: 10,
       };
-      mockGetAll.mockResolvedValue(mockResponse);
+      mockGetList.mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => useTenantManagement());
 
@@ -122,17 +123,18 @@ describe('useTenantManagement', () => {
         await result.current.fetchTenants(params);
       });
 
-      expect(mockGetAll).toHaveBeenCalledWith(params);
+      // The hook merges defaults with the provided params
+      expect(mockGetList).toHaveBeenCalledWith(expect.objectContaining(params));
       expect(result.current.tenants).toEqual(mockResponse.items);
       expect(result.current.totalCount).toBe(10);
     });
 
     it('should fetch tenants with filter param (v0.9.0 feature)', async () => {
-      const mockResponse: TenantManagement.Response = {
+      const mockResponse: PagedResultDto<TenantDto> = {
         items: [{ id: '1', name: 'Filtered Tenant' }],
         totalCount: 1,
       };
-      mockGetAll.mockResolvedValue(mockResponse);
+      mockGetList.mockResolvedValue(mockResponse);
 
       const { result } = renderHook(() => useTenantManagement());
 
@@ -141,16 +143,16 @@ describe('useTenantManagement', () => {
         await result.current.fetchTenants(params);
       });
 
-      expect(mockGetAll).toHaveBeenCalledWith(params);
+      expect(mockGetList).toHaveBeenCalledWith(expect.objectContaining(params));
       expect(result.current.tenants).toHaveLength(1);
     });
 
     it('should set loading state while fetching', async () => {
-      let resolvePromise: (value: TenantManagement.Response) => void;
-      const pendingPromise = new Promise<TenantManagement.Response>((resolve) => {
+      let resolvePromise: (value: PagedResultDto<TenantDto>) => void;
+      const pendingPromise = new Promise<PagedResultDto<TenantDto>>((resolve) => {
         resolvePromise = resolve;
       });
-      mockGetAll.mockReturnValue(pendingPromise);
+      mockGetList.mockReturnValue(pendingPromise);
 
       const { result } = renderHook(() => useTenantManagement());
 
@@ -168,7 +170,7 @@ describe('useTenantManagement', () => {
     });
 
     it('should handle fetch error', async () => {
-      mockGetAll.mockRejectedValue(new Error('Network error'));
+      mockGetList.mockRejectedValue(new Error('Network error'));
 
       const { result } = renderHook(() => useTenantManagement());
 
@@ -183,7 +185,7 @@ describe('useTenantManagement', () => {
     });
 
     it('should handle non-Error rejection', async () => {
-      mockGetAll.mockRejectedValue('String error');
+      mockGetList.mockRejectedValue('String error');
 
       const { result } = renderHook(() => useTenantManagement());
 
@@ -193,12 +195,26 @@ describe('useTenantManagement', () => {
         expect(response.error).toBe('Failed to fetch tenants');
       });
     });
+
+    it('should handle response with undefined items and totalCount', async () => {
+      mockGetList.mockResolvedValue({ items: undefined, totalCount: undefined });
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.fetchTenants();
+        expect(response.success).toBe(true);
+      });
+
+      expect(result.current.tenants).toEqual([]);
+      expect(result.current.totalCount).toBe(0);
+    });
   });
 
   describe('fetchTenantById', () => {
     it('should fetch tenant by id and set as selected', async () => {
-      const mockTenant: TenantManagement.Item = { id: '123', name: 'Test Tenant' };
-      mockGetById.mockResolvedValue(mockTenant);
+      const mockTenant: TenantDto = { id: '123', name: 'Test Tenant' };
+      mockGet.mockResolvedValue(mockTenant);
 
       const { result } = renderHook(() => useTenantManagement());
 
@@ -211,7 +227,7 @@ describe('useTenantManagement', () => {
     });
 
     it('should handle error when fetching by id', async () => {
-      mockGetById.mockRejectedValue(new Error('Not found'));
+      mockGet.mockRejectedValue(new Error('Not found'));
 
       const { result } = renderHook(() => useTenantManagement());
 
@@ -221,17 +237,29 @@ describe('useTenantManagement', () => {
         expect(response.error).toBe('Not found');
       });
     });
+
+    it('should handle non-Error rejection when fetching by id', async () => {
+      mockGet.mockRejectedValue('string error');
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.fetchTenantById('bad-id');
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Failed to fetch tenant');
+      });
+    });
   });
 
   describe('createTenant', () => {
     it('should create tenant and refresh list', async () => {
-      const newTenant: TenantManagement.AddRequest = {
+      const newTenant: TenantCreateDto = {
         name: 'New Tenant',
         adminEmailAddress: 'admin@newtenant.com',
         adminPassword: 'Password123!',
       };
       mockCreate.mockResolvedValue({ id: '456', name: 'New Tenant' });
-      mockGetAll.mockResolvedValue({
+      mockGetList.mockResolvedValue({
         items: [{ id: '456', name: 'New Tenant' }],
         totalCount: 1,
       });
@@ -244,7 +272,7 @@ describe('useTenantManagement', () => {
       });
 
       expect(mockCreate).toHaveBeenCalledWith(newTenant);
-      expect(mockGetAll).toHaveBeenCalled();
+      expect(mockGetList).toHaveBeenCalled();
     });
 
     it('should handle create error', async () => {
@@ -262,13 +290,47 @@ describe('useTenantManagement', () => {
         expect(response.error).toBe('Validation failed');
       });
     });
+
+    it('should handle non-Error rejection during create', async () => {
+      mockCreate.mockRejectedValue(undefined);
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.createTenant({
+          name: 'Test',
+          adminEmailAddress: 'a@b.com',
+          adminPassword: 'P@ss1',
+        });
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Failed to create tenant');
+      });
+    });
+
+    it('should handle response with undefined items after create', async () => {
+      mockCreate.mockResolvedValue({ id: '1', name: 'T' });
+      mockGetList.mockResolvedValue({ items: undefined, totalCount: 0 });
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.createTenant({
+          name: 'T',
+          adminEmailAddress: 'a@b.com',
+          adminPassword: 'P@ss1',
+        });
+        expect(response.success).toBe(true);
+      });
+
+      expect(result.current.tenants).toEqual([]);
+    });
   });
 
   describe('updateTenant', () => {
     it('should update tenant and refresh list', async () => {
-      const updateRequest: TenantManagement.UpdateRequest = { id: '123', name: 'Updated Tenant' };
+      const updateData: TenantUpdateDto = { name: 'Updated Tenant' };
       mockUpdate.mockResolvedValue({ id: '123', name: 'Updated Tenant' });
-      mockGetAll.mockResolvedValue({
+      mockGetList.mockResolvedValue({
         items: [{ id: '123', name: 'Updated Tenant' }],
         totalCount: 1,
       });
@@ -276,11 +338,11 @@ describe('useTenantManagement', () => {
       const { result } = renderHook(() => useTenantManagement());
 
       await act(async () => {
-        const response = await result.current.updateTenant(updateRequest);
+        const response = await result.current.updateTenant('123', updateData);
         expect(response.success).toBe(true);
       });
 
-      expect(mockUpdate).toHaveBeenCalledWith(updateRequest);
+      expect(mockUpdate).toHaveBeenCalledWith('123', updateData);
     });
 
     it('should handle update error', async () => {
@@ -289,17 +351,43 @@ describe('useTenantManagement', () => {
       const { result } = renderHook(() => useTenantManagement());
 
       await act(async () => {
-        const response = await result.current.updateTenant({ id: '123', name: 'Test' });
+        const response = await result.current.updateTenant('123', { name: 'Test' });
         expect(response.success).toBe(false);
         expect(response.error).toBe('Concurrency conflict');
       });
+    });
+
+    it('should handle non-Error rejection during update', async () => {
+      mockUpdate.mockRejectedValue(null);
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.updateTenant('123', { name: 'Test' });
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Failed to update tenant');
+      });
+    });
+
+    it('should handle response with undefined items after update', async () => {
+      mockUpdate.mockResolvedValue({ id: '123', name: 'Updated' });
+      mockGetList.mockResolvedValue({ items: undefined, totalCount: 1 });
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.updateTenant('123', { name: 'Updated' });
+        expect(response.success).toBe(true);
+      });
+
+      expect(result.current.tenants).toEqual([]);
     });
   });
 
   describe('deleteTenant', () => {
     it('should delete tenant and refresh list', async () => {
       mockDelete.mockResolvedValue(undefined);
-      mockGetAll.mockResolvedValue({ items: [], totalCount: 0 });
+      mockGetList.mockResolvedValue({ items: [], totalCount: 0 });
 
       const { result } = renderHook(() => useTenantManagement());
 
@@ -321,6 +409,32 @@ describe('useTenantManagement', () => {
         expect(response.success).toBe(false);
         expect(response.error).toBe('Cannot delete tenant');
       });
+    });
+
+    it('should handle non-Error rejection during delete', async () => {
+      mockDelete.mockRejectedValue(0);
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.deleteTenant('123');
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Failed to delete tenant');
+      });
+    });
+
+    it('should handle response with undefined items after delete', async () => {
+      mockDelete.mockResolvedValue(undefined);
+      mockGetList.mockResolvedValue({ items: undefined, totalCount: 0 });
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.deleteTenant('123');
+        expect(response.success).toBe(true);
+      });
+
+      expect(result.current.tenants).toEqual([]);
     });
   });
 
@@ -378,6 +492,87 @@ describe('useTenantManagement', () => {
 
       expect(result.current.defaultConnectionString).toBe('');
       expect(result.current.useSharedDatabase).toBe(true);
+    });
+
+    it('should handle fetchConnectionString error with Error instance', async () => {
+      mockGetDefaultConnectionString.mockRejectedValue(new Error('Connection refused'));
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.fetchConnectionString('123');
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Connection refused');
+      });
+
+      expect(result.current.error).toBe('Connection refused');
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('should handle fetchConnectionString error with non-Error rejection', async () => {
+      mockGetDefaultConnectionString.mockRejectedValue('string error');
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.fetchConnectionString('123');
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Failed to fetch connection string');
+      });
+    });
+
+    it('should handle updateConnectionString error with Error instance', async () => {
+      mockUpdateDefaultConnectionString.mockRejectedValue(new Error('Permission denied'));
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.updateConnectionString('123', 'Server=test');
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Permission denied');
+      });
+
+      expect(result.current.error).toBe('Permission denied');
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('should handle updateConnectionString error with non-Error rejection', async () => {
+      mockUpdateDefaultConnectionString.mockRejectedValue(42);
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.updateConnectionString('123', 'Server=test');
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Failed to update connection string');
+      });
+    });
+
+    it('should handle deleteConnectionString error with Error instance', async () => {
+      mockDeleteDefaultConnectionString.mockRejectedValue(new Error('Tenant locked'));
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.deleteConnectionString('123');
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Tenant locked');
+      });
+
+      expect(result.current.error).toBe('Tenant locked');
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    it('should handle deleteConnectionString error with non-Error rejection', async () => {
+      mockDeleteDefaultConnectionString.mockRejectedValue(null);
+
+      const { result } = renderHook(() => useTenantManagement());
+
+      await act(async () => {
+        const response = await result.current.deleteConnectionString('123');
+        expect(response.success).toBe(false);
+        expect(response.error).toBe('Failed to delete connection string');
+      });
     });
   });
 
@@ -461,7 +656,7 @@ describe('useTenantManagement', () => {
 
   describe('reset', () => {
     it('should reset all state to initial values', async () => {
-      mockGetAll.mockResolvedValue({
+      mockGetList.mockResolvedValue({
         items: [{ id: '1', name: 'Tenant' }],
         totalCount: 1,
       });
@@ -510,7 +705,7 @@ describe('useTenantManagement', () => {
     });
 
     it('should maintain sort state independently of other state changes', async () => {
-      mockGetAll.mockResolvedValue({
+      mockGetList.mockResolvedValue({
         items: [{ id: '1', name: 'Tenant' }],
         totalCount: 1,
       });
@@ -901,7 +1096,7 @@ describe('useTenantManagement', () => {
       });
 
       it('should reset all state including features modal state', async () => {
-        mockGetAll.mockResolvedValue({
+        mockGetList.mockResolvedValue({
           items: [{ id: '1', name: 'Tenant' }],
           totalCount: 1,
         });
@@ -934,7 +1129,7 @@ describe('useTenantManagement', () => {
 
     describe('integration with other operations', () => {
       it('should maintain features modal state during tenant operations', async () => {
-        mockGetAll.mockResolvedValue({
+        mockGetList.mockResolvedValue({
           items: [{ id: '1', name: 'Tenant' }],
           totalCount: 1,
         });
@@ -957,7 +1152,7 @@ describe('useTenantManagement', () => {
       });
 
       it('should allow features modal to be opened while other state is populated', async () => {
-        mockGetAll.mockResolvedValue({
+        mockGetList.mockResolvedValue({
           items: [{ id: '1', name: 'Tenant 1' }, { id: '2', name: 'Tenant 2' }],
           totalCount: 2,
         });

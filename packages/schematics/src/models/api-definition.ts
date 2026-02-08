@@ -1,6 +1,6 @@
 /**
  * API Definition Types
- * Translated from @abp/ng.schematics v3.1.0
+ * Translated from @abp/ng.schematics v4.0.0
  *
  * Types representing ABP API definition structure.
  */
@@ -45,6 +45,11 @@ export interface PropertyDef {
   type: string;
   /** Simplified type string */
   typeSimple: string;
+  /**
+   * Whether this property is required.
+   * @since 4.0.0
+   */
+  isRequired: boolean;
 }
 
 /**

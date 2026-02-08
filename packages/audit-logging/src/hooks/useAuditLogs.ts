@@ -1,12 +1,22 @@
 /**
  * useAuditLogs Hook
- * Translated from @volo/abp.ng.audit-logging v2.0.0
+ * Translated from @volo/abp.ng.audit-logging v4.0.0
+ *
+ * @since 4.0.0 - Updated to use AuditLogsService and proxy DTOs
  */
 
 import { useState, useCallback, useRef } from 'react';
 import { useRestService } from '@abpjs/core';
-import { AuditLoggingService } from '../services';
-import type { AuditLogging, Statistics } from '../models';
+import type { PagedResultDto } from '@abpjs/core';
+import { AuditLogsService } from '../proxy/audit-logging/audit-logs.service';
+import type {
+  AuditLogDto,
+  GetAuditLogListDto,
+  GetAverageExecutionDurationPerDayInput,
+  GetAverageExecutionDurationPerDayOutput,
+  GetErrorRateFilter,
+  GetErrorRateOutput,
+} from '../proxy/audit-logging/models';
 
 /**
  * Result type for async operations
@@ -22,34 +32,34 @@ interface AsyncResult<T> {
  */
 export interface UseAuditLogsReturn {
   /** List of audit logs */
-  auditLogs: AuditLogging.Log[];
+  auditLogs: AuditLogDto[];
   /** Total count of audit logs */
   totalCount: number;
   /** Currently selected audit log */
-  selectedLog: AuditLogging.Log | null;
+  selectedLog: AuditLogDto | null;
   /** Loading state */
   isLoading: boolean;
   /** Error message if any */
   error: string | null;
   /** Average execution duration statistics */
-  averageExecutionStats: Statistics.Data;
+  averageExecutionStats: Record<string, number>;
   /** Error rate statistics */
-  errorRateStats: Statistics.Data;
+  errorRateStats: Record<string, number>;
   /** Current sort key */
   sortKey: string;
   /** Current sort order */
   sortOrder: '' | 'asc' | 'desc';
 
   /** Fetch audit logs with query parameters */
-  fetchAuditLogs: (params?: AuditLogging.AuditLogsQueryParams) => Promise<AsyncResult<AuditLogging.Response>>;
+  fetchAuditLogs: (params?: GetAuditLogListDto) => Promise<AsyncResult<PagedResultDto<AuditLogDto>>>;
   /** Get a single audit log by ID */
-  getAuditLogById: (id: string) => Promise<AsyncResult<AuditLogging.Log>>;
+  getAuditLogById: (id: string) => Promise<AsyncResult<AuditLogDto>>;
   /** Fetch average execution duration statistics */
-  fetchAverageExecutionStats: (params?: Statistics.Filter) => Promise<AsyncResult<Statistics.Response>>;
+  fetchAverageExecutionStats: (params: GetAverageExecutionDurationPerDayInput) => Promise<AsyncResult<GetAverageExecutionDurationPerDayOutput>>;
   /** Fetch error rate statistics */
-  fetchErrorRateStats: (params?: Statistics.Filter) => Promise<AsyncResult<Statistics.Response>>;
+  fetchErrorRateStats: (params: GetErrorRateFilter) => Promise<AsyncResult<GetErrorRateOutput>>;
   /** Set the selected audit log */
-  setSelectedLog: (log: AuditLogging.Log | null) => void;
+  setSelectedLog: (log: AuditLogDto | null) => void;
   /** Set the sort key */
   setSortKey: (key: string) => void;
   /** Set the sort order */
@@ -78,39 +88,39 @@ export interface UseAuditLogsReturn {
  */
 export function useAuditLogs(): UseAuditLogsReturn {
   const restService = useRestService();
-  const serviceRef = useRef<AuditLoggingService | null>(null);
+  const serviceRef = useRef<AuditLogsService | null>(null);
 
   // Initialize service lazily
   if (!serviceRef.current) {
-    serviceRef.current = new AuditLoggingService(restService);
+    serviceRef.current = new AuditLogsService(restService);
   }
   const service = serviceRef.current;
 
   // State
-  const [auditLogs, setAuditLogs] = useState<AuditLogging.Log[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLogDto[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [selectedLog, setSelectedLog] = useState<AuditLogging.Log | null>(null);
+  const [selectedLog, setSelectedLog] = useState<AuditLogDto | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [averageExecutionStats, setAverageExecutionStats] = useState<Statistics.Data>({});
-  const [errorRateStats, setErrorRateStats] = useState<Statistics.Data>({});
+  const [averageExecutionStats, setAverageExecutionStats] = useState<Record<string, number>>({});
+  const [errorRateStats, setErrorRateStats] = useState<Record<string, number>>({});
   const [sortKey, setSortKey] = useState('executionTime');
   const [sortOrder, setSortOrder] = useState<'' | 'asc' | 'desc'>('desc');
 
   // Store last query params for refresh
-  const lastQueryParamsRef = useRef<AuditLogging.AuditLogsQueryParams | undefined>();
+  const lastQueryParamsRef = useRef<GetAuditLogListDto | undefined>();
 
   /**
    * Fetch audit logs with query parameters
    */
   const fetchAuditLogs = useCallback(
-    async (params?: AuditLogging.AuditLogsQueryParams): Promise<AsyncResult<AuditLogging.Response>> => {
+    async (params?: GetAuditLogListDto): Promise<AsyncResult<PagedResultDto<AuditLogDto>>> => {
       setIsLoading(true);
       setError(null);
       lastQueryParamsRef.current = params;
 
       try {
-        const response = await service.getAuditLogs(params);
+        const response = await service.getList(params);
         setAuditLogs(response.items || []);
         setTotalCount(response.totalCount || 0);
         return { success: true, data: response };
@@ -129,12 +139,12 @@ export function useAuditLogs(): UseAuditLogsReturn {
    * Get a single audit log by ID
    */
   const getAuditLogById = useCallback(
-    async (id: string): Promise<AsyncResult<AuditLogging.Log>> => {
+    async (id: string): Promise<AsyncResult<AuditLogDto>> => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const log = await service.getAuditLogById(id);
+        const log = await service.get(id);
         setSelectedLog(log);
         return { success: true, data: log };
       } catch (err) {
@@ -152,11 +162,11 @@ export function useAuditLogs(): UseAuditLogsReturn {
    * Fetch average execution duration statistics
    */
   const fetchAverageExecutionStats = useCallback(
-    async (params?: Statistics.Filter): Promise<AsyncResult<Statistics.Response>> => {
+    async (params: GetAverageExecutionDurationPerDayInput): Promise<AsyncResult<GetAverageExecutionDurationPerDayOutput>> => {
       setError(null);
 
       try {
-        const response = await service.getAverageExecutionDurationPerDayStatistics(params);
+        const response = await service.getAverageExecutionDurationPerDay(params);
         setAverageExecutionStats(response.data || {});
         return { success: true, data: response };
       } catch (err) {
@@ -172,11 +182,11 @@ export function useAuditLogs(): UseAuditLogsReturn {
    * Fetch error rate statistics
    */
   const fetchErrorRateStats = useCallback(
-    async (params?: Statistics.Filter): Promise<AsyncResult<Statistics.Response>> => {
+    async (params: GetErrorRateFilter): Promise<AsyncResult<GetErrorRateOutput>> => {
       setError(null);
 
       try {
-        const response = await service.getErrorRateStatistics(params);
+        const response = await service.getErrorRate(params);
         setErrorRateStats(response.data || {});
         return { success: true, data: response };
       } catch (err) {

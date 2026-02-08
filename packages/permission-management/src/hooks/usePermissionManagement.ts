@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useRestService, useCurrentUserInfo } from '@abpjs/core';
-import { PermissionManagement, PermissionWithMargin } from '../models';
-import { PermissionManagementService } from '../services';
+import type { PermissionWithMargin } from '../models';
+import type { PermissionGrantInfoDto, PermissionGroupDto, ProviderInfoDto, UpdatePermissionDto } from '../proxy/models';
+import { PermissionsService } from '../proxy/permissions.service';
 
 /**
  * Result from permission management operations
@@ -13,16 +14,17 @@ export interface PermissionManagementResult {
 
 /**
  * Return type for usePermissionManagement hook
+ * @updated 4.0.0 - Uses proxy DTOs instead of legacy PermissionManagement namespace types
  */
 export interface UsePermissionManagementReturn {
   /** Current permission groups */
-  groups: PermissionManagement.Group[];
+  groups: PermissionGroupDto[];
   /** Entity display name */
   entityDisplayName: string;
   /** Currently selected group */
-  selectedGroup: PermissionManagement.Group | null;
+  selectedGroup: PermissionGroupDto | null;
   /** Permissions with current grant state (modifiable) */
-  permissions: PermissionManagement.MinimumPermission[];
+  permissions: UpdatePermissionDto[];
   /** Loading state */
   isLoading: boolean;
   /** Error message if any */
@@ -42,9 +44,9 @@ export interface UsePermissionManagementReturn {
     providerName: string
   ) => Promise<PermissionManagementResult>;
   /** Change the selected group */
-  setSelectedGroup: (group: PermissionManagement.Group) => void;
+  setSelectedGroup: (group: PermissionGroupDto) => void;
   /** Toggle a single permission */
-  togglePermission: (permission: PermissionManagement.Permission) => void;
+  togglePermission: (permission: PermissionGrantInfoDto) => void;
   /** Toggle all permissions in current tab */
   toggleSelectThisTab: () => void;
   /** Toggle all permissions */
@@ -63,15 +65,16 @@ export interface UsePermissionManagementReturn {
   /**
    * Check if a permission is granted by another provider name
    * @since 1.1.0 (renamed from isGrantedByRole)
+   * @updated 4.0.0 - Uses ProviderInfoDto[] instead of PermissionManagement.GrantedProvider[]
    */
   isGrantedByOtherProviderName: (
-    grantedProviders: PermissionManagement.GrantedProvider[],
+    grantedProviders: ProviderInfoDto[],
     providerName: string
   ) => boolean;
   /**
    * @deprecated Use isGrantedByOtherProviderName instead
    */
-  isGrantedByRole: (grantedProviders: PermissionManagement.GrantedProvider[]) => boolean;
+  isGrantedByRole: (grantedProviders: ProviderInfoDto[]) => boolean;
   /**
    * Determines whether the app configuration should be refreshed after saving permissions.
    * Returns true if:
@@ -91,8 +94,8 @@ export interface UsePermissionManagementReturn {
  * Calculate margin/indentation for a permission based on parent hierarchy
  */
 function findMargin(
-  permissions: PermissionManagement.Permission[],
-  permission: PermissionManagement.Permission
+  permissions: PermissionGrantInfoDto[],
+  permission: PermissionGrantInfoDto
 ): number {
   const parentPermission = permissions.find((per) => per.name === permission.parentName);
 
@@ -108,9 +111,9 @@ function findMargin(
  * Extract all permissions from groups into a flat array
  */
 function getPermissionsFromGroups(
-  groups: PermissionManagement.Group[]
-): PermissionManagement.MinimumPermission[] {
-  return groups.reduce<PermissionManagement.MinimumPermission[]>(
+  groups: PermissionGroupDto[]
+): UpdatePermissionDto[] {
+  return groups.reduce<UpdatePermissionDto[]>(
     (acc, group) => [
       ...acc,
       ...group.permissions.map((p) => ({ name: p.name, isGranted: p.isGranted })),
@@ -124,6 +127,9 @@ function getPermissionsFromGroups(
  *
  * This hook provides all the state and actions needed for the permission
  * management modal. It handles fetching, modifying, and saving permissions.
+ *
+ * @updated 4.0.0 - Migrated from PermissionManagementService to PermissionsService,
+ *   uses proxy DTOs (PermissionGroupDto, PermissionGrantInfoDto, ProviderInfoDto, etc.)
  *
  * @example
  * ```tsx
@@ -150,16 +156,16 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
   const restService = useRestService();
   const currentUser = useCurrentUserInfo();
 
-  // Service instance (memoized)
-  const service = useMemo(() => new PermissionManagementService(restService), [restService]);
+  // Service instance (memoized) - v4.0.0: uses PermissionsService instead of deprecated PermissionManagementService
+  const service = useMemo(() => new PermissionsService(restService), [restService]);
 
   // State
-  const [groups, setGroups] = useState<PermissionManagement.Group[]>([]);
+  const [groups, setGroups] = useState<PermissionGroupDto[]>([]);
   const [entityDisplayName, setEntityDisplayName] = useState<string>('');
-  const [selectedGroup, setSelectedGroup] = useState<PermissionManagement.Group | null>(null);
-  const [permissions, setPermissions] = useState<PermissionManagement.MinimumPermission[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<PermissionGroupDto | null>(null);
+  const [permissions, setPermissions] = useState<UpdatePermissionDto[]>([]);
   const [originalPermissions, setOriginalPermissions] = useState<
-    PermissionManagement.MinimumPermission[]
+    UpdatePermissionDto[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -179,11 +185,10 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
 
   /**
    * Check if a permission is granted by another provider name (v1.1.0)
-   * This is useful for showing visual indicators when a permission
-   * comes from another provider (like a role) rather than being directly assigned.
+   * @updated 4.0.0 - Uses ProviderInfoDto[] instead of PermissionManagement.GrantedProvider[]
    */
   const isGrantedByOtherProviderName = useCallback(
-    (grantedProviders: PermissionManagement.GrantedProvider[], providerName: string): boolean => {
+    (grantedProviders: ProviderInfoDto[], providerName: string): boolean => {
       return grantedProviders.some((provider) => provider.providerName !== providerName);
     },
     []
@@ -194,7 +199,7 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
    * Check if a permission is granted by a role provider
    */
   const isGrantedByRole = useCallback(
-    (grantedProviders: PermissionManagement.GrantedProvider[]): boolean => {
+    (grantedProviders: ProviderInfoDto[]): boolean => {
       return grantedProviders.some((provider) => provider.providerName === 'R');
     },
     []
@@ -259,6 +264,7 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
 
   /**
    * Fetch permissions from the server
+   * @updated 4.0.0 - Uses PermissionsService.get() instead of PermissionManagementService.getPermissions()
    */
   const fetchPermissions = useCallback(
     async (providerKey: string, providerName: string): Promise<PermissionManagementResult> => {
@@ -266,10 +272,7 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
       setError(null);
 
       try {
-        const response = await service.getPermissions({
-          providerKey,
-          providerName,
-        });
+        const response = await service.get(providerName, providerKey);
 
         setGroups(response.groups);
         setEntityDisplayName(response.entityDisplayName);
@@ -298,6 +301,7 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
 
   /**
    * Save changed permissions to the server
+   * @updated 4.0.0 - Uses PermissionsService.update() instead of PermissionManagementService.updatePermissions()
    */
   const savePermissions = useCallback(
     async (providerKey: string, providerName: string): Promise<PermissionManagementResult> => {
@@ -316,9 +320,7 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
       setError(null);
 
       try {
-        await service.updatePermissions({
-          providerKey,
-          providerName,
+        await service.update(providerName, providerKey, {
           permissions: changedPermissions.map(({ name, isGranted }) => ({
             name,
             isGranted,
@@ -339,9 +341,10 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
 
   /**
    * Toggle a single permission (handles parent/child relationships)
+   * @updated 4.0.0 - Uses PermissionGrantInfoDto instead of PermissionManagement.Permission
    */
   const togglePermission = useCallback(
-    (clickedPermission: PermissionManagement.Permission) => {
+    (clickedPermission: PermissionGrantInfoDto) => {
       setPermissions((currentPermissions) => {
         const clickedPerm = currentPermissions.find((p) => p.name === clickedPermission.name);
         const wasGranted = clickedPerm?.isGranted ?? false;
@@ -423,7 +426,7 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
    * Handle group selection change
    */
   const handleSetSelectedGroup = useCallback(
-    (group: PermissionManagement.Group) => {
+    (group: PermissionGroupDto) => {
       setSelectedGroup(group);
       // Update tab checkbox state for new group
       setTimeout(updateCheckboxStates, 0);
@@ -448,12 +451,6 @@ export function usePermissionManagement(): UsePermissionManagementReturn {
 
   /**
    * Determines whether the app configuration should be refreshed after saving permissions.
-   * Returns true if:
-   * - The provider is a role ('R') that the current user belongs to
-   * - The provider is the current user ('U')
-   * @param providerKey The provider key (role ID or user ID)
-   * @param providerName The provider name ('R' for role, 'U' for user)
-   * @returns Whether app config should be refreshed
    * @since 3.1.0
    */
   const shouldFetchAppConfig = useCallback(

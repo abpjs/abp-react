@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { SessionStateService } from './session-state.service';
 import { RootState } from '../store';
+import { sessionActions } from '../slices/session.slice';
 
 describe('SessionStateService', () => {
   let service: SessionStateService;
@@ -111,6 +112,68 @@ describe('SessionStateService', () => {
       expect(sessionDetail.openedTabCount).toBe(0);
       expect(sessionDetail.lastExitTime).toBe(0);
       expect(sessionDetail.remember).toBe(false);
+    });
+  });
+
+  describe('setTenant (v4.0.0)', () => {
+    it('should dispatch setTenant action', () => {
+      const mockDispatch = vi.fn();
+      const serviceWithDispatch = new SessionStateService(() => mockState, mockDispatch);
+
+      const tenant = { id: 'new-tenant', name: 'New Tenant', isAvailable: true };
+      serviceWithDispatch.setTenant(tenant);
+
+      expect(mockDispatch).toHaveBeenCalledTimes(1);
+      expect(mockDispatch).toHaveBeenCalledWith(sessionActions.setTenant(tenant));
+    });
+
+    it('should throw error when dispatch is not configured', () => {
+      expect(() =>
+        service.setTenant({ id: 'test', name: 'Test' })
+      ).toThrow('Dispatch not configured. SessionStateService requires dispatch for setTenant.');
+    });
+
+    it('should allow setting tenant without isAvailable', () => {
+      const mockDispatch = vi.fn();
+      const serviceWithDispatch = new SessionStateService(() => mockState, mockDispatch);
+
+      serviceWithDispatch.setTenant({ id: 'abc', name: 'ABC' });
+      expect(mockDispatch).toHaveBeenCalledTimes(1);
+    });
+
+    it('should allow clearing tenant', () => {
+      const mockDispatch = vi.fn();
+      const serviceWithDispatch = new SessionStateService(() => mockState, mockDispatch);
+
+      serviceWithDispatch.setTenant({ id: '', name: '', isAvailable: false });
+      expect(mockDispatch).toHaveBeenCalledWith(
+        sessionActions.setTenant({ id: '', name: '', isAvailable: false })
+      );
+    });
+  });
+
+  describe('setLanguage (v4.0.0)', () => {
+    it('should dispatch setLanguage action', () => {
+      const mockDispatch = vi.fn();
+      const serviceWithDispatch = new SessionStateService(() => mockState, mockDispatch);
+
+      serviceWithDispatch.setLanguage('tr');
+      expect(mockDispatch).toHaveBeenCalledTimes(1);
+      expect(mockDispatch).toHaveBeenCalledWith(sessionActions.setLanguage('tr'));
+    });
+
+    it('should throw error when dispatch is not configured', () => {
+      expect(() =>
+        service.setLanguage('fr')
+      ).toThrow('Dispatch not configured. SessionStateService requires dispatch for setLanguage.');
+    });
+
+    it('should allow setting empty language', () => {
+      const mockDispatch = vi.fn();
+      const serviceWithDispatch = new SessionStateService(() => mockState, mockDispatch);
+
+      serviceWithDispatch.setLanguage('');
+      expect(mockDispatch).toHaveBeenCalledWith(sessionActions.setLanguage(''));
     });
   });
 });

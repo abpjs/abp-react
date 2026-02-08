@@ -14,16 +14,17 @@ import {
   Text,
 } from '@chakra-ui/react';
 import { useRoles } from '../../hooks';
-import type { Identity } from '../../models';
+import type { IdentityRoleDto, IdentityRoleCreateDto } from '../../proxy/identity/models';
 
 /**
  * Props for RolesComponent
+ * @updated 4.0.0 - Callbacks now use IdentityRoleDto instead of Identity.RoleItem
  */
 export interface RolesComponentProps {
   /** Optional callback when a role is created */
-  onRoleCreated?: (role: Identity.RoleItem) => void;
+  onRoleCreated?: (role: IdentityRoleDto) => void;
   /** Optional callback when a role is updated */
-  onRoleUpdated?: (role: Identity.RoleItem) => void;
+  onRoleUpdated?: (role: IdentityRoleDto) => void;
   /** Optional callback when a role is deleted */
   onRoleDeleted?: (id: string) => void;
   /**
@@ -187,15 +188,19 @@ export function RolesComponent({
 
     setIsSubmitting(true);
 
-    const roleData: Identity.RoleSaveRequest = {
+    const roleData: IdentityRoleCreateDto = {
       name: formState.name.trim(),
       isDefault: formState.isDefault,
       isPublic: formState.isPublic,
+      extraProperties: {},
     };
 
     let result;
     if (selectedRole?.id) {
-      result = await updateRole(selectedRole.id, roleData);
+      result = await updateRole(selectedRole.id, {
+        ...roleData,
+        concurrencyStamp: selectedRole.concurrencyStamp,
+      });
       if (result.success) {
         onRoleUpdated?.({ ...selectedRole, ...roleData });
       }

@@ -341,6 +341,39 @@ describe('Tree Component', () => {
     });
   });
 
+  describe('drag and drop - v4.0.0 edge cases', () => {
+    it('should handle dragLeave event', () => {
+      renderTree({ draggable: true });
+
+      const nodeContent = screen.getByTestId('tree-node-content-1');
+
+      // Trigger dragOver to set dragOver=true, then dragLeave to reset
+      fireEvent.dragOver(nodeContent);
+      expect(nodeContent).toHaveAttribute('data-dragover');
+
+      fireEvent.dragLeave(nodeContent);
+      expect(nodeContent).not.toHaveAttribute('data-dragover');
+    });
+
+    it('should not set draggable on disabled node', () => {
+      const disabledNodes = adapter.getTree();
+      disabledNodes[0].disabled = true;
+
+      render(
+        <Tree nodes={disabledNodes} draggable={true} expandedKeys={['1', '2']} />,
+        { wrapper: Wrapper }
+      );
+
+      // Disabled root node should not be draggable
+      const disabledNodeContent = screen.getByTestId('tree-node-content-1');
+      expect(disabledNodeContent).not.toHaveAttribute('draggable', 'true');
+
+      // Non-disabled child should still be draggable
+      const childContent = screen.getByTestId('tree-node-content-2');
+      expect(childContent).toHaveAttribute('draggable', 'true');
+    });
+  });
+
   // v3.2.0: Custom templates
   describe('customNodeTemplate (v3.2.0)', () => {
     it('should render custom node template when provided', () => {

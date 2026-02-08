@@ -1,7 +1,7 @@
 /**
- * @abpjs/components v3.2.0
+ * @abpjs/components v4.0.0
  * ABP Framework shared components for React
- * Translated from @abp/ng.components v3.2.0
+ * Translated from @abp/ng.components v4.0.0
  *
  * This package provides reusable UI components for ABP applications.
  *
@@ -26,6 +26,10 @@
  * ```
  *
  * ## Changelog
+ *
+ * ### v4.0.0
+ * - Dependency update: @abp/ng.core peer dependency bumped to >=4.0.0
+ * - No source code changes in Angular package (version bump only)
  *
  * ### v3.2.0
  * - Tree: Added `customNodeTemplate` prop for custom node rendering

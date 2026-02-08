@@ -1,5 +1,5 @@
 /**
- * Tests for LanguagesComponent v3.0.0
+ * Tests for LanguagesComponent v4.0.0
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
@@ -21,7 +21,6 @@ const mockUseSession = vi.fn();
 vi.mock('@abpjs/core', () => ({
   useConfig: () => mockUseConfig(),
   useSession: () => mockUseSession(),
-  ApplicationConfiguration: {},
 }));
 
 // Mock Chakra UI components
@@ -221,6 +220,90 @@ describe('LanguagesComponent', () => {
       renderComponent();
       // Should render with empty display name but still show the selector
       expect(screen.getByTestId('menu-root')).toBeInTheDocument();
+    });
+  });
+
+  describe('v4.0.0: LanguageInfo with optional cultureName', () => {
+    it('should handle languages with undefined cultureName', () => {
+      mockUseConfig.mockReturnValue({
+        localization: {
+          languages: [
+            { cultureName: 'en', displayName: 'English' },
+            { displayName: 'Unknown Language' },
+          ],
+        },
+      });
+      mockUseSession.mockReturnValue({ language: 'en', setLanguage: mockSetLanguage });
+
+      renderComponent();
+      // Should render — the undefined cultureName language falls through as a dropdown item
+      expect(screen.getByTestId('menu-root')).toBeInTheDocument();
+      expect(screen.getByText('Unknown Language')).toBeInTheDocument();
+    });
+
+    it('should use empty string fallback for undefined cultureName in value prop', () => {
+      mockUseConfig.mockReturnValue({
+        localization: {
+          languages: [
+            { cultureName: 'en', displayName: 'English' },
+            { displayName: 'No Culture' },
+          ],
+        },
+      });
+      mockUseSession.mockReturnValue({ language: 'en', setLanguage: mockSetLanguage });
+
+      renderComponent();
+      // The menu item with undefined cultureName should use '' as value
+      expect(screen.getByTestId('menu-item-')).toBeInTheDocument();
+    });
+
+    it('should call setLanguage with empty string for undefined cultureName', () => {
+      mockUseConfig.mockReturnValue({
+        localization: {
+          languages: [
+            { cultureName: 'en', displayName: 'English' },
+            { displayName: 'No Culture' },
+          ],
+        },
+      });
+      mockUseSession.mockReturnValue({ language: 'en', setLanguage: mockSetLanguage });
+
+      renderComponent();
+      fireEvent.click(screen.getByTestId('menu-item-'));
+      expect(mockSetLanguage).toHaveBeenCalledWith('');
+    });
+
+    it('should handle all optional LanguageInfo fields', () => {
+      mockUseConfig.mockReturnValue({
+        localization: {
+          languages: [
+            { cultureName: 'en', displayName: 'English' },
+            { cultureName: 'tr' },  // no displayName, no flagIcon, no uiCultureName
+          ],
+        },
+      });
+      mockUseSession.mockReturnValue({ language: 'en', setLanguage: mockSetLanguage });
+
+      renderComponent();
+      // Should fall back to cultureName when displayName is missing
+      expect(screen.getByText('tr')).toBeInTheDocument();
+    });
+
+    it('should handle empty session language with LanguageInfo', () => {
+      mockUseConfig.mockReturnValue({
+        localization: {
+          languages: [
+            { cultureName: 'en', displayName: 'English' },
+            { cultureName: 'tr', displayName: 'Turkce' },
+          ],
+        },
+      });
+      mockUseSession.mockReturnValue({ language: '', setLanguage: mockSetLanguage });
+
+      renderComponent();
+      // All languages should be in dropdown since none matches ''
+      expect(screen.getByTestId('menu-item-en')).toBeInTheDocument();
+      expect(screen.getByTestId('menu-item-tr')).toBeInTheDocument();
     });
   });
 

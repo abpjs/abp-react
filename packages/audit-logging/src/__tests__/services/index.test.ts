@@ -1,15 +1,15 @@
 /**
  * Tests for services/index exports
- * @abpjs/audit-logging v3.2.0
+ * @abpjs/audit-logging v4.0.0
+ *
+ * @since 4.0.0 - Removed AuditLoggingService and EntityChangeService (use AuditLogsService instead)
  */
 import { describe, it, expect } from 'vitest';
 import * as ServicesExports from '../../services';
 import { AuditLoggingStateService } from '../../services/audit-logging-state.service';
-import { AuditLoggingService } from '../../services/audit-logging.service';
-import { EntityChangeService } from '../../services/entity-change.service';
 import { AuditLogsService } from '../../proxy/audit-logging/audit-logs.service';
 
-describe('services/index exports (v3.2.0)', () => {
+describe('services/index exports (v4.0.0)', () => {
   describe('existing service exports', () => {
     it('should export AuditLoggingStateService', () => {
       expect(ServicesExports.AuditLoggingStateService).toBeDefined();
@@ -17,19 +17,9 @@ describe('services/index exports (v3.2.0)', () => {
         AuditLoggingStateService
       );
     });
-
-    it('should export AuditLoggingService', () => {
-      expect(ServicesExports.AuditLoggingService).toBeDefined();
-      expect(ServicesExports.AuditLoggingService).toBe(AuditLoggingService);
-    });
-
-    it('should export EntityChangeService', () => {
-      expect(ServicesExports.EntityChangeService).toBeDefined();
-      expect(ServicesExports.EntityChangeService).toBe(EntityChangeService);
-    });
   });
 
-  describe('v3.2.0 proxy service re-export', () => {
+  describe('proxy service re-export', () => {
     it('should export AuditLogsService from proxy', () => {
       expect(ServicesExports.AuditLogsService).toBeDefined();
       expect(ServicesExports.AuditLogsService).toBe(AuditLogsService);
@@ -46,28 +36,33 @@ describe('services/index exports (v3.2.0)', () => {
     });
   });
 
+  describe('removed services (v4.0.0)', () => {
+    it('should no longer export AuditLoggingService', () => {
+      expect(
+        (ServicesExports as Record<string, unknown>).AuditLoggingService
+      ).toBeUndefined();
+    });
+
+    it('should no longer export EntityChangeService', () => {
+      expect(
+        (ServicesExports as Record<string, unknown>).EntityChangeService
+      ).toBeUndefined();
+    });
+  });
+
   describe('export completeness', () => {
-    it('should export all 4 services', () => {
+    it('should export exactly 2 services', () => {
       const exportedKeys = Object.keys(ServicesExports);
 
       expect(exportedKeys).toContain('AuditLoggingStateService');
-      expect(exportedKeys).toContain('AuditLoggingService');
-      expect(exportedKeys).toContain('EntityChangeService');
       expect(exportedKeys).toContain('AuditLogsService');
+      expect(exportedKeys).toHaveLength(2);
     });
   });
 
   describe('service type verification', () => {
     it('should export AuditLoggingStateService as a class', () => {
       expect(typeof ServicesExports.AuditLoggingStateService).toBe('function');
-    });
-
-    it('should export AuditLoggingService as a class', () => {
-      expect(typeof ServicesExports.AuditLoggingService).toBe('function');
-    });
-
-    it('should export EntityChangeService as a class', () => {
-      expect(typeof ServicesExports.EntityChangeService).toBe('function');
     });
 
     it('should export AuditLogsService as a class', () => {

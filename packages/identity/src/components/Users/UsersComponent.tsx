@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useLocalization, ABP } from '@abpjs/core';
+import { useLocalization } from '@abpjs/core';
 import { Modal, useConfirmation, Confirmation, Alert, Button, Checkbox, FormField } from '@abpjs/theme-shared';
 import { PermissionManagementModal } from '@abpjs/permission-management';
 import { eIdentityComponents } from '../../enums';
@@ -16,7 +16,7 @@ import {
   SimpleGrid,
 } from '@chakra-ui/react';
 import { useUsers, useRoles } from '../../hooks';
-import type { Identity } from '../../models';
+import type { IdentityUserDto, IdentityUserCreateDto, GetIdentityUsersInput } from '../../proxy/identity/models';
 
 /**
  * Password rule type for validation display
@@ -27,11 +27,14 @@ export type PasswordRule = 'number' | 'small' | 'capital' | 'special';
 /**
  * Props for UsersComponent
  */
+/**
+ * @updated 4.0.0 - Callbacks now use IdentityUserDto instead of Identity.UserItem
+ */
 export interface UsersComponentProps {
   /** Optional callback when a user is created */
-  onUserCreated?: (user: Identity.UserItem) => void;
+  onUserCreated?: (user: IdentityUserDto) => void;
   /** Optional callback when a user is updated */
-  onUserUpdated?: (user: Identity.UserItem) => void;
+  onUserUpdated?: (user: IdentityUserDto) => void;
   /** Optional callback when a user is deleted */
   onUserDeleted?: (id: string) => void;
   /**
@@ -62,7 +65,6 @@ interface UserFormState {
   phoneNumber: string;
   password: string;
   lockoutEnabled: boolean;
-  twoFactorEnabled: boolean;
   roleNames: string[];
 }
 
@@ -74,7 +76,6 @@ const DEFAULT_FORM_STATE: UserFormState = {
   phoneNumber: '',
   password: '',
   lockoutEnabled: true,
-  twoFactorEnabled: true,
   roleNames: [],
 };
 
@@ -174,9 +175,9 @@ export function UsersComponent({
 
   // Fetch users when search term changes
   useEffect(() => {
-    const newQuery: ABP.PageQueryParams = {
+    const newQuery: GetIdentityUsersInput = {
       ...pageQuery,
-      filter: debouncedSearchTerm || undefined,
+      filter: debouncedSearchTerm || '',
       skipCount: 0,
     };
     setPageQuery(newQuery);
@@ -220,7 +221,6 @@ export function UsersComponent({
         phoneNumber: selectedUser.phoneNumber || '',
         password: '',
         lockoutEnabled: selectedUser.lockoutEnabled ?? true,
-        twoFactorEnabled: selectedUser.twoFactorEnabled ?? true,
         roleNames: selectedRoleNames,
       });
     }
@@ -263,7 +263,7 @@ export function UsersComponent({
 
     setIsSubmitting(true);
 
-    const userData: Identity.UserSaveRequest = {
+    const userData: IdentityUserCreateDto = {
       userName: formState.userName.trim(),
       name: formState.name.trim(),
       surname: formState.surname.trim(),
@@ -271,18 +271,21 @@ export function UsersComponent({
       phoneNumber: formState.phoneNumber.trim(),
       password: formState.password,
       lockoutEnabled: formState.lockoutEnabled,
-      twoFactorEnabled: formState.twoFactorEnabled,
       roleNames: formState.roleNames,
+      extraProperties: {},
     };
 
     let result;
     if (selectedUser?.id) {
-      result = await updateUser(selectedUser.id, userData);
+      result = await updateUser(selectedUser.id, {
+        ...userData,
+        concurrencyStamp: selectedUser.concurrencyStamp,
+      });
       if (result.success) {
         onUserUpdated?.({
           ...selectedUser,
           ...userData,
-        } as Identity.UserItem);
+        } as unknown as IdentityUserDto);
       }
     } else {
       result = await createUser(userData);
@@ -290,12 +293,10 @@ export function UsersComponent({
         onUserCreated?.({
           ...userData,
           id: '',
-          tenantId: '',
           emailConfirmed: false,
           phoneNumberConfirmed: false,
-          isLockedOut: false,
           concurrencyStamp: '',
-        } as Identity.UserItem);
+        } as unknown as IdentityUserDto);
       }
     }
 
@@ -578,13 +579,6 @@ export function UsersComponent({
                 onChange={(e) => handleInputChange('lockoutEnabled', e.target.checked)}
               >
                 {t('AbpIdentity::DisplayName:LockoutEnabled')}
-              </Checkbox>
-
-              <Checkbox
-                checked={formState.twoFactorEnabled}
-                onChange={(e) => handleInputChange('twoFactorEnabled', e.target.checked)}
-              >
-                {t('AbpIdentity::DisplayName:TwoFactorEnabled')}
               </Checkbox>
             </VStack>
           </Tabs.Content>
