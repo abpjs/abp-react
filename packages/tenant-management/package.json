@@ -1,6 +1,6 @@
 {
   "name": "@abpjs/tenant-management",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "ABP Framework tenant-management components for React - translated from @abp/ng.tenant-management",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
